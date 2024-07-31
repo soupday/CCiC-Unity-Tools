@@ -20,6 +20,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System;
+using System.Collections.Generic;
 using Scene = UnityEngine.SceneManagement.Scene;
 
 namespace Reallusion.Import
@@ -51,6 +52,20 @@ namespace Reallusion.Import
         public const string controlStateHashKey = "RL_Animator_Ctrl_Hash_Key_0000";
         public const string timeKey = "RL_Animation_Play_Position_Key_0000";
 
+        //shader package validation
+        public static string emptyVersion = "0.0.0";
+        public static Version activeVersion = new Version(0, 0, 0);
+        public static ShaderPackageUtil.InstalledPipeline activePipeline = ShaderPackageUtil.InstalledPipeline.None;
+        public static ShaderPackageUtil.PipelineVersion activePipelineVersion = ShaderPackageUtil.PipelineVersion.None;
+        public static ShaderPackageUtil.PipelineVersion installedShaderPipelineVersion = ShaderPackageUtil.PipelineVersion.None;
+        public static ShaderPackageUtil.PlatformRestriction platformRestriction = ShaderPackageUtil.PlatformRestriction.None;
+        public static Version installedShaderVersion = new Version(0, 0, 0);
+        public static ShaderPackageUtil.InstalledPackageStatus installedPackageStatus = ShaderPackageUtil.InstalledPackageStatus.None;
+        public static List<ShaderPackageUtil.ShaderPackageManifest> availablePackages;
+        public static string activePackageString = string.Empty;
+        public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
+        public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;
+        public static List<ShaderPackageUtil.ShaderPackageItem> missingShaderPackageItems;
 
         static WindowManager()
         {
@@ -141,6 +156,11 @@ namespace Reallusion.Import
                     }
                 case PlayModeStateChange.EnteredEditMode:
                     {
+                        if (ImporterWindow.Current != null)
+                        {
+                            ImporterWindow.InitShaderUpdater();
+                        }
+
                         showPlayer = showPlayerAfterPlayMode;
                         showRetarget = showRetargetAfterPlayMode;
 

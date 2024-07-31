@@ -28,7 +28,7 @@ using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
-    [System.Serializable]
+    [Serializable]
     public class ImporterWindow : EditorWindow
     {
         // Settings
@@ -39,12 +39,11 @@ namespace Reallusion.Import
         {
            get { return generalSettings; }
         }
-        public static void SetGeneralSettings(RLSettingsObject settingsObj)
+        public static void SetGeneralSettings(RLSettingsObject settingsObj, bool save)
         {
             generalSettings = settingsObj;
-            // sync to disk
-            RLSettings.SaveRLSettingsObject(generalSettings);
-        }
+            if (save) RLSettings.SaveRLSettingsObject(generalSettings);
+        }        
         // Settings end
 
         [SerializeField]
@@ -256,17 +255,7 @@ namespace Reallusion.Import
 
         private void InitData()
         {
-            // Settings
-            generalSettings = RLSettings.FindRLSettingsObject();
-            if (generalSettings != null)
-            {
-                if (generalSettings.showOnStartup)
-                {
-                    ShaderPackageUpdater.CreateWindow();
-                }
-            }
-            // Settings end
-
+            InitShaderUpdater();
             CheckAvailableAddons();
 
             string[] folders = new string[] { "Assets", "Packages" };
@@ -301,7 +290,25 @@ namespace Reallusion.Import
             RefreshCharacterList();
             
             if (titleContent.text != windowTitle) titleContent.text = windowTitle;
-        }        
+        }
+        
+        public static void InitShaderUpdater()
+        {
+            Debug.Log("ImporterWindow.InitData() :: Application.isPlaying: " + Application.isPlaying);
+            if (Application.isPlaying)
+            {
+                Debug.Log("Application.isPlaying");
+                if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
+                {
+                    EditorWindow.GetWindow<ShaderPackageUpdater>().Close();
+                }
+            }
+            else
+            {
+                ShaderPackageUtil.GetInstalledPipelineVersion();
+                FrameTimer.CreateTimer(10, 1111, ShaderPackageUtil.ImporterWindowInitCallback);
+            }
+        }
 
         private void PreviewCharacter()
         {

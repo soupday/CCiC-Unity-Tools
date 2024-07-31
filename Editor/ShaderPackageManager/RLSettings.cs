@@ -12,7 +12,10 @@ namespace Reallusion.Import
 {
     public class RLSettings : Editor
     {
-        public const string defaultPath = "Assets/Character Creator";
+        public const string defaultParent = "Reallusion";
+        public const string defaultChild = "CCiC Unity Tools";
+
+        //public const string defaultPath = "Assets/Reallusion/CCiC Unity Tools";
         public const string defaultSettingsName = "RLSettingsObject.asset";
         
         public static RLSettingsObject FindRLSettingsObject()
@@ -128,7 +131,7 @@ namespace Reallusion.Import
         {
             RLSettingsObject obj = CreateInstance<RLSettingsObject>();
             obj.showOnStartup = true;
-            obj.lastPath = defaultPath + "/" + defaultSettingsName;
+            obj.lastPath = "Assets/" + defaultParent + "/" + defaultChild + "/" + defaultSettingsName;
             SaveRLSettingsObject(obj);
             return obj;
         }
@@ -163,6 +166,11 @@ namespace Reallusion.Import
             if (string.IsNullOrEmpty(assetPath))
             {
                 // no corresponding asset exists, create new one
+                if (!AssetDatabase.IsValidFolder("Assets/" + defaultParent))
+                    AssetDatabase.CreateFolder("Assets", defaultParent);
+                if (!AssetDatabase.IsValidFolder("Assets/" + defaultParent + "/" + defaultChild))
+                    AssetDatabase.CreateFolder("Assets/" + defaultParent, defaultChild);
+
                 AssetDatabase.CreateAsset(obj, obj.lastPath);
             }
             else
