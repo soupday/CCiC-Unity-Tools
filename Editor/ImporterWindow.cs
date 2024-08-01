@@ -306,7 +306,7 @@ namespace Reallusion.Import
             else
             {
                 ShaderPackageUtil.GetInstalledPipelineVersion();
-                FrameTimer.CreateTimer(10, 1111, ShaderPackageUtil.ImporterWindowInitCallback);
+                FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
             }
         }
 

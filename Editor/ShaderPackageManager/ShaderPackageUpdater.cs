@@ -48,7 +48,8 @@ namespace Reallusion.Import
 
             allInstPipeFoldout = false;
             buildPlatformFoldout = false;
-            instShaderFoldout = false;            
+            instShaderFoldout = false;
+            actionToFollowFoldout = false;
 
             // RenderPipelineManager.currentPipeline is unavailable for a few frames after assembly reload (and entering play mode)
             // see: https://issuetracker.unity3d.com/issues/hdrp-renderpipelinemanager-dot-currentpipeline-is-null-for-the-first-few-frames-of-playmode
@@ -58,8 +59,8 @@ namespace Reallusion.Import
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += OnAfterAssemblyReload;
             
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
-            EditorApplication.playModeStateChanged += OnPlayModeStateChange;
+            //EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
+            //EditorApplication.playModeStateChanged += OnPlayModeStateChange;
         }
 
         private void OnDestroy()
@@ -67,7 +68,7 @@ namespace Reallusion.Import
             Debug.Log("ShaderPackageUpdater.OnDestroy");
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
+            //EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
         }
 
         private void OnDisable()
@@ -83,10 +84,11 @@ namespace Reallusion.Import
         public void OnAfterAssemblyReload()
         {
             Debug.Log("ShaderPackageUpdater.OnAfterAssemblyReload");
-            EditorApplication.update -= WaitForFrames;
-            EditorApplication.update += WaitForFrames;
+            FrameTimer.CreateTimer(15, FrameTimer.onAfterAssemblyReload, GetInstanceAfterReload);
+            //EditorApplication.update -= WaitForFrames;
+            //EditorApplication.update += WaitForFrames;
         }
-
+        /*
         public void OnPlayModeStateChange(PlayModeStateChange state)
         {
             switch (state)
@@ -113,9 +115,10 @@ namespace Reallusion.Import
                     }
             }
         }
+        */
 
-        private int waitCount = 15; // frames to wait after assembly reload before accessing 'currentPipline'
-
+        //private int waitCount = 15; // frames to wait after assembly reload before accessing 'currentPipline'
+        /*
         private void WaitForFrames()
         {
             while (waitCount > 0)
@@ -137,6 +140,18 @@ namespace Reallusion.Import
 
             // clean up
             EditorApplication.update -= WaitForFrames;
+        }
+        */
+
+        private void GetInstanceAfterReload(object obj, FrameTimerArgs args)
+        {
+            // broken? ???
+            if (args.ident == FrameTimer.onAfterAssemblyReload)
+            {
+                if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
+                    Instance = EditorWindow.GetWindow<ShaderPackageUpdater>();
+                FrameTimer.OnFrameTimerComplete -= GetInstanceAfterReload;
+            }
         }
         #endregion SETUP
 

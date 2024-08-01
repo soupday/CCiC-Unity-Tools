@@ -25,7 +25,8 @@ namespace Reallusion.Import
 
         public static void ImporterWindowInitCallback(object obj, FrameTimerArgs args)
         {
-            ShaderPackageUtilInit(true);            
+            if (args.ident == FrameTimer.initShaderUpdater)
+                ShaderPackageUtilInit(true);            
         }
 
         public static void ShaderPackageUtilInit(bool callback = false)
@@ -46,7 +47,6 @@ namespace Reallusion.Import
             OnPipelineDetermined += PipelineDetermined;
             if (WindowManager.shaderPackageValid == PackageVailidity.Waiting || WindowManager.shaderPackageValid == PackageVailidity.None)
             {
-                Debug.Log("Waiting");
                 return;
             }
 
@@ -827,34 +827,38 @@ namespace Reallusion.Import
         {
             None = 0,
             BuiltIn = 1,
-            URP = 2,
-            URP12 = 3,
-            URP15 = 4,
-            URP16 = 5,
-            URP17 = 6,
-            URP18 = 7,
-            URP19 = 8,
-            URP20 = 9,
-            URP21 = 10,
-            URP22 = 11,
-            URP23 = 12,
-            URP24 = 13,
-            URP25 = 14,
-            URP26 = 15,
-            HDRP = 16,
-            HDRP12 = 17,
-            HDRP15 = 18,
-            HDRP16 = 19,
-            HDRP17 = 20,
-            HDRP18 = 21,
-            HDRP19 = 22,
-            HDRP20 = 23,
-            HDRP21 = 24,
-            HDRP22 = 25,
-            HDRP23 = 26,
-            HDRP24 = 27,
-            HDRP25 = 28,
-            HDRP26 = 29
+            URP = 110,
+            URP12 = 112,
+            URP13 = 113,
+            URP14 = 114,
+            URP15 = 115,
+            URP16 = 116,
+            URP17 = 117,
+            URP18 = 118,
+            URP19 = 119,
+            URP20 = 120,
+            URP21 = 121,
+            URP22 = 122,
+            URP23 = 123,
+            URP24 = 124,
+            URP25 = 125,
+            URP26 = 126,
+            HDRP = 210,
+            HDRP12 = 212,
+            HDRP13 = 213,
+            HDRP14 = 214,
+            HDRP15 = 215,
+            HDRP16 = 216,
+            HDRP17 = 217,
+            HDRP18 = 218,
+            HDRP19 = 219,
+            HDRP20 = 220,
+            HDRP21 = 221,
+            HDRP22 = 222,
+            HDRP23 = 223,
+            HDRP24 = 224,
+            HDRP25 = 225,
+            HDRP26 = 226
         }
 
         [Serializable]

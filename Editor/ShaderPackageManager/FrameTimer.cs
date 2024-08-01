@@ -75,5 +75,9 @@ namespace Reallusion.Import
         {
             OnFrameTimerComplete.Invoke(null, new FrameTimerArgs(timerId));
         }
+
+        public static int initShaderUpdater = 1111;
+        public static int onAfterAssemblyReload = 1212;
+
     }
 }
