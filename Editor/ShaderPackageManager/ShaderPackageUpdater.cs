@@ -242,6 +242,7 @@ namespace Reallusion.Import
 
         public void UpdateGUI()
         {
+            currentTarget = EditorUserBuildSettings.activeBuildTarget;
             ShaderPackageUtil.ShaderPackageUtilInit();
         }
 
@@ -375,6 +376,8 @@ namespace Reallusion.Import
 
             GUILayout.EndVertical();
         }
+        [SerializeField]
+        private BuildTarget currentTarget;
 
         bool buildPlatformFoldout = false;
         private void CurrentBuildPlatformGUI()
@@ -386,6 +389,8 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
 
             GUILayout.Space(HORIZ_INDENT);
+
+            if (currentTarget != EditorUserBuildSettings.activeBuildTarget) UpdateGUI();
 
             buildPlatformFoldout = EditorGUILayout.Foldout(buildPlatformFoldout, new GUIContent("Current Build Platform: " + EditorUserBuildSettings.activeBuildTarget.ToString(), ""), true, guiStyles.FoldoutTitleLabel);
 
