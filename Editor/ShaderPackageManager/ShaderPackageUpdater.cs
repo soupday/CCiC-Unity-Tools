@@ -16,6 +16,7 @@ namespace Reallusion.Import
         [SerializeField]
         public static ShaderPackageUpdater Instance;
         private static RLSettingsObject currentSettings;
+        private static bool showUtility = true;
 
         [MenuItem("Reallusion/Processing Tools/Shader Package Updater", priority = 800)]
         public static void CreateWindow()
@@ -34,7 +35,10 @@ namespace Reallusion.Import
         public static ShaderPackageUpdater OpenWindow()
         {
             ShaderPackageUpdater window = ScriptableObject.CreateInstance<ShaderPackageUpdater>();
-            window.ShowUtility();
+            if (showUtility)
+                window.ShowUtility();
+            else
+                window.Show();
             window.minSize = new Vector2(600f, 300f);
 
             return window;
@@ -58,7 +62,7 @@ namespace Reallusion.Import
 
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += OnAfterAssemblyReload;
-            
+
             //EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
             //EditorApplication.playModeStateChanged += OnPlayModeStateChange;
         }
@@ -73,7 +77,7 @@ namespace Reallusion.Import
 
         private void OnDisable()
         {
-            Debug.Log("ShaderPackageUpdater.OnDisable");            
+            Debug.Log("ShaderPackageUpdater.OnDisable");
         }
 
         public void OnBeforeAssemblyReload()
@@ -143,13 +147,13 @@ namespace Reallusion.Import
         }
         */
 
-        private void GetInstanceAfterReload(object obj, FrameTimerArgs args)
+        public static void GetInstanceAfterReload(object obj, FrameTimerArgs args)
         {
             // broken? ???
             if (args.ident == FrameTimer.onAfterAssemblyReload)
             {
                 if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
-                    Instance = EditorWindow.GetWindow<ShaderPackageUpdater>();
+                    Instance = EditorWindow.GetWindow<ShaderPackageUpdater>(showUtility, titleString, false);
                 FrameTimer.OnFrameTimerComplete -= GetInstanceAfterReload;
             }
         }
@@ -255,12 +259,12 @@ namespace Reallusion.Import
 
             // insulation against undetermined pipeline and packages
             if (WindowManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.Waiting) return;
-            
+
             if (WindowManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.None)
-            {                
+            {
                 UpdateGUI();
                 return;
-            }            
+            }
 
             titleContent = new GUIContent(titleString + " - " + PipelineVersionString(true));
 
@@ -286,7 +290,7 @@ namespace Reallusion.Import
                 actionRequired = false;
 
             actionToFollowFoldoutGUI();
-            
+
             GUILayout.FlexibleSpace();
 
             // test functions
@@ -294,7 +298,7 @@ namespace Reallusion.Import
             GUILayout.Space(SECTION_SPACER);
             // test functions ends 
 
-            ShowOnStartupGUI();           
+            ShowOnStartupGUI();
 
             GUILayout.Space(SECTION_SPACER);
             // end test functions
@@ -446,7 +450,7 @@ namespace Reallusion.Import
             GUILayout.Space(HORIZ_INDENT);
 
             GUILayout.EndHorizontal();
-            
+
             if (WindowManager.platformRestriction != ShaderPackageUtil.PlatformRestriction.None)
             {
                 GUILayout.Space(VERT_INDENT);
@@ -454,7 +458,7 @@ namespace Reallusion.Import
                 GUILayout.BeginHorizontal();
 
                 GUILayout.Space(HORIZ_INDENT);
-                                
+
                 GUILayout.Label(GetPlatformRestrictionText(), guiStyles.WrappedInfoLabelColor);
 
                 GUILayout.FlexibleSpace();
@@ -470,6 +474,13 @@ namespace Reallusion.Import
         }
 
         bool instShaderFoldout = false;
+
+        private string GetShaderLabel()
+        {
+            string shaderVersion = WindowManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + WindowManager.installedShaderVersion.ToString()) : "";
+            return WindowManager.installedShaderPipelineVersion.ToString() + shaderVersion;
+        }
+
         private void InstalledShaderFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
@@ -485,9 +496,9 @@ namespace Reallusion.Import
             {
                 instShaderFoldout = true;
             }
-
-            string shaderLabel = WindowManager.installedShaderPipelineVersion.ToString() + " v" + WindowManager.installedShaderVersion.ToString();
-            string foldoutLabel = "Current Shader Package: " + shaderLabel;
+            //string shaderVersion = WindowManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ?  (" v" + WindowManager.installedShaderVersion.ToString()) : "";
+            //string shaderLabel = WindowManager.installedShaderPipelineVersion.ToString() + shaderVersion;
+            string foldoutLabel = "Current Shader Package: " + GetShaderLabel();
             instShaderFoldout = EditorGUILayout.Foldout(instShaderFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see details of the available shader packages."), true, error ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel);
 
             GUILayout.FlexibleSpace();
@@ -664,8 +675,8 @@ namespace Reallusion.Import
                     break;
             }
 
-            string shaderLabel = WindowManager.installedShaderPipelineVersion.ToString() + " v" + WindowManager.installedShaderVersion.ToString();
-            GUILayout.Label(new GUIContent(shaderLabel, shaderLabelTooltip), shaderLabelStyle);
+            //string shaderLabel = WindowManager.installedShaderPipelineVersion.ToString() + " v" + WindowManager.installedShaderVersion.ToString();
+            GUILayout.Label(new GUIContent(GetShaderLabel(), shaderLabelTooltip), shaderLabelStyle);
 
             GUILayout.FlexibleSpace();
 

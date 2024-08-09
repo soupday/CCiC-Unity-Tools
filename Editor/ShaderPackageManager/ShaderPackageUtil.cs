@@ -23,10 +23,11 @@ namespace Reallusion.Import
         //public static bool isWaiting = false;
         //public static bool hasFinished = false;
 
+
         public static void ImporterWindowInitCallback(object obj, FrameTimerArgs args)
         {
             if (args.ident == FrameTimer.initShaderUpdater)
-                ShaderPackageUtilInit(true);            
+                ShaderPackageUtilInit(true);
         }
 
         public static void ShaderPackageUtilInit(bool callback = false)
@@ -40,7 +41,7 @@ namespace Reallusion.Import
 
         // async wait for windowmanager to be updated
         public static event EventHandler OnPipelineDetermined;
-        
+
         public static void WaitForPipeline()
         {
             OnPipelineDetermined -= PipelineDetermined;
@@ -73,7 +74,7 @@ namespace Reallusion.Import
         // call this from the importer window after 10 frames have elapsed to ensure that
         // RenderPipelineManager.currentPipeline holds a value
         public static List<ShaderPackageItem> ValidateShaderPackage()
-        {            
+        {
             WindowManager.availablePackages = BuildPackageMap();
             Debug.Log("Checking Installed Shader Package");
 
@@ -118,12 +119,12 @@ namespace Reallusion.Import
                     relToDataPath = itemPath.Remove(0, 6);
                 fullPath = Application.dataPath + relToDataPath;
 
-                
+
                 if (File.Exists(fullPath))
                 {
                     item.Validated = true;
                 }
-                
+
                 if (!item.Validated)
                 {
                     missingItemList.Add(item);
@@ -196,9 +197,9 @@ namespace Reallusion.Import
                         if (sourceJson != null)
                         {
                             packageManifest = (ShaderPackageManifest)JsonUtility.FromJson(sourceJson.text, typeof(ShaderPackageManifest));
-                            string packageSearchTerm = Path.GetFileNameWithoutExtension(packageManifest.SourcePackageName);                            
+                            string packageSearchTerm = Path.GetFileNameWithoutExtension(packageManifest.SourcePackageName);
                             string[] shaderPackages = AssetDatabase.FindAssets(packageSearchTerm);
-                                                                                                  
+
                             if (shaderPackages.Length > 1)
                             {
                                 Debug.LogWarning("Multiple shader packages detected for: " + packageManifest.SourcePackageName + " ... Aborting.");
@@ -310,8 +311,11 @@ namespace Reallusion.Import
         // find all currently installed render pipelines
         public static void GetInstalledPipelineVersion()
         {
+            WindowManager.installedShaderVersion = new Version(0, 0, 0);
+            WindowManager.installedShaderPipelineVersion = PipelineVersion.None;
+            WindowManager.installedPackageStatus = InstalledPackageStatus.None;
             WindowManager.shaderPackageValid = PackageVailidity.Waiting;
-            GetInstalledPipelinesAync();  // looping  
+            GetInstalledPipelinesAync();
 #if UNITY_2021_3_OR_NEWER
             //GetInstalledPipelinesDirectly();
 #else
@@ -321,29 +325,6 @@ namespace Reallusion.Import
 
         public static void GetInstalledPipelinesDirectly()
         {
-            /*
-            List<InstalledPipelines> installed = new List<InstalledPipelines>();
-            installed.Add(new InstalledPipelines(InstalledPipeline.Builtin, new Version(emptyVersion), ""));
-
-            UnityEditor.PackageManager.PackageInfo[] packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
-
-            // find urp
-            UnityEditor.PackageManager.PackageInfo urp = packages.ToList().Find(p => p.name.Equals(urpPackage));
-            if (urp != null)
-            {
-                installed.Add(new InstalledPipelines(InstalledPipeline.URP, new Version(urp.version), urpPackage));
-            }
-
-            // find hdrp
-            UnityEditor.PackageManager.PackageInfo hdrp = packages.ToList().Find(p => p.name.Equals(hdrpPackage));
-            if (hdrp != null)
-            {
-                installed.Add(new InstalledPipelines(InstalledPipeline.HDRP, new Version(hdrp.version), hdrpPackage));
-            }
-
-            WindowManager.installedPipelines = installed;
-            //return installed;
-            */
             UnityEditor.PackageManager.PackageInfo[] packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
             DeterminePipelineInfo(packages.ToList());
         }
@@ -369,46 +350,11 @@ namespace Reallusion.Import
                 Debug.Log("ShaderPackageUtil.WaitForRequestCompleted");
                 OnPackageListComplete.Invoke(null, null);
                 EditorApplication.update -= WaitForRequestCompleted;
-                //isWaiting = false;
             }
-            //else if (Request.IsCompleted && !isWaiting)
-            //{
-            //    Debug.Log("############### NOT WAITING TERMINATE ###############");
-            //    EditorApplication.update -= WaitForRequestCompleted;
-            //}
         }
 
         public static void PackageListComplete(object sender, EventArgs args)
         {
-            /*
-            List<InstalledPipelines> installed = new List<InstalledPipelines>();
-
-            if (Request.Status == StatusCode.Success)
-            {
-                installed.Add(new InstalledPipelines(InstalledPipeline.Builtin, new Version(emptyVersion), ""));
-
-                // find urp
-                UnityEditor.PackageManager.PackageInfo urp = Request.Result.ToList().Find(p => p.name.Equals(urpPackage));
-                if (urp != null)
-                {
-                    installed.Add(new InstalledPipelines(InstalledPipeline.URP, new Version(urp.version), urpPackage));
-                }
-
-                // find hdrp
-                UnityEditor.PackageManager.PackageInfo hdrp = Request.Result.ToList().Find(p => p.name.Equals(hdrpPackage));
-                if (hdrp != null)
-                {
-                    installed.Add(new InstalledPipelines(InstalledPipeline.HDRP, new Version(hdrp.version), hdrpPackage));
-                }
-
-                WindowManager.installedPipelines = installed;
-            }
-            else if (Request.Status >= StatusCode.Failure)
-            {
-                Debug.Log(Request.Error.message);
-                WindowManager.installedPipelines = installed;
-            }
-            */
             Debug.Log("ShaderPackageUtil.PackageListComplete()");
             List<UnityEditor.PackageManager.PackageInfo> packageList = Request.Result.ToList();
             if (packageList != null)
@@ -454,6 +400,8 @@ namespace Reallusion.Import
 
         public static PipelineVersion DetermineActivePipelineVersion(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
+            TestVersionResponse();
+
             UnityEngine.Rendering.RenderPipeline r = RenderPipelineManager.currentPipeline;
             if (r != null)
             {
@@ -479,7 +427,6 @@ namespace Reallusion.Import
             }
 
             WindowManager.platformRestriction = PlatformRestriction.None;
-            //platformMessage = string.Empty;
 
             switch (WindowManager.activePipeline)
             {
@@ -489,45 +436,11 @@ namespace Reallusion.Import
                     }
                 case InstalledPipeline.HDRP:
                     {
-                        if (WindowManager.activeVersion.Major < 12)
-                            return PipelineVersion.HDRP;
-                        else if (WindowManager.activeVersion.Major >= 12 && WindowManager.activeVersion.Major < 15)
-                            return PipelineVersion.HDRP12;
-                        else if (WindowManager.activeVersion.Major >= 15)
-                            return PipelineVersion.HDRP15;
-                        else return PipelineVersion.HDRP;
+                        return GetVersion(InstalledPipeline.HDRP, WindowManager.activeVersion.Major);
                     }
                 case InstalledPipeline.URP:
-                    {
-                        if (WindowManager.activeVersion.Major < 12)
-                            return PipelineVersion.URP;
-                        else if (WindowManager.activeVersion.Major >= 12 && WindowManager.activeVersion.Major < 15)
-                        {
-                            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL)
-                            {
-                                WindowManager.platformRestriction = PlatformRestriction.URPWebGL;
-                                //platformMessage = urpPlatformMessage;
-                                return PipelineVersion.URP12;
-                            }
-                            else
-                            {
-                                return PipelineVersion.URP12;
-                            }
-                        }
-                        else if (WindowManager.activeVersion.Major >= 15)
-                        {
-                            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL)
-                            {
-                                WindowManager.platformRestriction = PlatformRestriction.URPWebGL;
-                                //platformMessage = urpPlatformMessage;
-                                return PipelineVersion.URP12;
-                            }
-                            else
-                            {
-                                return PipelineVersion.URP15;
-                            }
-                        }
-                        else return PipelineVersion.URP;
+                    {                        
+                        return GetVersion(InstalledPipeline.URP, WindowManager.activeVersion.Major);
                     }
                 case InstalledPipeline.None:
                     {
@@ -537,6 +450,89 @@ namespace Reallusion.Import
             return PipelineVersion.None;
         }
 
+        public class VersionLimits
+        {
+            public int Min;
+            public int Max;
+            public PipelineVersion Version;
+
+            public VersionLimits(int min, int max, PipelineVersion version)
+            {
+                Min = min;
+                Max = max;
+                Version = version;
+            }
+        }
+
+        public static PipelineVersion GetVersion(InstalledPipeline pipe, int major)
+        {
+            Func<int, int, PipelineVersion, VersionLimits> Rule = (min, max, ver) => new VersionLimits(min, max, ver);
+            
+            if (pipe == InstalledPipeline.URP)
+            {
+                // Specific rule to limit WebGL to a maximum of URP12
+                if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL && major >= 12)
+                {
+                    WindowManager.platformRestriction = PlatformRestriction.URPWebGL;
+                    return PipelineVersion.URP12;
+                }
+
+                List<VersionLimits> urpRules = new List<VersionLimits>
+                {
+                    // Rule(min max, version)
+                    Rule(0, 11, PipelineVersion.URP),
+                    Rule(12, 13, PipelineVersion.URP12),
+                    Rule(14, 16, PipelineVersion.URP14),
+                    Rule(17, 100, PipelineVersion.URP17)
+                };
+
+                List<VersionLimits> byMax = urpRules.FindAll(z => major <= z.Max);
+                VersionLimits result = byMax.Find(z => major >= z.Min);
+                if (result != null)
+                {
+                    return result.Version;
+                }
+                else
+                {
+                    return PipelineVersion.URP;
+                }
+            }
+
+            if (pipe == InstalledPipeline.HDRP)
+            {
+                List<VersionLimits> hdrpRules = new List<VersionLimits>
+                {
+                    // Rule(min max, version)
+                    Rule(0, 11, PipelineVersion.HDRP),
+                    Rule(12, 100, PipelineVersion.HDRP12)
+                };
+
+                List<VersionLimits> byMax = hdrpRules.FindAll(z => major <= z.Max);
+                VersionLimits result = byMax.Find(z => major >= z.Min);
+                if (result != null)
+                {
+                    return result.Version;
+                }
+                else
+                {
+                    return PipelineVersion.HDRP;
+                }
+            }
+            return PipelineVersion.None;
+        }
+
+        public static void TestVersionResponse()
+        {
+            for (int i = 10; i < 18; i++)
+            {
+                Debug.Log("Major URP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.URP, i));
+            }
+
+            for (int i = 10; i < 18; i++)
+            {
+                Debug.Log("Major HDRP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.HDRP, i));
+            }
+        }
 
         public static InstalledPackageStatus GetPackageStatus(List<ShaderPackageItem> missingItemList)
         {
@@ -751,6 +747,14 @@ namespace Reallusion.Import
             // delete the manifest
             //AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
             AssetDatabase.Refresh();
+                         
+            WindowManager.installedShaderVersion = new Version(0, 0, 0);
+            WindowManager.installedShaderPipelineVersion = PipelineVersion.None;
+            WindowManager.installedPackageStatus = InstalledPackageStatus.None;
+
+            if (ShaderPackageUpdater.Instance != null)
+                ShaderPackageUpdater.Instance.UpdateGUI();
+
             return hasFailedPaths;
         }
         /*
