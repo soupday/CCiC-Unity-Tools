@@ -60,7 +60,7 @@ namespace Reallusion.Import
         {
             if (ImporterWindow.GeneralSettings != null)
             {
-                ValidateShaderPackage();
+                WindowManager.missingShaderPackageItems = ValidateShaderPackage();
                 bool error = WindowManager.shaderPackageValid == PackageVailidity.Invalid;
                 if (ImporterWindow.GeneralSettings.showOnStartup || error)
                 {
@@ -167,7 +167,7 @@ namespace Reallusion.Import
         private static List<ShaderPackageManifest> BuildPackageMap()
         {
             string search = "_RL_referencemanifest";
-            //string[] searchLoc = new string[] { "Assets", "Packages/com.soupday.cc3_unity_tools" }; // look in assets too if the distribution is wrongly installed
+            // string[] searchLoc = new string[] { "Assets", "Packages/com.soupday.cc3_unity_tools" }; // look in assets too if the distribution is wrongly installed
             // in Unity 2021.3.14f1 ALL the assets on the "Packages/...." path are returned for some reason...
             // omiting the 'search in folders' parameter correctly finds assests matching the search term in both Assets and Packages
             string[] mainifestGuids = AssetDatabase.FindAssets(search);
@@ -177,7 +177,9 @@ namespace Reallusion.Import
             foreach (string guid in mainifestGuids)
             {
                 string manifestAssetPath = AssetDatabase.GUIDToAssetPath(guid);
-                if (manifestAssetPath.Contains(search + ".json", StringComparison.InvariantCultureIgnoreCase))
+                string searchTerm = search + ".json";
+  
+                if (manifestAssetPath.iContains(searchTerm))
                 {
                     var sourceJsonObject = (Object)AssetDatabase.LoadAssetAtPath(manifestAssetPath, typeof(Object));
                     if (sourceJsonObject != null)
@@ -220,7 +222,7 @@ namespace Reallusion.Import
             Debug.Log("Returning manifestPackageMap containing: " + manifestPackageMap.Count + " entries.");
             return manifestPackageMap;
         }
-
+        /*
         public static PipelineVersion DetermineActivePipelineVersion()
         {
             UnityEngine.Rendering.RenderPipeline r = RenderPipelineManager.currentPipeline;
@@ -307,7 +309,7 @@ namespace Reallusion.Import
             }
             return PipelineVersion.None;
         }
-
+        */
         // find all currently installed render pipelines
         public static void GetInstalledPipelineVersion()
         {
@@ -315,19 +317,21 @@ namespace Reallusion.Import
             WindowManager.installedShaderPipelineVersion = PipelineVersion.None;
             WindowManager.installedPackageStatus = InstalledPackageStatus.None;
             WindowManager.shaderPackageValid = PackageVailidity.Waiting;
-            GetInstalledPipelinesAync();
+            //GetInstalledPipelinesAync();
 #if UNITY_2021_3_OR_NEWER
-            //GetInstalledPipelinesDirectly();
+            GetInstalledPipelinesDirectly();
 #else
             GetInstalledPipelinesAync();
 #endif
         }
 
+#if UNITY_2021_3_OR_NEWER
         public static void GetInstalledPipelinesDirectly()
         {
             UnityEditor.PackageManager.PackageInfo[] packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
             DeterminePipelineInfo(packages.ToList());
         }
+#endif
 
         // pre UNITY_2021_3 async package listing -- START
         public static event EventHandler OnPackageListComplete;
@@ -577,17 +581,24 @@ namespace Reallusion.Import
         {
             AssetDatabase.importPackageCompleted -= OnImportPackageCompleted;
             AssetDatabase.importPackageCompleted += OnImportPackageCompleted;
-
+            
+#if UNITY_2021_3_OR_NEWER
             AssetDatabase.onImportPackageItemsCompleted -= OnImportPackageItemsCompleted;
             AssetDatabase.onImportPackageItemsCompleted += OnImportPackageItemsCompleted;
-
-            //AssetDatabase.ImportPackage(manifestPackageMap[0].referenceShaderPackagePath, true);
+#else
+            
+#endif            
             AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, true);
         }
 
         private static void OnImportPackageCompleted(string packagename)
         {
             Debug.Log($"Imported package: {packagename}");
+#if UNITY_2021_3_OR_NEWER
+            // this will be handled by the callback: AssetDatabase.onImportPackageItemsCompleted
+#else
+            PostImportPackageItemCompare();
+#endif
             AssetDatabase.importPackageCompleted -= OnImportPackageCompleted;
         }
 
@@ -616,7 +627,12 @@ namespace Reallusion.Import
                 ShaderPackageManifest shaderPackageManifest = ReadJson(manifest);
                 foreach (string item in items)
                 {
-                    string itemGUID = AssetDatabase.AssetPathToGUID(item, AssetPathToGUIDOptions.OnlyExistingAssets);
+                    string itemGUID = string.Empty;
+#if UNITY_2021_3_OR_NEWER
+                    itemGUID = AssetDatabase.AssetPathToGUID(item, AssetPathToGUIDOptions.OnlyExistingAssets);
+#else                   
+                    itemGUID = AssetDatabase.AssetPathToGUID(item);
+#endif
                     string fileName = Path.GetFileName(item);
                     ShaderPackageItem it = shaderPackageManifest.Items.Find(x => x.ItemName.EndsWith(fileName));
 
@@ -638,12 +654,67 @@ namespace Reallusion.Import
                 File.WriteAllText(fullManifestPath, jsonString);
                 AssetDatabase.Refresh();
             }
-            ShaderPackageUpdater.Instance.UpdateGUI();
+            if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.UpdateGUI();
+#if UNITY_2021_3_OR_NEWER
             AssetDatabase.onImportPackageItemsCompleted -= OnImportPackageItemsCompleted;
+#endif
+        }
+
+        private static void PostImportPackageItemCompare()
+        {
+            string[] manifestGUIDS = AssetDatabase.FindAssets("_RL_shadermanifest", new string[] { "Assets" });
+            string guid = string.Empty;
+
+            if (manifestGUIDS.Length > 1)
+            {
+                // Problem
+            }
+            else if (manifestGUIDS.Length > 0)
+            {
+                guid = manifestGUIDS[0];
+            }
+            string manifestAssetPath = AssetDatabase.GUIDToAssetPath(guid);
+            string fullManifestPath = manifestAssetPath.UnityAssetPathToFullPath();
+            ShaderPackageManifest manifest = ReadJson(manifestAssetPath);
+            if (manifest != null)
+            {
+                Debug.Log(manifest.SourcePackageName);
+                foreach (var item in manifest.Items)
+                {
+                    string fullFilename = Path.GetFileName(item.ItemName);
+                    string filename = Path.GetFileNameWithoutExtension(item.ItemName);
+                    
+                    string[] foundGuids = AssetDatabase.FindAssets(filename, new string[] { "Assets" });
+                    if (foundGuids.Length > 0)
+                    {
+                        foreach (string g in foundGuids)
+                        {
+                            string foundAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                            if (Path.GetFileName(foundAssetPath).Equals(fullFilename))
+                            {
+                                item.InstalledGUID = g;
+                                if (item.InstalledGUID == item.GUID) item.Validated = true;
+                                Debug.Log(item.ItemName + " -- " + AssetDatabase.GUIDToAssetPath(g) + " --- " + filename);
+                            }
+                        }
+                    }
+                    else if (foundGuids.Length == 0) { Debug.LogError("Cannot find " + filename + " in the AssetDatabase."); }
+                    
+                    if (foundGuids.Length > 1)
+                    {
+                        Debug.LogWarning("Multiple instances of " + filename + " in the AssetDatabase.");
+                    }
+                }
+            }
+            string jsonString = JsonUtility.ToJson(manifest);
+            File.WriteAllText(fullManifestPath, jsonString);
+            AssetDatabase.Refresh();
+            if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.UpdateGUI();
         }
 
         public static void UnInstallPackage()
         {
+            Debug.Log("UnInstallPackage");
             string manifestLabel = "_RL_shadermanifest";
             string[] searchLoc = new string[] { "Assets" };
             string[] mainifestGuids = AssetDatabase.FindAssets(manifestLabel, searchLoc);
@@ -660,6 +731,7 @@ namespace Reallusion.Import
 
             foreach (string guid in mainifestGuids)
             {
+                Debug.Log("TryUnInstallPackage " + AssetDatabase.GUIDToAssetPath(guid));
                 if (TryUnInstallPackage(guid))
                 {
                     Debug.Log("Package uninstalled");
@@ -674,6 +746,7 @@ namespace Reallusion.Import
         private static bool TryUnInstallPackage(string guid, bool toTrash = true)
         {
             Object manifestObject = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guid));
+            Selection.activeObject = null;
             TextAsset manifestText = manifestObject as TextAsset;
             string manifest = string.Empty;
 
@@ -690,17 +763,22 @@ namespace Reallusion.Import
             {
 
                 ShaderPackageManifest shaderPackageManifest = JsonUtility.FromJson<ShaderPackageManifest>(manifest);
-
+#if UNITY_2021_3_OR_NEWER
                 Debug.Log("Uninstalling files" + (toTrash ? " to OS trash folder" : "") + " from: " + " Pipeline: " + shaderPackageManifest.Pipeline + " Version: " + shaderPackageManifest.Version + " (" + shaderPackageManifest.FileName + ")");
-
+#else
+                Debug.Log("Uninstalling files" + " from: " + " Pipeline: " + shaderPackageManifest.Pipeline + " Version: " + shaderPackageManifest.Version + " (" + shaderPackageManifest.FileName + ")");
+#endif
                 foreach (ShaderPackageItem thing in shaderPackageManifest.Items)
                 {
                     string deletePath = AssetDatabase.GUIDToAssetPath(thing.InstalledGUID);
+                    Debug.Log("*** Attempting " + deletePath);
                     if (!AssetDatabase.IsValidFolder(deletePath))
-                    {
-                        //Debug.Log("Installed GUID: " + thing.InstalledGUID + " path: " + deletePath);
+                    {                        
                         if (deletePath.StartsWith("Assets"))
+                        {
+                            Debug.Log("Adding " + deletePath + " to deleteList");
                             deleteList.Add(deletePath);
+                        }
                     }
                     else
                     {
@@ -729,18 +807,40 @@ namespace Reallusion.Import
             List<string> failedPaths = new List<string>();
             bool hasFailedPaths = false;
             deleteList.Add(AssetDatabase.GUIDToAssetPath(guid));
-
+#if UNITY_2021_3_OR_NEWER
             if (toTrash)
-                hasFailedPaths = AssetDatabase.MoveAssetsToTrash(deleteList.ToArray(), failedPaths);
+                hasFailedPaths = !AssetDatabase.MoveAssetsToTrash(deleteList.ToArray(), failedPaths);
             else
-                hasFailedPaths = AssetDatabase.DeleteAssets(deleteList.ToArray(), failedPaths);
-
+                hasFailedPaths = !AssetDatabase.DeleteAssets(deleteList.ToArray(), failedPaths);
+#else
+            // according to the documentation AssetDatabase.MoveAssetsToTrash is unsupported in 2020.3
+            // entirely absent from 2019.4
+            //if (toTrash)
+            //    hasFailedPaths = !AssetDatabase.MoveAssetsToTrash(deleteList.ToArray(), failedPaths);
+            //else
+            //{
+                foreach (string path in deleteList.ToArray())
+                {
+                    bool deleted = AssetDatabase.DeleteAsset(path);
+                    if (!deleted)
+                    {
+                        Debug.LogError(path + " did not uninstall.");
+                        failedPaths.Add(path);
+                        hasFailedPaths = true;
+                    }
+                }
+            //}
+#endif
 
             if (hasFailedPaths)
             {
-                foreach (string path in failedPaths)
+                if (failedPaths.Count > 0)
                 {
-                    Debug.Log(path + " ...failed to delete.");
+                    Debug.LogError(failedPaths.Count + " paths failed to delete.");
+                    foreach (string path in failedPaths)
+                    {
+                        Debug.LogError(path + " ...failed to delete.");
+                    }
                 }
             }
 
@@ -755,7 +855,7 @@ namespace Reallusion.Import
             if (ShaderPackageUpdater.Instance != null)
                 ShaderPackageUpdater.Instance.UpdateGUI();
 
-            return hasFailedPaths;
+            return !hasFailedPaths;
         }
         /*
         public static ShaderPackageManifest ReadJson(string assetPath)

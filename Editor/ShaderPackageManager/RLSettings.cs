@@ -184,7 +184,11 @@ namespace Reallusion.Import
                 }
 
                 EditorUtility.SetDirty(obj);
+#if UNITY_2021_1_OR_NEWER
                 AssetDatabase.SaveAssetIfDirty(obj);
+#else
+                AssetDatabase.SaveAssets();
+#endif
             }
         }
     }
