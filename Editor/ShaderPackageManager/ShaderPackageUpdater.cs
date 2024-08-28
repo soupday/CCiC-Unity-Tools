@@ -50,6 +50,7 @@ namespace Reallusion.Import
             Debug.Log(WindowManager.activePipelineVersion);
             currentSettings = ImporterWindow.GeneralSettings;
 
+            initGUI = true;
             allInstPipeFoldout = false;
             buildPlatformFoldout = false;
             instShaderFoldout = false;
@@ -244,6 +245,19 @@ namespace Reallusion.Import
             }
         }
 
+        bool initGUI = true;
+        private Texture2D iconInstallShaderG;
+        private Texture2D iconInstallShaderY;
+        private Texture2D iconInstallShaderR;
+        public void InitGUI()
+        {
+            string[] folders = new string[] { "Assets", "Packages" };
+            iconInstallShaderG = Util.FindTexture(folders, "RLIcon_Install_Shader_G");
+            iconInstallShaderY = Util.FindTexture(folders, "RLIcon_Install_Shader_Y");
+            iconInstallShaderR = Util.FindTexture(folders, "RLIcon_Install_Shader_R");
+            initGUI = false;
+        }
+
         public void UpdateGUI()
         {
             currentTarget = EditorUserBuildSettings.activeBuildTarget;
@@ -252,6 +266,8 @@ namespace Reallusion.Import
 
         private void OnGUI()
         {
+            if (initGUI) InitGUI();
+
             if (guiStyles == null)
                 guiStyles = new Styles();
 
@@ -264,6 +280,11 @@ namespace Reallusion.Import
             {
                 UpdateGUI();
                 return;
+            }
+
+            if (WindowManager.determinedAction == null)
+            {
+                ShaderPackageUtil.DetermineAction();
             }
 
             titleContent = new GUIContent(titleString + " - " + PipelineVersionString(true));
@@ -696,7 +717,18 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            ShaderPackageUtil.DetermineAction(out string result);
+            //ShaderPackageUtil.DetermineAction(out string result);
+            string result = string.Empty;
+            if (WindowManager.determinedAction == null)
+            {
+                ShaderPackageUtil.DetermineAction();
+                result = "NO RULE FOR :: " + WindowManager.installedPackageStatus + " :: " + WindowManager.shaderPackageValid;
+            }            
+            else
+            {
+                result = WindowManager.determinedAction.ResultString + "(" + WindowManager.installedPackageStatus + " :: " + WindowManager.shaderPackageValid + ")";
+            }
+
             GUILayout.Label(result, guiStyles.WrappedInfoLabel);
 
             GUILayout.Space(HORIZ_INDENT);
@@ -870,8 +902,31 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            GUILayout.Label("Content...");
-
+            //GUILayout.Label("Content...");
+            if (WindowManager.determinedAction != null)
+            {
+                ShaderPackageUtil.DeterminedAction action = WindowManager.determinedAction.DeterminedAction;
+                Texture2D picture = null;
+                switch (action)
+                {
+                    case ShaderPackageUtil.DeterminedAction.currentValid:
+                        {
+                            picture = iconInstallShaderG;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.Error:
+                        {
+                            picture = iconInstallShaderR;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.uninstallReinstall:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                }
+                GUILayout.Button(picture, GUILayout.Width(100f), GUILayout.Height(100f));
+            }            
             GUILayout.FlexibleSpace();
 
             GUILayout.Space(HORIZ_INDENT);
@@ -941,8 +996,14 @@ namespace Reallusion.Import
                 GUILayout.Label(shaderLabel, EditorStyles.largeLabel);
                 GUILayout.EndHorizontal();
 
-                if (WindowManager.availablePackages.Count == 0)
+                if (WindowManager.availablePackages != null)
+                {
+                    if (WindowManager.availablePackages.Count == 0) return;
+                }
+                else
+                {
                     return;
+                }
 
                 GUILayout.Label("Available Distribution Packages:", EditorStyles.largeLabel);
                 foreach (ShaderPackageUtil.ShaderPackageManifest manifest in WindowManager.availablePackages)

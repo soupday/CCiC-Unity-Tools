@@ -66,6 +66,7 @@ namespace Reallusion.Import
         public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
         public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;
         public static List<ShaderPackageUtil.ShaderPackageItem> missingShaderPackageItems;
+        public static ShaderPackageUtil.ActionRules determinedAction = null;
 
         static WindowManager()
         {
