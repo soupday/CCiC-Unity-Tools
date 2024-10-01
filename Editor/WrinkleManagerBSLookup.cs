@@ -1,4 +1,4 @@
-
+/*
 using UnityEngine;
 using UnityEditor;
 using Reallusion.Import;
@@ -18,3 +18,4 @@ public class WrinkleManagerEditor : Editor
         }
     }
 }
+*/
