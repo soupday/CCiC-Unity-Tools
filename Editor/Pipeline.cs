@@ -544,6 +544,7 @@ namespace Reallusion.Import
 #endif
 
             SerializedObject hdrp = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath(assetPath)[0]);
+
             if (hdrp == null) return modified;
                         
             string[] profiles = new string[] { "RL_Skin_Profile", "RL_Teeth_Profile", "RL_Eye_Profile", "RL_SSS_Profile" };

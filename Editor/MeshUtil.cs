@@ -21,7 +21,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using System.IO;
 using System.Collections.Generic;
-using UnityEngine.AI;
 
 namespace Reallusion.Import
 {
@@ -846,6 +845,7 @@ namespace Reallusion.Import
                 for (int i = 0; i < srcMesh.blendShapeCount; i++)
                 {
                     string name = srcMesh.GetBlendShapeName(i);
+
                     if (newMesh.GetBlendShapeIndex(name) == -1)
                     {
                         int frameCount = srcMesh.GetBlendShapeFrameCount(i);
@@ -1018,6 +1018,7 @@ namespace Reallusion.Import
                 for (int i = 0; i < srcMesh.blendShapeCount; i++)
                 {
                     string name = srcMesh.GetBlendShapeName(i);
+
                     if (newMesh.GetBlendShapeIndex(name) == -1)
                     {
                         int frameCount = srcMesh.GetBlendShapeFrameCount(i);

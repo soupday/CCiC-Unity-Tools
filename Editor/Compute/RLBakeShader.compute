@@ -353,8 +353,6 @@ float4 LinearTosRGB(float4 In)
 {
 #ifdef UNITY_COLORSPACE_GAMMA    
     return In; 
-#elif _MAC_OS
-    return In;
 #else
     float3 sRGBLo = In.xyz * 12.92;
     float3 sRGBHi = (pow(max(abs(In.xyz), 1.192092896e-07), float3(1.0 / 2.4, 1.0 / 2.4, 1.0 / 2.4)) * 1.055) - 0.055;

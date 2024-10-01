@@ -118,7 +118,6 @@ namespace Reallusion.Import
                     }
                 }
             }
-
             return true;
         }
 
