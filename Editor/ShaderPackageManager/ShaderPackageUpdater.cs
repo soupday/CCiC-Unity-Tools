@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
+using System.Reflection;
 
 namespace Reallusion.Import
 {
@@ -63,9 +64,6 @@ namespace Reallusion.Import
 
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += OnAfterAssemblyReload;
-
-            //EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
-            //EditorApplication.playModeStateChanged += OnPlayModeStateChange;
         }
 
         private void OnDestroy()
@@ -73,7 +71,6 @@ namespace Reallusion.Import
             Debug.Log("ShaderPackageUpdater.OnDestroy");
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
-            //EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
         }
 
         private void OnDisable()
@@ -90,64 +87,8 @@ namespace Reallusion.Import
         {
             Debug.Log("ShaderPackageUpdater.OnAfterAssemblyReload");
             FrameTimer.CreateTimer(15, FrameTimer.onAfterAssemblyReload, GetInstanceAfterReload);
-            //EditorApplication.update -= WaitForFrames;
-            //EditorApplication.update += WaitForFrames;
         }
-        /*
-        public void OnPlayModeStateChange(PlayModeStateChange state)
-        {
-            switch (state)
-            {
-                case PlayModeStateChange.ExitingEditMode:
-                    {
-                        Debug.Log("ShaderPackageUpdater.PlayModeStateChange.ExitingEditMode");
-                        break;
-                    }
-                case PlayModeStateChange.EnteredPlayMode:
-                    {
-                        Debug.Log("ShaderPackageUpdater.PlayModeStateChange.EnteredPlayMode");
-                        break;
-                    }
-                case PlayModeStateChange.ExitingPlayMode:
-                    {
-                        Debug.Log("ShaderPackageUpdater.PlayModeStateChange.ExitingPlayMode");
-                        break;
-                    }
-                case PlayModeStateChange.EnteredEditMode:
-                    {
-                        Debug.Log("ShaderPackageUpdater.PlayModeStateChange.EnteredEditMode");
-                        break;
-                    }
-            }
-        }
-        */
-
-        //private int waitCount = 15; // frames to wait after assembly reload before accessing 'currentPipline'
-        /*
-        private void WaitForFrames()
-        {
-            while (waitCount > 0)
-            {
-                waitCount--;
-                return;
-            }
-
-            waitCount = 10;
-
-            Debug.Log("ShaderPackageUpdater.WaitForFrames");
-
-            // code to execute after waiting for waitCount frames
-            // UpdateGUI();
-            //
-
-            if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
-                Instance = EditorWindow.GetWindow<ShaderPackageUpdater>();
-
-            // clean up
-            EditorApplication.update -= WaitForFrames;
-        }
-        */
-
+    
         public static void GetInstanceAfterReload(object obj, FrameTimerArgs args)
         {
             // broken? ???
@@ -168,8 +109,6 @@ namespace Reallusion.Import
         private float SECTION_SPACER = 2f;
         private float PACKAGE_UPDATE_W = 180f;
         private bool showAllPackages = false;
-        //bool shaderPackageValid = false;
-        //List<ShaderPackageItem> shaderPackageItems;
 
         public class Styles
         {
@@ -278,18 +217,23 @@ namespace Reallusion.Import
 
             if (WindowManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.None)
             {
-                UpdateGUI();
+                //UpdateGUI();
+
                 return;
             }
 
-            if (WindowManager.determinedAction == null)
-            {
-                ShaderPackageUtil.DetermineAction();
-            }
+            //if (WindowManager.determinedAction == null)
+            //{
+            //    ShaderPackageUtil.DetermineAction();
+            //}
 
             titleContent = new GUIContent(titleString + " - " + PipelineVersionString(true));
 
             GUILayout.BeginVertical(); // whole window contents
+
+            GUILayout.Space(SECTION_SPACER);
+
+            CurrentSoftwareVersionFoldoutGUI();
 
             GUILayout.Space(SECTION_SPACER);
 
@@ -305,10 +249,10 @@ namespace Reallusion.Import
 
             GUILayout.Space(SECTION_SPACER);
 
-            if (WindowManager.installedPackageStatus != ShaderPackageUtil.InstalledPackageStatus.Current)
-                actionRequired = true;
-            else
-                actionRequired = false;
+            //if (WindowManager.installedPackageStatus != ShaderPackageUtil.InstalledPackageStatus.Current)
+            //    actionRequired = true;
+            //else
+            //    actionRequired = false;
 
             actionToFollowFoldoutGUI();
 
@@ -363,6 +307,99 @@ namespace Reallusion.Import
 
             GUILayout.EndVertical();
         }
+
+        bool currentSoftwareVersionFoldout = false;
+        private void CurrentSoftwareVersionFoldoutGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            currentSoftwareVersionFoldout = EditorGUILayout.Foldout(currentSoftwareVersionFoldout, new GUIContent("Current Software Version", "Tooltip"), true, guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (currentSoftwareVersionFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                CurrentSoftwareVersionGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+        }
+
+        float DROPDOWN_BTN_WIDTH = 140f;
+        Rect prev = new Rect();
+
+        private void CurrentSoftwareVersionGUI()
+        {
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Find Things"))
+            {
+                Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                foreach (Assembly a in assemblies)
+                {
+                    if (a.FullName.iContains("soupday"))
+                    {
+                        System.Type[] types = a.GetTypes();
+                        foreach (System.Type t in types)
+                        {
+                            if (t.FullName.iContains("wrink"))
+                                Debug.Log(a.FullName + " --- " + t.FullName);
+                        }
+                    }
+                }
+            }
+
+            GUILayout.EndHorizontal();
+
+
+            GUILayout.BeginHorizontal();
+            
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            if (Event.current.type == EventType.Repaint)
+                prev = GUILayoutUtility.GetLastRect();
+
+            EditorGUI.BeginDisabledGroup(RLToolUpdateUtil.fullJsonFragment == null);
+
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent("Previous Releases", "Show all previous releases on github."),
+                focusType: FocusType.Passive,
+                options: GUILayout.Width(DROPDOWN_BTN_WIDTH)))
+            {
+                RLToolUpdateWindow.ShowAtPosition(new Rect(prev.x - RLToolUpdateWindow.DROPDOWN_WIDTH + DROPDOWN_BTN_WIDTH + 3 * HORIZ_INDENT, prev.y + 20f, prev.width, prev.height));
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+        }
+
+
 
         bool allInstPipeFoldout = false;
         private void AllInstalledPipelinesFoldoutGUI()
@@ -719,15 +756,15 @@ namespace Reallusion.Import
 
             //ShaderPackageUtil.DetermineAction(out string result);
             string result = string.Empty;
-            if (WindowManager.determinedAction == null)
-            {
-                ShaderPackageUtil.DetermineAction();
-                result = "NO RULE FOR :: " + WindowManager.installedPackageStatus + " :: " + WindowManager.shaderPackageValid;
-            }            
-            else
-            {
+            //if (WindowManager.determinedAction == null)
+            //{
+            //    ShaderPackageUtil.DetermineAction();
+            //    result = "NO RULE FOR :: " + WindowManager.installedPackageStatus + " :: " + WindowManager.shaderPackageValid;
+            //}            
+            //else
+            //{
                 result = WindowManager.determinedAction.ResultString + "(" + WindowManager.installedPackageStatus + " :: " + WindowManager.shaderPackageValid + ")";
-            }
+            //}
 
             GUILayout.Label(result, guiStyles.WrappedInfoLabel);
 
@@ -848,7 +885,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // available shader package
         }
 
-        bool actionRequired = false;
+        public bool actionRequired = false;
         bool actionToFollowFoldout = false;
         private void actionToFollowFoldoutGUI()
         {
@@ -909,6 +946,11 @@ namespace Reallusion.Import
                 Texture2D picture = null;
                 switch (action)
                 {
+                    case ShaderPackageUtil.DeterminedAction.None:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
                     case ShaderPackageUtil.DeterminedAction.currentValid:
                         {
                             picture = iconInstallShaderG;
@@ -919,7 +961,12 @@ namespace Reallusion.Import
                             picture = iconInstallShaderR;
                             break;
                         }
-                    case ShaderPackageUtil.DeterminedAction.uninstallReinstall:
+                    case ShaderPackageUtil.DeterminedAction.uninstallReinstall_optional:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.uninstallReinstall_force:
                         {
                             picture = iconInstallShaderY;
                             break;

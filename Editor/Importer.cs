@@ -16,8 +16,10 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -603,8 +605,9 @@ namespace Reallusion.Import
                     if (materialType == MaterialType.Head && characterInfo.FeatureUseWrinkleMaps)
                     {
                         if (renderer.GetType() == typeof(SkinnedMeshRenderer))
-                        {                            
-                            AddWrinkleManager(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
+                        {
+                            //AddWrinkleManager(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
+                            AddWrinkleManagerReflection(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
                         }
                     }
                 }
@@ -2481,8 +2484,83 @@ namespace Reallusion.Import
                 return false;
             }            
             return true;
-        } 
+        }
 
+        public class GenericDictionary
+        {
+            public Dictionary<string, object> _dict = new Dictionary<string, object>();
+
+            public void Add<T>(string key, T value) where T : class
+            {
+                _dict.Add(key, value);
+            }
+
+            public T GetValue<T>(string key) where T : class
+            {
+                return _dict[key] as T;
+            }
+        }
+
+        private Dictionary<string, object> BuildWrinklePropsReflection(QuickJSON matJson)
+        {
+            System.Type WrinklePropType = Physics.GetTypeInAssemblies("Reallusion.Runtime.WrinkleProp");
+            if (matJson != null && WrinklePropType != null)
+            {
+                Debug.Log("matJson != null && WrinklePropType != null");
+                var wrinkleProps = new GenericDictionary();
+
+                QuickJSON wrinkleRulesJson = matJson.GetObjectAtPath("Wrinkle/WrinkleRules");
+                QuickJSON wrinkleEaseJson = matJson.GetObjectAtPath("Wrinkle/WrinkleEaseStrength");
+                QuickJSON wrinkleWeightJson = matJson.GetObjectAtPath("Wrinkle/WrinkleRuleWeights");
+
+                if (wrinkleRulesJson != null && wrinkleEaseJson != null && wrinkleWeightJson != null)
+                {
+                    for (int i = 0; i < wrinkleRulesJson.values.Count; i++)
+                    {
+                        string ruleName = wrinkleRulesJson.values[i].StringValue;
+                        float easeStrength = wrinkleEaseJson.values[i].FloatValue;
+                        float weight = wrinkleWeightJson.values[i].FloatValue;
+                        var wp = Activator.CreateInstance(WrinklePropType, new object[] { easeStrength, weight });
+                        wrinkleProps.Add(ruleName, wp);
+                    }
+                }
+                //Debug.Log("Returning: " + wrinkleProps._dict);
+                //foreach (var p  in wrinkleProps._dict)
+                //{
+                //    Debug.Log(p.ToString());
+                //}
+                return wrinkleProps._dict;
+            }
+            return null;
+        }
+
+        private void AddWrinkleManagerReflection(GameObject obj, SkinnedMeshRenderer smr, Material mat, QuickJSON matJson)
+        {
+            Type WrinkleManagerType = Physics.GetTypeInAssemblies("Reallusion.Runtime.WrinkleManager");
+            var wm = obj.AddComponent(WrinkleManagerType);
+            
+            Physics.SetTypeField(WrinkleManagerType, wm, "headMaterial", mat);
+            Physics.SetTypeField(WrinkleManagerType, wm, "skinnedMeshRenderer", smr);
+
+            float overallWeight = 1;
+            if (matJson.PathExists("Wrinkle/WrinkleOverallWeight"))
+            {
+                overallWeight = matJson.GetFloatValue("Wrinkle/WrinkleOverallWeight");
+            }
+            //"https://learn.microsoft.com/en-us/dotnet/api/system.type.getmethod?view=netframework-4.8#System_Type_GetMethod_System_String_System_Type___"
+            MethodInfo buildConfig = wm.GetType().GetMethod("BuildConfig",
+                                BindingFlags.Public | BindingFlags.Instance,
+                                null,
+                                CallingConventions.Any,
+                                new Type[] { typeof(Dictionary<string, object>), typeof(float) },
+                                null);
+            //Debug.Log("buildConfig MethodInfo" + (buildConfig == null ? " is null" : " is not null"));
+            Dictionary<string, object> props = (Dictionary<string, object>)BuildWrinklePropsReflection(matJson);
+            //Debug.Log(props);
+            buildConfig.Invoke(wm, new object[] { props, overallWeight });            
+        }
+
+        /*
         private Dictionary<string, WrinkleProp> BuildWrinkleProps(QuickJSON matJson)
         {
             if (matJson != null)
@@ -2523,7 +2601,7 @@ namespace Reallusion.Import
             }
             wm.BuildConfig(BuildWrinkleProps(matJson), overallWeight);
         }
-
+        */
         private void CopyWrinkleMasks(string folder)
         {
             string[] packageFolders = new string[] { "Packages" };

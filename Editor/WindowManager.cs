@@ -68,6 +68,9 @@ namespace Reallusion.Import
         public static List<ShaderPackageUtil.ShaderPackageItem> missingShaderPackageItems;
         public static ShaderPackageUtil.ActionRules determinedAction = null;
 
+        //software package update checker
+        public static bool updateChecked = false;
+
         static WindowManager()
         {
             EditorApplication.playModeStateChanged += WindowManager.OnPlayModeStateChanged;

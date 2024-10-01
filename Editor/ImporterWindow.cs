@@ -255,7 +255,9 @@ namespace Reallusion.Import
 
         private void InitData()
         {
+            SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
             InitShaderUpdater();
+            InitSoftwareUpdateCheck();
             CheckAvailableAddons();
 
             string[] folders = new string[] { "Assets", "Packages" };
@@ -294,20 +296,39 @@ namespace Reallusion.Import
         
         public static void InitShaderUpdater()
         {
-            Debug.Log("ImporterWindow.InitData() :: Application.isPlaying: " + Application.isPlaying);
             if (Application.isPlaying)
             {
-                Debug.Log("Application.isPlaying");
                 if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
                 {
                     EditorWindow.GetWindow<ShaderPackageUpdater>().Close();
                 }
             }
             else
-            {
+            {                
                 ShaderPackageUtil.GetInstalledPipelineVersion();
                 FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
             }
+        }
+
+        public static void InitSoftwareUpdateCheck()
+        {
+            if (Application.isPlaying)
+            {                
+                if (EditorWindow.HasOpenInstances<RLToolUpdateWindow>())
+                {
+                    EditorWindow.GetWindow<RLToolUpdateWindow>().Close();
+                }
+            }
+            else
+            {
+                RLToolUpdateUtil.InitUpdateCheck();
+            }
+        }
+
+        public static void OnHttpVersionChecked(object sender, EventArgs e)
+        {
+
+            RLToolUpdateUtil.HttpVersionChecked -= OnHttpVersionChecked;
         }
 
         private void PreviewCharacter()
@@ -728,8 +749,8 @@ namespace Reallusion.Import
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent("Features"),
                 focusType: FocusType.Passive))
-            {                
-               ImporterFeaturesWindow.ShowAtPosition(new Rect(prev.x, prev.y + 20f, prev.width, prev.height));
+            {
+                ImporterFeaturesWindow.ShowAtPosition(new Rect(prev.x, prev.y + 20f, prev.width, prev.height));
             }
             //////////////
 

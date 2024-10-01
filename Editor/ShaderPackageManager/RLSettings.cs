@@ -43,28 +43,30 @@ namespace Reallusion.Import
 
                 if (!path.StartsWith(packages, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Debug.Log(" *** After Packages/ check: " + path + " Allowed through.");
+                    //Debug.Log(" *** After Packages/ check: " + path + " Allowed through.");
 
                     if (Path.GetExtension(path).Equals(assetExt))
                     {
-                        Debug.Log(" ### Accepting: " + path + " it has " + Path.GetExtension(path) + " extension");
+                        //Debug.Log(" ### Accepting: " + path + " it has " + Path.GetExtension(path) + " extension");
                         applicableGuids.Add(guid);
                     }
                     else if (Path.GetExtension(path).Equals(csExt))
                     {
-                        Debug.Log(" ### Rejecting: " + path + " it has " + Path.GetExtension(path) + " extension");
+                        //Debug.Log(" ### Rejecting: " + path + " it has " + Path.GetExtension(path) + " extension");
                         // flagging
                         Debug.LogWarning(path + " Found -- CC/iC tools are incorrectly installed -- see documentation for details");
                     }
                 }
                 else
                 {
-                    Debug.Log(" *** After Packages/ check: " + path + " Rejected.");
+                    //Debug.Log(" *** After Packages/ check: " + path + " Rejected.");
                 }
             }
 
             bool valid = false;
+            string objGuid = "";
             int c = applicableGuids.Count;
+            RLSettingsObject result = null;
             if (c > 0)
             {
                 if (c == 1)
@@ -72,7 +74,8 @@ namespace Reallusion.Import
                     valid = TryGetValidObject(applicableGuids[0], out RLSettingsObject validObj);
                     if (valid)
                     {
-                        return UpdateSettingsPath(validObj, applicableGuids[0]);
+                        objGuid = applicableGuids[0];
+                        result = UpdateSettingsPath(validObj, applicableGuids[0]);
                     }
                     else
                         MoveGuidToTrash(applicableGuids[0]);
@@ -82,28 +85,51 @@ namespace Reallusion.Import
                     // store first valid one
                     // check all for a path match
                     // use the matching path one otherwise use the first
-                    RLSettingsObject first = null;
-                    foreach (string guid in applicableGuids)
+                    
+                    foreach (string aguid in applicableGuids)
                     {
-                        valid = TryGetValidObject(guid, out RLSettingsObject validObj);
+                        valid = TryGetValidObject(aguid, out RLSettingsObject validObj);
                         if (valid)
                         {
-                            if (first == null) first = validObj;
-                            if (validObj.lastPath == AssetDatabase.GUIDToAssetPath(guid))
+                            if (result == null)
+                            { 
+                                result = validObj;
+                                objGuid = aguid;
+                            }
+                            if (validObj.lastPath == AssetDatabase.GUIDToAssetPath(aguid))
                             {
-                                PurgeAllExcept(applicableGuids, guid);
-                                return UpdateSettingsPath(validObj, guid);
+                                PurgeAllExcept(applicableGuids, aguid);
+                                result = UpdateSettingsPath(validObj, aguid);
                             }
                         }
                     }
-                    return first;
                 }
             }
 
             if (applicableGuids.Count == 0 || !valid)
+            {
                 return CreateSettingsObject();
-
-            return null;
+            }
+            else
+            {
+                if (Version.TryParse(Pipeline.VERSION, out Version pVer) && Version.TryParse(result.toolVersion, out Version tVer))
+                {
+                    if (pVer == tVer)
+                    {
+                        return result;
+                    }
+                    else
+                    {
+                        MoveGuidToTrash(objGuid);
+                        return CreateSettingsObject();
+                    }
+                }
+                else
+                {
+                    MoveGuidToTrash(objGuid);
+                    return CreateSettingsObject();
+                }
+            }
         }
 
         public static void PurgeAllExcept(List<string> guids, string guid)
@@ -131,7 +157,15 @@ namespace Reallusion.Import
         {
             RLSettingsObject obj = CreateInstance<RLSettingsObject>();
             obj.showOnStartup = true;
+            obj.checkForUpdates = true;
+            obj.updateAvailable = false;
+            obj.lastUpdateCheck = 0;
+            obj.jsonTagName = string.Empty;
+            obj.jsonHtmlUrl = string.Empty;
+            obj.jsonPublishedAt = string.Empty;
+            obj.jsonBodyLines = null;
             obj.lastPath = "Assets/" + defaultParent + "/" + defaultChild + "/" + defaultSettingsName;
+            obj.toolVersion = Pipeline.VERSION;
             SaveRLSettingsObject(obj);
             return obj;
         }

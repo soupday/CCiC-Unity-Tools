@@ -410,11 +410,11 @@ namespace Reallusion.Import
                         {
                             if (sourceName.iContains("Skin_Head"))
                             {
-                                WrinkleManager wm = renderer.gameObject.GetComponent<WrinkleManager>();
-                                if (wm)
-                                {                                    
-                                    wm.headMaterial = bakedMaterial;
-                                }
+                                //WrinkleManager wm = renderer.gameObject.GetComponent<WrinkleManager>();
+                                //if (wm)
+                                //{                                    
+                                //    wm.headMaterial = bakedMaterial;
+                                //}
                             }
                         }
                     }
