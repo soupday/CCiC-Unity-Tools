@@ -1,7 +1,7 @@
 #if PLASTIC_NEWTONSOFT_AVAILABLE
 using Unity.Plastic.Newtonsoft.Json;
 #else
-using Newtonsoft.Json;  // plastic scm versions prior to 1.14.12
+using Newtonsoft.Json;  // com.unity.collab-proxy (plastic scm) versions prior to 1.14.12
 #endif
 
 using System;

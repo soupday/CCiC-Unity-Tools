@@ -801,7 +801,7 @@ namespace Reallusion.Import
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
-                    Rule(0, 11, PipelineVersion.URP),
+                    Rule(0, 11, PipelineVersion.URP10),
                     Rule(12, 13, PipelineVersion.URP12),
                     Rule(14, 16, PipelineVersion.URP14),
                     Rule(17, 100, PipelineVersion.URP17)
@@ -815,7 +815,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    return PipelineVersion.URP;
+                    return PipelineVersion.URP10;
                 }
             }
 
@@ -824,7 +824,7 @@ namespace Reallusion.Import
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
-                    Rule(0, 11, PipelineVersion.HDRP),
+                    Rule(0, 11, PipelineVersion.HDRP10),
                     Rule(12, 100, PipelineVersion.HDRP12)
                 };
 
@@ -836,7 +836,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    return PipelineVersion.HDRP;
+                    return PipelineVersion.HDRP10;
                 }
             }
             return PipelineVersion.None;
@@ -1248,7 +1248,7 @@ namespace Reallusion.Import
         {
             None = 0,
             BuiltIn = 1,
-            URP = 110,
+            URP10 = 110,
             URP12 = 112,
             URP13 = 113,
             URP14 = 114,
@@ -1264,7 +1264,7 @@ namespace Reallusion.Import
             URP24 = 124,
             URP25 = 125,
             URP26 = 126,
-            HDRP = 210,
+            HDRP10 = 210,
             HDRP12 = 212,
             HDRP13 = 213,
             HDRP14 = 214,
