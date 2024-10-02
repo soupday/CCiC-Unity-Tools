@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
-//#define PROJECT_RUNTIME
+#define PROJECT_RUNTIME
 #if PROJECT_RUNTIME
 
 using System.Collections.Generic;

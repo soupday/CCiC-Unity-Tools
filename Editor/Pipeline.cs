@@ -35,13 +35,13 @@ namespace Reallusion.Import
     {
         None, Skin, Head, Eye, Cornea, EyeOcclusion, Tearline, Hair, Scalp,
         Eyelash, Teeth, Tongue, DefaultOpaque, DefaultAlpha, BlendAlpha, SSS
-    }    
+    }
 
     public enum MaterialQuality { None, Default, High, Baked }
 
     public static class Pipeline
     {
-        public const string VERSION = "1.6.3";
+        public const string VERSION = "2.0.0";
 
 #if HDRP_10_5_0_OR_NEWER
         // version

@@ -2536,7 +2536,7 @@ namespace Reallusion.Import
                         string ruleName = wrinkleRulesJson.values[i].StringValue;
                         float easeStrength = wrinkleEaseJson.values[i].FloatValue;
                         float weight = wrinkleWeightJson.values[i].FloatValue;
-                        var wp = Activator.CreateInstance(WrinklePropType, new object[] { easeStrength, weight });
+                        var wp = Activator.CreateInstance(WrinklePropType, new object[] { weight, easeStrength });
                         wrinkleProps.Add(ruleName, wp);
                     }
                 }
