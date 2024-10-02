@@ -1,10 +1,9 @@
-#if UNITY_2019_1_OR_NEWER
-#if UNITY_2020_1_OR_NEWER && !UNITY_2021_1_OR_NEWER
-using Newtonsoft.Json;  // seemingly only applicable to Unity 2020.x 
-#else
+#if PLASTIC_NEWTONSOFT_AVAILABLE
 using Unity.Plastic.Newtonsoft.Json;
+#else
+using Newtonsoft.Json;  // plastic scm versions prior to 1.14.12
 #endif
-#endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;

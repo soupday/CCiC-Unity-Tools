@@ -2645,7 +2645,7 @@ namespace Reallusion.Import
 
         private void ApplyWrinkleMasks(Material mat)
         {
-            string[] folders = new string[] { "Packages", fbmFolder, texFolder };
+            string[] folders = new string[] { "Assets", fbmFolder, texFolder };
 
             string[] maskNames = new string[] { "RL_WrinkleMask_Set1A", "RL_WrinkleMask_Set1B", "RL_WrinkleMask_Set2", "RL_WrinkleMask_Set3", "RL_WrinkleMask_Set123" };
             string[] refNames = new string[] { "_WrinkleMaskSet1A", "_WrinkleMaskSet1B", "_WrinkleMaskSet2", "_WrinkleMaskSet3", "_WrinkleMaskSet123" };

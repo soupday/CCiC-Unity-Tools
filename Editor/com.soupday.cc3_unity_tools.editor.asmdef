@@ -1,6 +1,5 @@
 {
     "name": "soupday.cc3_unity_tools.editor",
-    "rootNamespace": "Reallusion.Import",
     "references": [
         "GUID:3eae0364be2026648bf74846acb8a731",
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",
@@ -109,6 +108,11 @@
             "name": "Unity",
             "expression": "2023.1.6",
             "define": "UNITY_2023_1_6_OR_NEWER"
+        },
+        {
+            "name": "com.unity.collab-proxy",
+            "expression": "1.14.12",
+            "define": "PLASTIC_NEWTONSOFT_AVAILABLE"
         }
     ],
     "noEngineReferences": false
