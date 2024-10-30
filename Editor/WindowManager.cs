@@ -51,7 +51,7 @@ namespace Reallusion.Import
         public const string lastTrackedBoneKey = "RL_Last_Tracked_Bone_Key_0000";
         public const string controlStateHashKey = "RL_Animator_Ctrl_Hash_Key_0000";
         public const string timeKey = "RL_Animation_Play_Position_Key_0000";
-
+        /*
         //shader package validation
         public static string emptyVersion = "0.0.0";
         public static Version activeVersion = new Version(0, 0, 0);
@@ -70,7 +70,7 @@ namespace Reallusion.Import
 
         //software package update checker
         public static bool updateChecked = false;
-
+        */
         static WindowManager()
         {
             EditorApplication.playModeStateChanged += WindowManager.OnPlayModeStateChanged;
@@ -162,7 +162,8 @@ namespace Reallusion.Import
                     {
                         if (ImporterWindow.Current != null)
                         {
-                            ImporterWindow.InitShaderUpdater();
+                            //ImporterWindow.InitShaderUpdater();
+                            UpdateManager.PerformUpdateChecks();
                         }
 
                         showPlayer = showPlayerAfterPlayMode;

@@ -19,10 +19,18 @@ namespace Reallusion.Import
         public const string gitHubReleaseUrl = "https://api.github.com/repos/soupday/cc_unity_tools_HDRP/releases";
         public const string gitHubTagName = "tag_name";
         public const string gitHubHtmlUrl = "html_url";
+        public const string name = "name";
+        public const string draft = "draft";
+        public const string preRelease = "prerelease";
         public const string gitHubPublishedAt = "published_at";
         public const string gitHubBody = "body";
 
         public static event EventHandler HttpVersionChecked;
+
+        public static void UpdateManagerUpdateCheck()
+        {
+            InitUpdateCheck();
+        }
 
         public static void InitUpdateCheck()
         {
@@ -192,6 +200,12 @@ namespace Reallusion.Import
             public string TagName { get; set; }
             [JsonProperty(gitHubHtmlUrl)]
             public string HtmlUrl { get; set; }
+            [JsonProperty(name)]
+            public string Name { get; set; }
+            [JsonProperty(draft)]
+            public string Draft { get; set; }
+            [JsonProperty(preRelease)]
+            public string PreRelease { get; set; }
             [JsonProperty(gitHubPublishedAt)]
             public string PublishedAt { get; set; }
             [JsonProperty(gitHubBody)]
@@ -207,6 +221,10 @@ namespace Reallusion.Import
                 return null;
         }
 
+        public static bool BoolParse(string textString)
+        {
+            if (bool.TryParse(textString, out bool result)) { return result; } else { return false; }
+        }
 
         public static Version TagToVersion(string tag)
         {

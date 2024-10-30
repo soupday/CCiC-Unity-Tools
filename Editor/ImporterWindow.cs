@@ -256,8 +256,9 @@ namespace Reallusion.Import
         private void InitData()
         {
             SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
-            InitShaderUpdater();
-            InitSoftwareUpdateCheck();
+            UpdateManager.PerformUpdateChecks();
+            //InitShaderUpdater();
+            //InitSoftwareUpdateCheck();
             CheckAvailableAddons();
 
             string[] folders = new string[] { "Assets", "Packages" };
