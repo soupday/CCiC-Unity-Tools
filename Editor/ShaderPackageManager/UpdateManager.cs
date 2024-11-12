@@ -68,7 +68,7 @@ namespace Reallusion.Import
             Debug.LogWarning("ALL UPDATE CHECKS COMPLETED");
 
             ShaderPackageUtil.DetermineShaderAction();
-            //ShaderPackageUtil.ShowUpdateUtilityWindow();
+            checkIsLocked = false;
             ShowUpdateUtilityWindow();
 
             UpdateChecksComplete -= UpdateChecksDone;
@@ -158,7 +158,8 @@ namespace Reallusion.Import
             {
                 //bool error = UpdateManager.shaderPackageValid == PackageVailidity.Invalid;
                 bool sos = false;
-                bool swUpdate = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
+                bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
+                if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
                 if (ImporterWindow.GeneralSettings != null) sos = ImporterWindow.GeneralSettings.showOnStartup;
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
                 bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
@@ -171,13 +172,19 @@ namespace Reallusion.Import
                 if (valid || optional)
                     showWindow = sos;
 
-                if (sos || force || swUpdate)
+                if (sos || force || swUpdateAvailable)
                     showWindow = true;
 
                 if (showWindow)
                 {
+                    Debug.LogWarning("Can show ShaderPackageUpdater.");
                     if (!Application.isPlaying) ShaderPackageUpdater.CreateWindow();
-                    if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.actionRequired = shaderActionRequired;
+
+                    if (ShaderPackageUpdater.Instance != null)
+                    {
+                        ShaderPackageUpdater.Instance.actionRequired = shaderActionRequired;
+                        ShaderPackageUpdater.Instance.softwareActionRequired = swUpdateAvailable;
+                    }
                 }
             }
         }

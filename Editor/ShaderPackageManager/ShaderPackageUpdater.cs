@@ -409,11 +409,16 @@ namespace Reallusion.Import
         Rect prev = new Rect();        
         bool initInfo = false;
         public RLSettingsObject settings;
+        [SerializeField]
         Version gitHubLatestVersion;
+        [SerializeField]
         Version installedVersion;
+        [SerializeField]
         bool newVersionAvailable = false;
+        [SerializeField]
         DateTime gitHubPublishedDateTime;
         bool linkClicked = false;
+
 
         //[SerializeField]
         public static List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
@@ -422,6 +427,7 @@ namespace Reallusion.Import
 
         private void InitInfo()
         {
+            Debug.LogWarning("INIT INFO =-=-=-=-=-=-=-=-=-=-=-=-=-*");
             if (ImporterWindow.Current != null)
             {
                 if (ImporterWindow.GeneralSettings != null)
@@ -465,10 +471,11 @@ namespace Reallusion.Import
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Web Link: ", guiStyles.infoTextItal);
-            if (GUILayout.Button(settings.jsonHtmlUrl.ToString(), linkClicked ? guiStyles.httpTextClicked : guiStyles.httpText))
+            //if (GUILayout.Button(settings.jsonHtmlUrl.ToString(), linkClicked ? guiStyles.httpTextClicked : guiStyles.httpText))
+            if (GUILayout.Button("Visit release webpage"))
             {
                 Application.OpenURL(settings.jsonHtmlUrl);
-                linkClicked = true;
+                //linkClicked = true;
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();

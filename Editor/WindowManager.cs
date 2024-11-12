@@ -179,7 +179,12 @@ namespace Reallusion.Import
             {
                 HideAnimationPlayer(true);
                 HideAnimationRetargeter(true);
-            }            
+            }
+            
+            if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
+            {
+                ShaderPackageUpdater.Instance.Close();
+            }
         }
 
         public static PreviewScene OpenPreviewScene(GameObject prefab)

@@ -56,7 +56,10 @@ namespace Reallusion.Import
                     else
                     {
                         if (currentSettings.updateAvailable)
+                        {
                             UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.Software_update_available;
+                            Debug.LogWarning("Settings object shows update availabe.");
+                        }
                         if (HttpVersionChecked != null)
                             HttpVersionChecked.Invoke(null, null);
                         Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
