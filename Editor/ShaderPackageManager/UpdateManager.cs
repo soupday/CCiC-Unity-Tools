@@ -38,7 +38,10 @@ namespace Reallusion.Import
         public static void TryPerformUpdateChecks()
         {
             if (!checkIsLocked)
+            {
+                Debug.LogWarning("Check is not locked - can perform update checks");
                 PerformUpdateChecks();
+            }
         }
 
         public static void PerformUpdateChecks()
@@ -90,19 +93,18 @@ namespace Reallusion.Import
 
         public static void CheckPackages()
         {
-            ShaderPackageUtil.OnPipelineDetermined -= PackageCheckDone;
-            ShaderPackageUtil.OnPipelineDetermined += PackageCheckDone;
-
-            ShaderPackageUtil.GetInstalledPipelineVersion();
-            FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
-            ShaderPackageUtil.UpdateManagerUpdateCheck();
+            ShaderPackageUtil.PackageCheckDone -= PackageCheckDone;
+            ShaderPackageUtil.PackageCheckDone += PackageCheckDone;
+                        
             SetDeterminationStatusFlag(ActivityStatus.DeterminingPackages, true);
+            ShaderPackageUtil.UpdateManagerUpdateCheck();
+            
         }
 
         public static void PackageCheckDone(object sender, object e)
         {
             SetDeterminationStatusFlag(ActivityStatus.DonePackages, true);
-            ShaderPackageUtil.OnPipelineDetermined -= PackageCheckDone;
+            ShaderPackageUtil.PackageCheckDone -= PackageCheckDone;
         }
 
         public static void StartUpdateMonitor()
@@ -164,10 +166,10 @@ namespace Reallusion.Import
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
                 bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
                 bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
-                bool shaderActionRequired = force || valid || optional;
+                bool shaderActionRequired = force || (optional && sos);
                 bool showWindow = false;
                 if (optional) Debug.LogWarning("An optional shader package is available.");
-                else if (valid) Debug.LogWarning("Problem with shader installation.");
+                else if (!valid) Debug.LogWarning("Problem with shader installation.");
 
                 if (valid || optional)
                     showWindow = sos;
@@ -177,7 +179,6 @@ namespace Reallusion.Import
 
                 if (showWindow)
                 {
-                    Debug.LogWarning("Can show ShaderPackageUpdater.");
                     if (!Application.isPlaying) ShaderPackageUpdater.CreateWindow();
 
                     if (ShaderPackageUpdater.Instance != null)

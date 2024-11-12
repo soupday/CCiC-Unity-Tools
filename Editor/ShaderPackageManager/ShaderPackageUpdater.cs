@@ -243,7 +243,7 @@ namespace Reallusion.Import
         public void UpdateGUI()
         {
             currentTarget = EditorUserBuildSettings.activeBuildTarget;
-            ShaderPackageUtil.ShaderPackageUtilInit();
+            //ShaderPackageUtil.ShaderPackageUtilInit();
         }
 
         Vector2 mainScrollPos;
@@ -427,7 +427,6 @@ namespace Reallusion.Import
 
         private void InitInfo()
         {
-            Debug.LogWarning("INIT INFO =-=-=-=-=-=-=-=-=-=-=-=-=-*");
             if (ImporterWindow.Current != null)
             {
                 if (ImporterWindow.GeneralSettings != null)
@@ -472,7 +471,7 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
             GUILayout.Label("Web Link: ", guiStyles.infoTextItal);
             //if (GUILayout.Button(settings.jsonHtmlUrl.ToString(), linkClicked ? guiStyles.httpTextClicked : guiStyles.httpText))
-            if (GUILayout.Button("Visit release webpage"))
+            if (GUILayout.Button(new GUIContent("Visit release webpage", "Download from the 'Source code (zip) link in the 'Assets' section, and extract the zip file to a suitable permenant location.  Use the package manager to 'Remove' the current version of the CCiC Unity Tools package, then 'Add package from disk' and navigate to the newly extracted one.")))
             {
                 Application.OpenURL(settings.jsonHtmlUrl);
                 //linkClicked = true;

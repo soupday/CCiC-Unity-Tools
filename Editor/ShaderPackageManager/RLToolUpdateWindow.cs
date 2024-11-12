@@ -104,12 +104,12 @@ namespace Reallusion.Import
         static long lastClosedTime;
 
         private bool initInfo = false;
-        private bool waitingForCheck = false;
-        private bool doCheck = false;
-        private bool linkClicked = false;
+        //private bool waitingForCheck = false;
+        //private bool doCheck = false;
+        //private bool linkClicked = false;
         private RLSettingsObject settings;
-        Version gitHubLatestVersion;
-        DateTime gitHubPublishedDateTime;
+        //Version gitHubLatestVersion;
+        //DateTime gitHubPublishedDateTime;
 
         private void InitInfo()
         {
@@ -124,13 +124,14 @@ namespace Reallusion.Import
             {
                 settings = RLSettings.FindRLSettingsObject();
             }
-
+            /*
             gitHubLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonTagName);
             RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPublishedAt, out gitHubPublishedDateTime);
-
+            */
             initInfo = true;
         }
 
+        /*
         public void DoVersionCheck()
         {
             waitingForCheck = true;
@@ -146,11 +147,12 @@ namespace Reallusion.Import
             InitInfo();
             RLToolUpdateUtil.HttpVersionChecked -= OnHttpVersionChecked;
         }
+        */
 
         private void OnEnable()
         {
-            waitingForCheck = false;
-            initInfo = false;
+            //waitingForCheck = false;
+            //initInfo = false;
         }
 
         void OnDestroy()
@@ -195,8 +197,8 @@ namespace Reallusion.Import
 
                 outlineStyle = new GUIStyle();
                 int borderSize = 1;
-                outlineStyle.border = new RectOffset(borderSize, borderSize + 1, borderSize, borderSize);
-                outlineStyle.normal.background = OutlineTextureColor(Color.gray);
+                outlineStyle.border = new RectOffset(borderSize, borderSize, borderSize, borderSize);
+                outlineStyle.normal.background = OutlineTextureColor(Color.black);
             }
         }
 
@@ -209,7 +211,7 @@ namespace Reallusion.Import
         {
             if (style == null) style = new Styles();
 
-            if (waitingForCheck) return;
+            //if (waitingForCheck) return;
             
             if (!initInfo) InitInfo();
 
@@ -292,7 +294,7 @@ namespace Reallusion.Import
 
         private void FullReleaseHistoryGui()
         {
-            GUILayout.BeginVertical();// (GUI.skin.box);
+            GUILayout.BeginVertical(style.outlineStyle);
 
             GUILayout.Space(VERT_INDENT);
 
@@ -300,7 +302,7 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            posReleaseHistory = GUILayout.BeginScrollView(posReleaseHistory, GUILayout.Height(INITIAL_DROPDOWN_HEIGHT + 20f));
+            posReleaseHistory = GUILayout.BeginScrollView(posReleaseHistory, GUILayout.Height(INITIAL_DROPDOWN_HEIGHT - 4f));
             GUILayout.BeginVertical();
             int index = 0;
             if (ShaderPackageUpdater.Instance != null)
@@ -325,10 +327,9 @@ namespace Reallusion.Import
 
                             GUILayout.BeginHorizontal();
                             GUILayout.Label("Web Link: ", style.infoText);
-                            if (GUILayout.Button(fragment.HtmlUrl.ToString(), linkClicked ? style.httpTextClicked : style.httpText))
+                            if (GUILayout.Button(fragment.HtmlUrl.ToString(), style.httpText))
                             {
                                 Application.OpenURL(fragment.HtmlUrl);
-                                //linkClicked = true;
                             }
                             GUILayout.EndHorizontal();
 

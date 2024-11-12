@@ -25,7 +25,9 @@ namespace Reallusion.Import
 
         public static void UpdateManagerUpdateCheck()
         {
-
+            Debug.LogWarning("STARTING ShaderPackageUtil CHECKS");
+            //ShaderPackageUtil.GetInstalledPipelineVersion();
+            FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
         }
 
         public static void ImporterWindowInitCallback(object obj, FrameTimerArgs args)
@@ -43,9 +45,12 @@ namespace Reallusion.Import
             Debug.Log("*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/* ShaderPackageUtilInit */*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*/*");
             UpdateManager.determinedShaderAction = new ShaderActionRules();
             ImporterWindow.SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
+            OnPipelineDetermined -= PipelineDetermined;
+            OnPipelineDetermined += PipelineDetermined;
+            //EditorApplication.update -= WaitForPipeline;
+            //EditorApplication.update += WaitForPipeline;
             GetInstalledPipelineVersion();
-            EditorApplication.update -= WaitForPipeline;
-            EditorApplication.update += WaitForPipeline;
+            
             if (callback) FrameTimer.OnFrameTimerComplete -= ShaderPackageUtil.ImporterWindowInitCallback;
 
             if (InitCompleted != null)
@@ -54,18 +59,19 @@ namespace Reallusion.Import
 
         // async wait for UpdateManager to be updated
         public static event EventHandler OnPipelineDetermined;
+        public static event EventHandler PackageCheckDone;
         public static event EventHandler InitCompleted;
 
+        /*
         public static void WaitForPipeline()
-        {
-            OnPipelineDetermined -= PipelineDetermined;
-            OnPipelineDetermined += PipelineDetermined;
+        {            
             if (UpdateManager.shaderPackageValid == PackageVailidity.Waiting || UpdateManager.shaderPackageValid == PackageVailidity.None)
             {
                 return;
             }
 
             // waiting done
+            Debug.Log("WaitForPipeline - waiting done - PackageVaildity.Finished ? : " + (UpdateManager.shaderPackageValid == PackageVailidity.Finished));
             if (ImporterWindow.GeneralSettings != null)
             {
                 UpdateManager.availablePackages = BuildPackageMap();
@@ -77,6 +83,7 @@ namespace Reallusion.Import
             if (OnPipelineDetermined != null)
                 OnPipelineDetermined.Invoke(null, null);
         }
+        */
 
         public static void PipelineDetermined(object sender, EventArgs e)
         {
@@ -91,6 +98,16 @@ namespace Reallusion.Import
                 ShowUpdateUtilityWindow();
             }
             */
+
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                UpdateManager.availablePackages = BuildPackageMap();
+                Debug.LogWarning("Running ValidateInstalledShader");
+                ValidateInstalledShader();
+            }
+            if (PackageCheckDone != null)
+                PackageCheckDone.Invoke(null, null);
+
             OnPipelineDetermined -= PipelineDetermined;
         }
 
@@ -448,6 +465,7 @@ namespace Reallusion.Import
         // common pipeline determination
         public static void DeterminePipelineInfo(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
+            Debug.LogWarning("Running DeterminePipelineInfo.");
             List<InstalledPipelines> installed = new List<InstalledPipelines>();
 
             installed.Add(new InstalledPipelines(InstalledPipeline.Builtin, new Version(emptyVersion), ""));
@@ -471,12 +489,15 @@ namespace Reallusion.Import
             if (ShaderPackageUpdater.Instance != null)
                 ShaderPackageUpdater.Instance.Repaint();
 
-            UpdateManager.shaderPackageValid = PackageVailidity.Finished;
+            if (OnPipelineDetermined != null)
+                OnPipelineDetermined.Invoke(null, null);
+            //UpdateManager.shaderPackageValid = PackageVailidity.Finished;
         }
 
         public static PipelineVersion DetermineActivePipelineVersion(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
-            TestVersionResponse();
+            Debug.LogWarning("Running DetermineActivePipelineVersion.");
+            TestVersionResponse(); // important to run after rule editing
 
             UnityEngine.Rendering.RenderPipeline r = RenderPipelineManager.currentPipeline;
             if (r != null)
