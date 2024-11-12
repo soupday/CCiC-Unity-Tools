@@ -162,8 +162,7 @@ namespace Reallusion.Import
                     {
                         if (ImporterWindow.Current != null)
                         {
-                            //ImporterWindow.InitShaderUpdater();
-                            UpdateManager.PerformUpdateChecks();
+                            UpdateManager.TryPerformUpdateChecks();
                         }
 
                         showPlayer = showPlayerAfterPlayMode;

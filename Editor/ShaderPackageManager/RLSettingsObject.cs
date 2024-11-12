@@ -14,8 +14,8 @@ namespace Reallusion.Import
         public string jsonHtmlUrl;
         public string jsonPublishedAt;
         public string [] jsonBodyLines;
-        public List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
-
+        //public List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
+        public string fullJsonFragment;
         public string lastPath;
         public string toolVersion;
     }

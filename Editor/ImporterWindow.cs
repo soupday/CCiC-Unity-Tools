@@ -256,9 +256,7 @@ namespace Reallusion.Import
         private void InitData()
         {
             SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
-            UpdateManager.PerformUpdateChecks();
-            //InitShaderUpdater();
-            //InitSoftwareUpdateCheck();
+            UpdateManager.TryPerformUpdateChecks();
             CheckAvailableAddons();
 
             string[] folders = new string[] { "Assets", "Packages" };
@@ -294,7 +292,8 @@ namespace Reallusion.Import
             
             if (titleContent.text != windowTitle) titleContent.text = windowTitle;
         }
-        
+
+        /*
         public static void InitShaderUpdater()
         {
             if (Application.isPlaying)
@@ -331,6 +330,7 @@ namespace Reallusion.Import
 
             RLToolUpdateUtil.HttpVersionChecked -= OnHttpVersionChecked;
         }
+        */
 
         private void PreviewCharacter()
         {

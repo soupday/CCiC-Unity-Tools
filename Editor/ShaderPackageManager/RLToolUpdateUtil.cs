@@ -29,22 +29,12 @@ namespace Reallusion.Import
 
         public static void UpdateManagerUpdateCheck()
         {
+            Debug.LogWarning("STARTING RLToolUpdateUtil CHECKS");
             InitUpdateCheck();
         }
 
         public static void InitUpdateCheck()
-        {
-            /*
-            RLSettingsObject currentSettings = null;
-            if (ImporterWindow.GeneralSettings != null)
-            {
-                currentSettings = ImporterWindow.GeneralSettings;
-            }
-            else
-            {
-                currentSettings = RLSettings.FindRLSettingsObject();
-            }
-            */
+        {            
             RLSettingsObject currentSettings = (ImporterWindow.GeneralSettings == null) ? RLSettings.FindRLSettingsObject() : ImporterWindow.GeneralSettings;
             if (currentSettings != null)
             {
@@ -65,25 +55,12 @@ namespace Reallusion.Import
                     }
                     else
                     {
+                        if (currentSettings.updateAvailable)
+                            UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.Software_update_available;
                         if (HttpVersionChecked != null)
                             HttpVersionChecked.Invoke(null, null);
                         Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
-                    }
-                    /*
-                    if (last + checkInterval <= now)
-                    {
-                        Debug.Log("Checking GitHub for 'CC/iC Unity Tools' update.");
-                        currentSettings.lastUpdateCheck = now.Ticks;
-                        ImporterWindow.SetGeneralSettings(currentSettings, true);
-                        GitHubHttpVersionCheck();
-                    }
-                    else
-                    {
-                        if (HttpVersionChecked != null)
-                            HttpVersionChecked.Invoke(null, null);
-                        Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
-                    }
-                    */
+                    }                    
                 }
             }
         }
@@ -103,8 +80,8 @@ namespace Reallusion.Import
             }
         }
 
-        [SerializeField]
-        public static List<JsonFragment> fullJsonFragment;
+        //[SerializeField]
+        //public static List<JsonFragment> fullJsonFragment;
 
         public static async void GitHubHttpVersionCheck()
         {
@@ -128,7 +105,7 @@ namespace Reallusion.Import
             {
                 Debug.Log(releaseJson.Substring(0, 100));
                 List<JsonFragment> fragmentList = GetFragmentList<JsonFragment>(releaseJson);
-                fullJsonFragment = fragmentList;
+                //fullJsonFragment = fragmentList;
                 if (fragmentList != null && fragmentList.Count > 0)
                 {
                     JsonFragment fragment = fragmentList[0];
@@ -151,8 +128,9 @@ namespace Reallusion.Import
                             Debug.LogWarning("A newer version of CC/iC Unity Tools is available on GitHub. Current ver: " + installed.ToString() + " Latest ver: " + gitHubLatestVersion.ToString());
 
                             currentSettings.updateAvailable = true;
+                            UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.Software_update_available;
                         }
-                        currentSettings.fullJsonFragment = fragmentList;
+                        currentSettings.fullJsonFragment = releaseJson;
                         ImporterWindow.SetGeneralSettings(currentSettings, true);
                     }
                 }
@@ -171,7 +149,7 @@ namespace Reallusion.Import
 
         public static void OnHttpVersionChecked(object sender, EventArgs e)
         {
-            RLToolUpdateWindow.OpenWindow();
+            //RLToolUpdateWindow.OpenWindow();
             HttpVersionChecked -= OnHttpVersionChecked;
         }
 
@@ -290,5 +268,10 @@ namespace Reallusion.Import
             return Regex.Split(text, @"(?:\r\n|\n|\r)");
         }
 
+        public enum DeterminedSoftwareAction
+        {
+            None,
+            Software_update_available
+        }
     }
 }

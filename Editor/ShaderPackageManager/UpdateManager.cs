@@ -7,6 +7,8 @@ namespace Reallusion.Import
 {
     public class UpdateManager
     {
+        public static bool checkIsLocked = false;
+
         //shader package validation
         public static string emptyVersion = "0.0.0";
         public static Version activeVersion = new Version(0, 0, 0);
@@ -21,10 +23,11 @@ namespace Reallusion.Import
         public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
         public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;
         public static List<ShaderPackageUtil.ShaderPackageItem> missingShaderPackageItems;
-        public static ShaderPackageUtil.ActionRules determinedAction = null;
+        public static ShaderPackageUtil.ShaderActionRules determinedShaderAction = null;
 
         //software package update checker
         public static bool updateChecked = false;
+        public static RLToolUpdateUtil.DeterminedSoftwareAction determinedSoftwareAction = RLToolUpdateUtil.DeterminedSoftwareAction.None;
 
         public static event EventHandler UpdateChecksComplete;
 
@@ -32,8 +35,15 @@ namespace Reallusion.Import
 
         public static ActivityStatus DeterminationStatus { get { return determinationStatus; } }
 
+        public static void TryPerformUpdateChecks()
+        {
+            if (!checkIsLocked)
+                PerformUpdateChecks();
+        }
+
         public static void PerformUpdateChecks()
         {
+            Debug.LogWarning("STARTING UPDATE CHECKS");
             if (Application.isPlaying)
             {
                 if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
@@ -43,6 +53,7 @@ namespace Reallusion.Import
             }
             else
             {
+                checkIsLocked = true;
                 UpdateChecksComplete -= UpdateChecksDone;
                 UpdateChecksComplete += UpdateChecksDone;
                 determinationStatus = 0;
@@ -55,11 +66,16 @@ namespace Reallusion.Import
         public static void UpdateChecksDone(object sender, object e)
         {
             Debug.LogWarning("ALL UPDATE CHECKS COMPLETED");
+
+            ShaderPackageUtil.DetermineShaderAction();
+            //ShaderPackageUtil.ShowUpdateUtilityWindow();
+            ShowUpdateUtilityWindow();
+
             UpdateChecksComplete -= UpdateChecksDone;
         }
 
         public static void CheckHttp()
-        {
+        {            
             RLToolUpdateUtil.HttpVersionChecked -= HttpCheckDone;
             RLToolUpdateUtil.HttpVersionChecked += HttpCheckDone;
             SetDeterminationStatusFlag(ActivityStatus.DeterminingHttp, true);
@@ -117,7 +133,7 @@ namespace Reallusion.Import
             DeterminingHttp = 4,
             DoneHttp = 8
         }
-                
+
         public static void SetDeterminationStatusFlag(ActivityStatus flag, bool value)
         {
             if (value)
@@ -136,7 +152,34 @@ namespace Reallusion.Import
             }
         }
 
-        
+        public static void ShowUpdateUtilityWindow()
+        {
+            if (UpdateManager.determinedShaderAction != null)
+            {
+                //bool error = UpdateManager.shaderPackageValid == PackageVailidity.Invalid;
+                bool sos = false;
+                bool swUpdate = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
+                if (ImporterWindow.GeneralSettings != null) sos = ImporterWindow.GeneralSettings.showOnStartup;
+                bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
+                bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
+                bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
+                bool shaderActionRequired = force || valid || optional;
+                bool showWindow = false;
+                if (optional) Debug.LogWarning("An optional shader package is available.");
+                else if (valid) Debug.LogWarning("Problem with shader installation.");
 
+                if (valid || optional)
+                    showWindow = sos;
+
+                if (sos || force || swUpdate)
+                    showWindow = true;
+
+                if (showWindow)
+                {
+                    if (!Application.isPlaying) ShaderPackageUpdater.CreateWindow();
+                    if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.actionRequired = shaderActionRequired;
+                }
+            }
+        }
     }
 }
