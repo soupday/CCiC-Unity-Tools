@@ -378,7 +378,8 @@ namespace Reallusion.Import
             if (softwareActionRequired)
                 currentSoftwareVersionFoldout = true;
 
-            currentSoftwareVersionFoldout = EditorGUILayout.Foldout(currentSoftwareVersionFoldout, new GUIContent("Current Software Version: " + Pipeline.VERSION, "Tooltip"), true, guiStyles.FoldoutTitleLabel);
+            GUIStyle softwareActionTitle = softwareActionRequired ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel;
+            currentSoftwareVersionFoldout = EditorGUILayout.Foldout(currentSoftwareVersionFoldout, new GUIContent("Current Software Version: " + Pipeline.VERSION, "Tooltip"), true, softwareActionTitle);
 
             GUILayout.FlexibleSpace();
 

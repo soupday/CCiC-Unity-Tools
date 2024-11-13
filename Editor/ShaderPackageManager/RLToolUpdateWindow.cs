@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -61,7 +62,7 @@ namespace Reallusion.Import
                     rlToolUpdateWindow.Cancel();
                     return false;
                 }
-
+                rlToolUpdateWindow.InitInfo();
                 rlToolUpdateWindow.Init(buttonRect);
                 return true;
             }
@@ -104,12 +105,8 @@ namespace Reallusion.Import
         static long lastClosedTime;
 
         private bool initInfo = false;
-        //private bool waitingForCheck = false;
-        //private bool doCheck = false;
-        //private bool linkClicked = false;
         private RLSettingsObject settings;
-        //Version gitHubLatestVersion;
-        //DateTime gitHubPublishedDateTime;
+        private List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
 
         private void InitInfo()
         {
@@ -124,35 +121,22 @@ namespace Reallusion.Import
             {
                 settings = RLSettings.FindRLSettingsObject();
             }
-            /*
-            gitHubLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonTagName);
-            RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPublishedAt, out gitHubPublishedDateTime);
-            */
+
+            if (ShaderPackageUpdater.fullJsonFragment != null)
+                fullJsonFragment = ShaderPackageUpdater.fullJsonFragment;
+            else if (settings.fullJsonFragment != null)
+                fullJsonFragment = RLToolUpdateUtil.GetFragmentList<RLToolUpdateUtil.JsonFragment>(settings.fullJsonFragment);
+
+            if (fullJsonFragment == null) fullJsonFragment = new List<RLToolUpdateUtil.JsonFragment>();
+
+            index = 0;
+            foldouts = new bool[fullJsonFragment.Count];
             initInfo = true;
         }
 
-        /*
-        public void DoVersionCheck()
-        {
-            waitingForCheck = true;
-            RLToolUpdateUtil.HttpVersionChecked -= OnHttpVersionChecked;
-            RLToolUpdateUtil.HttpVersionChecked += OnHttpVersionChecked;
-
-            RLToolUpdateUtil.InitUpdateCheck();
-        }
-
-        public void OnHttpVersionChecked(object sender, EventArgs e)
-        {
-            waitingForCheck = false;
-            InitInfo();
-            RLToolUpdateUtil.HttpVersionChecked -= OnHttpVersionChecked;
-        }
-        */
-
         private void OnEnable()
         {
-            //waitingForCheck = false;
-            //initInfo = false;
+
         }
 
         void OnDestroy()
@@ -165,6 +149,7 @@ namespace Reallusion.Import
         public class Styles
         {
             public GUIStyle infoText;
+            public GUIStyle FoldoutTitleLabel;
             public GUIStyle infoBoxD;
             public GUIStyle infoBoxL;
             public GUIStyle httpText;
@@ -178,12 +163,16 @@ namespace Reallusion.Import
                 infoText.normal.textColor = Color.white;
                 infoText.wordWrap = true;
 
-                infoBoxD = new GUIStyle(GUI.skin.box);
-                infoBoxD.normal.background = TextureColor(Color.gray * 0.5f);
+                FoldoutTitleLabel = new GUIStyle(EditorStyles.foldout);
+                FoldoutTitleLabel.fontSize = 14;
+                FoldoutTitleLabel.normal.textColor = Color.white;
 
-                infoBoxL = new GUIStyle(GUI.skin.box);
-                infoBoxL.normal.background = TextureColor(Color.gray * 0.8f);
 
+                infoBoxD = new GUIStyle();
+                infoBoxD.normal.background = TextureColor(Color.gray * 0.15f);
+
+                infoBoxL = new GUIStyle();
+                infoBoxL.normal.background = TextureColor(Color.gray * 0.5f);
 
                 httpText = new GUIStyle(GUI.skin.label);
                 httpText.fontSize = 14;
@@ -251,7 +240,102 @@ namespace Reallusion.Import
             texture.Apply(true);
             return texture;
         }
+        
+        Vector2 posReleaseHistory = new Vector2();
+        int index;
+        bool[] foldouts;
 
+        private void FullReleaseHistoryGui()
+        {
+            GUILayout.BeginVertical(style.outlineStyle);
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            posReleaseHistory = GUILayout.BeginScrollView(posReleaseHistory, GUILayout.Height(INITIAL_DROPDOWN_HEIGHT - 4f));
+            GUILayout.BeginVertical();
+            
+            if (fullJsonFragment.Count > 0)
+            {
+                index = 0;
+                foreach (RLToolUpdateUtil.JsonFragment fragment in fullJsonFragment)
+                {
+                    GUILayout.BeginVertical(index % 2 > 0 ? style.infoBoxL : style.infoBoxD);
+                    GUILayout.BeginHorizontal();
+                    RLToolUpdateUtil.TryParseISO8601toDateTime(fragment.PublishedAt, out DateTime verTime);
+                    string verString = RLToolUpdateUtil.TagToVersion(fragment.TagName).ToString();
+                    string versionLabelString = "Version: " + verString + " [Released: " + verTime.ToShortDateString() + "]";
+                    GUILayout.Label(versionLabelString, style.infoText);              
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+                    
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Web Link: ", style.infoText);
+                    if (GUILayout.Button("Visit v" + verString + " release webpage"))
+                    {
+                        Application.OpenURL(fragment.HtmlUrl);
+                    }
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.Space(16f);
+
+                    GUILayout.BeginHorizontal();
+                    foldouts[index] = EditorGUILayout.Foldout(foldouts[index], new GUIContent("Release Notes: ", "Expand Release Notes"), true, style.FoldoutTitleLabel);
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+
+                    if (foldouts[index])
+                    {                        
+                        foreach (string line in RLToolUpdateUtil.LineSplit(fragment.Body))
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(line, style.infoText);
+                            GUILayout.FlexibleSpace();
+                            GUILayout.EndHorizontal();
+                        }
+                    }                    
+
+                    GUILayout.Space(16f);
+                    
+                    GUILayout.EndVertical();
+                    index++;
+                }
+            }
+            else
+            {
+                GUILayout.Label("No Previous Releases Found", style.infoText);
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+            /*
+            if (Event.current.type == EventType.Repaint)
+            {
+                lowestRect = GUILayoutUtility.GetLastRect();
+                //Debug.Log(lowestRect);
+            }
+
+            Rect dragStrip = new Rect(0f, position.height - DRAG_VERT, position.width, DRAG_VERT);
+            EditorGUIUtility.AddCursorRect(dragStrip, MouseCursor.ResizeVertical);
+            HandleMouseDrag(dragStrip, GetPosition());
+            */
+        }
+
+        Rect lowestRect;
         private static bool dragging = false;
 
         public static Rect GetPosition()
@@ -274,7 +358,7 @@ namespace Reallusion.Import
 
                     diff += mouseEvent.delta.y;
                     Debug.Log(diff);
-                    if (diff > 30f || diff < -30f)
+                    if (diff > 10f || diff < -10f)
                     {
                         Instance.minSize = new Vector2(position.width, position.height + diff);
                         Instance.Repaint();
@@ -289,85 +373,5 @@ namespace Reallusion.Import
                 }
             }
         }
-
-        Vector2 posReleaseHistory = new Vector2();
-
-        private void FullReleaseHistoryGui()
-        {
-            GUILayout.BeginVertical(style.outlineStyle);
-
-            GUILayout.Space(VERT_INDENT);
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Space(HORIZ_INDENT);
-
-            posReleaseHistory = GUILayout.BeginScrollView(posReleaseHistory, GUILayout.Height(INITIAL_DROPDOWN_HEIGHT - 4f));
-            GUILayout.BeginVertical();
-            int index = 0;
-            if (ShaderPackageUpdater.Instance != null)
-                if (ShaderPackageUpdater.Instance.settings != null)
-                    if (ShaderPackageUpdater.Instance.settings.fullJsonFragment != null)
-                    {
-                        foreach (RLToolUpdateUtil.JsonFragment fragment in ShaderPackageUpdater.fullJsonFragment)
-                        {
-                            GUILayout.BeginVertical(index % 2 > 0 ? style.infoBoxL : style.infoBoxD);
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Version: ", style.infoText);
-                            GUILayout.Label(RLToolUpdateUtil.TagToVersion(fragment.TagName).ToString(), style.infoText);
-                            GUILayout.FlexibleSpace();
-                            GUILayout.EndHorizontal();
-
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Release Date/Time: ", style.infoText);
-                            RLToolUpdateUtil.TryParseISO8601toDateTime(fragment.PublishedAt, out DateTime time);
-                            GUILayout.Label(time.ToString(), style.infoText);
-                            GUILayout.FlexibleSpace();
-                            GUILayout.EndHorizontal();
-
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Web Link: ", style.infoText);
-                            if (GUILayout.Button(fragment.HtmlUrl.ToString(), style.httpText))
-                            {
-                                Application.OpenURL(fragment.HtmlUrl);
-                            }
-                            GUILayout.EndHorizontal();
-
-                            GUILayout.Space(22f);
-                            GUILayout.Label("Release Notes: ", style.infoText);
-
-                            foreach (string line in RLToolUpdateUtil.LineSplit(fragment.Body))
-                            {
-                                GUILayout.Label(line, style.infoText);
-                            }
-                            GUILayout.Space(22f);
-                            GUILayout.Label(" ------------------------------------------- ", style.infoText);
-                            GUILayout.Space(22f);
-                            GUILayout.EndVertical();
-                        }
-
-                    }
-
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-
-            GUILayout.FlexibleSpace();
-
-            GUILayout.Space(HORIZ_INDENT);
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(VERT_INDENT);
-
-            GUILayout.EndVertical();
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                lowestRect = GUILayoutUtility.GetLastRect();
-                Debug.Log(lowestRect);
-            }
-        }
-
-        Rect lowestRect;
     }
 }
