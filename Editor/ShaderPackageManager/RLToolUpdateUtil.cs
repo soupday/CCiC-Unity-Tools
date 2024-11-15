@@ -35,7 +35,15 @@ namespace Reallusion.Import
 
         public static void UpdaterWindowCheckForUpdates()
         {
+            HttpVersionChecked -= UpdaterWindowCheckForUpdatesDone;
+            HttpVersionChecked += UpdaterWindowCheckForUpdatesDone;
             InitUpdateCheck();
+        }
+
+        public static void UpdaterWindowCheckForUpdatesDone(object sender, EventArgs e)
+        {
+            
+            HttpVersionChecked -= UpdaterWindowCheckForUpdatesDone;
         }
 
         public static void InitUpdateCheck()
@@ -45,7 +53,7 @@ namespace Reallusion.Import
             {
                 if (currentSettings.checkForUpdates)
                 {
-                    TimeSpan checkInterval = new TimeSpan(0, 0, 5, 0, 0);
+                    TimeSpan checkInterval = new TimeSpan(1, 0, 0, 0, 0);//TimeSpan(0, 0, 5, 0, 0);
                     DateTime now = DateTime.Now.ToLocalTime();
 
                     long univ = currentSettings.lastUpdateCheck;
