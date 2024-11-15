@@ -33,7 +33,7 @@ namespace Reallusion.Import
     {
         // Settings
         [SerializeField]
-        private static RLSettingsObject generalSettings;
+        public static RLSettingsObject generalSettings;
 
         public static RLSettingsObject GeneralSettings
         {

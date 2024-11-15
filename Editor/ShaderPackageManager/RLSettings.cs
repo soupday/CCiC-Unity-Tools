@@ -157,7 +157,10 @@ namespace Reallusion.Import
         {
             RLSettingsObject obj = CreateInstance<RLSettingsObject>();
             obj.showOnStartup = true;
+            obj.ignoreAllErrors = false;
             obj.checkForUpdates = true;
+            obj.updateWindowShownOnce = false;
+            obj.performPostInstallationCheck = false;
             obj.updateAvailable = false;
             obj.lastUpdateCheck = 0;
             obj.jsonTagName = string.Empty;

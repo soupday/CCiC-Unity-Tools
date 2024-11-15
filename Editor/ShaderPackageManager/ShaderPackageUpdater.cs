@@ -20,17 +20,21 @@ namespace Reallusion.Import
         private static bool showUtility = true;
 
         [MenuItem("Reallusion/Processing Tools/Shader Package Updater", priority = 800)]
-        public static void CreateWindow()
+        public static void MenuCreateWindow()
         {
-            Debug.Log("ShaderPackageUpdater.CreateWindow()");
-            if (!EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
-                Instance = OpenWindow();
+            UpdateManager.TryPerformUpdateChecks(true);
         }
 
         [MenuItem("Reallusion/Processing Tools/Shader Package Updater", true)]
-        public static bool ValidateWindow()
+        public static bool MenuValidateWindow()
         {
             return !EditorWindow.HasOpenInstances<ShaderPackageUpdater>() && ImporterWindow.Current != null;
+        }
+
+        public static void CreateWindow()
+        {
+            if (!EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
+                Instance = OpenWindow();
         }
 
         public static ShaderPackageUpdater OpenWindow()
@@ -40,14 +44,14 @@ namespace Reallusion.Import
                 window.ShowUtility();
             else
                 window.Show();
-            window.minSize = new Vector2(600f, 300f);
-
+            window.minSize = new Vector2(600f, 600f);
+            window.maxSize = new Vector2(600f, 600f);
             return window;
         }
 
         private void OnEnable()
         {
-            Debug.Log("ShaderPackageUpdater.OnEnable");
+            //Debug.Log("ShaderPackageUpdater.OnEnable");
             Debug.Log(UpdateManager.activePipelineVersion);
             currentSettings = ImporterWindow.GeneralSettings;
 
@@ -68,24 +72,24 @@ namespace Reallusion.Import
 
         private void OnDestroy()
         {
-            Debug.Log("ShaderPackageUpdater.OnDestroy");
+            //Debug.Log("ShaderPackageUpdater.OnDestroy");
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
         }
 
         private void OnDisable()
         {
-            Debug.Log("ShaderPackageUpdater.OnDisable");
+            //Debug.Log("ShaderPackageUpdater.OnDisable");
         }
 
         public void OnBeforeAssemblyReload()
         {
-            Debug.Log("ShaderPackageUpdater.OnBeforeAssemblyReload");
+            //Debug.Log("ShaderPackageUpdater.OnBeforeAssemblyReload");
         }
 
         public void OnAfterAssemblyReload()
         {
-            Debug.Log("ShaderPackageUpdater.OnAfterAssemblyReload");
+            //Debug.Log("ShaderPackageUpdater.OnAfterAssemblyReload");
             FrameTimer.CreateTimer(15, FrameTimer.onAfterAssemblyReload, GetInstanceAfterReload);
         }
     
@@ -243,7 +247,7 @@ namespace Reallusion.Import
         public void UpdateGUI()
         {
             currentTarget = EditorUserBuildSettings.activeBuildTarget;
-            //ShaderPackageUtil.ShaderPackageUtilInit();
+            //UpdateManager.TryPerformUpdateChecks();
         }
 
         Vector2 mainScrollPos;
@@ -258,20 +262,6 @@ namespace Reallusion.Import
 
             // insulation against undetermined pipeline and packages
             if (UpdateManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.Waiting || UpdateManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.None) return;
-
-            /*
-            if (UpdateManager.shaderPackageValid == ShaderPackageUtil.PackageVailidity.None)
-            {
-                //UpdateGUI();
-
-                return;
-            }
-            */
-
-            //if (UpdateManager.determinedAction == null)
-            //{
-            //    ShaderPackageUtil.DetermineAction();
-            //}
 
             titleContent = new GUIContent(titleString + " - " + PipelineVersionString(true));
 
@@ -296,31 +286,28 @@ namespace Reallusion.Import
             InstalledShaderFoldoutGUI();
 
             GUILayout.Space(SECTION_SPACER);
-
-            //if (UpdateManager.installedPackageStatus != ShaderPackageUtil.InstalledPackageStatus.Current)
-            //    actionRequired = true;
-            //else
-            //    actionRequired = false;
-
-            actionToFollowFoldoutGUI();
+                        
+            ActionToFollowFoldoutGUI();
 
             GUILayout.FlexibleSpace();
 
             // test functions
-            FoldoutTestSection();
+            bool test = true;
+            if (test)
+            {
+                FoldoutTestSection();                
+            }
+            // test functions ends 
 
             GUILayout.EndScrollView();
 
             GUILayout.Space(SECTION_SPACER);
-            // test functions ends 
-            GUILayout.EndVertical();
+
+            GUILayout.EndVertical(); // whole window contents
 
             ShowOnStartupGUI();
 
             GUILayout.Space(SECTION_SPACER);
-            // end test functions
-
-            //GUILayout.EndVertical(); // whole window contents
         }
 
         bool xSectionFoldout = false;
@@ -865,7 +852,7 @@ namespace Reallusion.Import
             if (GUILayout.Button("Check Status"))
             {
                 UpdateGUI();
-                //shaderPackageValid = TryValidateShaderPackage(out shaderPackageItems);
+                ShaderPackageUtil.UpdaterWindowCheckStatus();
             }
 
             GUILayout.Space(HORIZ_INDENT);
@@ -1011,7 +998,7 @@ namespace Reallusion.Import
 
         public bool actionRequired = false;
         bool actionToFollowFoldout = false;
-        private void actionToFollowFoldoutGUI()
+        private void ActionToFollowFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
 
@@ -1096,7 +1083,18 @@ namespace Reallusion.Import
                             break;
                         }
                 }
-                GUILayout.Button(picture, GUILayout.Width(100f), GUILayout.Height(100f));
+                if (GUILayout.Button(picture, GUILayout.Width(100f), GUILayout.Height(100f)))
+                {
+                    ShaderPackageUtil.GUIPerformShaderAction(action);
+                }
+                GUILayout.BeginVertical();
+                GUILayout.Label(UpdateManager.determinedShaderAction.ResultString, guiStyles.WrappedInfoLabel);
+                string currentRelease = "No currentPackageManifest found";
+                if (UpdateManager.currentPackageManifest != null)
+                {
+                    currentRelease = "Current version: " + UpdateManager.currentPackageManifest.Pipeline + " " + UpdateManager.currentPackageManifest.Version + " ";
+                }
+                GUILayout.Label(currentRelease, guiStyles.WrappedInfoLabel);
             }            
             GUILayout.FlexibleSpace();
 
@@ -1105,7 +1103,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
 
             GUILayout.Space(VERT_INDENT);
-
+            
             GUILayout.EndVertical();
         }
 
@@ -1113,15 +1111,30 @@ namespace Reallusion.Import
         {
             if (currentSettings != null)  // avoids a null ref after assembly reload while waiting for frames
             {
-                EditorGUI.BeginChangeCheck();
                 GUILayout.BeginHorizontal();
+                EditorGUI.BeginChangeCheck();                
                 GUILayout.Label("Show this window on startup ");
                 currentSettings.showOnStartup = EditorGUILayout.Toggle(currentSettings.showOnStartup);
                 if (EditorGUI.EndChangeCheck())
                 {
                     ImporterWindow.SetGeneralSettings(currentSettings, true);
                 }
-                GUILayout.FlexibleSpace();
+
+                EditorGUI.BeginChangeCheck();
+                GUILayout.Label(new GUIContent("Check for updates ", "Toggling this on will check for a software update every 24hrs.  If disabled a manual check for updates cn be perfomed with the check for updates button in the 'Current Software Version' foldout (use the menu path 'Reallusion -> Processing Tools -> Shader Package Updater' top re-open the window)"));
+                currentSettings.checkForUpdates = EditorGUILayout.Toggle(currentSettings.checkForUpdates);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    ImporterWindow.SetGeneralSettings(currentSettings, true);
+                }
+
+                EditorGUI.BeginChangeCheck();
+                GUILayout.Label(new GUIContent("Ignore all ", "Toggling this on will prevent to window from being automatically shown even if errors are detected.  This window can still be shown using the menu option 'Reallusion -> Processing Tools -> Shader Package Updater'"));
+                currentSettings.ignoreAllErrors = EditorGUILayout.Toggle(currentSettings.ignoreAllErrors);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    ImporterWindow.SetGeneralSettings(currentSettings, true);
+                }
                 GUILayout.EndHorizontal();
             }
         }

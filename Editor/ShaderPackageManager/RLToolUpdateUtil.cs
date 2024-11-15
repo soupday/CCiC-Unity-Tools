@@ -65,6 +65,12 @@ namespace Reallusion.Import
                         Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
                     }                    
                 }
+                else
+                {
+                    // not checking http for updates - but invoke event to complete the init process
+                    if (HttpVersionChecked != null)
+                        HttpVersionChecked.Invoke(null, null);
+                }
             }
         }
 

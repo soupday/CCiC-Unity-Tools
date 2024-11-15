@@ -8,6 +8,8 @@ namespace Reallusion.Import
     public class UpdateManager
     {
         public static bool checkIsLocked = false;
+        public static bool calledFromMenu = false;
+        public static RLSettingsObject settings;
 
         //shader package validation
         public static string emptyVersion = "0.0.0";
@@ -19,6 +21,7 @@ namespace Reallusion.Import
         public static Version installedShaderVersion = new Version(0, 0, 0);
         public static ShaderPackageUtil.InstalledPackageStatus installedPackageStatus = ShaderPackageUtil.InstalledPackageStatus.None;
         public static List<ShaderPackageUtil.ShaderPackageManifest> availablePackages;
+        public static ShaderPackageUtil.ShaderPackageManifest currentPackageManifest;
         public static string activePackageString = string.Empty;
         public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
         public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;
@@ -35,18 +38,21 @@ namespace Reallusion.Import
 
         public static ActivityStatus DeterminationStatus { get { return determinationStatus; } }
 
-        public static void TryPerformUpdateChecks()
+        public static void TryPerformUpdateChecks(bool fromMenu = false)
         {
+            Debug.LogWarning("TryPerformUpdateChecks...");
             if (!checkIsLocked)
             {
-                Debug.LogWarning("Check is not locked - can perform update checks");
+                Debug.LogWarning("!checkIsLocked...");
+                calledFromMenu = fromMenu;
+                //Debug.LogWarning("Check is not locked - can perform update checks");
                 PerformUpdateChecks();
             }
         }
 
         public static void PerformUpdateChecks()
         {
-            Debug.LogWarning("STARTING UPDATE CHECKS");
+            //Debug.LogWarning("STARTING UPDATE CHECKS");
             if (Application.isPlaying)
             {
                 if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
@@ -55,7 +61,7 @@ namespace Reallusion.Import
                 }
             }
             else
-            {
+            {                
                 checkIsLocked = true;
                 UpdateChecksComplete -= UpdateChecksDone;
                 UpdateChecksComplete += UpdateChecksDone;
@@ -69,7 +75,6 @@ namespace Reallusion.Import
         public static void UpdateChecksDone(object sender, object e)
         {
             Debug.LogWarning("ALL UPDATE CHECKS COMPLETED");
-
             ShaderPackageUtil.DetermineShaderAction();
             checkIsLocked = false;
             ShowUpdateUtilityWindow();
@@ -156,13 +161,25 @@ namespace Reallusion.Import
 
         public static void ShowUpdateUtilityWindow()
         {
+            Debug.LogWarning("ShowUpdateUtilityWindow");
             if (UpdateManager.determinedShaderAction != null)
             {
-                //bool error = UpdateManager.shaderPackageValid == PackageVailidity.Invalid;
+                Debug.LogWarning("UpdateManager.determinedShaderAction != null");
+                if (ImporterWindow.GeneralSettings != null)
+                    settings = ImporterWindow.GeneralSettings;
+                else
+                    Debug.LogError("settings are null");
+
                 bool sos = false;
+                if (settings != null) sos = settings.showOnStartup;
+                if (sos) Debug.LogWarning("Show on Startup");
+                bool shownOnce = true;
+                if (settings != null) shownOnce = settings.updateWindowShownOnce;
+                Debug.LogWarning("Shown once already: " + shownOnce.ToString());
+
                 bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
                 if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
-                if (ImporterWindow.GeneralSettings != null) sos = ImporterWindow.GeneralSettings.showOnStartup;
+                
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
                 bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
                 bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
@@ -172,14 +189,28 @@ namespace Reallusion.Import
                 else if (!valid) Debug.LogWarning("Problem with shader installation.");
 
                 if (valid || optional)
-                    showWindow = sos;
+                    showWindow = sos && !shownOnce;
 
-                if (sos || force || swUpdateAvailable)
+                if ((sos && !shownOnce) || force || swUpdateAvailable)
                     showWindow = true;
 
-                if (showWindow)
+                EditorApplication.quitting -= HandleQuitEvent;
+                EditorApplication.quitting += HandleQuitEvent;
+                Debug.LogWarning("showWindow: " + showWindow.ToString());
+                if (showWindow || calledFromMenu)
                 {
-                    if (!Application.isPlaying) ShaderPackageUpdater.CreateWindow();
+                    if (!Application.isPlaying)
+                    {
+                        bool ignore = false;
+                        if (settings != null)
+                        {
+                            // reset the shown once flag in the settings when the application quits
+                            
+                            settings.updateWindowShownOnce = true;
+                            ignore = settings.ignoreAllErrors;
+                        }
+                        if (!ignore) ShaderPackageUpdater.CreateWindow();
+                    }
 
                     if (ShaderPackageUpdater.Instance != null)
                     {
@@ -188,6 +219,11 @@ namespace Reallusion.Import
                     }
                 }
             }
+        }
+        public static void HandleQuitEvent()
+        {
+            settings.updateWindowShownOnce = false;
+            RLSettings.SaveRLSettingsObject(settings);
         }
     }
 }

@@ -6,8 +6,10 @@ namespace Reallusion.Import
     public class RLSettingsObject : ScriptableObject
     {
         public bool showOnStartup;
-        
+        public bool ignoreAllErrors;
         public bool checkForUpdates;
+        public bool updateWindowShownOnce;
+        public bool performPostInstallationCheck;
         public bool updateAvailable;
         public long lastUpdateCheck;
         public string jsonTagName;
