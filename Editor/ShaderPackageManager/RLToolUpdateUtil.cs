@@ -33,6 +33,11 @@ namespace Reallusion.Import
             InitUpdateCheck();
         }
 
+        public static void UpdaterWindowCheckForUpdates()
+        {
+            InitUpdateCheck();
+        }
+
         public static void InitUpdateCheck()
         {            
             RLSettingsObject currentSettings = (ImporterWindow.GeneralSettings == null) ? RLSettings.FindRLSettingsObject() : ImporterWindow.GeneralSettings;

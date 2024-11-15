@@ -483,7 +483,7 @@ namespace Reallusion.Import
             EditorGUI.BeginDisabledGroup(!interval);
             if(GUILayout.Button(new GUIContent("Check For Updates", interval ? "Check GitHub for updates" : "Last update check was too recent.  GitHub restricts the rate of checks.")))
             {
-                // check
+                RLToolUpdateUtil.UpdaterWindowCheckForUpdates();
             }
             EditorGUI.EndDisabledGroup();
 
