@@ -191,10 +191,10 @@ namespace Reallusion.Import
             }
         }
 
-        private float DRAG_VERT = 40f;
+        //private float DRAG_VERT = 40f;
         private float VERT_INDENT = 2f;
         private float HORIZ_INDENT = 2f;
-        private float SECTION_SPACER = 2f;
+        //private float SECTION_SPACER = 2f;
 
         private void OnGUI()
         {

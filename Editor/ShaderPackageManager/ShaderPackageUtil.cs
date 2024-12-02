@@ -25,7 +25,7 @@ namespace Reallusion.Import
 
         public static void UpdateManagerUpdateCheck()
         {
-            Debug.LogWarning("STARTING ShaderPackageUtil CHECKS");
+            //Debug.LogWarning("STARTING ShaderPackageUtil CHECKS");
             //ShaderPackageUtil.GetInstalledPipelineVersion();
             FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
         }
@@ -90,7 +90,7 @@ namespace Reallusion.Import
             if (ImporterWindow.GeneralSettings != null)
             {
                 UpdateManager.availablePackages = BuildPackageMap();
-                Debug.LogWarning("Running ValidateInstalledShader");
+                //Debug.LogWarning("Running ValidateInstalledShader");
                 ValidateInstalledShader();
             }
             if (PackageCheckDone != null)
@@ -129,26 +129,29 @@ namespace Reallusion.Import
             // examination of single installed shader
             string assetPath = AssetDatabase.GUIDToAssetPath(guid);
             ShaderPackageManifest shaderPackageManifest = ReadJson(assetPath);
-
-            // check shader is real and is for the currently active pipeline
-            if (shaderPackageManifest == null)
+            if (shaderPackageManifest != null)
+            {
+                shaderPackageManifest.ManifestPath = assetPath;
+                UpdateManager.installedShaderPipelineVersion = shaderPackageManifest.Pipeline;
+                UpdateManager.installedShaderVersion = new Version(shaderPackageManifest.Version);
+                // check shader is for the currently active pipeline
+                if (shaderPackageManifest.Pipeline != UpdateManager.activePipelineVersion)
+                {
+                    UpdateManager.installedPackageStatus = InstalledPackageStatus.Mismatch;
+                    UpdateManager.shaderPackageValid = PackageVailidity.Invalid;
+                    return; // action rule: Status: Mismatch  Vailidity: Invalid
+                }
+            }
+            else // check shader is real and is for the currently active pipeline
             {
                 UpdateManager.installedPackageStatus = InstalledPackageStatus.Absent;
                 UpdateManager.shaderPackageValid = PackageVailidity.Absent;
                 return; // action rule: Status: Absent  Vailidity: Absent
             }
-
-            // check shader is for the currently active pipeline
-            if (shaderPackageManifest.Pipeline != UpdateManager.activePipelineVersion)
-            {
-                UpdateManager.installedPackageStatus = InstalledPackageStatus.Mismatch;
-                UpdateManager.shaderPackageValid = PackageVailidity.Invalid;
-                return; // action rule: Status: Mismatch  Vailidity: Invalid
-            }
-
             // shader is for the correct pipeline
             // check the integrity of the installed shader
             shaderPackageManifest.ManifestPath = assetPath;
+            Debug.LogWarning("ValidateInstalledShader");
             UpdateManager.installedShaderPipelineVersion = shaderPackageManifest.Pipeline;
             UpdateManager.installedShaderVersion = new Version(shaderPackageManifest.Version);
 
@@ -227,7 +230,7 @@ namespace Reallusion.Import
 
                 if (applicablePackages.Count > 0)
                 {
-                    Debug.LogWarning("Found: " + applicablePackages.Count + " packages for this pipeline");
+                    //Debug.LogWarning("Found: " + applicablePackages.Count + " packages for this pipeline");
                     // determine the max available version
                     applicablePackages.Sort((a, b) => b.Version.ToVersion().CompareTo(a.Version.ToVersion()));  // descending sort
 
@@ -235,8 +238,8 @@ namespace Reallusion.Import
                     //{
                     //    Debug.Log(pkg.FileName + " " + pkg.Version);
                     //}
-                    Debug.Log("Maximum available package version for this pipeline: " + applicablePackages[0].Version);
 
+                    //Debug.Log("Maximum available package version for this pipeline: " + applicablePackages[0].Version);
                     return applicablePackages[0];  // set the current release for the pipeline -- this is the default to be installed
                 }
                 else
@@ -466,7 +469,7 @@ namespace Reallusion.Import
         // common pipeline determination
         public static void DeterminePipelineInfo(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
-            Debug.LogWarning("Running DeterminePipelineInfo.");
+            //Debug.LogWarning("Running DeterminePipelineInfo.");
             List<InstalledPipelines> installed = new List<InstalledPipelines>();
 
             installed.Add(new InstalledPipelines(InstalledPipeline.Builtin, new Version(emptyVersion), ""));
@@ -851,8 +854,7 @@ namespace Reallusion.Import
         }
 
         public static void UnInstallPackage()
-        {
-            Debug.Log("UnInstallPackage");
+        {            
             string manifestLabel = "_RL_shadermanifest";
             string[] searchLoc = new string[] { "Assets" };
             string[] mainifestGuids = AssetDatabase.FindAssets(manifestLabel, searchLoc);
@@ -869,14 +871,17 @@ namespace Reallusion.Import
 
             foreach (string guid in mainifestGuids)
             {
-                Debug.Log("TryUnInstallPackage " + AssetDatabase.GUIDToAssetPath(guid));
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string[] split = assetPath.Split('_');
+                Debug.Log("Trying to uninstall shader package:  Pipeline:" + split[split.Length -3] + " Version: " + split[split.Length - 4]);
+                
                 if (TryUnInstallPackage(guid))
                 {
-                    Debug.Log("Package uninstalled");
+                    Debug.Log("Package uninstalled.");
                 }
                 else
                 {
-                    Debug.Log("Package could not be uninstalled");
+                    Debug.Log("Package could not be fully uninstalled.");
                 }
             }
         }
@@ -899,7 +904,6 @@ namespace Reallusion.Import
 
             if (!string.IsNullOrEmpty(manifest))
             {
-
                 ShaderPackageManifest shaderPackageManifest = JsonUtility.FromJson<ShaderPackageManifest>(manifest);
 #if UNITY_2021_3_OR_NEWER
                 Debug.Log("Uninstalling files" + (toTrash ? " to OS trash folder" : "") + " from: " + " Pipeline: " + shaderPackageManifest.Pipeline + " Version: " + shaderPackageManifest.Version + " (" + shaderPackageManifest.FileName + ")");
@@ -958,11 +962,11 @@ namespace Reallusion.Import
                             if (File.Exists(fullPath))
                             {
                                 deleteList.Add(deletePath);
-                                Debug.Log("Adding " + deletePath + " to deleteList");
+                                //Debug.Log("Adding " + deletePath + " to deleteList");
                             }
                             else
                             {
-                                Debug.Log(deletePath + " not found on disk ... skipping");
+                                Debug.Log("Shader file delete: " + deletePath + " not found on disk ... skipping");
                             }
 
                         }
@@ -983,7 +987,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.Log("No Folders");
+                    //Debug.Log("No Folders");
                 }
 
                 manifest = string.Empty;
@@ -994,7 +998,7 @@ namespace Reallusion.Import
             List<string> failedPaths = new List<string>();
             bool hasFailedPaths = false;
             deleteList.Add(AssetDatabase.GUIDToAssetPath(guid));
-            bool existingFilesDeleted = false;
+            //bool existingFilesDeleted = false;
 #if UNITY_2021_3_OR_NEWER
             if (toTrash)
                 hasFailedPaths = !AssetDatabase.MoveAssetsToTrash(deleteList.ToArray(), failedPaths);

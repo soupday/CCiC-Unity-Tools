@@ -29,7 +29,7 @@ namespace Reallusion.Import
 
         public static void UpdateManagerUpdateCheck()
         {
-            Debug.LogWarning("STARTING RLToolUpdateUtil CHECKS");
+            //Debug.LogWarning("STARTING RLToolUpdateUtil CHECKS");
             InitUpdateCheck();
         }
 
@@ -75,7 +75,7 @@ namespace Reallusion.Import
                         }
                         if (HttpVersionChecked != null)
                             HttpVersionChecked.Invoke(null, null);
-                        Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
+                        //Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
                     }                    
                 }
                 else

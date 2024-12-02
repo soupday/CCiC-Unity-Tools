@@ -212,7 +212,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.Log("Attempting to write RLSettingsObject: " + obj.lastPath);
+                //Debug.Log("Attempting to write RLSettingsObject: " + obj.lastPath);
                 if (assetPath != obj.lastPath)
                 {
                     // object has moved - update last path

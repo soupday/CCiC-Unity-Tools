@@ -19,13 +19,13 @@ namespace Reallusion.Import
         private static RLSettingsObject currentSettings;
         private static bool showUtility = true;
 
-        [MenuItem("Reallusion/Processing Tools/Shader Package Updater", priority = 800)]
+        [MenuItem("Reallusion/Check For Updates", priority = 6000)]
         public static void MenuCreateWindow()
         {
             UpdateManager.TryPerformUpdateChecks(true);
         }
 
-        [MenuItem("Reallusion/Processing Tools/Shader Package Updater", true)]
+        [MenuItem("Reallusion/Check For Updates", true)]
         public static bool MenuValidateWindow()
         {
             return !EditorWindow.HasOpenInstances<ShaderPackageUpdater>() && ImporterWindow.Current != null;
@@ -52,7 +52,7 @@ namespace Reallusion.Import
         private void OnEnable()
         {
             //Debug.Log("ShaderPackageUpdater.OnEnable");
-            Debug.Log(UpdateManager.activePipelineVersion);
+            //Debug.Log(UpdateManager.activePipelineVersion);
             currentSettings = ImporterWindow.GeneralSettings;
 
             initGUI = true;
@@ -405,7 +405,7 @@ namespace Reallusion.Import
         bool newVersionAvailable = false;
         [SerializeField]
         DateTime gitHubPublishedDateTime;
-        bool linkClicked = false;
+        //bool linkClicked = false;
 
 
         //[SerializeField]
