@@ -469,9 +469,12 @@ namespace Reallusion.Import
 
             GUILayout.Space(22f);
             GUILayout.Label("Release Notes: ", guiStyles.infoTextItal);
-            foreach (string line in settings.jsonBodyLines)
+            if (settings.jsonBodyLines != null && settings.jsonBodyLines.Length > 0)
             {
-                GUILayout.Label(line, guiStyles.infoText);
+                foreach (string line in settings.jsonBodyLines)
+                {
+                    GUILayout.Label(line, guiStyles.infoText);
+                }
             }
 
             GUILayout.EndScrollView();

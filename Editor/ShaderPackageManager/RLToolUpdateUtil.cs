@@ -16,7 +16,8 @@ namespace Reallusion.Import
     public static class RLToolUpdateUtil
     {
         //public const string gitHubReleaseUrl = "https://api.github.com/repos/soupday/cc_blender_tools/releases";
-        public const string gitHubReleaseUrl = "https://api.github.com/repos/soupday/cc_unity_tools_HDRP/releases";
+        //public const string gitHubReleaseUrl = "https://api.github.com/repos/soupday/cc_unity_tools_HDRP/releases";
+        public const string gitHubReleaseUrl = "https://api.github.com/repos/soupday/ccic_unity_tools_all/releases";
         public const string gitHubTagName = "tag_name";
         public const string gitHubHtmlUrl = "html_url";
         public const string name = "name";
@@ -123,9 +124,10 @@ namespace Reallusion.Import
                 Debug.LogWarning("Error accessing Github to check for new 'CC/iC Unity Tools' version. Error: " + ex);
             }
 
+            RLSettingsObject currentSettings = ImporterWindow.GeneralSettings;
             if (!string.IsNullOrEmpty(releaseJson))
             {
-                Debug.Log(releaseJson.Substring(0, 100));
+                //Debug.Log(releaseJson.Substring(0, 100));
                 List<JsonFragment> fragmentList = GetFragmentList<JsonFragment>(releaseJson);
                 //fullJsonFragment = fragmentList;
                 if (fragmentList != null && fragmentList.Count > 0)
@@ -133,7 +135,7 @@ namespace Reallusion.Import
                     JsonFragment fragment = fragmentList[0];
                     if (ImporterWindow.GeneralSettings != null)
                     {
-                        RLSettingsObject currentSettings = ImporterWindow.GeneralSettings;
+                        currentSettings = ImporterWindow.GeneralSettings;
                         if (fragment.TagName != null)
                             currentSettings.jsonTagName = fragment.TagName;
                         if (fragment.HtmlUrl != null)
@@ -159,6 +161,8 @@ namespace Reallusion.Import
                 else
                 {
                     Debug.LogWarning("Cannot parse JSON release data from GitHub - aborting version check.");
+
+                    WriteDummyReleaseInfo(currentSettings);
                 }
 
                 // Version gitHubLatestVersion = TagToVersion(jsonTagName);
@@ -167,6 +171,28 @@ namespace Reallusion.Import
                 if (HttpVersionChecked != null)
                     HttpVersionChecked.Invoke(null, null);
             }
+            else
+            {
+                // cant find a release json from github's api
+                Debug.LogWarning("Cannot find a release JSON from GitHub - aborting version check.");
+
+                WriteDummyReleaseInfo(currentSettings);
+
+                if (HttpVersionChecked != null)
+                    HttpVersionChecked.Invoke(null, null);
+            }
+        }
+
+        public static void WriteDummyReleaseInfo(RLSettingsObject settingsObject)
+        {
+            settingsObject.jsonTagName = "0.0.0";
+            settingsObject.jsonHtmlUrl = "https://github.com/soupday";
+            settingsObject.jsonPublishedAt = "";
+            settingsObject.jsonBodyLines = new string[0];
+
+            settingsObject.updateAvailable = false;
+            UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.None;
+            ImporterWindow.SetGeneralSettings(settingsObject, true);
         }
 
         public static void OnHttpVersionChecked(object sender, EventArgs e)
@@ -214,7 +240,15 @@ namespace Reallusion.Import
 
         public static List<T> GetFragmentList<T>(string json)
         {
-            List<T> list = JsonConvert.DeserializeObject<List<T>>(json);
+            List<T> list = new List<T>();
+            try
+            {
+                list = JsonConvert.DeserializeObject<List<T>>(json);
+            }
+            catch
+            {
+                return null;
+            }
             if (list != null && list.Count > 0)            
                 return list;            
             else
