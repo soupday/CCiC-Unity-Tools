@@ -151,7 +151,7 @@ namespace Reallusion.Import
             // shader is for the correct pipeline
             // check the integrity of the installed shader
             shaderPackageManifest.ManifestPath = assetPath;
-            Debug.LogWarning("ValidateInstalledShader");
+            //Debug.LogWarning("ValidateInstalledShader");
             UpdateManager.installedShaderPipelineVersion = shaderPackageManifest.Pipeline;
             UpdateManager.installedShaderVersion = new Version(shaderPackageManifest.Version);
 
@@ -811,7 +811,7 @@ namespace Reallusion.Import
 
         public static void PostImportPackageItemCompare()
         {
-            Debug.LogWarning("Performing post installation shader checks...");
+            Debug.Log("Performing post installation shader checks...");
             string guid = GetLatestManifestGUID();
             if (guid == string.Empty) return;
 
@@ -820,7 +820,7 @@ namespace Reallusion.Import
             ShaderPackageManifest manifest = ReadJson(manifestAssetPath);
             if (manifest != null)
             {
-                Debug.Log(manifest.SourcePackageName);
+                Debug.Log("Package installed from: " + manifest.SourcePackageName);
                 foreach (var item in manifest.Items)
                 {
                     string fullFilename = Path.GetFileName(item.ItemName);
@@ -861,7 +861,7 @@ namespace Reallusion.Import
 
             if (mainifestGuids.Length == 0)
             {
-                Debug.LogWarning("No shader packages have been found!!");
+                //Debug.LogWarning("No shader packages have been found!!");
             }
 
             if (mainifestGuids.Length > 1)
