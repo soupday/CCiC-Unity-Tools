@@ -124,7 +124,7 @@ namespace Reallusion.Import
 
             window.minSize = GetMinSize();
             //initial window dimensions
-            Rect centerPosition = GetRectToCenterWindow(INITIAL_PROC_LIST_WIDTH, INITIAL_PROC_LIST_HEIGHT);
+            Rect centerPosition = Util.GetRectToCenterWindow(INITIAL_PROC_LIST_WIDTH, INITIAL_PROC_LIST_HEIGHT);
             window.position = centerPosition;
             window.titleContent = new GUIContent("CC/iC Importer - Batch Processing");
             return window;
@@ -1229,6 +1229,7 @@ namespace Reallusion.Import
             return texture;
         }
 
+        /*  moved to Util
         public static Rect GetRectToCenterWindow(float width, float height)
         {
 #if UNITY_2020_3_OR_NEWER
@@ -1314,6 +1315,7 @@ namespace Reallusion.Import
 #endif
             return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
         }
+        */
 
         private void FilterOptionSelected(object sel)
         {

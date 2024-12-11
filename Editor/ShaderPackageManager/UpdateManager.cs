@@ -40,12 +40,9 @@ namespace Reallusion.Import
 
         public static void TryPerformUpdateChecks(bool fromMenu = false)
         {
-            //Debug.LogWarning("TryPerformUpdateChecks...");
             if (!checkIsLocked)
             {
-                //Debug.LogWarning("!checkIsLocked...");
                 calledFromMenu = fromMenu;
-                //Debug.LogWarning("Check is not locked - can perform update checks");
                 PerformUpdateChecks();
             }
         }
@@ -161,41 +158,69 @@ namespace Reallusion.Import
 
         public static void ShowUpdateUtilityWindow()
         {
-            //Debug.LogWarning("ShowUpdateUtilityWindow");
+            if(ImporterWindow.GeneralSettings != null)
+                    settings = ImporterWindow.GeneralSettings;
+            else
+                Debug.LogError("settings are null");
+
+            // reset the shown once flag in the settings and reset when the application quits                            
+            if (settings != null) settings.updateWindowShownOnce = true;
+
+            EditorApplication.quitting -= HandleQuitEvent;
+            EditorApplication.quitting += HandleQuitEvent;
+
             if (UpdateManager.determinedShaderAction != null)
             {
-                //Debug.LogWarning("UpdateManager.determinedShaderAction != null");
-                if (ImporterWindow.GeneralSettings != null)
-                    settings = ImporterWindow.GeneralSettings;
-                else
-                    Debug.LogError("settings are null");
+                if (UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force)
+                {
+                    if (settings != null) settings.postInstallShowPopupNotWindow = true;
+                    ShaderPackageUtil.InstallPackage(UpdateManager.currentPackageManifest, false);
+                    return;
+                }
 
-                bool sos = false;
-                if (settings != null) sos = settings.showOnStartup;
-                //if (sos) Debug.LogWarning("Show on Startup");
+                bool sos = false;                
                 bool shownOnce = true;
-                if (settings != null) shownOnce = settings.updateWindowShownOnce;
-                //Debug.LogWarning("Shown once already: " + shownOnce.ToString());
+                bool postInstallShowUpdateWindow = false;
+                bool showWindow = false;
 
+                if (settings != null)
+                {
+                    sos = settings.showOnStartup;
+                    shownOnce = settings.updateWindowShownOnce;
+                    postInstallShowUpdateWindow = settings.postInstallShowUpdateWindow;
+                    settings.postInstallShowUpdateWindow = false;
+                }
                 bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
                 if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
                 
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
+
                 bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
                 bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
+
                 bool shaderActionRequired = force || (optional && sos);
-                bool showWindow = false;
+                
                 if (optional) Debug.LogWarning("An optional shader package is available.");
                 else if (!valid) Debug.LogWarning("Problem with shader installation.");
 
                 if (valid || optional)
                     showWindow = sos && !shownOnce;
 
-                if ((sos && !shownOnce) || force || swUpdateAvailable)
+                if ((sos && !shownOnce) || force || swUpdateAvailable || postInstallShowUpdateWindow)
                     showWindow = true;
 
-                EditorApplication.quitting -= HandleQuitEvent;
-                EditorApplication.quitting += HandleQuitEvent;
+                bool popupNotUpdater = false;
+                if (settings != null) popupNotUpdater = settings.postInstallShowPopupNotWindow;
+                settings.postInstallShowPopupNotWindow = false;
+
+                if (popupNotUpdater)
+                {
+                    if (!Application.isPlaying)
+                    {
+                        ShaderPackagePopup.OpenPopupWindow(ShaderPackagePopup.PopupType.Completion, UpdateManager.updateMessage);
+                        return;
+                    }
+                }
 
                 if (showWindow || calledFromMenu)
                 {
@@ -204,9 +229,6 @@ namespace Reallusion.Import
                         bool ignore = false;
                         if (settings != null)
                         {
-                            // reset the shown once flag in the settings when the application quits
-                            
-                            settings.updateWindowShownOnce = true;
                             if (!calledFromMenu)
                                 ignore = settings.ignoreAllErrors;
                         }
@@ -221,6 +243,18 @@ namespace Reallusion.Import
                 }
             }
         }
+
+        public static string updateMessage = string.Empty;
+
+        [Flags]
+        enum ShowWindow
+        {
+            None = 0,
+            DoNotShow = 1,
+            ShowUpdaterWindow = 2,
+            ShowPopupWindow = 4
+        }
+
         public static void HandleQuitEvent()
         {
             settings.updateWindowShownOnce = false;

@@ -185,6 +185,11 @@ namespace Reallusion.Import
             {
                 ShaderPackageUpdater.Instance.Close();
             }
+
+            if (EditorWindow.HasOpenInstances<ShaderPackagePopup>())
+            {
+                ShaderPackagePopup.Instance.Close();
+            }
         }
 
         public static PreviewScene OpenPreviewScene(GameObject prefab)

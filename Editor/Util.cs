@@ -1408,5 +1408,93 @@ namespace Reallusion.Import
                 }                
             }
         }
+
+        public static Rect GetRectToCenterWindow(float width, float height)
+        {
+#if UNITY_2020_3_OR_NEWER
+            Rect appRect = EditorGUIUtility.GetMainWindowPosition();
+#else
+            Rect appRect = GetEditorApplicationWindowRect();
+#endif
+
+            if (appRect == new Rect())
+            {
+                return new Rect(100f, 100f, width, height);
+            }
+
+            float xOrigin = appRect.x + (appRect.width / 2f) - (width / 2f);
+            float yOrigin = appRect.y + (appRect.height / 2f) - (height / 2f);
+
+            return new Rect(xOrigin, yOrigin, width, height);
+        }
+
+        public static Rect GetEditorApplicationWindowRect()
+        {
+            // The editor application's position is stored in:
+            // The current domain's assembly called UnityEditor.CoreModule (System.Reflection.Assembly)
+            // Inside the CoreModule the defined type ContainerWindow (System.Reflection.TypeInfo)
+
+            // All Unity application windows are objects of type ContainerWindow (as above)
+            // Each window has a "position" 'property' and a "m_ShowMode" 'field'
+            // Get a field object for "m_ShowMode" and a property object for "position"        
+            // Iterate through the windows obtained with Resources.FindObjectsOfTypeAll
+            // The main window has the field m_ShowMode == 4 (field object .GetValue(window))
+            // The main window is obtained with property object .GetValue(window)
+
+#if UNITY_2020_3_OR_NEWER
+            System.Reflection.Assembly coreModuleAssembly = AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains("UnityEditor.CoreModule")).FirstOrDefault();
+            if (coreModuleAssembly != null)
+            {
+                System.Reflection.TypeInfo containerWindowTypeInfo = coreModuleAssembly.DefinedTypes.Where(t => t.FullName.Contains("ContainerWindow")).FirstOrDefault();
+                if (containerWindowTypeInfo != null)
+                {
+                    var showModeField = containerWindowTypeInfo.GetField("m_ShowMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var positionProperty = containerWindowTypeInfo.GetProperty("position", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if (showModeField != null && positionProperty != null)
+                    {
+                        var allContainerWindows = Resources.FindObjectsOfTypeAll(containerWindowTypeInfo);
+                        foreach (var win in allContainerWindows)
+                        {
+                            var showmode = (int)showModeField.GetValue(win);
+                            if (showmode == 4) // main window
+                            {
+                                var mainWindowPosition = (Rect)positionProperty.GetValue(win, null);
+                                return mainWindowPosition;
+                            }
+                        }
+                    }
+                }
+            }
+#else
+            //Unity 2019 ContainerWindow type is in the UnityEditor assembly
+            foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (System.Reflection.TypeInfo t in assembly.DefinedTypes)
+                {
+                    if (t.FullName.iContains("ContainerWindow"))
+                    {
+                        var showModeField = t.GetField("m_ShowMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        var positionProperty = t.GetProperty("position", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if (showModeField != null && positionProperty != null)
+                        {
+                            var allContainerWindows = Resources.FindObjectsOfTypeAll(t);
+                            foreach (var win in allContainerWindows)
+                            {
+                                var showmode = (int)showModeField.GetValue(win);
+                                if (showmode == 4) // main window
+                                {
+                                    var mainWindowPosition = (Rect)positionProperty.GetValue(win, null);
+                                    return mainWindowPosition;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+#endif
+            return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
+        }
+
+
     }    
 }

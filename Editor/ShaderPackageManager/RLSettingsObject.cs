@@ -9,6 +9,8 @@ namespace Reallusion.Import
         public bool ignoreAllErrors;
         public bool checkForUpdates;
         public bool updateWindowShownOnce;
+        public bool postInstallShowUpdateWindow;
+        public bool postInstallShowPopupNotWindow;
         public bool performPostInstallationCheck;
         public bool updateAvailable;
         public long lastUpdateCheck;

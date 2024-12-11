@@ -39,13 +39,18 @@ namespace Reallusion.Import
 
         public static ShaderPackageUpdater OpenWindow()
         {
+            float width = 600f;
+            float height = 600f;
+            Rect centerPosition = Util.GetRectToCenterWindow(width, height);
+
             ShaderPackageUpdater window = ScriptableObject.CreateInstance<ShaderPackageUpdater>();
             if (showUtility)
                 window.ShowUtility();
             else
                 window.Show();
-            window.minSize = new Vector2(600f, 600f);
-            window.maxSize = new Vector2(600f, 600f);
+            window.minSize = new Vector2(width, height);
+            window.maxSize = new Vector2(width, height);
+            window.position = centerPosition;
             return window;
         }
 

@@ -67,7 +67,6 @@ namespace Reallusion.Import
             if (ImporterWindow.generalSettings != null)
             {
                 if (ImporterWindow.generalSettings.performPostInstallationCheck) ShaderPackageUtil.PostImportPackageItemCompare();
-
                 ImporterWindow.generalSettings.performPostInstallationCheck = false;
             }
             OnPipelineDetermined -= PipelineDetermined;
@@ -269,7 +268,7 @@ namespace Reallusion.Import
 
             List<ShaderActionRules> ActionRulesList = new List<ShaderActionRules>
             {
-                ActionRule(DeterminedShaderAction.UninstallReinstall_force, InstalledPackageStatus.Absent, PackageVailidity.Absent, freshInstall),
+                ActionRule(DeterminedShaderAction.NothingInstalled_Install_force, InstalledPackageStatus.Absent, PackageVailidity.Absent, freshInstall),
                 ActionRule(DeterminedShaderAction.Error, InstalledPackageStatus.Multiple, PackageVailidity.Invalid, multiple),
                 ActionRule(DeterminedShaderAction.CurrentValid, InstalledPackageStatus.Current, PackageVailidity.Valid, currentValid),
                 ActionRule(DeterminedShaderAction.UninstallReinstall_optional, InstalledPackageStatus.Upgradeable, PackageVailidity.Valid, normalUpgrade),
@@ -469,7 +468,6 @@ namespace Reallusion.Import
         // common pipeline determination
         public static void DeterminePipelineInfo(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
-            //Debug.LogWarning("Running DeterminePipelineInfo.");
             List<InstalledPipelines> installed = new List<InstalledPipelines>();
 
             installed.Add(new InstalledPipelines(InstalledPipeline.Builtin, new Version(emptyVersion), ""));
@@ -495,7 +493,6 @@ namespace Reallusion.Import
 
             if (OnPipelineDetermined != null)
                 OnPipelineDetermined.Invoke(null, null);
-            //UpdateManager.shaderPackageValid = PackageVailidity.Finished;
         }
 
         public static PipelineVersion DetermineActivePipelineVersion(List<UnityEditor.PackageManager.PackageInfo> packageList)
@@ -686,17 +683,22 @@ namespace Reallusion.Import
 
         public static void InstallPackage(ShaderPackageManifest shaderPackageManifest, bool interactive = true)
         {
-            AssetDatabase.importPackageCompleted -= OnImportPackageCompleted;
-            AssetDatabase.importPackageCompleted += OnImportPackageCompleted;
+            // The events importPackageCompleted and onImportPackageItemsCompleted are only invoked by
+            // a package installation that doesn't cause a domain reload - otherwise the subscription doesnt survive.
+            // Since the inclusion of runtime .cs files in the package, a domain reload is caused requiring a manual solution.
+
+            //AssetDatabase.importPackageCompleted -= OnImportPackageCompleted;
+            //AssetDatabase.importPackageCompleted += OnImportPackageCompleted;
 #if UNITY_2021_3_OR_NEWER
-            AssetDatabase.onImportPackageItemsCompleted -= OnImportPackageItemsCompleted;
-            AssetDatabase.onImportPackageItemsCompleted += OnImportPackageItemsCompleted;
+            //AssetDatabase.onImportPackageItemsCompleted -= OnImportPackageItemsCompleted;
+            //AssetDatabase.onImportPackageItemsCompleted += OnImportPackageItemsCompleted;
 #else
 
 #endif
             if (ImporterWindow.GeneralSettings != null)
             {
                 ImporterWindow.GeneralSettings.performPostInstallationCheck = true;
+                ImporterWindow.GeneralSettings.postInstallShowUpdateWindow = true;
             }
             AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
         }
@@ -811,7 +813,7 @@ namespace Reallusion.Import
 
         public static void PostImportPackageItemCompare()
         {
-            Debug.Log("Performing post installation shader checks...");
+            //Debug.Log("Performing post installation shader checks...");
             string guid = GetLatestManifestGUID();
             if (guid == string.Empty) return;
 
@@ -820,7 +822,7 @@ namespace Reallusion.Import
             ShaderPackageManifest manifest = ReadJson(manifestAssetPath);
             if (manifest != null)
             {
-                Debug.Log("Package installed from: " + manifest.SourcePackageName);
+                //Debug.Log("Package installed from: " + manifest.SourcePackageName);
                 foreach (var item in manifest.Items)
                 {
                     string fullFilename = Path.GetFileName(item.ItemName);
@@ -848,9 +850,10 @@ namespace Reallusion.Import
             string jsonString = JsonUtility.ToJson(manifest);
             File.WriteAllText(fullManifestPath, jsonString);
             AssetDatabase.Refresh();
+
             if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.UpdateGUI();
 
-            ShaderPackagePopup.OpenWindow("Imported package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString());
+            UpdateManager.updateMessage = "Shader package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString() + " has been imported.";
         }
 
         public static void UnInstallPackage()
@@ -1191,6 +1194,7 @@ namespace Reallusion.Import
             None,
             Error,
             CurrentValid,
+            NothingInstalled_Install_force,
             UninstallReinstall_optional,
             UninstallReinstall_force
         }

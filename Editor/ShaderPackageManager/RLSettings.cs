@@ -160,6 +160,7 @@ namespace Reallusion.Import
             obj.ignoreAllErrors = false;
             obj.checkForUpdates = true;
             obj.updateWindowShownOnce = false;
+            obj.postInstallShowUpdateWindow = false;
             obj.performPostInstallationCheck = false;
             obj.updateAvailable = false;
             obj.lastUpdateCheck = 0;
