@@ -668,6 +668,12 @@ namespace Reallusion.Import
                         install = true;
                         break;
                     }
+                case ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force:
+                    {
+                        uninstall = false;
+                        install = true;
+                        break;
+                    }
             }
 
             if (uninstall)

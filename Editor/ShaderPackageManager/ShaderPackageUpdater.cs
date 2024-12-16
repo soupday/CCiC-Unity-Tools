@@ -1090,6 +1090,11 @@ namespace Reallusion.Import
                             picture = iconInstallShaderY;
                             break;
                         }
+                    case ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
                 }
                 if (GUILayout.Button(picture, GUILayout.Width(100f), GUILayout.Height(100f)))
                 {

@@ -156,8 +156,66 @@ namespace Reallusion.Import
             }
         }
 
+        public static void SetInitialInstallCompleted()
+        {
+            string shaderKey = "RL_Inital_Shader_Installation";
+            string delimiter = "|";
+            string projectRef = PlayerSettings.productGUID.ToString();
+
+            if (EditorPrefs.HasKey(shaderKey))
+            {
+                if ((!EditorPrefs.GetString(shaderKey).Contains(projectRef)))
+                {
+                    string tmp = EditorPrefs.GetString(shaderKey);
+                    string[] projects = tmp.Split(delimiter);
+                    int count = projects.Length;
+                    if (count > 20)
+                    {
+                        tmp = string.Empty;
+                        for (int i = 1; i < count; i++)
+                        {
+                            if (i > 1)
+                                tmp += delimiter;
+
+                            tmp += projects[i];
+                        }
+                    }                    
+                    tmp += delimiter + projectRef;
+
+                    EditorPrefs.SetString(shaderKey, tmp);
+                }
+            }
+            else
+            {
+                EditorPrefs.SetString(shaderKey, projectRef);
+            }
+        }
+
+        public static bool IsInitialInstallCompleted()
+        {
+            string shaderKey = "RL_Inital_Shader_Installation";
+            string projectRef = PlayerSettings.productGUID.ToString();
+
+            //Debug.Log("KEY: " + shaderKey);
+            //Debug.Log("PREFS STRING: " + EditorPrefs.GetString(shaderKey));
+            //Debug.Log("PROJECT REF: " + projectRef);
+
+            if (EditorPrefs.HasKey(shaderKey))
+            {                
+                if ((EditorPrefs.GetString(shaderKey).Contains(projectRef)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
         public static void ShowUpdateUtilityWindow()
         {
+            PlayerSettings.productGUID.ToString();
+
             if(ImporterWindow.GeneralSettings != null)
                     settings = ImporterWindow.GeneralSettings;
             else
@@ -173,9 +231,13 @@ namespace Reallusion.Import
             {
                 if (UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force)
                 {
-                    if (settings != null) settings.postInstallShowPopupNotWindow = true;
-                    ShaderPackageUtil.InstallPackage(UpdateManager.currentPackageManifest, false);
-                    return;
+                    if (!IsInitialInstallCompleted())
+                    {
+                        if (settings != null) settings.postInstallShowPopupNotWindow = true;
+                        ShaderPackageUtil.InstallPackage(UpdateManager.currentPackageManifest, false);
+                        SetInitialInstallCompleted();
+                        return;
+                    }
                 }
 
                 bool sos = false;                
@@ -195,7 +257,7 @@ namespace Reallusion.Import
                 
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
 
-                bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error;
+                bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force;
                 bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
 
                 bool shaderActionRequired = force || (optional && sos);
