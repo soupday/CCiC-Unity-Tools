@@ -5,7 +5,7 @@ Read Me
 
 Welcome to the [Unity](https://www.unity.com/) import and auto setup tool for **Character Creator 3**, **Character Creator 4**, **iClone 7** and **iClone 8** from [Reallusion](https://www.reallusion.com/).
 
-This is a fully featured tool to take exports from CC/iClone and set them up in Unity with complete visual fidelity.
+This is a fully featured tool to take exports from CC/iClone and set them up in Unity with complete visual fidelity. *This version is for all Unity versions 2020.3 and upwards and for all pipelines*.
 
 The tool can produce characters of the highest visual quality using custom Shadergraph shaders.
 Additionally, more performance focussed characters can be produced using simpler shaders with a minimal loss of visual quality.
