@@ -159,7 +159,7 @@ namespace Reallusion.Import
         public static void SetInitialInstallCompleted()
         {
             string shaderKey = "RL_Inital_Shader_Installation";
-            string delimiter = "|";
+            char delimiter = '|';
             string projectRef = PlayerSettings.productGUID.ToString();
 
             if (EditorPrefs.HasKey(shaderKey))
