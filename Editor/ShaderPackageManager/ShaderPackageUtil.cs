@@ -47,7 +47,7 @@ namespace Reallusion.Import
             bool shaderActionRequired = force || optional;
             if (ShaderPackageUpdater.Instance != null)
             {
-                ShaderPackageUpdater.Instance.actionRequired = shaderActionRequired;
+                ShaderPackageUpdater.Instance.shaderActionRequired = shaderActionRequired;
             }
         }
 
@@ -243,7 +243,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogError("No shader packages available to install for this pipeline");
+                    Debug.LogWarning("No shader packages available to install for this pipeline");
                     // no shader packages for the current pipeline are available
                     // will become important after Unity 6000 introduction of 'global pipeline'  when older tool versions are used.
                     UpdateManager.installedPackageStatus = InstalledPackageStatus.NoPackageAvailable;
@@ -265,6 +265,7 @@ namespace Reallusion.Import
             string currentValid = "Current Shader is correctly installed and matches pipeline version";
             string freshInstall = "No shader is currently installed, an appropriate version will be imported.";
             string missingFiles = "Files are missing from the installed shader. Uninstall remaining files and install current shader version.";
+            string incompatible = "The currently installed pipeline is incompatible with CC/iC Unity tools.  A minimum version of URP v10 or HDRP v10 is required.  Only the Built-in version is supported in this circumstance.  This will require changing the render pipeline to the built-in version to continue.";
 
             List<ShaderActionRules> ActionRulesList = new List<ShaderActionRules>
             {
@@ -275,11 +276,23 @@ namespace Reallusion.Import
                 ActionRule(DeterminedShaderAction.UninstallReinstall_optional, InstalledPackageStatus.VersionTooHigh, PackageVailidity.Valid, normalDowngrade),
                 ActionRule(DeterminedShaderAction.UninstallReinstall_force, InstalledPackageStatus.Mismatch, PackageVailidity.Valid, mismatch),
                 ActionRule(DeterminedShaderAction.UninstallReinstall_force, InstalledPackageStatus.Mismatch, PackageVailidity.Invalid, mismatch),
-                ActionRule(DeterminedShaderAction.UninstallReinstall_force, InstalledPackageStatus.MissingFiles, PackageVailidity.Invalid, missingFiles)
+                ActionRule(DeterminedShaderAction.UninstallReinstall_force, InstalledPackageStatus.MissingFiles, PackageVailidity.Invalid, missingFiles),
+                ActionRule(DeterminedShaderAction.Incompatible, InstalledPackageStatus.Mismatch, PackageVailidity.Invalid, incompatible)
             };
 
             ShaderActionRules actionobj = null;
             List<ShaderActionRules> packageStatus = null;
+
+            // special case where the installed pipeline version is too low to be supported 
+            // resulting in UpdateManager.activePipelineVersion == PipelineVersion.Incompatible
+            // do not alllow the update to try anything until the user corrects the situation
+            if (UpdateManager.activePipelineVersion == PipelineVersion.Incompatible)
+            {
+                UpdateManager.determinedShaderAction = ActionRulesList.Find(y => y.DeterminedAction == DeterminedShaderAction.Incompatible);
+                // new ShaderActionRules(DeterminedShaderAction.Incompatible, InstalledPackageStatus.Mismatch, PackageVailidity.Invalid, incompatible);
+                Debug.LogWarning("Incompatible render pipeline. No shader install/update action could be determined.");
+                return;
+            }
 
             packageStatus = ActionRulesList.FindAll(x => x.InstalledPackageStatus == UpdateManager.installedPackageStatus);
             if (UpdateManager.shaderPackageValid != PackageVailidity.Waiting || UpdateManager.shaderPackageValid != PackageVailidity.None)
@@ -430,7 +443,7 @@ namespace Reallusion.Import
 
         public static void GetInstalledPipelinesAync()
         {
-            Debug.Log("ShaderPackageUtil.GetInstalledPipelinesAync()");
+            //Debug.Log("ShaderPackageUtil.GetInstalledPipelinesAync()");
             Request = Client.List(true, true);  // offline mode and includes depenencies (otherwise wont detect URP)
             OnPackageListComplete -= PackageListComplete;
             OnPackageListComplete += PackageListComplete;
@@ -442,7 +455,7 @@ namespace Reallusion.Import
         {
             if (Request.IsCompleted)// && isWaiting)
             {
-                Debug.Log("ShaderPackageUtil.WaitForRequestCompleted");
+                //Debug.Log("ShaderPackageUtil.WaitForRequestCompleted");
                 if (OnPackageListComplete != null)
                     OnPackageListComplete.Invoke(null, null);
                 EditorApplication.update -= WaitForRequestCompleted;
@@ -451,7 +464,7 @@ namespace Reallusion.Import
 
         public static void PackageListComplete(object sender, EventArgs args)
         {
-            Debug.Log("ShaderPackageUtil.PackageListComplete()");
+            //Debug.Log("ShaderPackageUtil.PackageListComplete()");
             List<UnityEditor.PackageManager.PackageInfo> packageList = Request.Result.ToList();
             if (packageList != null)
             {
@@ -487,7 +500,11 @@ namespace Reallusion.Import
             }
 
             UpdateManager.installedPipelines = installed;
-            UpdateManager.activePipelineVersion = DetermineActivePipelineVersion(packageList);
+
+            PipelineVersion activePipelineVersion = DetermineActivePipelineVersion(packageList);            
+            UpdateManager.activePipelineVersion = activePipelineVersion;
+
+
             if (ShaderPackageUpdater.Instance != null)
                 ShaderPackageUpdater.Instance.Repaint();
 
@@ -577,7 +594,9 @@ namespace Reallusion.Import
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
-                    Rule(0, 11, PipelineVersion.URP10),
+                    
+                    Rule(0, 9, PipelineVersion.Incompatible),
+                    Rule(10, 11, PipelineVersion.URP10),
                     Rule(12, 13, PipelineVersion.URP12),
                     Rule(14, 16, PipelineVersion.URP14),
                     Rule(17, 100, PipelineVersion.URP17)
@@ -600,7 +619,8 @@ namespace Reallusion.Import
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
-                    Rule(0, 11, PipelineVersion.HDRP10),
+                    Rule(0, 9, PipelineVersion.Incompatible),
+                    Rule(10, 11, PipelineVersion.HDRP10),
                     Rule(12, 100, PipelineVersion.HDRP12)
                 };
 
@@ -1094,7 +1114,8 @@ namespace Reallusion.Import
             HDRP23 = 223,
             HDRP24 = 224,
             HDRP25 = 225,
-            HDRP26 = 226
+            HDRP26 = 226,
+            Incompatible = 999
         }
 
         [Serializable]
@@ -1202,7 +1223,8 @@ namespace Reallusion.Import
             CurrentValid,
             NothingInstalled_Install_force,
             UninstallReinstall_optional,
-            UninstallReinstall_force
+            UninstallReinstall_force,
+            Incompatible
         }
 
         #endregion ENUM+CLASSES

@@ -258,9 +258,14 @@ namespace Reallusion.Import
                 bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
 
                 bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force;
+
+                bool incompatible = (determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Incompatible);
+
                 bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
 
-                bool shaderActionRequired = force || (optional && sos);
+                bool pipelineActionRequired = incompatible;
+
+                bool shaderActionRequired = force || (optional && sos) || incompatible;                
                 
                 if (optional) Debug.LogWarning("An optional shader package is available.");
                 else if (!valid) Debug.LogWarning("Problem with shader installation.");
@@ -299,7 +304,8 @@ namespace Reallusion.Import
 
                     if (ShaderPackageUpdater.Instance != null)
                     {
-                        ShaderPackageUpdater.Instance.actionRequired = shaderActionRequired;
+                        ShaderPackageUpdater.Instance.pipeLineActionRequired = pipelineActionRequired;
+                        ShaderPackageUpdater.Instance.shaderActionRequired = shaderActionRequired;
                         ShaderPackageUpdater.Instance.softwareActionRequired = swUpdateAvailable;
                     }
                 }
