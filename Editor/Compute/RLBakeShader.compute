@@ -352,6 +352,8 @@ half LinearTosRGB(half lin)
 float4 LinearTosRGB(float4 In)
 {
 #ifdef UNITY_COLORSPACE_GAMMA    
+    return In;
+#elif _MAC_OS
     return In; 
 #else
     float3 sRGBLo = In.xyz * 12.92;
