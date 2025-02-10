@@ -17,5 +17,8 @@
     "email": "user@noreply.com",
     "url": "https://github.com/soupday"
   },
-  "type": "tool"
+  "type": "tool",
+  "dependencies": {
+    "com.unity.collab-proxy": "1.14.12"
+  }
 }
