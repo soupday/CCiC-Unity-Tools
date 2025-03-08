@@ -169,12 +169,12 @@ namespace Reallusion.Import
             {
                 prov[i].hairAsset = hairAssets[i];
             }
-            hairInstance.strandGroupProviders = prov;
-            hairInstance.strandGroupDefaults.settingsSolver.globalPosition = true;            
-            hairInstance.strandGroupDefaults.settingsSolver.globalPositionInfluence = 1f;
-            hairInstance.strandGroupDefaults.settingsSolver.globalFade = true;
-            hairInstance.strandGroupDefaults.settingsSolver.globalFadeOffset = 0.25f;
-            hairInstance.strandGroupDefaults.settingsSolver.globalFadeExtent = 0.5f;
+            hairInstance.strandGroupProviders = prov;     
+            hairInstance.strandGroupDefaults.settingsPhysics.globalPosition = true;            
+            hairInstance.strandGroupDefaults.settingsPhysics.globalPositionInfluence = 1f;
+            hairInstance.strandGroupDefaults.settingsPhysics.globalFade = true;
+            hairInstance.strandGroupDefaults.settingsPhysics.globalFadeOffset = 0.25f;
+            hairInstance.strandGroupDefaults.settingsPhysics.globalFadeExtent = 0.5f;
 
             return hairInstance;
         }

@@ -1834,7 +1834,8 @@ namespace Reallusion.Import
             MaterialType materialType, QuickJSON matJson)
         {
             bool isCornea = mat.GetFloat("BOOLEAN_ISCORNEA") > 0f;
-            bool isLeftEye = sourceName.iContains("Eye_L");            
+            bool isLeftEye = sourceName.iContains("Eye_L");
+            bool isMorphCombined = obj.name.Equals("CC_Base_Body");
             string customShader = matJson?.GetStringValue("Custom Shader/Shader Name");            
 
             // if there is no custom shader, then this is the PBR eye material, 
@@ -1896,6 +1897,20 @@ namespace Reallusion.Import
 
                 ConnectTextureTo(sourceName, mat, "_ColorBlendMap", "BCBMap",
                     matJson, "Custom Shader/Image/EyeBlendMap2");
+            }
+
+            if (characterInfo.RefractiveEyes)
+            {
+                if (isMorphCombined)
+                {
+                    mat.SetFloatIf("BOOLEAN_ZUP", 1f);
+                    mat.EnableKeyword("BOOLEAN_ZUP_ON");
+                }
+                else
+                {
+                    mat.SetFloatIf("BOOLEAN_ZUP", 0f);
+                    mat.DisableKeyword("BOOLEAN_ZUP_ON");
+                }
             }
 
             // reconstruct any missing packed texture maps from Blender source maps.
