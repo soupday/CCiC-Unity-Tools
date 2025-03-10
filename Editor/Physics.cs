@@ -452,7 +452,7 @@ namespace Reallusion.Import
             GameObject prefabRoot = PrefabUtility.LoadPrefabContents(currentPrefabAssetPath);
             PurgeAllPhysicsComponents(prefabRoot);
 
-            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics))
+            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics))
             {
                 AddCollidersToPrefabRoot(prefabRoot);
             }
@@ -500,7 +500,7 @@ namespace Reallusion.Import
                 bool boneValid = validSpringBoneColliders.Contains(collider.boneName);
                 bool addFullColliderSet = true; // placeholder
 
-                if (addMagicaClothPhysics)
+                if (addMagicaClothPhysics || addMagicaClothHairPhysics)
                 {
                     if (MAGICA_CLOTH_AVAILABLE)
                     {
@@ -1086,7 +1086,7 @@ namespace Reallusion.Import
                                     if (!data.activate)
                                         Debug.Log("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
                                     DoMagicaCloth(cloth, obj, data);
-                                    SetMagicaParameters(cloth);
+                                    SetMagicaParameters(cloth, true);
                                     //magicaClothMeshes.Add(obj);
                                     magicaClothMeshes.Add(new EnableStatusGameObject(obj, GetMagicaComponentEnableStatus(obj)));
                                 }
@@ -1138,42 +1138,23 @@ namespace Reallusion.Import
             return canAddMagicaCloth;
         }
 
-        private void SetMagicaParameters(Object cloth)
+        private void SetMagicaParameters(Object cloth, bool isHair=false)
         {
             IList magicaColliderList = FetchMagicaColliders(prefabInstance.gameObject);
 
             var serializedDataProperty = cloth.GetType().GetProperty("SerializeData");
             var serializedData = serializedDataProperty.GetValue(cloth);
 
-            var particleRadius = serializedData.GetType().GetField("radius");
-            if (particleRadius != null)
+            SetFieldSubValue(serializedData, "radius", "value", 0.005f);
+
+            if (isHair)
             {
-                var particleRadiusData = particleRadius.GetValue(serializedData);
-                var particleRadiusValueField = particleRadiusData.GetType().GetField("value");
-                if (particleRadiusValueField != null)
-                {
-                    particleRadiusValueField.SetValue(particleRadiusData, 0.005f); // set the particle radius -- helps avoid the collider pushing out the cloth
-                }
+                SetFieldSubValue(serializedData, "damping", "value", 0.35f);
+                SetFieldValue(serializedData, "blendWeight", 0.5f);
             }
 
             // add a list of colliders that can interact with the cloth instance
-            var collisionConstraint = serializedData.GetType().GetField("colliderCollisionConstraint");
-            if (collisionConstraint != null)
-            {
-                var collisionConstraintData = collisionConstraint.GetValue(serializedData);
-                if (collisionConstraintData != null)
-                {
-                    var colliderListField = collisionConstraintData.GetType().GetField("colliderList");
-                    if (colliderListField != null)
-                    {
-                        var actualColliderList = colliderListField.GetValue(collisionConstraintData);
-                        if (actualColliderList != null)
-                        {
-                            colliderListField.SetValue(collisionConstraintData, magicaColliderList);
-                        }
-                    }
-                }
-            }
+            SetFieldSubValue(serializedData, "colliderCollisionConstraint", "colliderList", magicaColliderList, true);            
 
             MethodInfo setParameterChange = cloth.GetType().GetMethod("SetParameterChange");
             setParameterChange.Invoke(cloth, new object[] { });
@@ -1646,6 +1627,48 @@ namespace Reallusion.Import
             {
                 fRoots.SetValue(o, value);
                 return true;
+            }
+            return false;
+        }
+
+        public static bool SetFieldSubValue(object obj, string fieldName, string subFieldName, object value, bool required=false)
+        {
+            var field = obj.GetType().GetField(fieldName);
+            if (field != null)
+            {
+                var objFieldValue = field.GetValue(obj);
+                if (objFieldValue != null)
+                {
+                    var subField = objFieldValue.GetType().GetField(subFieldName);
+                    if (subField != null)
+                    {
+                        if (required)
+                        {
+                            var subFieldValue = subField.GetValue(objFieldValue);
+                            if (subFieldValue != null)
+                            {
+                                subField.SetValue(objFieldValue, value);
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            subField.SetValue(objFieldValue, value);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool SetFieldValue(object obj, string fieldName, object value)
+        {
+            var field = obj.GetType().GetField(fieldName);
+            if (field != null)
+            {
+                field.SetValue(obj, value);                
+                return true;                
             }
             return false;
         }
