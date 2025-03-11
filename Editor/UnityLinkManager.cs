@@ -313,29 +313,32 @@ namespace Reallusion.Import
 
         static void CleanupDelegate()
         {
-            listening = false;
-           
             if (reconnect)
             {
                 Debug.Log("Setting up reconnect");
                 SetConnectedTimeStamp();
-                if (client != null && stream != null)
-                {
-                    if (client.Connected && stream.CanWrite)
-                    {
-                        Debug.Log("Disconnecting");
-                        reconnect = false;
-                        SendMessage(OpCodes.DISCONNECT);
-                        stream.Close();
-                        client.Close();
-                    }
-                }
             }
             else
             {
                 Debug.LogWarning("SetConnectedTimeStamp(true)");
                 SetConnectedTimeStamp(true);
             }
+
+            if (client != null && stream != null)
+            {
+                if (client.Connected && stream.CanWrite)
+                {
+                    Debug.Log("Disconnecting");
+                    reconnect = false;
+                    SendMessage(OpCodes.DISCONNECT);
+                    stream.Close();
+                    client.Close();
+                }
+            }
+
+            listening = false;
+            
+            
             EditorApplication.update -= QueueDelegate;
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
             Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
@@ -635,6 +638,7 @@ namespace Reallusion.Import
                     }
                 case OpCodes.CAMERA_SYNC:
                     {
+                        CameraSync(next);
                         Debug.Log(next.CameraSync.ToString());
                         break;
                     }
@@ -647,6 +651,54 @@ namespace Reallusion.Import
             next.Processed = true;
             UnityLinkManagerWindow.Instance.Focus();            
         }
+
+        static void CameraSync(QueueItem item)
+        {
+            GameObject camera = GameObject.Find("Main Camera");
+
+            SceneView scene = SceneView.lastActiveSceneView;
+            Vector3 rawPosition = item.CameraSync.Position;
+            Quaternion blenderQuaternion = item.CameraSync.Rotation;
+            Quaternion rawRotation = item.CameraSync.Rotation;
+
+            List<float> rot = item.CameraSync.rot;
+            //Quaternion mod = new Quaternion(rot[0], -rot[1], -rot[2], rot[3]);
+            Quaternion mod = new Quaternion(rot[0], rot[2], rot[1], rot[3]);
+
+            /*
+             1  0  0  0    x         x 
+             0  0  1  0    y         z
+             0 -1  0  0    z        -y
+             0  0  0  1    w         w
+            */
+
+            Matrix4x4 trans = new Matrix4x4(new Vector4(0.01f, 0, 0, 0), new Vector4(0, 0, 0.01f, 0), new Vector4(0, 0.01f, 0, 0), new Vector4(0, 0, 0, 1f));
+            Vector3 xx = trans.MultiplyVector(rawPosition);
+            camera.transform.position = xx;
+            /*
+            Vector3 transformedPosition = new Vector3(-rawPosition.x * 0.01f, rawPosition.z * 0.01f, rawPosition.y * 0.01f);
+            var xy = new Vector4(rawRotation.x, rawRotation.y, rawRotation.z, rawRotation.w);
+            Vector4 qq = trans * xy;
+            Quaternion pq = new Quaternion(qq.x, qq.y,qq.z,qq.w); 
+            
+            camera.transform.position = xx;
+            
+            */
+            
+            //scene.pivot = rawPosition;
+
+
+            //Co pilot sez:
+
+            //Quaternion blenderQuaternion = new Quaternion(x, y, z, w);
+            Quaternion unityQuaternion = new Quaternion(blenderQuaternion.x, -blenderQuaternion.z, blenderQuaternion.y, blenderQuaternion.w);
+
+            Quaternion baseRot = Quaternion.Euler(-90f, 0f, 0f);
+            Quaternion newRot = baseRot * unityQuaternion;
+
+            camera.transform.rotation = mod;
+        }
+
         #endregion  Activity queue handling
 
         #region Class data
