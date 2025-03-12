@@ -285,7 +285,7 @@ namespace Reallusion.Import
             reconnect = false;
 
             if (client.Connected && stream.CanWrite)
-            {
+            {                
                 stream.Close();
                 client.Close();
             }
@@ -660,7 +660,9 @@ namespace Reallusion.Import
 
             SceneView scene = SceneView.lastActiveSceneView;
             Vector3 rawPosition = item.CameraSync.Position;
-            Vector3 unityPos = new Vector3(-rawPosition.x, rawPosition.z, -rawPosition.y) * 0.01f;
+            Vector3 targetPosition = item.CameraSync.Target;
+            Vector3 cameraPos = new Vector3(-rawPosition.x, rawPosition.z, -rawPosition.y) * 0.01f;
+            Vector3 targetPos = new Vector3(-targetPosition.x, targetPosition.z, -targetPosition.y) * 0.01f;
 
             Quaternion blenderQuaternion = item.CameraSync.Rotation;
             // convert blender quaternion to unity
@@ -672,9 +674,27 @@ namespace Reallusion.Import
             Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
             Quaternion corrected = unityQuaternion * cameraCorrection;
             
-            camera.transform.position = unityPos;
-
+            camera.transform.position = cameraPos;
             camera.transform.rotation = corrected;
+            
+            // put the scene into focus so it updates
+            scene.Focus();
+
+            // set the scene camera target
+            // can't set camera position directly, have to calculate a lookat target
+            Vector3 dir = new Vector3(0, 0, 1);
+            dir = corrected * dir;
+            Vector3 toPivot = targetPos - cameraPos;
+            float dist = Vector3.Dot(dir, toPivot);
+            if (dist < 0f) dist = 1.0f;
+            Vector3 lookPos = cameraPos + (dir * dist);            
+            scene.LookAt(lookPos, corrected, dist / 8.0f);
+            scene.pivot = lookPos;
+            scene.cameraSettings.fieldOfView = item.CameraSync.Fov;
+            
+            // other ways to force the scene to update
+            //SceneView.lastActiveSceneView.Repaint();
+            //EditorApplication.ExecuteMenuItem("Window/General/Scene");
         }
 
         #endregion  Activity queue handling
@@ -977,7 +997,8 @@ namespace Reallusion.Import
             [JsonProperty(focalStr)]
             public float FocalLength { get; set; }
             [JsonProperty(targetStr)]
-            public List<float> Target { get; set; }
+            public List<float> target { get; set; }
+            public Vector3 Target { get { return new Vector3(target[0], target[1], target[2]); } }
 
             public JsonCameraSync()
             {
@@ -991,7 +1012,7 @@ namespace Reallusion.Import
                 Width = 0f;
                 Height = 0f;
                 FocalLength = 0f;
-                Target = new List<float>();
+                target = new List<float>();
             }
 
             public override string ToString()
