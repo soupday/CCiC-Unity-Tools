@@ -63,6 +63,7 @@ namespace Reallusion.Import
                 return;
             }
             EditorApplication.update -= WaitForFrames;
+            frame = 0;
             DoImport();
         }
 
