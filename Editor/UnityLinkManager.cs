@@ -63,11 +63,10 @@ namespace Reallusion.Import
         #region Setup
         static void InitConnection()
         {
-            StartQueue();
-            StartClient();
-            UnityLinkManagerWindow.OpenWindow();
-            CleanupBeforeAssemblyReload();
-        }
+            StartQueue();  // move to button in window
+            StartClient(); // also move
+            UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
+        } 
 
         #endregion Setup
 
@@ -77,7 +76,6 @@ namespace Reallusion.Import
         static Thread clientThread;
         static bool reconnect = false;
         static bool listening = false;
-        private static readonly int chunkSize = 1024;
         
         static void StartClient()
         {
@@ -291,7 +289,7 @@ namespace Reallusion.Import
             }
         }
 
-        static void DisconnectAndStopServer()
+        public static void DisconnectAndStopServer()
         {
             SetConnectedTimeStamp(true);
             EditorApplication.update -= QueueDelegate;
@@ -307,14 +305,16 @@ namespace Reallusion.Import
             }
         }
 
-        static void CleanupBeforeAssemblyReload()
+        public static void CleanupBeforeAssemblyReload()
         {
+            Debug.LogWarning("adding CleanupDelegate to AssemblyReloadEvents.beforeAssemblyReload");
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
             AssemblyReloadEvents.beforeAssemblyReload += CleanupDelegate;
         }
 
         static void CleanupDelegate()
         {
+            Debug.LogWarning("CleanupDelegate called by AssemblyReloadEvents.beforeAssemblyReload");
             if (reconnect)
             {
                 Debug.Log("Setting up reconnect");
@@ -346,15 +346,19 @@ namespace Reallusion.Import
             Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
         }
 
-        // Automated reconnection for assembly reloads
-        [InitializeOnLoadMethod]
-        static void AutoReconnect()
+        // Automated reconnection for assembly reloads        
+        public static void AttemptAutoReconnect()
         {
+            Debug.Log("OnEnable - AutoReconnect");
             if (IsConnectedTimeStampWithin(new TimeSpan(0, 5, 0)))
             {
-                Debug.Log("Attempting to reconnect");
+                Debug.Log("OnEnable - Attempting to reconnect");
                 reconnect = false;
                 InitConnection();
+            }
+            else
+            {
+                Debug.Log("OnEnable - Not AutoReconnect-ing");
             }
         }
 
@@ -541,7 +545,6 @@ namespace Reallusion.Import
         #region Activity queue handling
 
         private static Thread queueThread;
-        static bool processing = true;
 
         public static void StartQueue()
         {            
@@ -609,8 +612,10 @@ namespace Reallusion.Import
                         break;
                     }
                 case OpCodes.CHARACTER:
-                    {
+                    {                        
                         Debug.Log(next.Character.ToString());
+                        ImportCharacter(next);
+                        next.Processed = true;
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:
@@ -631,6 +636,8 @@ namespace Reallusion.Import
                 case OpCodes.MOTION:
                     {
                         Debug.Log(next.Motion.ToString());
+                        ImportMotion(next);
+                        next.Processed = true;
                         break;
                     }
                 case OpCodes.LIGHTS:
@@ -651,7 +658,7 @@ namespace Reallusion.Import
                     }
             }
             next.Processed = true;
-            UnityLinkManagerWindow.Instance.Focus();            
+            if (UnityLinkManagerWindow.Instance != null) UnityLinkManagerWindow.Instance.Focus();            
         }
 
         static void CameraSync(QueueItem item)
@@ -697,21 +704,26 @@ namespace Reallusion.Import
             //EditorApplication.ExecuteMenuItem("Window/General/Scene");
         }
 
+        static void ImportMotion(QueueItem item)
+        {
+            UnityLinkImporter Importer = new UnityLinkImporter(item);
+            Importer.Import();
+        }
+
+        static void ImportCharacter(QueueItem item)
+        {
+            UnityLinkImporter Importer = new UnityLinkImporter(item);
+            Importer.Import();
+        }
+
+
         #endregion  Activity queue handling
 
         #region Class data
-        public enum ExportType
+               
+        public static CharacterInfo.ExportType ParseExportType(string value)
         {
-            AVATAR = 0,
-            PROP = 1,
-            LIGHT = 2,
-            CAMERA = 3,
-            UNKNOWN = 999
-        }
-        
-        public static ExportType ParseExportType(string value)
-        {
-            return Enum.TryParse(value, out ExportType result) ? result : ExportType.UNKNOWN;            
+            return Enum.TryParse(value, out CharacterInfo.ExportType result) ? result : CharacterInfo.ExportType.UNKNOWN;            
         }
 
         public class JsonHello // HELLO: (1) - Respond to new connection with server data
@@ -906,7 +918,7 @@ namespace Reallusion.Import
             [JsonProperty(linkIdStr)]
             public string LinkId { get; set; }
             [JsonProperty(fpsStr)]
-            public int Fps { get; set; }
+            public float Fps { get; set; }
             [JsonProperty(startTimeStr)]
             public float StartTime { get; set; }
             [JsonProperty(endTimeStr)]
@@ -924,7 +936,7 @@ namespace Reallusion.Import
                 Name = string.Empty;
                 Type = string.Empty;
                 LinkId = string.Empty;
-                Fps = 0;
+                Fps = 0f;
                 StartTime = 0f;
                 EndTime = 0f;
                 Time = 0f;
@@ -1168,6 +1180,7 @@ namespace Reallusion.Import
         #region Asset import
         static void ProcessImport()
         {
+            /*
             FileUtil.CopyFileOrDirectory("D:/Development/CC3/Unity Test Chars/TestB", "Assets/TestB");
             AssetDatabase.Refresh();
             string[] guids = AssetDatabase.FindAssets("t:Model", new string[] { "Assets/TestB" });
@@ -1193,6 +1206,7 @@ namespace Reallusion.Import
             character.Write();
             character.Release();
             ExtractFbx(guid);
+            */
         }
         #endregion Asset import
 

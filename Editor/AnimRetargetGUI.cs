@@ -1102,7 +1102,7 @@ namespace Reallusion.Import
             return false;
         }
 
-        static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip, 
+        public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip, 
             GameObject targetCharacterModel, bool log = true)
         {
             if (!(originalClip && workingClip)) return;
@@ -1321,7 +1321,7 @@ namespace Reallusion.Import
             return assetPath;
         }
 
-        static AnimationClip WriteAnimationToAssetDatabase(AnimationClip workingClip, string assetPath, bool originalSettings = false)
+        public static AnimationClip WriteAnimationToAssetDatabase(AnimationClip workingClip, string assetPath, bool originalSettings = false)
         {            
             if (string.IsNullOrEmpty(assetPath)) return null;
 
@@ -1376,7 +1376,7 @@ namespace Reallusion.Import
             return asset;
         }
 
-        static string NameAnimation(string characterName, string clipName, string prefix)
+        public static string NameAnimation(string characterName, string clipName, string prefix)
         {
             string animName;
             if (string.IsNullOrEmpty(prefix))

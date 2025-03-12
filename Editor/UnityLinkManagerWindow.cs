@@ -41,8 +41,16 @@ namespace Reallusion.Import
         private void OnEnable()
         {
             Instance = this;
+
+            UnityLinkManager.AttemptAutoReconnect();
+            UnityLinkManager.CleanupBeforeAssemblyReload();            
         }
 
+        private void OnDestroy()
+        {
+            UnityLinkManager.DisconnectAndStopServer();
+        }
+        
         private void OnGUI()
         {
             if (styles == null)
@@ -63,13 +71,13 @@ namespace Reallusion.Import
             foreach (var q in guiQueue)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(q.OpCode.ToString() + " " + q.EntryTime + " " + q.Exchange);                
+                GUILayout.Label(q.OpCode.ToString() + " " + q.EntryTime + " " + q.Exchange, styles.queueItemStyle);                
                 GUILayout.EndHorizontal();
 
                 if (q.OpCode == UnityLinkManager.OpCodes.NOTIFY)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("  Notify message: " + q.Notify.Message);
+                    GUILayout.Label("  Notify message: " + q.Notify.Message, styles.queueItemStyle);
                     GUILayout.EndHorizontal();
                 }
 

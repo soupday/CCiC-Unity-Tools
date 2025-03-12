@@ -44,6 +44,20 @@ namespace Reallusion.Import
             SpringBonePhysics = 1024  // group flag to allow selection between SpringBoneHair & MagicaBone
         }
 
+        public enum ExportType
+        {
+            NONE = 0,
+            AVATAR = 1,
+            PROP = 2,
+            LIGHT = 3,
+            CAMERA = 4,
+            UNKNOWN = 999
+        }
+
+        public string linkId = string.Empty;
+        public string projectName = string.Empty;
+        public ExportType exportType = ExportType.NONE;
+
         // 'radio groups' of mutually exclusive settings
         public static ShaderFeatureFlags[] clothGroup =
         {
@@ -873,7 +887,22 @@ namespace Reallusion.Import
                             guidRemaps.Add(new GUIDRemap(guids[0], guids[1]));
                         }
                         break;
-                }
+                    case "linkId":
+                        {
+                            linkId = value;
+                            break;
+                        }
+                    case "projectName":
+                        {
+                            projectName = value;
+                            break;
+                        }
+                    case "exportType":
+                        {
+                            exportType = (ExportType)System.Enum.Parse(typeof (ExportType), value);
+                            break;
+                        }
+        }
             }
             ApplySettings();
         }
@@ -895,6 +924,9 @@ namespace Reallusion.Import
             writer.WriteLine("animationSetup=" + (animationSetup ? "true" : "false"));
             writer.WriteLine("animationRetargeted=" + animationRetargeted.ToString());
             writer.WriteLine("rigOverride=" + UnknownRigType.ToString());
+            writer.WriteLine("linkId=" + linkId);
+            writer.WriteLine("projectName=" + projectName);
+            writer.WriteLine("exportType=" + exportType.ToString());
             foreach (GUIDRemap gr in guidRemaps)
             {
                 writer.WriteLine("GUIDRemap=" + gr.from + "|" + gr.to);
