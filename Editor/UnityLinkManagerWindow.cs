@@ -68,6 +68,11 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical();
 
+            ControlAreaGUI();
+
+
+
+
             foreach (var q in guiQueue)
             {
                 GUILayout.BeginHorizontal();
@@ -86,6 +91,24 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
+        void ControlAreaGUI()
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUI.BeginDisabledGroup(UnityLinkManager.IsClientThreadActive);
+            {
+                if (GUILayout.Button("Test"))
+                {
+                    // do
+                }
+            }
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
+        }
 
+        
+        void LogAreaGUI()
+        {
+
+        }
     }
 }

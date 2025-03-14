@@ -10,6 +10,7 @@ namespace Reallusion.Import
     {
         ModelImporter importer;
         UnityLinkManager.QueueItem QueueItem;
+        UnityLinkManager.OpCodes opCode;
         string ROOT_FOLDER = "Assets";
         string IMPORT_PARENT = "Reallusion";
         string IMPORT_FOLDER = "DataLink_Imports";
@@ -20,7 +21,7 @@ namespace Reallusion.Import
         public UnityLinkImporter(UnityLinkManager.QueueItem item)
         {
             QueueItem = item;
-
+            opCode = QueueItem.OpCode;
 
 
         }
@@ -29,7 +30,7 @@ namespace Reallusion.Import
         {
             string assetPath = string.Empty;
             
-            switch (QueueItem.OpCode)
+            switch (opCode)
             {
                 case UnityLinkManager.OpCodes.MOTION:
                     {
@@ -87,32 +88,58 @@ namespace Reallusion.Import
             string inProjectAssetPath = string.Empty;
 
             string assetFolder = Path.GetDirectoryName(assetPath);
-            string assetFolderName = Path.GetFileName(assetFolder);
-            string destinationFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName });
+            string assetFolderName = Path.GetFileName(assetFolder);            
 
             string PARENT_FOLDER = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT });
             if (!AssetDatabase.IsValidFolder(PARENT_FOLDER)) AssetDatabase.CreateFolder(ROOT_FOLDER, IMPORT_PARENT);
             string IMPORT_PATH = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER });
             if (!AssetDatabase.IsValidFolder(IMPORT_PATH)) AssetDatabase.CreateFolder(PARENT_FOLDER, IMPORT_FOLDER);
+
+            string proposedDestinationFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName });
+            string destinationFolder = string.Empty;
+
+            if (AssetDatabase.IsValidFolder(proposedDestinationFolder))
+            {
+                for (int i = 0; i < 999; i++)
+                {
+                    string suffix = "." + i.ToString();
+                    string testFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName + suffix });
+                    if (AssetDatabase.IsValidFolder(testFolder))
+                        continue;
+                    else
+                    {
+                        destinationFolder = testFolder;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                destinationFolder = proposedDestinationFolder;
+            }
             
             FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
             AssetDatabase.Refresh();
-            Debug.Log("destinationFolder " + destinationFolder);
+            
+
             string[] guids = AssetDatabase.FindAssets("t:Model", new string[] { destinationFolder });
             string guid = string.Empty;
+
             foreach (string g in guids)
             {
-                Debug.Log("t:Model guid " + g);
                 string projectAssetPath = AssetDatabase.GUIDToAssetPath(g);
-                if (Util.IsCC3CharacterAtPath(projectAssetPath))
+                if (opCode == UnityLinkManager.OpCodes.CHARACTER)
                 {
-                    string name = Path.GetFileNameWithoutExtension(projectAssetPath);
-                    Debug.Log("Valid CC character: " + name + " found.");
-                    guid = g;
-                    inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
-                    break;
+                    if (Util.IsCC3CharacterAtPath(projectAssetPath))
+                    {
+                        string name = Path.GetFileNameWithoutExtension(projectAssetPath);
+                        Debug.Log("Valid CC character: " + name + " found.");
+                        guid = g;
+                        inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                        break;
+                    }
                 }
-                else
+                else if (opCode == UnityLinkManager.OpCodes.MOTION)
                 {
                     string modelName = Path.GetFileNameWithoutExtension(projectAssetPath);
                     if (modelName.EndsWith("_motion", System.StringComparison.InvariantCultureIgnoreCase))
@@ -124,7 +151,8 @@ namespace Reallusion.Import
                     }
                 }
             }
-            Debug.Log("inProjectAssetPath" + inProjectAssetPath);
+
+            Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
             return inProjectAssetPath;
         }
 

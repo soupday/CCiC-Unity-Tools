@@ -74,35 +74,51 @@ namespace Reallusion.Import
         static TcpClient client = null;
         static NetworkStream stream = null;
         static Thread clientThread;
+        static bool clientThreadActive;
+        public static bool IsClientThreadActive {  get {  return clientThreadActive; } }
+        static bool startConnection = true;
         static bool reconnect = false;
         static bool listening = false;
         
         static void StartClient()
         {
-            clientThread = new Thread(new ThreadStart(ClientThread));
+            clientThread = new Thread(new ThreadStart(NewClientThread));
             clientThread.Start();
         }
 
-        static void ClientThread()
+        static void OldClientThread()
         {
+            clientThreadActive = true;
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
             int port = 9333;
 
             client = new TcpClient();
-            try
-            {
-                client.Connect(ipAddress, port);
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-                StopQueue();
-                return;
-            }
 
+            #region connection retry and timeout
+            DateTime startTime = DateTime.Now;
+            TimeSpan timeout = TimeSpan.FromSeconds(20);
+                        
+            while (startConnection)
+            {                
+                DateTime now = DateTime.Now;
+                if (now > startTime + timeout)
+                {
+                    NotifyInternalQueue("Unable to connect... ");
+                    clientThreadActive = false;
+                    return;
+                }
+
+                try { client.Connect(ipAddress, port); } catch (Exception e) { NotifyInternalQueue("Attempting connection... " + e.Message); }
+
+                if(client.Connected) { startConnection = false; break; }
+
+                Thread.Sleep(200);
+            }
+            
             string a = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
             string b = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
-            Debug.Log("Client Connected to : " + a + ":" + b);
+            NotifyInternalQueue("Client Connected to : " + a + ":" + b);
+            #endregion connection retry and timeout
 
             stream = client.GetStream();
             reconnect = true;
@@ -112,7 +128,11 @@ namespace Reallusion.Import
             int bytesRead = 0;
             int bytesToRead = 0;
             bool gotHeader = false;
+            
+            int maxSize = 32768;
             int size = 0;
+            int bytesRemaining = 0;
+
             OpCodes opCode;
                         
             while (listening)
@@ -123,7 +143,21 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    bytesToRead = size;
+                    if (size > maxSize)
+                    {
+                        if (bytesRemaining > maxSize)
+                        {
+                            bytesToRead = maxSize;
+                        }
+                        else
+                        {
+                            bytesToRead = bytesRemaining;
+                        }
+                    }
+                    else
+                    {
+                        bytesToRead = size;
+                    }
                 }
 
                 byte[] chunkBuffer = new byte[bytesToRead];
@@ -145,7 +179,10 @@ namespace Reallusion.Import
                 try
                 {
                     if (stream.CanRead)
+                    {
                         bytesRead = stream.Read(chunkBuffer, 0, bytesToRead);
+                        bytesRemaining -= bytesRead;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -160,7 +197,7 @@ namespace Reallusion.Import
                     opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
                     size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
                     Debug.Log("Op Code: " + opCode.ToString() + ", Expected Size: " + size);
-
+                    bytesRemaining = size;
                     gotHeader = true;
                 }
 
@@ -174,12 +211,238 @@ namespace Reallusion.Import
                     Debug.Log("Handling recieved data");
                     HandleRecivedData(receivedData);
                     receivedData = new byte[0];
+                    bytesRemaining = 0;
+                    size = 0;
                     gotHeader = false;                    
                 }
             }
             stream.Close();
             client.Close();
+            clientThreadActive = false;
         }
+
+
+        static void NewClientThread()
+        {
+            clientThreadActive = true;
+            startConnection = true;
+            IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+            int port = 9333;
+
+            client = new TcpClient();
+
+            #region connection retry and timeout
+            DateTime startTime = DateTime.Now;
+            TimeSpan timeout = TimeSpan.FromSeconds(20);
+
+            while (startConnection)
+            {
+                DateTime now = DateTime.Now;
+                if (now > startTime + timeout)
+                {
+                    NotifyInternalQueue("Unable to connect... ");
+                    clientThreadActive = false;
+                    return;
+                }
+
+                try { client.Connect(ipAddress, port); } catch (Exception e) { NotifyInternalQueue("Attempting connection... " + e.Message); }
+
+                if (client.Connected) { startConnection = false; break; }
+
+                Thread.Sleep(200);
+            }
+
+            string a = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+            string b = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
+            NotifyInternalQueue("Client Connected to : " + a + ":" + b);
+            #endregion connection retry and timeout
+
+            stream = client.GetStream();
+            reconnect = true;
+            listening = true;
+
+            byte[] receivedData = new byte[0];
+            int bytesRead = 0;
+            int bytesToRead = 0;
+
+            bool gotHeader = false;
+
+            bool gotFileName = false;
+            bool gotFileSize = false;
+            int fileSize = 0;
+            string remoteId = string.Empty;
+            byte[] fileDesc = new byte[0]; // opcode | len | remote_id to pass to queue
+            FileStream fileStream = null;
+
+            int maxSize = 32768;
+            int size = 0;
+            int bytesRemaining = 0;
+            int totalbytesRead = 0;
+
+            OpCodes opCode = OpCodes.NONE;
+
+            while (listening)
+            {                
+                // terrible logic o'clock
+                if (!gotHeader)
+                {
+                    bytesToRead = 8;
+                }
+                else if (opCode == OpCodes.FILE && gotFileName && !gotFileSize)
+                {
+                    bytesToRead = 4;
+                }
+                else
+                {
+                    bytesToRead = (bytesRemaining > maxSize) ? maxSize : bytesRemaining;
+                }
+
+                byte[] chunkBuffer = new byte[bytesToRead];
+
+                if (stream.CanRead)
+                {
+                    if (!stream.DataAvailable)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
+                try
+                {
+                    if (stream.CanRead)
+                    {
+                        bytesRead = stream.Read(chunkBuffer, 0, bytesToRead);
+                        if (gotHeader) bytesRemaining -= bytesRead;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log(ex);
+                }
+
+                if (!gotHeader)
+                {
+                    Debug.Log("Getting Header.");
+                    byte[] opCodeBytes = ExtractBytes(chunkBuffer, 0, 4);
+                    byte[] sizeBytes = ExtractBytes(chunkBuffer, 4, 4);
+                    opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
+                    size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
+                    receivedData = chunkBuffer;
+                    gotHeader = true;
+                    bytesRemaining = size;
+                    Debug.Log("Op Code: " + opCode.ToString() + ", Expected Size: " + size);
+                    continue;
+                }
+                else if (opCode == OpCodes.FILE) // stream the incoming data to disk
+                {
+                    if (!gotFileName) // first chunkbuffer after header for file opcode is the remote id string
+                    {
+                        remoteId = Encoding.UTF8.GetString(chunkBuffer);
+                        Debug.Log("remoteId: " + remoteId);
+                        fileDesc = ConcatBytes(receivedData, chunkBuffer);
+                        gotFileName = true;
+                        continue;
+                    }
+
+                    if (!gotFileSize) // next 4 bytes is zipfile length
+                    {
+                        size = GetCurrentEndianWord(chunkBuffer, SourceEndian.BigEndian);
+                        Debug.Log("remote file size: " + size);
+                        bytesRemaining = size;
+                        gotFileSize = true;
+                        continue;
+                    }
+
+                    if (fileStream == null)
+                    {
+                        string streamPath = Path.Combine(EXPORTPATH, remoteId + ".zip");
+                        fileStream = new FileStream(streamPath, FileMode.Create, FileAccess.ReadWrite);
+                    }
+
+                    if (totalbytesRead < fileSize)
+                    {
+                        Debug.Log("Writing: " + chunkBuffer.Length + " bytes");
+                        fileStream.Write(chunkBuffer, 0, chunkBuffer.Length);
+                        totalbytesRead += chunkBuffer.Length;
+                    }
+
+                    if (totalbytesRead >= fileSize)
+                    {
+                        Debug.Log("totalbytesRead >= fileSize");
+                        // finished
+                        // submit file description to queue
+                        HandleRecivedData(fileDesc);
+
+                        // reset everything and wait for next opcode
+                        if (fileStream != null)
+                        {
+                            fileStream.Close();
+                            fileStream = null;
+                        }
+                        receivedData = new byte[0];
+                        bytesRemaining = 0;
+                        totalbytesRead = 0;
+                        size = 0;
+                        gotHeader = false;
+                        gotFileName = false;
+                        gotFileSize = false;
+                        fileSize = 0;
+                        remoteId = string.Empty;
+                    }
+                }
+                else if (opCode != OpCodes.NONE && opCode != OpCodes.FILE) // all other opcodes generate a JSON object which will be deserialized and queued
+                {
+                    Debug.Log(opCode.ToString());
+                    receivedData = ConcatByteArray(receivedData, chunkBuffer);
+                    //Array.Resize(ref receivedData, receivedData.Length + bytesRead);
+                    //Buffer.BlockCopy(chunkBuffer, 0, receivedData, receivedData.Length - bytesRead, bytesRead);
+                    Debug.Log("receivedData " + receivedData.Length + ", bytesRead " + bytesRead);
+                    if (receivedData.Length >= size + 8)
+                    {
+                        Debug.Log("Handling recieved data");
+                        HandleRecivedData(receivedData);
+                        receivedData = new byte[0];
+                        bytesRemaining = 0;
+                        size = 0;
+                        gotHeader = false;
+                    }
+                }                
+            }
+            stream.Close();
+            client.Close();
+            clientThreadActive = false;
+        }
+
+        public static byte[] ConcatByteArray(byte[] first, byte[] second)
+        {
+            Array.Resize(ref first, first.Length + second.Length);
+            Buffer.BlockCopy(second, 0, first, first.Length - second.Length, second.Length);
+            return first;
+        }
+
+        // alt
+        public static byte[] ConcatBytes (byte[] first, byte[] second)
+        {
+            IEnumerable<byte> bytes = first.Concat(second);
+            return bytes.ToArray();
+        }
+
+        static void NotifyInternalQueue(string message)
+        {
+            if (activityQueue != null)
+            {
+                var q = new QueueItem(OpCodes.NOTIFY, Exchange.INTERNAL);
+                q.Notify = new JsonNotify(message);
+                activityQueue.Add(q);
+            }
+        }
+
         #endregion Client
 
         #region Server messaging
@@ -188,8 +451,10 @@ namespace Reallusion.Import
 
         public enum Exchange
         {
-            SENT,
-            RECEIVED
+            NONE = 0,
+            SENT = 1,
+            RECEIVED = 2,
+            INTERNAL = 3
         }
 
         public enum OpCodes
@@ -202,16 +467,17 @@ namespace Reallusion.Import
             DEBUG = 15,
             NOTIFY = 50,
             SAVE = 60,
-            MORPH = 90,
-            MORPH_UPDATE = 91,
-            REPLACE_MESH = 95,
-            MATERIALS = 96,
+            FILE = 70,
+            //MORPH = 90,
+            //MORPH_UPDATE = 91,
+            //REPLACE_MESH = 95,
+            //MATERIALS = 96,
             CHARACTER = 100,
             CHARACTER_UPDATE = 101,
             PROP = 102,
             PROP_UPDATE = 103,
             UPDATE_REPLACE = 108,
-            RIGIFY = 110,
+            //RIGIFY = 110,
             TEMPLATE = 200,
             POSE = 210,
             POSE_FRAME = 211,
@@ -267,8 +533,10 @@ namespace Reallusion.Import
                 byte[] size = Int32ToBigEndianBytes(0);
                 message = opcode.Concat(size);
             }
-
-            stream.Write(message.ToArray());
+            if (stream.CanWrite)
+            {
+                stream.Write(message.ToArray());
+            }
         }
         #endregion Server messaging
 
@@ -292,7 +560,7 @@ namespace Reallusion.Import
         public static void DisconnectAndStopServer()
         {
             SetConnectedTimeStamp(true);
-            EditorApplication.update -= QueueDelegate;
+            StopQueue();
             SendMessage(OpCodes.STOP);
 
             listening = false;
@@ -427,8 +695,8 @@ namespace Reallusion.Import
             byte[] dataBlock = ExtractBytes(recievedData, 8, recievedData.Length - 8);
             QueueItem qItem = new QueueItem(opCode, Exchange.RECEIVED);
 
-            string jsonString = string.Empty;            
-            if (size > 0) jsonString = Encoding.UTF8.GetString(dataBlock);
+            string dataString = string.Empty;            
+            if (size > 0) dataString = Encoding.UTF8.GetString(dataBlock);
             bool add = true;
             switch (opCode)
             {
@@ -443,52 +711,57 @@ namespace Reallusion.Import
                     }
                 case OpCodes.HELLO:
                     {
-                        try { qItem.Hello = JsonConvert.DeserializeObject<JsonHello>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Hello = JsonConvert.DeserializeObject<JsonHello>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.NOTIFY:
                     {
-                        try { qItem.Notify = JsonConvert.DeserializeObject<JsonNotify>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Notify = JsonConvert.DeserializeObject<JsonNotify>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        break;
+                    }
+                case OpCodes.FILE:
+                    {
+                        qItem.RemoteId = dataString;
                         break;
                     }
                 case OpCodes.CHARACTER:
                     {
-                        try { qItem.Character = JsonConvert.DeserializeObject<JsonCharacter>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Character = JsonConvert.DeserializeObject<JsonCharacter>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:
                     {
-                        try { qItem.CharacterUpdate = JsonConvert.DeserializeObject<JsonCharacterUpdate>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.CharacterUpdate = JsonConvert.DeserializeObject<JsonCharacterUpdate>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.PROP:
                     {
-                        try { qItem.Prop = JsonConvert.DeserializeObject<JsonProp>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Prop = JsonConvert.DeserializeObject<JsonProp>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.UPDATE_REPLACE:
                     {
-                        try { qItem.UpdateReplace = JsonConvert.DeserializeObject<JsonUpdateReplace>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.UpdateReplace = JsonConvert.DeserializeObject<JsonUpdateReplace>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.MOTION:
                     {
-                        try { qItem.Motion = JsonConvert.DeserializeObject<JsonMotion>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Motion = JsonConvert.DeserializeObject<JsonMotion>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.LIGHTS:
                     {
-                        try { qItem.Lights = JsonConvert.DeserializeObject<JsonLights>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Lights = JsonConvert.DeserializeObject<JsonLights>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.CAMERA_SYNC:
                     {
-                        try { qItem.CameraSync = JsonConvert.DeserializeObject<JsonCameraSync>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.CameraSync = JsonConvert.DeserializeObject<JsonCameraSync>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.FRAME_SYNC:
                     {
-                        try { qItem.FrameSync = JsonConvert.DeserializeObject<JsonFrameSync>(jsonString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.FrameSync = JsonConvert.DeserializeObject<JsonFrameSync>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
             }
@@ -497,7 +770,7 @@ namespace Reallusion.Import
             else
             {
                 Debug.LogWarning("Broken Item: " + opCode.ToString());
-                Debug.LogWarning(jsonString);
+                Debug.LogWarning(dataString);
             }
         }
         
@@ -512,8 +785,8 @@ namespace Reallusion.Import
             return sizeBytes;
         }
 
-        static string EXPORTPATH = "F:/DataLink";
-        static string PLUGIN_VERSION = "2.2.5";
+        public static string EXPORTPATH = "F:/DataLink";
+        public static string PLUGIN_VERSION = "2.2.5";
 
         static string ClientHelloMessage()
         {
@@ -533,30 +806,37 @@ namespace Reallusion.Import
             hello.Path = EXPORTPATH;
             hello.Plugin = PLUGIN_VERSION;
             hello.Exe = EditorApplication.applicationPath;
+            hello.Package = Pipeline.VERSION;
+            hello.LocalClient = false;
 
             // Debug.LogWarning(Application.productName);  // update plugin to use the project name (Application.productName)
 
             jsonString = JsonConvert.SerializeObject(hello);
-
+            Debug.Log(jsonString);
             return jsonString;
         }
         #endregion Recieved data handling
 
         #region Activity queue handling
 
-        private static Thread queueThread;
+        private static bool queueIsActive = false;
 
         public static void StartQueue()
-        {            
-            activityQueue = new List<QueueItem>();
-            EditorApplication.update -= QueueDelegate;
-            EditorApplication.update += QueueDelegate;
+        {
+            if (!queueIsActive)
+            {
+                activityQueue = new List<QueueItem>();
+                EditorApplication.update -= QueueDelegate;
+                EditorApplication.update += QueueDelegate;
+                queueIsActive = true;
+            }
         }
 
         public static void StopQueue()
-        {
+        {            
             activityQueue.Clear();
             EditorApplication.update -= QueueDelegate;
+            queueIsActive = false;
         }
 
         static double timer = 0f;
@@ -609,6 +889,11 @@ namespace Reallusion.Import
                 case OpCodes.NOTIFY:
                     {
                         Debug.Log(next.Notify.ToString());
+                        break;
+                    }
+                case OpCodes.FILE:
+                    {
+                        Debug.Log("File remote id: " + next.RemoteId);
                         break;
                     }
                 case OpCodes.CHARACTER:
@@ -732,7 +1017,9 @@ namespace Reallusion.Import
             public const string versionStr = "Version";             // Version: Int list [major, minor, revision] - Version numbers
             public const string pathStr = "Path";                   // Path: String - local path where it saves exports (only used as a fallback if the clients local path doesn't exist)
             public const string pluginStr = "Plugin";               // Plugin: String - plugin version
-            public const string exeStr = "Exe";                     // Exe: String - path to iClone/CC executable
+            public const string exeStr = "Exe";
+            public const string packageStr = "2.0.1";// Exe: String - path to iClone/CC executable
+            public const string localClientStr = "Local";
 
             [JsonProperty(applicationStr)]
             public string Application { get; set; }
@@ -744,6 +1031,10 @@ namespace Reallusion.Import
             public string Plugin { get; set; }
             [JsonProperty(exeStr)]
             public string Exe { get; set; }
+            [JsonProperty(packageStr)]
+            public string Package { get; set; }
+            [JsonProperty(localClientStr)]
+            public bool LocalClient { get; set; } // client side only to force TCP file transmission with LocalClient = false;
 
             public JsonHello()
             {
@@ -752,11 +1043,13 @@ namespace Reallusion.Import
                 Path = string.Empty;
                 Plugin = string.Empty;
                 Exe = string.Empty;
+                Package = string.Empty;
+                LocalClient = true;
             }
 
             public override string ToString()
             {
-                return "Application " + this.Application + ", Version " + this.Version.ToString() + ", Path " + this.Path + ", Plugin " + this.Plugin + ", Exe " + this.Exe;
+                return "Application " + this.Application + ", Version " + this.Version.ToString() + ", Path " + this.Path + ", Plugin " + this.Plugin + ", Exe " + this.Exe + ", Package " + this.Package + ", Local Client " + this.LocalClient.ToString();
             }
         }
 
@@ -772,6 +1065,11 @@ namespace Reallusion.Import
                 Message = string.Empty;
             }
 
+            public JsonNotify(string message)
+            {
+                Message = message;
+            }
+
             public override string ToString()
             {
                 return "Message " + this.Message;
@@ -780,12 +1078,15 @@ namespace Reallusion.Import
 
         public class JsonCharacter // CHARACTER: (100) - receive character export from server
         {
+            public const string remoteIdStr = "remote_id";          // remote_id: string zipile name for remote transmission
             public const string pathStr = "path";                   // path: String - file path of fbx export file
             public const string nameString = "name";                // name: String - actor name,
             public const string typeStr = "type";                   // type: String - actor type (AVATAR, PROP, LIGHT, CAMERA) - Should be AVATAR (used to verify)
             public const string linkIdStr = "link_id";              // link_id: String - actor link id code
             public const string motionPrefixStr = "motion_prefix";  // motion_prefix: String - name to prefix animation names
 
+            [JsonProperty(remoteIdStr)]
+            public string RemoteId { get; set; }
             [JsonProperty(pathStr)]
             public string Path { get; set; }
             [JsonProperty(nameString)]
@@ -799,6 +1100,7 @@ namespace Reallusion.Import
 
             public JsonCharacter()
             {
+                RemoteId = string.Empty;
                 Path = string.Empty;
                 Name = string.Empty;
                 Type = string.Empty;
@@ -808,7 +1110,7 @@ namespace Reallusion.Import
 
             public override string ToString()
             {
-                return "Path " + this.Path + ", Name " + this.Name + ", Type " + this.Type + ", Link Id " + this.LinkId + ", Motion Prefix " + this.MotionPrefix;
+                return (string.IsNullOrEmpty(RemoteId) ? "" : ("Remote Id " + RemoteId + " ,")) + "Path " + this.Path + ", Name " + this.Name + ", Type " + this.Type + ", Link Id " + this.LinkId + ", Motion Prefix " + this.MotionPrefix;
             }
         }
 
@@ -1092,6 +1394,7 @@ namespace Reallusion.Import
             public JsonLights Lights { get; set; }
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
+            public string RemoteId {  get; set; }
 
             public QueueItem(OpCodes opCode, Exchange direction)
             {
