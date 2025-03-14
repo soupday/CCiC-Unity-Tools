@@ -282,7 +282,21 @@ namespace Reallusion.Import
             OpCodes opCode = OpCodes.NONE;
 
             while (listening)
-            {                
+            {
+                if (stream.CanRead)
+                {
+                    if (!stream.DataAvailable)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
                 // terrible logic o'clock
                 if (!gotHeader)
                 {
@@ -297,21 +311,7 @@ namespace Reallusion.Import
                     bytesToRead = (bytesRemaining > maxSize) ? maxSize : bytesRemaining;
                 }
 
-                byte[] chunkBuffer = new byte[bytesToRead];
-
-                if (stream.CanRead)
-                {
-                    if (!stream.DataAvailable)
-                    {
-                        Thread.Sleep(100);
-                        continue;
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
+                byte[] chunkBuffer = new byte[bytesToRead];                
 
                 try
                 {
@@ -355,6 +355,7 @@ namespace Reallusion.Import
                         size = GetCurrentEndianWord(chunkBuffer, SourceEndian.BigEndian);
                         Debug.Log("remote file size: " + size);
                         bytesRemaining = size;
+                        fileSize = size;
                         gotFileSize = true;
                         continue;
                     }
