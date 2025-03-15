@@ -368,7 +368,7 @@ namespace Reallusion.Import
 
                     if (totalbytesRead < fileSize)
                     {
-                        Debug.Log("Writing: " + chunkBuffer.Length + " bytes");
+                        //Debug.Log("Writing: " + chunkBuffer.Length + " bytes");
                         fileStream.Write(chunkBuffer, 0, chunkBuffer.Length);
                         totalbytesRead += chunkBuffer.Length;
                     }
@@ -728,6 +728,11 @@ namespace Reallusion.Import
                 case OpCodes.CHARACTER:
                     {
                         try { qItem.Character = JsonConvert.DeserializeObject<JsonCharacter>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        if (qItem.Character != null)
+                        {
+                            if (!string.IsNullOrEmpty(qItem.Character.RemoteId)) { qItem.RemoteId = qItem.Character.RemoteId; }
+                            qItem.Name = qItem.Character.Name;
+                        }
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:
@@ -738,6 +743,11 @@ namespace Reallusion.Import
                 case OpCodes.PROP:
                     {
                         try { qItem.Prop = JsonConvert.DeserializeObject<JsonProp>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        if (qItem.Prop != null)
+                        {
+                            if (!string.IsNullOrEmpty(qItem.Prop.RemoteId)) { qItem.RemoteId = qItem.Prop.RemoteId; }
+                            qItem.Name = qItem.Prop.Name;
+                        }
                         break;
                     }
                 case OpCodes.UPDATE_REPLACE:
@@ -748,6 +758,11 @@ namespace Reallusion.Import
                 case OpCodes.MOTION:
                     {
                         try { qItem.Motion = JsonConvert.DeserializeObject<JsonMotion>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        if (qItem.Motion != null)
+                        {
+                            if (!string.IsNullOrEmpty(qItem.Motion.RemoteId)) { qItem.RemoteId = qItem.Motion.RemoteId; }
+                            qItem.Name = qItem.Motion.Name;
+                        }
                         break;
                     }
                 case OpCodes.LIGHTS:
@@ -898,10 +913,10 @@ namespace Reallusion.Import
                         break;
                     }
                 case OpCodes.CHARACTER:
-                    {                        
-                        Debug.Log(next.Character.ToString());
-                        ImportCharacter(next);
+                    {
                         next.Processed = true;
+                        Debug.Log(next.Character.ToString());
+                        ImportItem(next);                        
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:
@@ -911,7 +926,9 @@ namespace Reallusion.Import
                     }
                 case OpCodes.PROP:
                     {
+                        next.Processed = true;
                         Debug.Log(next.Prop.ToString());
+                        ImportItem(next);
                         break;
                     }
                 case OpCodes.UPDATE_REPLACE:
@@ -921,9 +938,9 @@ namespace Reallusion.Import
                     }
                 case OpCodes.MOTION:
                     {
-                        Debug.Log(next.Motion.ToString());
-                        ImportMotion(next);
                         next.Processed = true;
+                        Debug.Log(next.Motion.ToString());
+                        ImportItem(next);
                         break;
                     }
                 case OpCodes.LIGHTS:
@@ -989,14 +1006,8 @@ namespace Reallusion.Import
             //SceneView.lastActiveSceneView.Repaint();
             //EditorApplication.ExecuteMenuItem("Window/General/Scene");
         }
-
-        static void ImportMotion(QueueItem item)
-        {
-            UnityLinkImporter Importer = new UnityLinkImporter(item);
-            Importer.Import();
-        }
-
-        static void ImportCharacter(QueueItem item)
+                
+        static void ImportItem(QueueItem item)
         {
             UnityLinkImporter Importer = new UnityLinkImporter(item);
             Importer.Import();
@@ -1122,12 +1133,15 @@ namespace Reallusion.Import
 
         public class JsonProp // PROP: (102) - receive prop export from server
         {
+            public const string remoteIdStr = "remote_id";          // remote_id: string zipile name for remote transmission
             public const string pathStr = "path";                   // path: String - file path of fbx export file
             public const string nameString = "name";                // name: String - prop name
             public const string typeStr = "type";                   // type: String - actor type (AVATAR, PROP, LIGHT, CAMERA) - Should be PROP (used to verify)
             public const string linkIdStr = "link_id";              // link_id: String - actor link id code
             public const string motionPrefixStr = "motion_prefix";  // motion_prefix: String - name to prefix animation names
 
+            [JsonProperty(remoteIdStr)]
+            public string RemoteId { get; set; }
             [JsonProperty(pathStr)]
             public string Path { get; set; }
             [JsonProperty(nameString)]
@@ -1141,6 +1155,7 @@ namespace Reallusion.Import
 
             public JsonProp()
             {
+                RemoteId = string.Empty;
                 Path = string.Empty;
                 Name = string.Empty;
                 Type = string.Empty;
@@ -1156,6 +1171,7 @@ namespace Reallusion.Import
 
         public class JsonUpdateReplace // UPDATE_REPLACE: (108) - receive updated character or prop from server
         {
+            public const string remoteIdStr = "remote_id";          // remote_id: string zipile name for remote transmission
             public const string pathStr = "path";           // path: String - file path of fbx export file
             public const string nameString = "name";        // name: String - prop name
             public const string typeStr = "type";           // type: String - actor type (AVATAR, PROP, LIGHT, CAMERA)
@@ -1165,6 +1181,8 @@ namespace Reallusion.Import
 
             // Notes: Logistical nightmare.
 
+            [JsonProperty(remoteIdStr)]
+            public string RemoteId { get; set; }
             [JsonProperty(pathStr)]
             public string Path { get; set; }
             [JsonProperty(nameString)]
@@ -1180,6 +1198,7 @@ namespace Reallusion.Import
 
             public JsonUpdateReplace()
             {
+                RemoteId = string.Empty;
                 Path = string.Empty;
                 Name = string.Empty;
                 Type = string.Empty;
@@ -1201,6 +1220,7 @@ namespace Reallusion.Import
 
         public class JsonMotion // MOTION: (240) - receive animation export for actor from server
         {
+            public const string remoteIdStr = "remote_id";          // remote_id: string zipile name for remote transmission
             public const string pathStr = "path";                   // path: String - file path of fbx export file
             public const string nameString = "name";                // name: String - prop name
             public const string typeStr = "type";                   // type: String - actor type (AVATAR, PROP, LIGHT, CAMERA) - Should be PROP (used to verify)
@@ -1212,6 +1232,8 @@ namespace Reallusion.Import
             public const string frameStr = "frame";                 // frame: Int - current frame in iClone scene
             public const string motionPrefixStr = "motion_prefix";  // motion_prefix: String - name to prefix animation names
 
+            [JsonProperty(remoteIdStr)]
+            public string RemoteId { get; set; }
             [JsonProperty(pathStr)]
             public string Path { get; set; }
             [JsonProperty(nameString)]
@@ -1235,6 +1257,7 @@ namespace Reallusion.Import
 
             public JsonMotion()
             {
+                RemoteId = string.Empty;
                 Path = string.Empty;
                 Name = string.Empty;
                 Type = string.Empty;
@@ -1381,6 +1404,8 @@ namespace Reallusion.Import
         public class QueueItem
         {
             public OpCodes OpCode { get; set; }
+
+            public string Name { get; set; }
             public Exchange Exchange { get; set; }
             public DateTime EntryTime { get; set; }
             public bool Processed { get; set; }
@@ -1400,6 +1425,7 @@ namespace Reallusion.Import
             public QueueItem(OpCodes opCode, Exchange direction)
             {
                 OpCode = opCode;
+                Name = string.Empty;
                 Exchange = direction;
                 EntryTime = DateTime.Now.ToLocalTime();
                 Hello = null;
