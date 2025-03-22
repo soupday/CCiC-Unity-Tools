@@ -20,6 +20,7 @@ namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
     {
+        /*
         #region Menu options
         [MenuItem("Example/Import test")]
         static void MenuProcessImport()
@@ -59,17 +60,16 @@ namespace Reallusion.Import
             Debug.LogWarning(Application.productName);
         }
         #endregion Menu options
-
+        */
         #region Setup
-        static void InitConnection()
+        public static void InitConnection()
         {
             StartQueue();  // move to button in window
             StartClient(); // also move
             UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
-        } 
-
+        }        
         #endregion Setup
-
+        
         #region Client
         static TcpClient client = null;
         static NetworkStream stream = null;
@@ -252,6 +252,7 @@ namespace Reallusion.Import
                 Thread.Sleep(200);
             }
 
+            if (!client.Connected) return;
             string a = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
             string b = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
             NotifyInternalQueue("Client Connected to : " + a + ":" + b);
@@ -564,6 +565,7 @@ namespace Reallusion.Import
             StopQueue();
             SendMessage(OpCodes.STOP);
 
+            startConnection = false;
             listening = false;
             reconnect = false;
 
@@ -836,6 +838,9 @@ namespace Reallusion.Import
         #region Activity queue handling
 
         private static bool queueIsActive = false;
+        public static bool ImportIntoCurrentScene = false;
+        public static bool timelineSceneCreated = false;
+        public static GameObject timelineObject;
 
         public static void StartQueue()
         {
@@ -850,7 +855,7 @@ namespace Reallusion.Import
 
         public static void StopQueue()
         {            
-            activityQueue.Clear();
+            //activityQueue.Clear();
             EditorApplication.update -= QueueDelegate;
             queueIsActive = false;
         }
@@ -1009,7 +1014,7 @@ namespace Reallusion.Import
                 
         static void ImportItem(QueueItem item)
         {
-            UnityLinkImporter Importer = new UnityLinkImporter(item);
+            UnityLinkImporter Importer = new UnityLinkImporter(item, ImportIntoCurrentScene);
             Importer.Import();
         }
 

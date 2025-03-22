@@ -49,6 +49,9 @@ namespace Reallusion.Import
         private readonly BaseGeneration generation;
         private readonly bool blenderProject;
 
+        public bool recordMotionListForTimeLine;
+        public List<AnimationClip> clipListForTimeLine = new List<AnimationClip>();
+
         public const string MATERIALS_FOLDER = "Materials";
         public const string PREFABS_FOLDER = "Prefabs";
         public const string BAKE_SUFFIX = "_Baked";
@@ -360,7 +363,9 @@ namespace Reallusion.Import
             int animationRetargeted = characterInfo.DualMaterialHair ? 2 : 1;
             bool replace = characterInfo.animationRetargeted != animationRetargeted;
             if (replace) Util.LogInfo("Retargeting all imported animations.");
-            AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);            
+
+            clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);
+            // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
 
             // create default animator if there isn't one:
             //  commenting out due to a unity bug in 2022+,

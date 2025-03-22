@@ -4,7 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEditor.Timeline;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 namespace Reallusion.Import
 {
@@ -20,12 +24,15 @@ namespace Reallusion.Import
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
+        bool importIntoScene = false;
+        
         PackageType packageType = PackageType.NONE;
 
-        public UnityLinkImporter(UnityLinkManager.QueueItem item)
+        public UnityLinkImporter(UnityLinkManager.QueueItem item, bool sceneImport)
         {
             QueueItem = item;
             opCode = QueueItem.OpCode;
+            importIntoScene = sceneImport;
 
             if (string.IsNullOrEmpty(item.RemoteId))
             {
@@ -35,8 +42,6 @@ namespace Reallusion.Import
             {
                 packageType = PackageType.ZIP;
             }
-
-
         }
 
         public enum PackageType
@@ -112,6 +117,15 @@ namespace Reallusion.Import
         void DoImport()
         {
             AssetDatabase.Refresh();
+            //GameObject prefab = null;
+
+            if (importIntoScene && !UnityLinkManager.timelineSceneCreated)
+            {
+                Debug.LogWarning("Creating new scene");
+                CreateSceneAndTimeline();
+            }
+
+            (GameObject, List<AnimationClip>) timelineKit = (null, null);
 
             if (importMotion)
             {
@@ -120,13 +134,20 @@ namespace Reallusion.Import
 
             if (importAvatar)
             {
-                ImportAvatar(fbxPath, QueueItem.Character.LinkId);
+                timelineKit = ImportAvatar(fbxPath, QueueItem.Character.LinkId);
             }
 
             if (importProp)
             {
-                ImportProp(fbxPath, QueueItem.Prop.LinkId);
+                timelineKit = ImportProp(fbxPath, QueueItem.Prop.LinkId);
             }
+
+            if (importIntoScene)
+            {
+                AddToSceneAndTimeLine(timelineKit);
+            }
+
+            SelectTimeLineObjectAndShowWindow();
         }
 
         public string GetNonDuplicateFolderName(string folderName, bool insideAssetDatabase)
@@ -250,9 +271,9 @@ namespace Reallusion.Import
             // remove external disk assets
         }
 
-        public void ImportProp(string fbxPath, string linkId)
+        public (GameObject, List<AnimationClip>) ImportProp(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
             Debug.Log("Creating new characterinfo with guid " + guid);
             Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
@@ -265,6 +286,7 @@ namespace Reallusion.Import
 
             c.BuildQuality = MaterialQuality.High;
             Importer import = new Importer(c);
+            import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
             c.Write();
 
@@ -276,25 +298,28 @@ namespace Reallusion.Import
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
+            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            return (prefab, animGuidsForTimeLine);
         }
 
-        public void ImportAvatar(string fbxPath, string linkId)
+        public (GameObject, List<AnimationClip>) ImportAvatar(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
             Debug.Log("Creating new characterinfo with guid " + guid);
             Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
-            CharacterInfo c = new CharacterInfo(guid);
+            CharacterInfo charInfo = new CharacterInfo(guid);
 
-            c.linkId = linkId;
-            c.exportType = CharacterInfo.ExportType.AVATAR;
-            c.projectName = "iclone project name";
+            charInfo.linkId = linkId;
+            charInfo.exportType = CharacterInfo.ExportType.AVATAR;
+            charInfo.projectName = "iclone project name";
             //c.sceneid = add this later
 
-            c.BuildQuality = MaterialQuality.High;
-            Importer import = new Importer(c);
+            charInfo.BuildQuality = MaterialQuality.High;
+            Importer import = new Importer(charInfo);
+            import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
-            c.Write();
+            charInfo.Write();
 
             // add link id
             var data = prefab.AddComponent<DataLinkActorData>();
@@ -304,6 +329,9 @@ namespace Reallusion.Import
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
+
+            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            return (prefab, animGuidsForTimeLine);
         }
 
         public void ImportMotion(string fbxPath, string linkId)
@@ -446,5 +474,79 @@ namespace Reallusion.Import
         }
 
 
+        void CreateSceneAndTimeline()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+
+            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
+            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
+
+            // PlayableGraph graph = PlayableGraph.Create(); // ...
+
+            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
+            director.playableAsset = timeline;
+
+            
+            UnityLinkManager.timelineSceneCreated = true;
+        }
+
+        TimelineEditorWindow timelineEditorWindow = null;
+
+        void SelectTimeLineObjectAndShowWindow()
+        {
+            Selection.activeObject = UnityLinkManager.timelineObject;
+            
+            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            {
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+            else
+            {
+                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+        }
+
+        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple)
+        {
+            Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
+            GameObject sceneObject = GameObject.Instantiate(objectTuple.Item1);
+            sceneObject.transform.position = Vector3.zero;
+            sceneObject.transform.rotation = Quaternion.identity;
+
+            PlayableDirector director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+            AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
+            AnimationClip clipToUse = null;
+            // find suitable aniamtion clip (should be the first non T-Pose)
+            foreach (AnimationClip animClip in objectTuple.Item2)
+            {
+                if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                else
+                {
+                    clipToUse = animClip;
+                }
+            }
+
+            TimelineClip clip = newTrack.CreateClip(clipToUse);
+            clip.start = 0f;
+            clip.timeScale = 1f;
+            clip.duration = clip.duration / clip.timeScale;
+            Debug.LogWarning("SetGenericBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
+            director.SetGenericBinding(newTrack, sceneObject);
+            
+        }
     }
 }
