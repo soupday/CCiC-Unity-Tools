@@ -101,6 +101,7 @@ namespace Reallusion.Import
                 if (GUILayout.Button("Disconnect"))
                 {
                     UnityLinkManager.DisconnectAndStopServer();
+                    Repaint();
                 }
             }
             EditorGUI.EndDisabledGroup();

@@ -20,52 +20,11 @@ namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
     {
-        /*
-        #region Menu options
-        [MenuItem("Example/Import test")]
-        static void MenuProcessImport()
-        {
-            ProcessImport();
-        }
-
-        [MenuItem("Example/TCP Client connect")]
-        static void SendSomething()
-        {            
-            InitConnection();
-        }
-
-        [MenuItem("Example/TCP Client disconnect")]
-        static void MenuDisconnect()
-        {
-            Disconnect();
-        }
-
-        [MenuItem("Example/TCP Client disconnect and stop server")]
-        static void MenuDisconnectStopServer()
-        {
-            DisconnectAndStopServer();
-        }
-
-        [MenuItem("Example/TCP Send message")]
-        static void MessageServer()
-        {
-            SendMessage(OpCodes.TEST);
-        }
-
-        [MenuItem("Example/Code test")]
-        static void Test()
-        {
-            //SendMessage(OpCodes.HELLO, ClientHelloMessage());
-
-            Debug.LogWarning(Application.productName);
-        }
-        #endregion Menu options
-        */
         #region Setup
         public static void InitConnection()
         {
-            StartQueue();  // move to button in window
-            StartClient(); // also move
+            StartQueue();
+            StartClient();
             UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
         }        
         #endregion Setup
@@ -74,94 +33,78 @@ namespace Reallusion.Import
         static TcpClient client = null;
         static NetworkStream stream = null;
         static Thread clientThread;
-        static bool clientThreadActive;
+        static bool clientThreadActive = false;
         public static bool IsClientThreadActive {  get {  return clientThreadActive; } }
-        static bool startConnection = true;
+        static bool retryConnection = true;
         static bool reconnect = false;
         static bool listening = false;
         
         static void StartClient()
         {
-            clientThread = new Thread(new ThreadStart(NewClientThread));
+            clientThread = new Thread(new ThreadStart(ClientThread));
             clientThread.Start();
         }
 
-        static void OldClientThread()
+        static void ClientThread()
         {
             clientThreadActive = true;
+            retryConnection = true;
+
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
-            int port = 9333;
+            int port = 9334;
 
             client = new TcpClient();
 
-            #region connection retry and timeout
-            DateTime startTime = DateTime.Now;
-            TimeSpan timeout = TimeSpan.FromSeconds(20);
-                        
-            while (startConnection)
-            {                
-                DateTime now = DateTime.Now;
-                if (now > startTime + timeout)
+            #region connection retry
+            int retryCount = 10;
+            while (retryCount > 0 && retryConnection)
+            {
+                try
                 {
-                    NotifyInternalQueue("Unable to connect... ");
-                    clientThreadActive = false;
-                    return;
+                    client.Connect(ipAddress, port);
+                }
+                catch (Exception e)
+                {
+                    NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
 
-                try { client.Connect(ipAddress, port); } catch (Exception e) { NotifyInternalQueue("Attempting connection... " + e.Message); }
+                if (client.Connected)
+                {
+                    retryCount = 0;
+                    break;
+                }
+                else
+                {
+                    retryCount--;
+                }
 
-                if(client.Connected) { startConnection = false; break; }
-
-                Thread.Sleep(200);
+                Thread.Sleep(500);
             }
-            
-            string a = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
-            string b = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
-            NotifyInternalQueue("Client Connected to : " + a + ":" + b);
-            #endregion connection retry and timeout
+
+            if (!client.Connected) // clean up
+            {
+                client.Close();
+                retryConnection = false;
+                listening = false;
+                reconnect = false;
+                clientThreadActive = false;
+                NotifyInternalQueue("Unable to connect... ");
+                StopQueue();
+                return;
+            }
+            #endregion connection retry
+
+            string addr = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+            string pt = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
+            NotifyInternalQueue("Client Connected to : " + addr + ":" + pt);
 
             stream = client.GetStream();
             reconnect = true;
             listening = true;
 
-            byte[] receivedData = new byte[0];
-            int bytesRead = 0;
-            int bytesToRead = 0;
-            bool gotHeader = false;
-            
-            int maxSize = 32768;
-            int size = 0;
-            int bytesRemaining = 0;
-
-            OpCodes opCode;
-                        
             while (listening)
             {
-                if (!gotHeader)
-                {
-                    bytesToRead = 8;
-                }
-                else
-                {
-                    if (size > maxSize)
-                    {
-                        if (bytesRemaining > maxSize)
-                        {
-                            bytesToRead = maxSize;
-                        }
-                        else
-                        {
-                            bytesToRead = bytesRemaining;
-                        }
-                    }
-                    else
-                    {
-                        bytesToRead = size;
-                    }
-                }
-
-                byte[] chunkBuffer = new byte[bytesToRead];
-
+                // rate limit
                 if (stream.CanRead)
                 {
                     if (!stream.DataAvailable)
@@ -176,249 +119,167 @@ namespace Reallusion.Import
                     continue;
                 }
 
-                try
-                {
-                    if (stream.CanRead)
-                    {
-                        bytesRead = stream.Read(chunkBuffer, 0, bytesToRead);
-                        bytesRemaining -= bytesRead;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log(ex);
-                }
-
-                if (!gotHeader)
-                {
-                    Debug.Log("Getting Header.");
-                    byte[] opCodeBytes = ExtractBytes(chunkBuffer, 0, 4);
-                    byte[] sizeBytes = ExtractBytes(chunkBuffer, 4, 4);
-                    opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
-                    size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
-                    Debug.Log("Op Code: " + opCode.ToString() + ", Expected Size: " + size);
-                    bytesRemaining = size;
-                    gotHeader = true;
-                }
-
-                Array.Resize(ref receivedData, receivedData.Length + bytesRead);
-                Buffer.BlockCopy(chunkBuffer, 0, receivedData, receivedData.Length - bytesRead, bytesRead);
-
-                Debug.Log("receivedData " + receivedData.Length + ", bytesRead " + bytesRead);
-
-                if (receivedData.Length >= size + 8)
-                {
-                    Debug.Log("Handling recieved data");
-                    HandleRecivedData(receivedData);
-                    receivedData = new byte[0];
-                    bytesRemaining = 0;
-                    size = 0;
-                    gotHeader = false;                    
-                }
+                RecvData();
             }
+            
             stream.Close();
             client.Close();
             clientThreadActive = false;
         }
 
+        static OpCodes opCode = OpCodes.NONE;
+        static byte[] header = new byte[8];
+        static byte[] data = new byte[0];
+        static int headerBytesRead = 0;
+        static int bytesRead = 0;
+        static int chunkSize = 0;
+        static int size = 0;
+        static int MAX_CHUNK_SIZE = 32768;
 
-        static void NewClientThread()
-        {
-            clientThreadActive = true;
-            startConnection = true;
-            IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
-            int port = 9333;
-
-            client = new TcpClient();
-
-            #region connection retry and timeout
-            DateTime startTime = DateTime.Now;
-            TimeSpan timeout = TimeSpan.FromSeconds(20);
-
-            while (startConnection)
-            {
-                DateTime now = DateTime.Now;
-                if (now > startTime + timeout)
-                {
-                    NotifyInternalQueue("Unable to connect... ");
-                    clientThreadActive = false;
-                    return;
-                }
-
-                try { client.Connect(ipAddress, port); } catch (Exception e) { NotifyInternalQueue("Attempting connection... " + e.Message); }
-
-                if (client.Connected) { startConnection = false; break; }
-
-                Thread.Sleep(200);
-            }
-
-            if (!client.Connected) return;
-            string a = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
-            string b = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
-            NotifyInternalQueue("Client Connected to : " + a + ":" + b);
-            #endregion connection retry and timeout
-
-            stream = client.GetStream();
-            reconnect = true;
-            listening = true;
-
-            byte[] receivedData = new byte[0];
-            int bytesRead = 0;
-            int bytesToRead = 0;
-
-            bool gotHeader = false;
-
-            bool gotFileName = false;
-            bool gotFileSize = false;
-            int fileSize = 0;
-            string remoteId = string.Empty;
-            byte[] fileDesc = new byte[0]; // opcode | len | remote_id to pass to queue
-            FileStream fileStream = null;
-
-            int maxSize = 32768;
-            int size = 0;
-            int bytesRemaining = 0;
-            int totalbytesRead = 0;
-
-            OpCodes opCode = OpCodes.NONE;
-
-            while (listening)
+        static void RecvData()
+        {            
+            try
             {
                 if (stream.CanRead)
                 {
-                    if (!stream.DataAvailable)
-                    {
-                        Thread.Sleep(100);
-                        continue;
-                    }
+                    headerBytesRead = stream.Read(header, 0, 8);
                 }
-                else
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
-
-                // terrible logic o'clock
-                if (!gotHeader)
-                {
-                    bytesToRead = 8;
-                }
-                else if (opCode == OpCodes.FILE && gotFileName && !gotFileSize)
-                {
-                    bytesToRead = 4;
-                }
-                else
-                {
-                    bytesToRead = (bytesRemaining > maxSize) ? maxSize : bytesRemaining;
-                }
-
-                byte[] chunkBuffer = new byte[bytesToRead];                
-
-                try
-                {
-                    if (stream.CanRead)
-                    {
-                        bytesRead = stream.Read(chunkBuffer, 0, bytesToRead);
-                        if (gotHeader) bytesRemaining -= bytesRead;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log(ex);
-                }
-
-                if (!gotHeader)
-                {
-                    Debug.Log("Getting Header.");
-                    byte[] opCodeBytes = ExtractBytes(chunkBuffer, 0, 4);
-                    byte[] sizeBytes = ExtractBytes(chunkBuffer, 4, 4);
-                    opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
-                    size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
-                    receivedData = chunkBuffer;
-                    gotHeader = true;
-                    bytesRemaining = size;
-                    Debug.Log("Op Code: " + opCode.ToString() + ", Expected Size: " + size);
-                    continue;
-                }
-                else if (opCode == OpCodes.FILE) // stream the incoming data to disk
-                {
-                    if (!gotFileName) // first chunkbuffer after header for file opcode is the remote id string
-                    {
-                        remoteId = Encoding.UTF8.GetString(chunkBuffer);
-                        Debug.Log("remoteId: " + remoteId);
-                        fileDesc = ConcatBytes(receivedData, chunkBuffer);
-                        gotFileName = true;
-                        continue;
-                    }
-
-                    if (!gotFileSize) // next 4 bytes is zipfile length
-                    {
-                        size = GetCurrentEndianWord(chunkBuffer, SourceEndian.BigEndian);
-                        Debug.Log("remote file size: " + size);
-                        bytesRemaining = size;
-                        fileSize = size;
-                        gotFileSize = true;
-                        continue;
-                    }
-
-                    if (fileStream == null)
-                    {
-                        string streamPath = Path.Combine(EXPORTPATH, remoteId + ".zip");
-                        fileStream = new FileStream(streamPath, FileMode.Create, FileAccess.ReadWrite);
-                    }
-
-                    if (totalbytesRead < fileSize)
-                    {
-                        //Debug.Log("Writing: " + chunkBuffer.Length + " bytes");
-                        fileStream.Write(chunkBuffer, 0, chunkBuffer.Length);
-                        totalbytesRead += chunkBuffer.Length;
-                    }
-
-                    if (totalbytesRead >= fileSize)
-                    {
-                        Debug.Log("totalbytesRead >= fileSize");
-                        // finished
-                        // submit file description to queue
-                        HandleRecivedData(fileDesc);
-
-                        // reset everything and wait for next opcode
-                        if (fileStream != null)
-                        {
-                            fileStream.Close();
-                            fileStream = null;
-                        }
-                        receivedData = new byte[0];
-                        bytesRemaining = 0;
-                        totalbytesRead = 0;
-                        size = 0;
-                        gotHeader = false;
-                        gotFileName = false;
-                        gotFileSize = false;
-                        fileSize = 0;
-                        remoteId = string.Empty;
-                    }
-                }
-                else if (opCode != OpCodes.NONE && opCode != OpCodes.FILE) // all other opcodes generate a JSON object which will be deserialized and queued
-                {
-                    Debug.Log(opCode.ToString());
-                    receivedData = ConcatByteArray(receivedData, chunkBuffer);
-                    //Array.Resize(ref receivedData, receivedData.Length + bytesRead);
-                    //Buffer.BlockCopy(chunkBuffer, 0, receivedData, receivedData.Length - bytesRead, bytesRead);
-                    Debug.Log("receivedData " + receivedData.Length + ", bytesRead " + bytesRead);
-                    if (receivedData.Length >= size + 8)
-                    {
-                        Debug.Log("Handling recieved data");
-                        HandleRecivedData(receivedData);
-                        receivedData = new byte[0];
-                        bytesRemaining = 0;
-                        size = 0;
-                        gotHeader = false;
-                    }
-                }                
             }
-            stream.Close();
-            client.Close();
-            clientThreadActive = false;
+            catch (Exception ex)
+            {
+                Debug.Log("Header read: " + ex);
+            }
+
+            if (headerBytesRead == 8)
+            {
+                (opCode, size) = HeaderUnpack(header);
+                if (size > 0)
+                {
+                    // timeout wrapper
+                    DateTime dataStartTime = DateTime.Now;
+                    TimeSpan dataTimeout = TimeSpan.FromSeconds(30);
+                    while (size > 0)
+                    {
+                        DateTime now = DateTime.Now;
+                        if (now > dataStartTime + dataTimeout)
+                        {
+                            NotifyInternalQueue("Awaiting data: timed out.");
+                            opCode = OpCodes.NONE;
+                            break;
+                        }
+
+                        chunkSize = Math.Min(size, MAX_CHUNK_SIZE);
+                        byte[] chunk = new byte[chunkSize];
+                        try
+                        {
+                            if (stream.CanRead)
+                            {
+                                bytesRead = stream.Read(chunk, 0, chunkSize);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Log("Data read: " + ex);
+                        }
+                        data = ConcatBytes(data, chunk);
+                        size -= bytesRead;
+                    }
+                }
+                if (opCode == OpCodes.FILE)
+                {
+                    // with FILE, the data is the remote_id (the remote id is submitted to the processing queue after the corresponding zipfile has been written to disk)
+                    if (size == 0) // expected number of bytes read
+                    {
+                        // zip file remote id
+                        string remoteId = Encoding.UTF8.GetString(data);
+                        Debug.Log("Expecting ZipFile with remoteId: " + remoteId);
+                        // next 4 bytes is zipfile length
+                        byte[] len = new byte[4];
+                        bytesRead = 0;
+                        try
+                        {
+                            if (stream.CanRead)
+                            {
+                                bytesRead = stream.Read(len, 0, 4);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Log("Data read: " + ex);
+                        }
+
+                        int zipSize = GetCurrentEndianWord(len, SourceEndian.BigEndian);
+                        Debug.Log("Expected ZipFile size: " + zipSize);
+
+                        string streamPath = Path.Combine(EXPORTPATH, remoteId + ".zip");
+                        FileStream fileStream = new FileStream(streamPath, FileMode.Create, FileAccess.ReadWrite);
+
+                        // timeout wrapper
+                        DateTime zipStartTime = DateTime.Now;
+                        TimeSpan zipTimeout = TimeSpan.FromSeconds(300);
+                        while (zipSize > 0)
+                        {
+                            DateTime now = DateTime.Now;
+                            if (now > zipStartTime + zipTimeout)
+                            {
+                                NotifyInternalQueue("Awaiting data: timed out.");
+                                opCode = OpCodes.NONE;
+                                break;
+                            }
+                            chunkSize = Math.Min(zipSize, MAX_CHUNK_SIZE);
+                            byte[] chunk = new byte[chunkSize];
+                            bytesRead = 0;
+                            try
+                            {
+                                if (stream.CanRead)
+                                {
+                                    bytesRead = stream.Read(chunk, 0, chunkSize);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Log("Data read: " + ex);
+                            }
+                            fileStream.Write(chunk, 0, chunk.Length);
+                            zipSize -= bytesRead;
+                        }
+                        fileStream.Close();
+                        fileStream = null;
+                        if (zipSize == 0)
+                        {
+                            HandleRecivedData(data);
+                        }
+                    }
+                }
+                else if (opCode != OpCodes.NONE && opCode != OpCodes.FILE)
+                {
+                    // with all other opcodes the data is a JSON object which will be deserialized and queued
+                    if (size == 0) // expected number of bytes read
+                    {
+                        HandleRecivedData(data);
+                    }
+                }
+            }            
+
+            // reset all
+            opCode = OpCodes.NONE;
+            header = new byte[8];
+            data = new byte[0];
+            headerBytesRead = 0;
+            bytesRead = 0;
+            chunkSize = 0;
+            size = 0;
+        }
+
+        static (OpCodes, int) HeaderUnpack(byte[] headerBytes)
+        {
+            Debug.Log("HeaderUnpack.");
+            byte[] opCodeBytes = ExtractBytes(headerBytes, 0, 4);
+            byte[] sizeBytes = ExtractBytes(headerBytes, 4, 4);
+            OpCodes opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
+            int size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
+
+            return (opCode, size);
         }
 
         public static byte[] ConcatByteArray(byte[] first, byte[] second)
@@ -428,7 +289,7 @@ namespace Reallusion.Import
             return first;
         }
 
-        // alt
+        // alt - may be faster
         public static byte[] ConcatBytes (byte[] first, byte[] second)
         {
             IEnumerable<byte> bytes = first.Concat(second);
@@ -437,14 +298,16 @@ namespace Reallusion.Import
 
         static void NotifyInternalQueue(string message)
         {
-            if (activityQueue != null)
+            if (queueIsActive)
             {
-                var q = new QueueItem(OpCodes.NOTIFY, Exchange.INTERNAL);
-                q.Notify = new JsonNotify(message);
-                activityQueue.Add(q);
+                if (activityQueue != null)
+                {
+                    var q = new QueueItem(OpCodes.NOTIFY, Exchange.INTERNAL);
+                    q.Notify = new JsonNotify(message);
+                    activityQueue.Add(q);
+                }
             }
         }
-
         #endregion Client
 
         #region Server messaging
@@ -543,12 +406,12 @@ namespace Reallusion.Import
         #endregion Server messaging
 
         #region Connection
-        static void Disconnect()
+        static void ServerDisconnect()
         {
-            SetConnectedTimeStamp(true);
-            EditorApplication.update -= QueueDelegate;
-            SendMessage(OpCodes.DISCONNECT);
+            NotifyInternalQueue("Server disconnection recived... ");
+            StopQueue();
 
+            retryConnection = false;
             listening = false;
             reconnect = false;
 
@@ -562,10 +425,11 @@ namespace Reallusion.Import
         public static void DisconnectAndStopServer()
         {
             SetConnectedTimeStamp(true);
+            NotifyInternalQueue("Closing connection... ");
             StopQueue();
             SendMessage(OpCodes.STOP);
 
-            startConnection = false;
+            retryConnection = false;
             listening = false;
             reconnect = false;
 
@@ -684,22 +548,10 @@ namespace Reallusion.Import
         {
             if (activityQueue == null) activityQueue = new List<QueueItem>();
 
-            byte[] opCodeBytes = ExtractBytes(recievedData, 0, 4);
-            byte[] sizeBytes = ExtractBytes(recievedData, 4, 4);
-            OpCodes opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
-            int size = GetCurrentEndianWord(sizeBytes, SourceEndian.BigEndian);
-
-            if (recievedData.Length < size + 8)
-            {
-                // incomplete data 
-                return;
-            }
-
-            byte[] dataBlock = ExtractBytes(recievedData, 8, recievedData.Length - 8);
             QueueItem qItem = new QueueItem(opCode, Exchange.RECEIVED);
+            string dataString = string.Empty;
 
-            string dataString = string.Empty;            
-            if (size > 0) dataString = Encoding.UTF8.GetString(dataBlock);
+            dataString = Encoding.UTF8.GetString(recievedData);
             bool add = true;
             switch (opCode)
             {
@@ -720,6 +572,16 @@ namespace Reallusion.Import
                 case OpCodes.NOTIFY:
                     {
                         try { qItem.Notify = JsonConvert.DeserializeObject<JsonNotify>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        break;
+                    }
+                case OpCodes.STOP:
+                    {
+                        ServerDisconnect();
+                        break;
+                    }
+                case OpCodes.DISCONNECT:
+                    {
+                        ServerDisconnect();
                         break;
                     }
                 case OpCodes.FILE:
@@ -873,8 +735,6 @@ namespace Reallusion.Import
             {
                 timer = now;
             }
-
-            //Debug.Log(EditorApplication.timeSinceStartup);
 
             if (activityQueue == null) { return; }
             QueueItem next = new QueueItem(OpCodes.NONE, Exchange.RECEIVED);
