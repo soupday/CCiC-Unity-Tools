@@ -145,9 +145,10 @@ namespace Reallusion.Import
             if (importIntoScene)
             {
                 AddToSceneAndTimeLine(timelineKit);
+                SelectTimeLineObjectAndShowWindow();
             }
 
-            SelectTimeLineObjectAndShowWindow();
+            
         }
 
         public string GetNonDuplicateFolderName(string folderName, bool insideAssetDatabase)

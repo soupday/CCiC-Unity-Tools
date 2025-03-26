@@ -1,7 +1,10 @@
 #if PLASTIC_NEWTONSOFT_AVAILABLE
 using Unity.Plastic.Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 #else
 using Newtonsoft.Json;  // com.unity.collab-proxy (plastic scm) versions prior to 1.14.12
+using Newtonsoft.Json.Linq;
+using Formatting = Newtonsoft.Json.Formatting;
 #endif
 using UnityEngine;
 using UnityEditor;
@@ -23,6 +26,7 @@ namespace Reallusion.Import
         #region Setup
         public static void InitConnection()
         {
+            SetupLogging();
             StartQueue();
             StartClient();
             UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
@@ -408,7 +412,7 @@ namespace Reallusion.Import
         #region Connection
         static void ServerDisconnect()
         {
-            NotifyInternalQueue("Server disconnection recived... ");
+            NotifyInternalQueue("Server disconnection received... ");
             StopQueue();
 
             retryConnection = false;
@@ -645,6 +649,9 @@ namespace Reallusion.Import
                         break;
                     }
             }
+
+            WriteIncomingLog(dataString, add);
+
             if (add)
                 activityQueue.Add(qItem);
             else
@@ -1545,6 +1552,50 @@ namespace Reallusion.Import
             AssetDatabase.CreateAsset(obj, assetPath);
         }
         #endregion FBX extraction
-                
+
+        #region Log writer
+        static string APPLICATION_DATA_PATH = string.Empty;
+        static string ROOT_FOLDER = "Assets";
+        static string IMPORT_PARENT = "Reallusion";
+        static string IMPORT_FOLDER = "DataLink_Imports";
+
+        static void SetupLogging()
+        {
+            // Unity things that cannot be accessed outside the main thread
+            APPLICATION_DATA_PATH = Application.dataPath;
+
+            string PARENT_FOLDER = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT });
+            if (!AssetDatabase.IsValidFolder(PARENT_FOLDER)) AssetDatabase.CreateFolder(ROOT_FOLDER, IMPORT_PARENT);
+            string IMPORT_PATH = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER });
+            if (!AssetDatabase.IsValidFolder(IMPORT_PATH)) AssetDatabase.CreateFolder(PARENT_FOLDER, IMPORT_FOLDER);
+        }
+
+        static void WriteIncomingLog(string dataString, bool valid)
+        {
+            // Logs all incoming messages from the server
+            string fileName = "RL_DataLink_Server_Message_Log.txt";
+            string fullSystemFilePath = Path.Combine(APPLICATION_DATA_PATH, IMPORT_PARENT, IMPORT_FOLDER, fileName);
+            string assetFilePath = Path.Combine(ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, fileName);
+
+            string beautifiedJson = string.Empty;
+            try
+            {
+                JToken parsedJson = JToken.Parse(dataString);
+                beautifiedJson = parsedJson.ToString(Formatting.Indented);
+            }
+            catch
+            {
+                Debug.Log("JToken didn't parse");
+                beautifiedJson = dataString;
+            }
+
+            string fullText = opCode.ToString() + " " + DateTime.Now.ToLocalTime().ToString() + (valid ? " VALID" : " INVALID") + Environment.NewLine + beautifiedJson + Environment.NewLine + Environment.NewLine;
+
+            if (!File.Exists(fullSystemFilePath))
+                File.WriteAllText(fullSystemFilePath, fullText);
+            else
+                File.AppendAllText(fullSystemFilePath, fullText);
+        }
+        #endregion Log Writer
     }
 }
