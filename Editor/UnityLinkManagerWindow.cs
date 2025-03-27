@@ -106,6 +106,10 @@ namespace Reallusion.Import
             }
             EditorGUI.EndDisabledGroup();
             GUILayout.EndHorizontal();
+            
+            GUILayout.BeginHorizontal();
+            UnityLinkManager.IsClientLocal = GUILayout.Toggle(UnityLinkManager.IsClientLocal, "Client and server are on the same host");
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             UnityLinkManager.ImportIntoCurrentScene = GUILayout.Toggle(UnityLinkManager.ImportIntoCurrentScene, "Import into current scene.");

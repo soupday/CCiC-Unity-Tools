@@ -34,6 +34,7 @@ namespace Reallusion.Import
         #endregion Setup
         
         #region Client
+        public static bool IsClientLocal = true; // need to recall this for auto reconnecting ... tbd
         static TcpClient client = null;
         static NetworkStream stream = null;
         static Thread clientThread;
@@ -335,18 +336,18 @@ namespace Reallusion.Import
             DISCONNECT = 11,
             DEBUG = 15,
             NOTIFY = 50,
+            INVALID = 55,
             SAVE = 60,
             FILE = 70,
-            //MORPH = 90,
-            //MORPH_UPDATE = 91,
-            //REPLACE_MESH = 95,
-            //MATERIALS = 96,
             CHARACTER = 100,
             CHARACTER_UPDATE = 101,
             PROP = 102,
             PROP_UPDATE = 103,
+            LIGHTS = 104,
+            LIGHTS_UPDATE = 105,
+            CAMERA = 106,
+            CAMERA_UPDATE = 107,
             UPDATE_REPLACE = 108,
-            //RIGIFY = 110,
             TEMPLATE = 200,
             POSE = 210,
             POSE_FRAME = 211,
@@ -354,7 +355,7 @@ namespace Reallusion.Import
             SEQUENCE_FRAME = 221,
             SEQUENCE_END = 222,
             SEQUENCE_ACK = 223,
-            LIGHTS = 230,
+            LIGHTING = 230,
             CAMERA_SYNC = 231,
             FRAME_SYNC = 232,
             MOTION = 240,
@@ -475,11 +476,8 @@ namespace Reallusion.Import
                     stream.Close();
                     client.Close();
                 }
-            }            
-
+            }
             listening = false;
-            
-            
             EditorApplication.update -= QueueDelegate;
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
             Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
@@ -618,6 +616,15 @@ namespace Reallusion.Import
                         }
                         break;
                     }
+                case OpCodes.LIGHTS:
+                    {
+                        try { qItem.Lights = JsonConvert.DeserializeObject<JsonLights>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        break;
+                    }
+                case OpCodes.CAMERA:
+                    {
+                        break;
+                    }
                 case OpCodes.UPDATE_REPLACE:
                     {
                         try { qItem.UpdateReplace = JsonConvert.DeserializeObject<JsonUpdateReplace>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
@@ -633,9 +640,9 @@ namespace Reallusion.Import
                         }
                         break;
                     }
-                case OpCodes.LIGHTS:
+                case OpCodes.LIGHTING:
                     {
-                        try { qItem.Lights = JsonConvert.DeserializeObject<JsonLights>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Lighting = JsonConvert.DeserializeObject<JsonLighting>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.CAMERA_SYNC:
@@ -661,7 +668,7 @@ namespace Reallusion.Import
             }
         }
         
-        static byte[] ExtractBytes(byte[] data, int startIndex, int length)
+        public static byte[] ExtractBytes(byte[] data, int startIndex, int length)
         {
             byte[] sizeBytes = new byte[length];
             int n = 0;
@@ -694,7 +701,7 @@ namespace Reallusion.Import
             hello.Plugin = PLUGIN_VERSION;
             hello.Exe = EditorApplication.applicationPath;
             hello.Package = Pipeline.VERSION;
-            hello.LocalClient = false;
+            hello.LocalClient = IsClientLocal;
 
             // Debug.LogWarning(Application.productName);  // update plugin to use the project name (Application.productName)
 
@@ -803,6 +810,17 @@ namespace Reallusion.Import
                         ImportItem(next);
                         break;
                     }
+                case OpCodes.LIGHTS:
+                    {
+                        next.Processed = true;
+                        Debug.Log(next.Lights.ToString());
+                        ImportItem(next);
+                        break;
+                    }
+                case OpCodes.CAMERA:
+                    {
+                        break;
+                    }
                 case OpCodes.UPDATE_REPLACE:
                     {
                         Debug.Log(next.UpdateReplace.ToString());
@@ -815,9 +833,9 @@ namespace Reallusion.Import
                         ImportItem(next);
                         break;
                     }
-                case OpCodes.LIGHTS:
+                case OpCodes.LIGHTING:
                     {
-                        Debug.Log(next.Lights.ToString());
+                        Debug.Log(next.Lighting.ToString());
                         break;
                     }
                 case OpCodes.CAMERA_SYNC:
@@ -1037,8 +1055,310 @@ namespace Reallusion.Import
 
             public override string ToString()
             {
-                return "Path " + this.Path + ", Name " + this.Name + ", Type " + this.Type + ", Link Id " + this.LinkId + ", Motion Prefix " + this.MotionPrefix;
+                return (string.IsNullOrEmpty(RemoteId) ? "" : ("Remote Id " + RemoteId + " ,")) + "Path " + this.Path + ", Name " + this.Name + ", Type " + this.Type + ", Link Id " + this.LinkId + ", Motion Prefix " + this.MotionPrefix;
             }
+        }
+
+        public class JsonLights // LIGHTS = 104
+        {
+            /*
+                "path": "C:\\Users\\t3xr9\\AppData\\Local\\Temp\\iClone8Temp\\iClone8Temp\\Unity DataLink\\exports\\Lights_1743085047210000300\\Key.rlx",
+                "remote_id": "1743085050432389100",
+                "names": [
+                "Key",
+                "Side",
+                "Back",
+                "Floor Shadow"
+                ],
+                "types": [
+                "LIGHT",
+                "LIGHT",
+                "LIGHT",
+                "LIGHT"
+                ],
+                "link_ids": [
+                "2134704029872",
+                "2134704018720",
+                "2134704024624",
+                "2134704037744"
+                ]
+             */
+
+            public const string remoteIdStr = "remote_id";
+            public const string pathStr = "path";
+            public const string nameString = "names";
+            public const string typeStr = "types";
+            public const string linkIdStr = "link_ids";
+
+            [JsonProperty(remoteIdStr)]
+            public string RemoteId { get; set; }
+            [JsonProperty(pathStr)]
+            public string Path { get; set; }
+            [JsonProperty(nameString)]
+            public string[] Names { get; set; }
+            [JsonProperty(typeStr)]
+            public string[] Types { get; set; }
+            [JsonProperty(linkIdStr)]
+            public string[] LinkIds { get; set; }
+
+            public JsonLights()
+            {
+                RemoteId = string.Empty;
+                Path = string.Empty;
+                Names = new string[0];
+                Types = new string[0];
+                LinkIds = new string[0];
+            }
+
+            public override string ToString()
+            {
+                string allNames = string.Empty;
+                for (int i = 0;  i < Names.Length; i++)
+                {
+                    allNames += Names[i];
+                    allNames += (i == Names.Length - 1) ? " " : ", ";
+                }
+                
+                string allTypes = string.Empty;
+                for(int i = 0;i < Types.Length; i++)
+                {
+                    allTypes += Types[i];
+                    allTypes += (i == Types.Length -1) ? " " : ", ";
+                }
+
+                string allLinkIds = string.Empty;
+                for(int i =0;i < LinkIds.Length; i++)
+                {
+                    allLinkIds += LinkIds[i];
+                    allLinkIds += (i == LinkIds.Length - 1) ? " " : ", ";
+                }
+
+                return (string.IsNullOrEmpty(RemoteId) ? "" : ("Remote Id " + RemoteId + " ,")) + "Path " + this.Path + ", Names " + allNames + ", Types " + allTypes + ", linkIds " + allLinkIds;
+            }
+        }
+        // size - sjon - size - data for frames
+        public class JsonIndividualLight
+        {
+            // partial extract of on disk json corresponding to an individual light
+            public const string linkIdStr = "link_id";
+            public const string nameStr = "name";
+            public const string locStr = "loc";
+            public const string rotStr = "rot";
+            public const string scaStr = "sca";
+            public const string activestr = "active";
+            public const string colorStr = "color";
+            public const string multStr = "multiplier";
+            public const string typeStr = "type";
+            public const string rangeStr = "range";
+            public const string angleStr = "angle";
+            public const string falloffStr = "falloff";
+            public const string attStr = "attenuation";
+            public const string darkStr = "darkness";
+
+            [JsonProperty(linkIdStr)]
+            public string LinkId { get; set; }
+            [JsonProperty(nameStr)]
+            public string Name { get; set; }
+            [JsonProperty(locStr)]
+            public float[] loc { get; set; }
+            public Vector3 Pos { get { return this.GetPosition(); } }
+            [JsonProperty(rotStr)]
+            public float[] rot { get; set; }
+            public Quaternion Rot { get { return this.GetRotation(); } }
+            [JsonProperty(scaStr)]
+            public float[] sca { get; set; }
+            public Vector3 Scale { get { return this.GetScale(); } }
+            [JsonProperty(activestr)]
+            public bool Active { get; set; }
+            [JsonProperty(colorStr)]
+            public float[] color { get; set; }
+            public Color Color { get { return this.GetColor(); } }
+            [JsonProperty(multStr)]
+            public float Multiplier { get; set; }
+            [JsonProperty(typeStr)]
+            public string Type { get; set; }
+            [JsonProperty(rangeStr)]
+            public float Range { get; set; }
+            [JsonProperty(angleStr)]
+            public float Angle { get; set; }
+            [JsonProperty(falloffStr)]
+            public float Falloff { get; set; }
+            [JsonProperty(attStr)]
+            public float Attenuation { get; set; }
+            [JsonProperty(darkStr)]
+            public float Darkness { get; set; }
+
+            public JsonIndividualLight()
+            {
+                this.LinkId = string.Empty;
+                this.Name = string.Empty;
+                this.loc = new float[0];
+                this.rot = new float[0];
+                this.sca = new float[0];
+                this.Active = false;
+                this.color = new float[0];
+                this.Multiplier = 0f;
+                this.Type = string.Empty;
+                this.Range = 0f;
+                this.Angle = 0f;
+                this.Falloff = 0f;
+                this.Attenuation = 0f;
+                this.Darkness = 0f;
+            }
+
+            public Vector3 GetPosition()
+            {
+                return new Vector3(-loc[0], loc[2], -loc[1]) * 0.01f;
+            }
+
+            public Quaternion GetRotation()
+            {
+                return new Quaternion(rot[0], -rot[2], rot[1], rot[3]);
+            }
+
+            public Vector3 GetScale()
+            {
+                return new Vector3(sca[0], sca[1], sca[2]);
+            }
+
+            public Color GetColor()
+            {                
+                return new Color(color[0], color[1], color[2]);
+            }
+
+        }
+
+        public class DeserializedLightFrames
+        {
+            /* 4 byte floats
+             * frame_bytes = struct.pack("!ff?fffffffffffffffffff",
+                                     time,
+                                     frame,
+                                     light_data["active"], # 0 or 1 char  - 1 byte
+                                     light_data["loc"][0],
+                                     light_data["loc"][1],
+                                     light_data["loc"][2],
+                                     light_data["rot"][0],
+                                     light_data["rot"][1],
+                                     light_data["rot"][2],
+                                     light_data["rot"][3],
+                                     light_data["sca"][0],
+                                     light_data["sca"][1],
+                                     light_data["sca"][2],
+                                     light_data["color"][0],
+                                     light_data["color"][1],
+                                     light_data["color"][2],
+                                     light_data["multiplier"],
+                                     light_data["range"],
+                                     light_data["angle"],
+                                     light_data["falloff"],
+                                     light_data["attenuation"],
+                                     light_data["darkness"]) 
+             */
+
+            public float Time { get; set; }
+            public float Frame { get; set; }
+            public bool Active { get; set; }
+            public float PosX { get; set; }
+            public float PosY { get; set; }
+            public float PosZ { get; set; }
+            public Vector3 Pos { get { return this.GetPosition(); } }
+            public float RotX { get; set; }
+            public float RotY { get; set; }
+            public float RotZ { get; set; }
+            public float RotW { get; set; }
+            public Quaternion Rot { get { return this.GetRotation(); } }
+            public float ScaleX { get; set; }
+            public float ScaleY { get; set; }
+            public float ScaleZ { get; set; }
+            public Vector3 Scale { get { return this.GetScale(); } }
+            public float ColorR { get; set; }
+            public float ColorG { get; set; }
+            public float ColorB { get; set; }
+            public Color Color { get { return this.GetColor(); } }
+            public float Multiplier { get; set; }
+            public float Range { get; set; }
+            public float Angle { get; set; }
+            public float Falloff { get; set; }
+            public float Attenuation { get; set; }
+            public float Darkness { get; set; }
+
+            public DeserializedLightFrames(byte[] data)
+            {                
+                Time = GetCurrentEndianFloat(ExtractBytes(data, 0, 4), SourceEndian.BigEndian) / 6000f; // ???
+                Frame = GetCurrentEndianFloat(ExtractBytes(data, 4, 4), SourceEndian.BigEndian);
+                Active = ByteToBool(ExtractBytes(data, 8, 1));
+                PosX = GetCurrentEndianFloat(ExtractBytes(data, 9, 4), SourceEndian.BigEndian);
+                PosY  = GetCurrentEndianFloat(ExtractBytes(data, 13, 4), SourceEndian.BigEndian);
+                PosZ = GetCurrentEndianFloat(ExtractBytes(data, 17, 4), SourceEndian.BigEndian);
+                RotX = GetCurrentEndianFloat(ExtractBytes(data, 21, 4), SourceEndian.BigEndian);
+                RotY = GetCurrentEndianFloat(ExtractBytes(data, 25, 4), SourceEndian.BigEndian);
+                RotZ = GetCurrentEndianFloat(ExtractBytes(data, 29, 4), SourceEndian.BigEndian);
+                RotW = GetCurrentEndianFloat(ExtractBytes(data, 33, 4), SourceEndian.BigEndian);
+                ScaleX = GetCurrentEndianFloat(ExtractBytes(data, 37, 4), SourceEndian.BigEndian);
+                ScaleY = GetCurrentEndianFloat(ExtractBytes(data, 41, 4), SourceEndian.BigEndian);
+                ScaleZ = GetCurrentEndianFloat(ExtractBytes(data, 45, 4), SourceEndian.BigEndian);
+                ColorR = GetCurrentEndianFloat(ExtractBytes(data, 49, 4), SourceEndian.BigEndian);
+                ColorG = GetCurrentEndianFloat(ExtractBytes(data, 53, 4), SourceEndian.BigEndian);
+                ColorB = GetCurrentEndianFloat(ExtractBytes(data, 57, 4), SourceEndian.BigEndian);
+                Multiplier = GetCurrentEndianFloat(ExtractBytes(data, 61, 4), SourceEndian.BigEndian);
+                Range = GetCurrentEndianFloat(ExtractBytes(data, 65, 4), SourceEndian.BigEndian);
+                Angle = GetCurrentEndianFloat(ExtractBytes(data, 69, 4), SourceEndian.BigEndian);
+                Falloff = GetCurrentEndianFloat(ExtractBytes(data, 73, 4), SourceEndian.BigEndian);
+                Attenuation = GetCurrentEndianFloat(ExtractBytes(data, 77, 4), SourceEndian.BigEndian);
+                Darkness = GetCurrentEndianFloat(ExtractBytes(data, 81, 4), SourceEndian.BigEndian);
+            }
+            /*
+            Vector3 cameraPos = new Vector3(-rawPosition.x, rawPosition.z, -rawPosition.y) * 0.01f;
+            Vector3 targetPos = new Vector3(-targetPosition.x, targetPosition.z, -targetPosition.y) * 0.01f;
+
+            Quaternion blenderQuaternion = item.CameraSync.Rotation;
+            // convert blender quaternion to unity
+            Quaternion unityQuaternion = new Quaternion( blenderQuaternion.x,
+                                                        -blenderQuaternion.z,
+                                                         blenderQuaternion.y,
+                                                         blenderQuaternion.w);
+            // correct rotation to point blender camera's forward -Y (in Unity space) to forward +Z
+            Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+            Quaternion corrected = unityQuaternion * cameraCorrection;
+            
+            camera.transform.position = cameraPos;
+            camera.transform.rotation = corrected;
+            */
+
+            public Vector3 GetPosition()
+            {
+                return new Vector3(-PosX, PosZ, -PosY) * 0.01f;
+            }
+
+            public Quaternion GetRotation()
+            {
+                Quaternion unCorrected = new Quaternion(RotX, -RotZ, RotY, RotW);
+                Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+                Quaternion corrected = unCorrected * cameraCorrection;
+                return corrected;
+            }
+
+            public Vector3 GetScale()
+            {
+                return new Vector3(ScaleX, ScaleY, ScaleZ);
+            }
+
+            public Color GetColor()
+            {                
+                return new Color(ColorR, ColorG, ColorB);
+            }
+
+            public override string ToString()
+            {
+                return this.Time.ToString() + ", " + this.Frame.ToString() + ", " + this.Active.ToString() + ", " + this.PosX.ToString() + ", " + this.PosY.ToString() + ", " + this.PosZ.ToString() + ", " + this.RotX.ToString() + ", " + this.RotY.ToString() + ", " + this.RotZ.ToString() + ", " + this.RotW.ToString();
+            }
+        }
+
+        static bool ByteToBool(byte[] data)
+        {
+            if ( data.Length != 1) { Debug.LogWarning("Only byte[] of 1 byte accepted as input."); return false; }
+            return (data[0] == 1);
         }
 
         public class JsonUpdateReplace // UPDATE_REPLACE: (108) - receive updated character or prop from server
@@ -1148,7 +1468,7 @@ namespace Reallusion.Import
             }
         }
 
-        public class JsonLights // LIGHTS: (230) - Sync lights with iClone/CC
+        public class JsonLighting // LIGHTING: (230) - Sync lights with iClone/CC
         {
             // Much data
             // Notes: TBD, stop gap solution for sending lights to Blender. Needs to send lights as full animated actors.
@@ -1287,9 +1607,10 @@ namespace Reallusion.Import
             public JsonCharacter Character { get; set; }
             public JsonCharacterUpdate CharacterUpdate { get; set; }
             public JsonProp Prop { get; set; }
+            public JsonLights Lights { get; set; }
             public JsonUpdateReplace UpdateReplace { get; set; }
             public JsonMotion Motion { get; set; }
-            public JsonLights Lights { get; set; }
+            public JsonLighting Lighting { get; set; }
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
             public string RemoteId {  get; set; }
@@ -1321,7 +1642,39 @@ namespace Reallusion.Import
             BigEndian = 1
         }
 
-        static Int32 GetCurrentEndianWord(byte[] data, SourceEndian sourceEndian)
+        public static float GetCurrentEndianFloat(byte[] data, SourceEndian sourceEndian)
+        {
+            if (data.Length != 4)
+            {
+                Debug.LogWarning("Only byte[] of 4 bytes accepted as input.");
+                return 0f;
+            }
+
+            if (BitConverter.IsLittleEndian)
+            {
+                if (sourceEndian == SourceEndian.LittleEndian)
+                {
+                    return BitConverter.ToSingle(data, 0);
+                }
+                else // serverEndian == SourceEndian.BigEndian
+                {
+                    return BitConverter.ToSingle(ReverseByteOrder(data), 0);
+                }
+            }
+            else
+            {
+                if (sourceEndian == SourceEndian.BigEndian)
+                {
+                    return BitConverter.ToSingle(data, 0);
+                }
+                else // serverEndian == SourceEndian.LittleEndian
+                {
+                    return BitConverter.ToSingle(ReverseByteOrder(data), 0);
+                }
+            }
+        }
+
+        public static Int32 GetCurrentEndianWord(byte[] data, SourceEndian sourceEndian)
         {
             if (data.Length != 4)
             {
@@ -1353,7 +1706,7 @@ namespace Reallusion.Import
             }
         }
 
-        static byte[] Int32ToBigEndianBytes(Int32 int32)
+        public static byte[] Int32ToBigEndianBytes(Int32 int32)
         {
             byte[] bytes = BitConverter.GetBytes(int32);
 
@@ -1367,7 +1720,7 @@ namespace Reallusion.Import
             }
         }
 
-        static byte[] ReverseByteOrder(byte[] data)
+        public static byte[] ReverseByteOrder(byte[] data)
         {
             byte[] reverse = new byte[data.Length];
             int n = data.Length - 1;

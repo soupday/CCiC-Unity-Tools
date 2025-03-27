@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.Timeline;
@@ -24,6 +26,7 @@ namespace Reallusion.Import
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
+        bool importLights = false;
         bool importIntoScene = false;
         
         PackageType packageType = PackageType.NONE;
@@ -54,25 +57,35 @@ namespace Reallusion.Import
         public void Import()
         {
             string assetPath = string.Empty;
-
+            string name = string.Empty;
             switch (opCode)
             {
                 case UnityLinkManager.OpCodes.MOTION:
                     {
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Motion.Path; }
+                        name = QueueItem.Motion.Name;
                         importMotion = true;
                         break;
                     }
                 case UnityLinkManager.OpCodes.CHARACTER:
                     {
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Character.Path; }
+                        name = QueueItem.Character.Name;
                         importAvatar = true;
                         break;
                     }
                 case UnityLinkManager.OpCodes.PROP:
                     {
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Prop.Path; }
+                        name = QueueItem.Prop.Name;
                         importProp = true;
+                        break;
+                    }
+                case UnityLinkManager.OpCodes.LIGHTS:
+                    {
+                        if (packageType == PackageType.DISK) { assetPath = QueueItem.Lights.Path; }                        
+                        name = Path.GetFileName(Path.GetDirectoryName(QueueItem.Lights.Path));
+                        importLights = true;
                         break;
                     }
             }
@@ -83,7 +96,7 @@ namespace Reallusion.Import
                 if (!string.IsNullOrEmpty(assetPath))
                 {
                     string assetFolder = Path.GetDirectoryName(assetPath);
-                    fbxPath = RetrieveDiskAsset(assetFolder, QueueItem.Name);
+                    fbxPath = RetrieveDiskAsset(assetFolder, name);
                     Directory.Delete(assetFolder, true);
                 }
             }
@@ -93,7 +106,7 @@ namespace Reallusion.Import
                 string zipFolder = Path.Combine(UnityLinkManager.EXPORTPATH, QueueItem.RemoteId);
                 ZipFile.ExtractToDirectory(zipPath, zipFolder);
                 File.Delete(zipPath);
-                fbxPath = RetrieveDiskAsset(zipFolder, QueueItem.Name);
+                fbxPath = RetrieveDiskAsset(zipFolder, name);
                 Directory.Delete(zipFolder, true);
             }
 
@@ -126,6 +139,7 @@ namespace Reallusion.Import
             }
 
             (GameObject, List<AnimationClip>) timelineKit = (null, null);
+            List<(GameObject, List<AnimationClip>)> timeLineKitList = new List<(GameObject, List<AnimationClip>)>();
 
             if (importMotion)
             {
@@ -140,6 +154,11 @@ namespace Reallusion.Import
             if (importProp)
             {
                 timelineKit = ImportProp(fbxPath, QueueItem.Prop.LinkId);
+            }
+
+            if (importLights)
+            {
+                timeLineKitList = ImportLights(fbxPath, QueueItem.Lights.LinkIds);
             }
 
             if (importIntoScene)
@@ -188,28 +207,6 @@ namespace Reallusion.Import
                 return string.Empty;
             }
 
-            /*
-            if (AssetDatabase.IsValidFolder(proposedDestinationFolder))
-            {
-                for (int i = 0; i < 999; i++)
-                {
-                    string suffix = "." + i.ToString();
-                    string testFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName + suffix });
-                    if (AssetDatabase.IsValidFolder(testFolder))
-                        continue;
-                    else
-                    {
-                        destinationFolder = testFolder;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                destinationFolder = proposedDestinationFolder;            
-            }
-            */
-
             if (Directory.GetFiles(assetFolder).Length == 0) { Debug.LogWarning("Asset source folder is empty!"); return string.Empty; }
             //if (Directory.GetFiles(destinationFolder).Length > 0) { Debug.LogWarning("Destination folder: " + destinationFolder +  " has files in it!"); return string.Empty; }
             try
@@ -222,41 +219,48 @@ namespace Reallusion.Import
             }
             FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
             AssetDatabase.Refresh();
-            
-
-            string[] guids = AssetDatabase.FindAssets("t:Model", new string[] { destinationFolder });
-
-            foreach (string g in guids)
+                        
+            if (opCode == UnityLinkManager.OpCodes.LIGHTS) // non-fbx imports
             {
-                string projectAssetPath = AssetDatabase.GUIDToAssetPath(g);
-                if (opCode == UnityLinkManager.OpCodes.CHARACTER)
+                // return the containing folder in the unity project 
+                inProjectAssetPath = destinationFolder;
+            }
+            else // fbx imports
+            {
+                string[] guids = AssetDatabase.FindAssets("t:Model", new string[] { destinationFolder });
+
+                foreach (string g in guids)
                 {
-                    if (Util.IsCC3CharacterAtPath(projectAssetPath))
+                    string projectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                    if (opCode == UnityLinkManager.OpCodes.CHARACTER)
                     {
-                        string charName = Path.GetFileNameWithoutExtension(projectAssetPath);
-                        Debug.Log("Valid CC character: " + charName + " found.");
-                        inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
-                        break;
+                        if (Util.IsCC3CharacterAtPath(projectAssetPath))
+                        {
+                            string charName = Path.GetFileNameWithoutExtension(projectAssetPath);
+                            Debug.Log("Valid CC character: " + charName + " found.");
+                            inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                            break;
+                        }
                     }
-                }
-                else if (opCode == UnityLinkManager.OpCodes.MOTION)
-                {
-                    string modelName = Path.GetFileNameWithoutExtension(projectAssetPath);
-                    if (modelName.EndsWith("_motion", System.StringComparison.InvariantCultureIgnoreCase))
+                    else if (opCode == UnityLinkManager.OpCodes.MOTION)
                     {
-                        Debug.Log("Valid motion: " + modelName + " found.");
-                        inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
-                        break;
+                        string modelName = Path.GetFileNameWithoutExtension(projectAssetPath);
+                        if (modelName.EndsWith("_motion", System.StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Debug.Log("Valid motion: " + modelName + " found.");
+                            inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                            break;
+                        }
                     }
-                }
-                else if (opCode == UnityLinkManager.OpCodes.PROP)
-                {
-                    string propExt = Path.GetExtension(projectAssetPath);
-                    string propName = Path.GetFileName(projectAssetPath);
-                    if (propExt.Equals(".fbx", System.StringComparison.InvariantCultureIgnoreCase))
+                    else if (opCode == UnityLinkManager.OpCodes.PROP)
                     {
-                        Debug.Log("FBX: " + propName + " found.");
-                        inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                        string propExt = Path.GetExtension(projectAssetPath);
+                        string propName = Path.GetFileName(projectAssetPath);
+                        if (propExt.Equals(".fbx", System.StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Debug.Log("FBX: " + propName + " found.");
+                            inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                        }
                     }
                 }
             }
@@ -270,6 +274,66 @@ namespace Reallusion.Import
             // clear motion fbx (retain animations - deal with clutter later)
             // move model data to user nominated place in project
             // remove external disk assets
+        }
+
+        public List<(GameObject, List<AnimationClip>)> ImportLights(string fbxPath, string[] linkIds)
+        {
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return new List<(GameObject, List<AnimationClip>)> { (null, null) }; }
+
+            string dataPath = Path.GetDirectoryName(Application.dataPath);
+            string fullFolderPath = Path.Combine(dataPath, fbxPath);
+            string [] fileList = Directory.GetFiles(fullFolderPath);
+            List<string> rlxList = fileList.ToList().FindAll(x => Path.GetExtension(x).Equals(".rlx"));
+            Debug.Log("RLX files");
+            foreach (string file in rlxList)
+            {
+                Debug.Log(file);
+            }
+
+            byte[] rlxBytes = File.ReadAllBytes(rlxList[0]);
+            int bytePos = 0;
+            // header code 4-bytes
+            bytePos += 4;            
+            int len = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
+            Debug.Log("RLX JSON expected length " + len + " Available bytes in rlxBytes " + rlxBytes.Length);
+            bytePos += 4;            
+            byte[] jsonBytes = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, len);
+            string jsonString = Encoding.UTF8.GetString(jsonBytes);
+            Debug.Log(jsonString);
+            bytePos += len;
+            int framesLen = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
+            bytePos += 4;
+            byte[] frameData = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, framesLen);
+            
+            List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
+
+            Stream stream = new MemoryStream(frameData);
+            stream.Position = 0;
+            byte[] frameBytes = new byte[85];
+            while(stream.Read(frameBytes, 0, frameBytes.Length) > 0)
+            {
+                frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
+            }
+
+            Debug.Log("Frames processed " + frames.Count);
+            //foreach(var f in frames)
+            //{
+            //    Debug.Log(f.ToString());
+            //}
+            GameObject root = new GameObject("Light Root");
+            root.transform.position = Vector3.zero;
+            root.transform.rotation = Quaternion.identity;
+            root.AddComponent<Animator>();
+            GameObject target = new GameObject("Animated Light");
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.SetParent(root.transform, true);
+            Light light = target.AddComponent<Light>();
+            light.type = LightType.Directional;
+
+            MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
+
+            return new List<(GameObject, List<AnimationClip>)> { (null, null) };
         }
 
         public (GameObject, List<AnimationClip>) ImportProp(string fbxPath, string linkId)
@@ -517,14 +581,30 @@ namespace Reallusion.Import
             }
         }
 
-        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple)
+        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple, bool createInScene = true)
         {
-            Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
-            GameObject sceneObject = GameObject.Instantiate(objectTuple.Item1);
-            sceneObject.transform.position = Vector3.zero;
-            sceneObject.transform.rotation = Quaternion.identity;
+            GameObject sceneObject;
+            if (createInScene)
+            {
+                Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
+                sceneObject = GameObject.Instantiate(objectTuple.Item1);
+                sceneObject.transform.position = Vector3.zero;
+                sceneObject.transform.rotation = Quaternion.identity;
+            }
+            else
+            {
+                sceneObject = objectTuple.Item1;
+            }
 
-            PlayableDirector director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
+            PlayableDirector director;
+            if (UnityLinkManager.timelineObject == null)
+            {
+                director = (PlayableDirector)GameObject.FindFirstObjectByType(typeof(PlayableDirector));
+            }
+            else
+            {
+                director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
+            }
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
             AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
             AnimationClip clipToUse = null;
@@ -548,6 +628,158 @@ namespace Reallusion.Import
             Debug.LogWarning("SetGenericBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
             director.SetGenericBinding(newTrack, sceneObject);
             
+        }
+
+        AnimationClip MakeLightAnimationFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedLightFrames> frames, GameObject target, GameObject root)
+        {
+            /*
+             * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
+             * 
+             * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
+             *       |
+             *       --> Child GameObject (with <Light> component)    | GetAnimatableBindings TARGET object                
+            */
+            AnimationClip clip = new AnimationClip();
+
+            EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
+            // Find binding for property
+
+            // Transform properties
+            // Rotation
+            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));            
+            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));            
+            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Position
+            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Scale
+            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Color
+            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.r", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.g", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.b", System.StringComparison.InvariantCultureIgnoreCase));
+            var alphaColorBind = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.a", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Enabled
+            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Enabled", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Make keyframe[] for each bindable property
+
+            // Transform properties
+            // Rotation
+            Keyframe[] f_rotX = new Keyframe[frames.Count];
+            Keyframe[] f_rotY = new Keyframe[frames.Count];
+            Keyframe[] f_rotZ = new Keyframe[frames.Count];
+            Keyframe[] f_rotW = new Keyframe[frames.Count];
+
+            // Position
+            Keyframe[] f_posX = new Keyframe[frames.Count];
+            Keyframe[] f_posY = new Keyframe[frames.Count];
+            Keyframe[] f_posZ = new Keyframe[frames.Count];
+            
+            // Scale
+            Keyframe[] f_scaX = new Keyframe[frames.Count];
+            Keyframe[] f_scaY = new Keyframe[frames.Count];
+            Keyframe[] f_scaZ = new Keyframe[frames.Count];
+
+            // Color
+            Keyframe[] f_colR = new Keyframe[frames.Count];
+            Keyframe[] f_colG = new Keyframe[frames.Count];
+            Keyframe[] f_colB = new Keyframe[frames.Count];
+
+            
+            Keyframe[] f_enabled = new Keyframe[frames.Count];
+
+            // Populate keyframe arrays
+            for (int i = 0; i < frames.Count; i++)
+            {
+                // Transform curves
+                // Rotation
+                f_rotX[i] = new Keyframe(frames[i].Time, frames[i].Rot.x);
+                f_rotY[i] = new Keyframe(frames[i].Time, frames[i].Rot.y);
+                f_rotZ[i] = new Keyframe(frames[i].Time, frames[i].Rot.z);
+                f_rotW[i] = new Keyframe(frames[i].Time, frames[i].Rot.w);
+
+                // Position
+                f_posX[i] = new Keyframe(frames[i].Time, frames[i].Pos.x);
+                f_posY[i] = new Keyframe(frames[i].Time, frames[i].Pos.y);
+                f_posZ[i] = new Keyframe(frames[i].Time, frames[i].Pos.z);
+
+                //scale
+                f_scaX[i] = new Keyframe(frames[i].Time, frames[i].Scale.x);
+                f_scaY[i] = new Keyframe(frames[i].Time, frames[i].Scale.y);
+                f_scaZ[i] = new Keyframe(frames[i].Time, frames[i].Scale.z);
+
+                // Color
+                f_colR[i] = new Keyframe(frames[i].Time, frames[i].Color.r);
+                f_colG[i] = new Keyframe(frames[i].Time, frames[i].Color.g);
+                f_colB[i] = new Keyframe(frames[i].Time, frames[i].Color.b);
+
+                // Enabled
+                f_enabled[i] = new Keyframe(frames[i].Time, frames[i].Active == true ? 1f : 0f);
+            }
+
+            // bind all keyframes to the appropriate curve
+            // Transform curves
+            // Rotation
+            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
+            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
+            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
+            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
+            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
+            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
+            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
+            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+
+            // Position
+            AnimationCurve c_posX = new AnimationCurve(f_posX);
+            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
+            AnimationCurve c_posY = new AnimationCurve(f_posY);
+            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
+            AnimationCurve c_posZ = new AnimationCurve(f_posZ);
+            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+
+            //scale
+            AnimationCurve c_scaX = new AnimationCurve(f_scaX);
+            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
+            AnimationCurve c_scaY = new AnimationCurve(f_scaY);
+            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
+            AnimationCurve c_scaZ = new AnimationCurve(f_scaZ);
+            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+
+            // Color
+            AnimationCurve c_colR = new AnimationCurve(f_colR);
+            AnimationUtility.SetEditorCurve(clip, b_colR, c_colR);
+            AnimationCurve c_colG = new AnimationCurve(f_colG);
+            AnimationUtility.SetEditorCurve(clip, b_colG, c_colG);
+            AnimationCurve c_colB = new AnimationCurve(f_colB);
+            AnimationUtility.SetEditorCurve(clip, b_colB, c_colB);
+
+            clip.frameRate = 60f;
+
+            Debug.LogWarning("Saving RLX animation to Assets/RLX_CLIP.anim");
+            AssetDatabase.CreateAsset(clip, "Assets/RLX_CLIP.anim");
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            List<AnimationClip> clips = new List<AnimationClip>();
+            clips.Add(clip);
+            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
+            try
+            {
+                AddToSceneAndTimeLine((root, clips), false);
+            }
+            catch
+            {
+                Debug.LogWarning("Failed");
+            }
+            return clip;
         }
     }
 }
