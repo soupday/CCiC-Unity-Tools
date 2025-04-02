@@ -26,6 +26,7 @@ namespace Reallusion.Import
         #region Setup
         public static void InitConnection()
         {
+            SetupUpdateWorker();
             SetupLogging();
             StartQueue();
             StartClient();
@@ -1136,8 +1137,8 @@ namespace Reallusion.Import
                 return (string.IsNullOrEmpty(RemoteId) ? "" : ("Remote Id " + RemoteId + " ,")) + "Path " + this.Path + ", Names " + allNames + ", Types " + allTypes + ", linkIds " + allLinkIds;
             }
         }
-        // size - sjon - size - data for frames
-        public class JsonIndividualLight
+        
+        public class JsonLightRlx
         {
             // partial extract of on disk json corresponding to an individual light
             public const string linkIdStr = "link_id";
@@ -1153,7 +1154,17 @@ namespace Reallusion.Import
             public const string angleStr = "angle";
             public const string falloffStr = "falloff";
             public const string attStr = "attenuation";
+            public const string inSqStr = "inverse_square";
+            public const string traStr = "transmission";
+            public const string istubeStr = "is_tube";
+            public const string tubeLenStr = "tube_length";
+            public const string tubeRadStr = "tube_radius";
+            public const string tubeRadSoftStr = "tube_soft_radius";
+            public const string isRectStr = "is_rectangle";
+            public const string rectStr = "rect";
+            public const string shadowStr = "cast_shadow";
             public const string darkStr = "darkness";
+            public const string framesStr = "frame_count";
 
             [JsonProperty(linkIdStr)]
             public string LinkId { get; set; }
@@ -1161,17 +1172,21 @@ namespace Reallusion.Import
             public string Name { get; set; }
             [JsonProperty(locStr)]
             public float[] loc { get; set; }
+            [JsonIgnore]
             public Vector3 Pos { get { return this.GetPosition(); } }
             [JsonProperty(rotStr)]
             public float[] rot { get; set; }
+            [JsonIgnore]
             public Quaternion Rot { get { return this.GetRotation(); } }
             [JsonProperty(scaStr)]
             public float[] sca { get; set; }
+            [JsonIgnore]
             public Vector3 Scale { get { return this.GetScale(); } }
             [JsonProperty(activestr)]
             public bool Active { get; set; }
             [JsonProperty(colorStr)]
             public float[] color { get; set; }
+            [JsonIgnore]
             public Color Color { get { return this.GetColor(); } }
             [JsonProperty(multStr)]
             public float Multiplier { get; set; }
@@ -1185,10 +1200,67 @@ namespace Reallusion.Import
             public float Falloff { get; set; }
             [JsonProperty(attStr)]
             public float Attenuation { get; set; }
+            [JsonProperty(inSqStr)]
+            public bool InverseSquare { get; set; }
+            [JsonProperty(traStr)]
+            public bool Transmission { get; set; }
+            [JsonProperty(istubeStr)]
+            public bool IsTube { get; set; }
+            [JsonProperty(tubeLenStr)]
+            public float TubeLength { get; set; }
+            [JsonProperty(tubeRadStr)]
+            public float TubeRadius { get; set; }
+            [JsonProperty(tubeRadSoftStr)]
+            public float TubeSoftRadius { get; set; }
+            [JsonProperty(isRectStr)]
+            public bool IsRect { get; set; }
+            [JsonProperty(rectStr)]
+            public float[] rect { get; set; }
+            [JsonProperty(shadowStr)]
+            public bool CastShadow { get; set; }
             [JsonProperty(darkStr)]
             public float Darkness { get; set; }
+            [JsonProperty(framesStr)]
+            public int FrameCount { get; set; }
 
-            public JsonIndividualLight()
+
+            // Animated properties (determined by the importer - repackaged here to ease use of <LightProxy> setup
+            public const string posDltStr = "pos_delta";
+            public const string rotDltStr = "rot_delta";
+            public const string scaDltStr = "sca_delta";
+            public const string actDltStr = "act_delta";
+            public const string colDltStr = "col_delta";
+            public const string mulDltStr = "mul_delta";
+            public const string ranDltStr = "ran_delta";
+            public const string angDltStr = "ang_delta";
+            public const string falDltStr = "fal_delta";
+            public const string attDltStr = "att_delta";
+            public const string darDltStr = "dar_delta";
+
+            [JsonProperty(posDltStr)]
+            public bool pos_delta { get; set; }
+            [JsonProperty(rotDltStr)]
+            public bool rot_delta { get; set; }
+            [JsonProperty(scaDltStr)]
+            public bool scale_delta { get; set; }
+            [JsonProperty(actDltStr)]
+            public bool active_delta { get; set; }
+            [JsonProperty(colDltStr)]
+            public bool color_delta { get; set; }
+            [JsonProperty(mulDltStr)]
+            public bool mult_delta { get; set; }
+            [JsonProperty(ranDltStr)]
+            public bool range_delta { get; set; }
+            [JsonProperty(angDltStr)]
+            public bool angle_delta { get; set; }
+            [JsonProperty(falDltStr)]
+            public bool fall_delta { get; set; }
+            [JsonProperty(attDltStr)]
+            public bool att_delta { get; set; }
+            [JsonProperty(darDltStr)]
+            public bool dark_delta { get; set; }
+
+            public JsonLightRlx()
             {
                 this.LinkId = string.Empty;
                 this.Name = string.Empty;
@@ -1203,7 +1275,29 @@ namespace Reallusion.Import
                 this.Angle = 0f;
                 this.Falloff = 0f;
                 this.Attenuation = 0f;
+                this.InverseSquare = false;
+                this.Transmission = false;
+                this.IsTube = false;
+                this.TubeLength = 0f;
+                this.TubeRadius = 0f;
+                this.TubeSoftRadius = 0f;
+                this.IsRect = false;
+                this.rect = new float[0];
+                this.CastShadow = false;
                 this.Darkness = 0f;
+                this.FrameCount = 0;
+
+                this.pos_delta = false;
+                this.rot_delta = false;
+                this.scale_delta = false;
+                this.active_delta = false;
+                this.color_delta = false;
+                this.mult_delta = false;
+                this.range_delta = false;
+                this.angle_delta = false;
+                this.fall_delta = false;
+                this.att_delta = false;
+                this.dark_delta = false;
             }
 
             public Vector3 GetPosition()
@@ -1212,8 +1306,11 @@ namespace Reallusion.Import
             }
 
             public Quaternion GetRotation()
-            {
-                return new Quaternion(rot[0], -rot[2], rot[1], rot[3]);
+            {                
+                Quaternion unCorrected = new Quaternion(rot[0], -rot[2], rot[1], rot[3]);
+                Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+                Quaternion corrected = unCorrected * cameraCorrection;
+                return corrected;
             }
 
             public Vector3 GetScale()
@@ -1231,7 +1328,7 @@ namespace Reallusion.Import
         public class DeserializedLightFrames
         {
             /* 4 byte floats
-             * frame_bytes = struct.pack("!ff?fffffffffffffffffff",
+             * frame_bytes = struct.pack("!fI?fffffffffffffffffff",
                                      time,
                                      frame,
                                      light_data["active"], # 0 or 1 char  - 1 byte
@@ -1256,8 +1353,9 @@ namespace Reallusion.Import
                                      light_data["darkness"]) 
              */
 
-            public float Time { get; set; }
-            public float Frame { get; set; }
+            public int time { get; set; }
+            public float Time { get {  return this.GetSeconds(); } }
+            public int Frame { get; set; }
             public bool Active { get; set; }
             public float PosX { get; set; }
             public float PosY { get; set; }
@@ -1285,8 +1383,8 @@ namespace Reallusion.Import
 
             public DeserializedLightFrames(byte[] data)
             {                
-                Time = GetCurrentEndianFloat(ExtractBytes(data, 0, 4), SourceEndian.BigEndian) / 6000f; // ???
-                Frame = GetCurrentEndianFloat(ExtractBytes(data, 4, 4), SourceEndian.BigEndian);
+                time = GetCurrentEndianWord(ExtractBytes(data, 0, 4), SourceEndian.BigEndian);
+                Frame = GetCurrentEndianWord(ExtractBytes(data, 4, 4), SourceEndian.BigEndian);
                 Active = ByteToBool(ExtractBytes(data, 8, 1));
                 PosX = GetCurrentEndianFloat(ExtractBytes(data, 9, 4), SourceEndian.BigEndian);
                 PosY  = GetCurrentEndianFloat(ExtractBytes(data, 13, 4), SourceEndian.BigEndian);
@@ -1308,23 +1406,11 @@ namespace Reallusion.Import
                 Attenuation = GetCurrentEndianFloat(ExtractBytes(data, 77, 4), SourceEndian.BigEndian);
                 Darkness = GetCurrentEndianFloat(ExtractBytes(data, 81, 4), SourceEndian.BigEndian);
             }
-            /*
-            Vector3 cameraPos = new Vector3(-rawPosition.x, rawPosition.z, -rawPosition.y) * 0.01f;
-            Vector3 targetPos = new Vector3(-targetPosition.x, targetPosition.z, -targetPosition.y) * 0.01f;
-
-            Quaternion blenderQuaternion = item.CameraSync.Rotation;
-            // convert blender quaternion to unity
-            Quaternion unityQuaternion = new Quaternion( blenderQuaternion.x,
-                                                        -blenderQuaternion.z,
-                                                         blenderQuaternion.y,
-                                                         blenderQuaternion.w);
-            // correct rotation to point blender camera's forward -Y (in Unity space) to forward +Z
-            Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
-            Quaternion corrected = unityQuaternion * cameraCorrection;
             
-            camera.transform.position = cameraPos;
-            camera.transform.rotation = corrected;
-            */
+            public float GetSeconds()
+            {
+                return (float)time / 6000f;
+            }
 
             public Vector3 GetPosition()
             {
@@ -1351,7 +1437,7 @@ namespace Reallusion.Import
 
             public override string ToString()
             {
-                return this.Time.ToString() + ", " + this.Frame.ToString() + ", " + this.Active.ToString() + ", " + this.PosX.ToString() + ", " + this.PosY.ToString() + ", " + this.PosZ.ToString() + ", " + this.RotX.ToString() + ", " + this.RotY.ToString() + ", " + this.RotZ.ToString() + ", " + this.RotW.ToString();
+                return "Time: " + this.Time.ToString() + ", Frame: " + this.Frame.ToString() + ", Active: " + this.Active.ToString() + ", Pos " + this.PosX.ToString() + ", " + this.PosY.ToString() + ", " + this.PosZ.ToString() + ", Rot " + this.RotX.ToString() + ", " + this.RotY.ToString() + ", " + this.RotZ.ToString() + ", " + this.RotW.ToString() + ", Col: " + this.ColorR.ToString() + ", " + this.ColorG.ToString() + ", " + this.ColorB.ToString() + ", " + this.ColorG.ToString() + ", Mult: " + this.Multiplier.ToString() + ", Range " + this.Range.ToString() + ", Angle " + this.Angle.ToString() + ", Falloff: " + this.Falloff.ToString() + ", Att: " + this.Attenuation.ToString() + ", Dark: " + this.Darkness.ToString();
             }
         }
 
@@ -1928,6 +2014,7 @@ namespace Reallusion.Import
             // Logs all incoming messages from the server
             string fileName = "RL_DataLink_Server_Message_Log.txt";
             string fullSystemFilePath = Path.Combine(APPLICATION_DATA_PATH, IMPORT_PARENT, IMPORT_FOLDER, fileName);
+            string fullsystemFolder = Path.Combine(APPLICATION_DATA_PATH, IMPORT_PARENT, IMPORT_FOLDER);
             string assetFilePath = Path.Combine(ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, fileName);
 
             string beautifiedJson = string.Empty;
@@ -1944,11 +2031,48 @@ namespace Reallusion.Import
 
             string fullText = opCode.ToString() + " " + DateTime.Now.ToLocalTime().ToString() + (valid ? " VALID" : " INVALID") + Environment.NewLine + beautifiedJson + Environment.NewLine + Environment.NewLine;
 
-            if (!File.Exists(fullSystemFilePath))
-                File.WriteAllText(fullSystemFilePath, fullText);
-            else
-                File.AppendAllText(fullSystemFilePath, fullText);
+            if (!Directory.Exists(fullsystemFolder))
+            {
+                Debug.LogWarning("Unable to write to log file (path to logfile unavailable) - Logging to console.");
+                Debug.Log(fullText);
+                recreateLogFolder = true;
+                return;
+            }
+
+            try
+            {
+                if (!File.Exists(fullSystemFilePath))
+                    File.WriteAllText(fullSystemFilePath, fullText);
+                else
+                    File.AppendAllText(fullSystemFilePath, fullText);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Failed to write to log file: " + ex.Message);
+            }
         }
         #endregion Log Writer
+
+        #region Update worker
+
+        static bool recreateLogFolder = false;
+
+        private static void SetupUpdateWorker()
+        {
+            EditorApplication.update -= UpdateDelegate;
+            EditorApplication.update += UpdateDelegate;
+        }
+
+        private static void UpdateDelegate()
+        {
+            if (recreateLogFolder)
+            {
+                Debug.LogWarning("Log folder absent - recreating");
+                SetupLogging();
+                recreateLogFolder = false;
+            }
+        }
+
+        #endregion Update worker
     }
 }

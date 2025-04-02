@@ -45,7 +45,7 @@ namespace Reallusion.Import
 
             public Styles()
             {
-                queueItemStyle = GUI.skin.label;
+                queueItemStyle = new GUIStyle(GUI.skin.label);
                 queueItemStyle.normal.textColor = Color.yellow;
             }
         }
@@ -62,6 +62,10 @@ namespace Reallusion.Import
         {
             UnityLinkManager.DisconnectAndStopServer();
         }
+
+        bool foldoutControlArea;
+        bool foldoutSceneArea;
+        bool foldoutLogArea;
         
         private void OnGUI()
         {
@@ -75,13 +79,23 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical();
 
-            ControlAreaGUI();
+            foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls");
+            if (foldoutControlArea)
+            {
+                ControlAreaGUI();
+            }
 
-            LogAreaGUI();
+            foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Scenebuilding tools");
+            if (foldoutControlArea)
+            {
+                
+            }
 
-
-            
-
+            foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs");
+            if (foldoutControlArea)
+            {
+                LogAreaGUI();
+            }
             GUILayout.EndVertical();
         }
 
