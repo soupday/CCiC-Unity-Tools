@@ -344,8 +344,8 @@ namespace Reallusion.Import
             CHARACTER_UPDATE = 101,
             PROP = 102,
             PROP_UPDATE = 103,
-            LIGHTS = 104,
-            LIGHTS_UPDATE = 105,
+            STAGING = 104,
+            STAGING_UPDATE = 105,
             CAMERA = 106,
             CAMERA_UPDATE = 107,
             UPDATE_REPLACE = 108,
@@ -617,13 +617,14 @@ namespace Reallusion.Import
                         }
                         break;
                     }
-                case OpCodes.LIGHTS:
+                case OpCodes.STAGING:
                     {
-                        try { qItem.Lights = JsonConvert.DeserializeObject<JsonLights>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try { qItem.Staging = JsonConvert.DeserializeObject<JsonStaging>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
-                case OpCodes.CAMERA:
+                case OpCodes.CAMERA: // ...
                     {
+                        Debug.Log(dataString);
                         break;
                     }
                 case OpCodes.UPDATE_REPLACE:
@@ -811,14 +812,14 @@ namespace Reallusion.Import
                         ImportItem(next);
                         break;
                     }
-                case OpCodes.LIGHTS:
+                case OpCodes.STAGING:
                     {
                         next.Processed = true;
-                        Debug.Log(next.Lights.ToString());
+                        Debug.Log(next.Staging.ToString());
                         ImportItem(next);
                         break;
                     }
-                case OpCodes.CAMERA:
+                case OpCodes.CAMERA:  // ...
                     {
                         break;
                     }
@@ -1060,7 +1061,7 @@ namespace Reallusion.Import
             }
         }
 
-        public class JsonLights // LIGHTS = 104
+        public class JsonStaging // STAGING = 104
         {
             /*
                 "path": "C:\\Users\\t3xr9\\AppData\\Local\\Temp\\iClone8Temp\\iClone8Temp\\Unity DataLink\\exports\\Lights_1743085047210000300\\Key.rlx",
@@ -1102,7 +1103,7 @@ namespace Reallusion.Import
             [JsonProperty(linkIdStr)]
             public string[] LinkIds { get; set; }
 
-            public JsonLights()
+            public JsonStaging()
             {
                 RemoteId = string.Empty;
                 Path = string.Empty;
@@ -1138,9 +1139,8 @@ namespace Reallusion.Import
             }
         }
         
-        public class JsonLightRlx
-        {
-            // partial extract of on disk json corresponding to an individual light
+        public class JsonLightData
+        {            
             public const string linkIdStr = "link_id";
             public const string nameStr = "name";
             public const string locStr = "loc";
@@ -1260,7 +1260,7 @@ namespace Reallusion.Import
             [JsonProperty(darDltStr)]
             public bool dark_delta { get; set; }
 
-            public JsonLightRlx()
+            public JsonLightData()
             {
                 this.LinkId = string.Empty;
                 this.Name = string.Empty;
@@ -1381,6 +1381,8 @@ namespace Reallusion.Import
             public float Attenuation { get; set; }
             public float Darkness { get; set; }
 
+
+            public const int FRAME_BYTE_COUNT = 85;
             public DeserializedLightFrames(byte[] data)
             {                
                 time = GetCurrentEndianWord(ExtractBytes(data, 0, 4), SourceEndian.BigEndian);
@@ -1438,6 +1440,299 @@ namespace Reallusion.Import
             public override string ToString()
             {
                 return "Time: " + this.Time.ToString() + ", Frame: " + this.Frame.ToString() + ", Active: " + this.Active.ToString() + ", Pos " + this.PosX.ToString() + ", " + this.PosY.ToString() + ", " + this.PosZ.ToString() + ", Rot " + this.RotX.ToString() + ", " + this.RotY.ToString() + ", " + this.RotZ.ToString() + ", " + this.RotW.ToString() + ", Col: " + this.ColorR.ToString() + ", " + this.ColorG.ToString() + ", " + this.ColorB.ToString() + ", " + this.ColorG.ToString() + ", Mult: " + this.Multiplier.ToString() + ", Range " + this.Range.ToString() + ", Angle " + this.Angle.ToString() + ", Falloff: " + this.Falloff.ToString() + ", Att: " + this.Attenuation.ToString() + ", Dark: " + this.Darkness.ToString();
+            }
+        }
+
+        public class JsonCameraData
+        {
+            public const string linkIdStr = "link_id";
+            public const string nameStr = "name";
+            public const string locStr = "loc";
+            public const string rotStr = "rot";
+            public const string scaStr = "sca";
+            public const string fovStr = "fov";
+            public const string fitStr = "fit";
+            public const string widthStr = "width";
+            public const string heightStr = "height";
+            public const string focalStr = "focal_length";
+            public const string farStr = "far_clip";
+            public const string nearStr = "near_clip";
+            public const string posStr = "pos";
+            public const string dofEnaStr = "dof_enable";
+            public const string dofWeightStr = "dof_weight";
+            public const string dofDecayStr = "dof_decay";
+            public const string dofFocusStr = "dof_focus";
+            public const string dofRanStr = "dof_range";
+            public const string dofFarBlStr = "dof_far_blur";
+            public const string dofNearBlStr = "dof_near_blur";
+            public const string dofFarTranStr = "dof_far_transition";
+            public const string dofNearTranStr = "dof_near_transition";
+            public const string dofMinBlendStr = "dof_min_blend_distance";
+            public const string framesStr = "frame_count";
+
+            [JsonProperty(linkIdStr)]
+            public string LinkId { get; set; }
+            [JsonProperty(nameStr)]
+            public string Name { get; set; }
+            [JsonProperty(locStr)]
+            public float[] loc { get; set; }
+            [JsonIgnore]
+            public Vector3 Pos { get { return this.GetPosition(); } }
+            [JsonProperty(rotStr)]
+            public float[] rot { get; set; }
+            [JsonIgnore]
+            public Quaternion Rot { get { return this.GetRotation(); } }
+            [JsonProperty(scaStr)]
+            public float[] sca { get; set; }
+            [JsonIgnore]
+            public Vector3 Scale { get { return this.GetScale(); } }
+            [JsonProperty(fovStr)]
+            public float Fov { get; set; }
+            [JsonProperty(fitStr)]
+            public string Fit { get; set; }            
+            [JsonProperty(widthStr)]
+            public float Width { get; set; }
+            [JsonProperty(heightStr)]
+            public float Height { get; set; }
+            [JsonProperty(focalStr)]
+            public float FocalLength { get; set; }
+            [JsonProperty(farStr)]
+            public float FarClip { get; set; }
+            [JsonProperty(nearStr)]
+            public float NearClip { get; set; }
+            [JsonProperty(posStr)]
+            public float[] pos { get; set; }
+            [JsonIgnore]
+            public Vector3 PivotPosition { get { return this.GetPivot(); } }
+            [JsonProperty(dofEnaStr)]
+            public bool DofEnable { get; set; }
+            [JsonProperty(dofWeightStr)]
+            public float DofWeight { get; set; }
+            [JsonProperty(dofDecayStr)]
+            public float DofDecay { get; set; }
+            [JsonProperty(dofFocusStr)]
+            public float DofFocus { get; set; }
+            [JsonProperty(dofRanStr)]
+            public float DofRange { get; set; }
+            [JsonProperty(dofFarBlStr)]
+            public float DofFarBlur { get; set; }
+            [JsonProperty(dofNearBlStr)]
+            public float DofNearBlur { get; set; }
+            [JsonProperty(dofFarTranStr)]
+            public float DofFarTransition { get; set; }
+            [JsonProperty(dofNearTranStr)]
+            public float DofNearTransition { get; set; }
+            [JsonProperty(dofMinBlendStr)]
+            public float DofMinBlendDist { get; set; }
+            [JsonProperty(framesStr)]
+            public int FrameCount { get; set; }
+
+
+            // Animated properties (determined by the importer - repackaged here to ease use of <LightProxy> setup
+            public const string posDltStr = "pos_delta";
+            public const string rotDltStr = "rot_delta";
+            public const string scaDltStr = "sca_delta";
+            public const string actDltStr = "act_delta";
+            public const string colDltStr = "col_delta";
+            public const string mulDltStr = "mul_delta";
+            public const string ranDltStr = "ran_delta";
+            public const string angDltStr = "ang_delta";
+            public const string falDltStr = "fal_delta";
+            public const string attDltStr = "att_delta";
+            public const string darDltStr = "dar_delta";
+
+            [JsonProperty(posDltStr)]
+            public bool pos_delta { get; set; }
+            [JsonProperty(rotDltStr)]
+            public bool rot_delta { get; set; }
+            [JsonProperty(scaDltStr)]
+            public bool scale_delta { get; set; }
+            [JsonProperty(actDltStr)]
+            public bool active_delta { get; set; }
+            [JsonProperty(colDltStr)]
+            public bool color_delta { get; set; }
+            [JsonProperty(mulDltStr)]
+            public bool mult_delta { get; set; }
+            [JsonProperty(ranDltStr)]
+            public bool range_delta { get; set; }
+            [JsonProperty(angDltStr)]
+            public bool angle_delta { get; set; }
+            [JsonProperty(falDltStr)]
+            public bool fall_delta { get; set; }
+            [JsonProperty(attDltStr)]
+            public bool att_delta { get; set; }
+            [JsonProperty(darDltStr)]
+            public bool dark_delta { get; set; }
+
+            public JsonCameraData()
+            {
+                this.LinkId = string.Empty;
+                this.Name = string.Empty;
+                this.loc = new float[0];
+                this.rot = new float[0];
+                this.sca = new float[0];
+                this.Fov = 0f;
+                this.Fit = string.Empty;
+                this.Width = 0f;
+                this.Height = 0f;
+                this.FocalLength = 0f;
+                this.FarClip = 0f;
+                this.NearClip = 0f;
+                this.pos = new float[0];
+                this.DofEnable = false;
+                this.DofWeight = 0f;
+                this.DofDecay = 0f;
+                this.DofFocus = 0f;
+                this.DofRange = 0f;
+                this.DofFarBlur = 0f;
+                this.DofNearBlur = 0f;
+                this.DofFarTransition = 0f;
+                this.DofNearTransition = 0f;
+                this.DofMinBlendDist = 0f;
+                this.FrameCount = 0;
+
+                this.pos_delta = false;
+                this.rot_delta = false;
+                this.scale_delta = false;
+                this.active_delta = false;
+                this.color_delta = false;
+                this.mult_delta = false;
+                this.range_delta = false;
+                this.angle_delta = false;
+                this.fall_delta = false;
+                this.att_delta = false;
+                this.dark_delta = false;
+            }
+
+            public Vector3 GetPosition()
+            {
+                return new Vector3(-loc[0], loc[2], -loc[1]) * 0.01f;
+            }
+
+            public Quaternion GetRotation()
+            {
+                Quaternion unCorrected = new Quaternion(rot[0], -rot[2], rot[1], rot[3]);
+                Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+                Quaternion corrected = unCorrected * cameraCorrection;
+                return corrected;
+            }
+
+            public Vector3 GetScale()
+            {
+                return new Vector3(sca[0], sca[1], sca[2]);
+            }
+
+            public Vector3 GetPivot()
+            {
+                return new Vector3(-pos[0], pos[2], -pos[1]) * 0.01f;
+            }
+
+        }
+                
+        public class DeserializedCameraFrames
+        {
+            /* 85 bytes
+            frame_bytes = struct.pack("!IIfffffffffff?fffffff",
+                                time,
+                                frame,
+                                camera_data["loc"][0],
+                                camera_data["loc"][1],
+                                camera_data["loc"][2],
+                                camera_data["rot"][0],
+                                camera_data["rot"][1],
+                                camera_data["rot"][2],
+                                camera_data["rot"][3],
+                                camera_data["sca"][0],
+                                camera_data["sca"][1],
+                                camera_data["sca"][2],
+                                camera_data["focal_length"],
+                                camera_data["dof_enable"],
+                                camera_data["dof_focus"], # Focus Distance
+                                camera_data["dof_range"], # Perfect Focus Range
+                                camera_data["dof_far_blur"],
+                                camera_data["dof_near_blur"],
+                                camera_data["dof_far_transition"],
+                                camera_data["dof_near_transition"],
+                                camera_data["dof_min_blend_distance"], 
+                                camera_data["fov"]) # Blur Edge Sampling Scale
+            */
+
+            public int time { get; set; }
+            public float Time { get { return this.GetSeconds(); } }
+            public int Frame { get; set; }
+            public float PosX { get; set; }
+            public float PosY { get; set; }
+            public float PosZ { get; set; }
+            public Vector3 Pos { get { return this.GetPosition(); } }
+            public float RotX { get; set; }
+            public float RotY { get; set; }
+            public float RotZ { get; set; }
+            public float RotW { get; set; }
+            public Quaternion Rot { get { return this.GetRotation(); } }
+            public float ScaleX { get; set; }
+            public float ScaleY { get; set; }
+            public float ScaleZ { get; set; }
+            public Vector3 Scale { get { return this.GetScale(); } }
+            public float FocalLength {  get; set; }
+            public bool DofEnable {  get; set; }
+            public float DofFocus { get; set; }
+            public float DofRange {  get; set; }
+            public float DofFarBlur {  get; set; }
+            public float DofNearBlur {  get; set; }
+            public float DofFarTransition {  get; set; }
+            public float DofNearTransition {  get; set; }
+            public float DofMinBlendDistance {  get; set; }
+            public float FieldOfView {  get; set; }
+
+
+            public const int FRAME_BYTE_COUNT = 85;
+            public DeserializedCameraFrames(byte[] data)
+            {
+                time = GetCurrentEndianWord(ExtractBytes(data, 0, 4), SourceEndian.BigEndian);
+                Frame = GetCurrentEndianWord(ExtractBytes(data, 4, 4), SourceEndian.BigEndian);
+                PosX = GetCurrentEndianFloat(ExtractBytes(data, 8, 4), SourceEndian.BigEndian);
+                PosY = GetCurrentEndianFloat(ExtractBytes(data, 12, 4), SourceEndian.BigEndian);
+                PosZ = GetCurrentEndianFloat(ExtractBytes(data, 16, 4), SourceEndian.BigEndian);
+                RotX = GetCurrentEndianFloat(ExtractBytes(data, 20, 4), SourceEndian.BigEndian);
+                RotY = GetCurrentEndianFloat(ExtractBytes(data, 24, 4), SourceEndian.BigEndian);
+                RotZ = GetCurrentEndianFloat(ExtractBytes(data, 28, 4), SourceEndian.BigEndian);
+                RotW = GetCurrentEndianFloat(ExtractBytes(data, 32, 4), SourceEndian.BigEndian);
+                ScaleX = GetCurrentEndianFloat(ExtractBytes(data, 36, 4), SourceEndian.BigEndian);
+                ScaleY = GetCurrentEndianFloat(ExtractBytes(data, 40, 4), SourceEndian.BigEndian);
+                ScaleZ = GetCurrentEndianFloat(ExtractBytes(data, 44, 4), SourceEndian.BigEndian);
+                FocalLength = GetCurrentEndianFloat(ExtractBytes(data, 48, 4), SourceEndian.BigEndian);
+                DofEnable = ByteToBool(ExtractBytes(data, 52, 1));
+                DofFocus = GetCurrentEndianFloat(ExtractBytes(data, 53, 4), SourceEndian.BigEndian);
+                DofRange = GetCurrentEndianFloat(ExtractBytes(data, 57, 4), SourceEndian.BigEndian);
+                DofFarBlur = GetCurrentEndianFloat(ExtractBytes(data, 61, 4), SourceEndian.BigEndian);
+                DofNearBlur = GetCurrentEndianFloat(ExtractBytes(data, 65, 4), SourceEndian.BigEndian);
+                DofFarTransition = GetCurrentEndianFloat(ExtractBytes(data, 69, 4), SourceEndian.BigEndian);
+                DofNearTransition = GetCurrentEndianFloat(ExtractBytes(data, 73, 4), SourceEndian.BigEndian);
+                DofMinBlendDistance = GetCurrentEndianFloat(ExtractBytes(data, 77, 4), SourceEndian.BigEndian);
+                FieldOfView = GetCurrentEndianFloat(ExtractBytes(data, 81, 4), SourceEndian.BigEndian);
+            }
+
+            public float GetSeconds()
+            {
+                return (float)time / 6000f;
+            }
+
+            public Vector3 GetPosition()
+            {
+                return new Vector3(-PosX, PosZ, -PosY) * 0.01f;
+            }
+
+            public Quaternion GetRotation()
+            {
+                Quaternion unCorrected = new Quaternion(RotX, -RotZ, RotY, RotW);
+                Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+                Quaternion corrected = unCorrected * cameraCorrection;
+                return corrected;
+            }
+
+            public Vector3 GetScale()
+            {
+                return new Vector3(ScaleX, ScaleY, ScaleZ);
             }
         }
 
@@ -1693,7 +1988,7 @@ namespace Reallusion.Import
             public JsonCharacter Character { get; set; }
             public JsonCharacterUpdate CharacterUpdate { get; set; }
             public JsonProp Prop { get; set; }
-            public JsonLights Lights { get; set; }
+            public JsonStaging Staging { get; set; }
             public JsonUpdateReplace UpdateReplace { get; set; }
             public JsonMotion Motion { get; set; }
             public JsonLighting Lighting { get; set; }
@@ -1713,7 +2008,7 @@ namespace Reallusion.Import
                 Prop = null;
                 UpdateReplace = null;
                 Motion = null;
-                Lights = null;
+                Staging = null;
                 CameraSync = null;
                 FrameSync = null;
             }

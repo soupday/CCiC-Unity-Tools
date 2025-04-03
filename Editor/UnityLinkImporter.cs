@@ -35,11 +35,12 @@ namespace Reallusion.Import
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
-        bool importLights = false;
+        bool importStaging = false;
         bool importIntoScene = false;
 
         PackageType packageType = PackageType.NONE;
 
+        #region Import Preparation
         public UnityLinkImporter(UnityLinkManager.QueueItem item, bool sceneImport)
         {
             QueueItem = item;
@@ -90,15 +91,14 @@ namespace Reallusion.Import
                         importProp = true;
                         break;
                     }
-                case UnityLinkManager.OpCodes.LIGHTS:
+                case UnityLinkManager.OpCodes.STAGING:
                     {
-                        if (packageType == PackageType.DISK) { assetPath = QueueItem.Lights.Path; }
-                        name = Path.GetFileName(Path.GetDirectoryName(QueueItem.Lights.Path));
-                        importLights = true;
+                        if (packageType == PackageType.DISK) { assetPath = QueueItem.Staging.Path; }
+                        name = Path.GetFileName(Path.GetDirectoryName(QueueItem.Staging.Path));
+                        importStaging = true;
                         break;
                     }
             }
-
 
             if (packageType == PackageType.DISK)
             {
@@ -165,9 +165,11 @@ namespace Reallusion.Import
                 timelineKit = ImportProp(fbxPath, QueueItem.Prop.LinkId);
             }
 
-            if (importLights)
+            if (importStaging)
             {
-                timeLineKitList = ImportLights(fbxPath, QueueItem.Lights.LinkIds);
+                //timeLineKitList = ImportLights(fbxPath, QueueItem.Lights.LinkIds);
+
+                ImportStaging(fbxPath, QueueItem.Staging);
             }
 
             if (importIntoScene)
@@ -175,27 +177,10 @@ namespace Reallusion.Import
                 AddToSceneAndTimeLine(timelineKit);
                 SelectTimeLineObjectAndShowWindow();
             }
-
-
         }
+        #endregion Import Preparation
 
-        public string GetNonDuplicateFolderName(string folderName, bool insideAssetDatabase)
-        {
-            for (int i = 0; i < 999; i++)
-            {
-                string suffix = (i > 0) ? ("." + i.ToString("D3")) : "";
-                string testFolder = folderName + suffix;
-                bool exists = insideAssetDatabase ? AssetDatabase.IsValidFolder(testFolder) : Directory.Exists(testFolder);
-                if (exists)
-                    continue;
-                else
-                {
-                    return testFolder;
-                }
-            }
-            return string.Empty;
-        }
-
+        #region Asset Retrieval
         public string RetrieveDiskAsset(string assetFolder, string name)
         {
             string inProjectAssetPath = string.Empty;
@@ -229,7 +214,7 @@ namespace Reallusion.Import
             FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
             AssetDatabase.Refresh();
 
-            if (opCode == UnityLinkManager.OpCodes.LIGHTS) // non-fbx imports
+            if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
             {
                 // return the containing folder in the unity project 
                 inProjectAssetPath = destinationFolder;
@@ -278,13 +263,922 @@ namespace Reallusion.Import
             return inProjectAssetPath;
         }
 
-        public void CleanDiskAssets(string fbxPath, string queueItemPath)
+        public string GetNonDuplicateFolderName(string folderName, bool insideAssetDatabase)
         {
-            // clear motion fbx (retain animations - deal with clutter later)
-            // move model data to user nominated place in project
-            // remove external disk assets
+            for (int i = 0; i < 999; i++)
+            {
+                string suffix = (i > 0) ? ("." + i.ToString("D3")) : "";
+                string testFolder = folderName + suffix;
+                bool exists = insideAssetDatabase ? AssetDatabase.IsValidFolder(testFolder) : Directory.Exists(testFolder);
+                if (exists)
+                    continue;
+                else
+                {
+                    return testFolder;
+                }
+            }
+            return string.Empty;
+        }
+        #endregion Asset Retrieval
+
+        #region Prop Import
+        public (GameObject, List<AnimationClip>) ImportProp(string fbxPath, string linkId)
+        {
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
+            string guid = AssetDatabase.AssetPathToGUID(fbxPath);
+            Debug.Log("Creating new characterinfo with guid " + guid);
+            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+            CharacterInfo c = new CharacterInfo(guid);
+
+            c.linkId = linkId;
+            c.exportType = CharacterInfo.ExportType.PROP;
+            c.projectName = "iclone project name";
+            //c.sceneid = add this later
+
+            c.BuildQuality = MaterialQuality.High;
+            Importer import = new Importer(c);
+            import.recordMotionListForTimeLine = importIntoScene;
+            GameObject prefab = import.Import();
+            c.Write();
+
+            // add link id
+            var data = prefab.AddComponent<DataLinkActorData>();
+            data.linkId = linkId;
+            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
+            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
+            PrefabUtility.SavePrefabAsset(prefab);
+            if (ImporterWindow.Current != null)
+                ImporterWindow.Current.RefreshCharacterList();
+            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            return (prefab, animGuidsForTimeLine);
+        }
+        #endregion Prop Import
+
+        #region Avatar Import
+        public (GameObject, List<AnimationClip>) ImportAvatar(string fbxPath, string linkId)
+        {
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
+            string guid = AssetDatabase.AssetPathToGUID(fbxPath);
+            Debug.Log("Creating new characterinfo with guid " + guid);
+            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+            CharacterInfo charInfo = new CharacterInfo(guid);
+
+            charInfo.linkId = linkId;
+            charInfo.exportType = CharacterInfo.ExportType.AVATAR;
+            charInfo.projectName = "iclone project name";
+            //c.sceneid = add this later
+
+            charInfo.BuildQuality = MaterialQuality.High;
+            Importer import = new Importer(charInfo);
+            import.recordMotionListForTimeLine = importIntoScene;
+            GameObject prefab = import.Import();
+            charInfo.Write();
+
+            // add link id
+            var data = prefab.AddComponent<DataLinkActorData>();
+            data.linkId = linkId;
+            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
+            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
+            PrefabUtility.SavePrefabAsset(prefab);
+            if (ImporterWindow.Current != null)
+                ImporterWindow.Current.RefreshCharacterList();
+
+            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            return (prefab, animGuidsForTimeLine);
+        }
+        #endregion Avatar Import
+
+        #region Staging Import
+
+        public void ImportStaging(string folderPath, UnityLinkManager.JsonStaging stagedManifest)
+        {
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+
+            string dataPath = Path.GetDirectoryName(Application.dataPath);
+            string fullFolderPath = Path.Combine(dataPath, fbxPath);
+            string[] fileList = Directory.GetFiles(fullFolderPath);
+
+            
+            List<string> rlxList = fileList.ToList().FindAll(x => Path.GetExtension(x).Equals(".rlx", StringComparison.InvariantCultureIgnoreCase));
+            foreach (string file in rlxList)
+            {
+                byte[] fileBytes = File.ReadAllBytes(file);
+                ImportRLX(fileBytes);
+            }
         }
 
+        #endregion Staging Import
+        
+        public void ImportRLX(byte[] rlxBytes)
+        {
+            //RLXType rlxType = RLXType.NONE;
+
+            int bytePos = 0;
+            // header
+            const int RLX_ID_LIGHT = 0xCC01;
+            const int RLX_ID_CAMERA = 0xCC02;
+
+            int typeFlag = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, 0, 4), UnityLinkManager.SourceEndian.BigEndian);
+            
+            bytePos += 4;
+            //json length
+            int jsonLen = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
+            Debug.Log("RLX JSON expected length " + jsonLen + " Available bytes in rlxBytes " + rlxBytes.Length);
+
+            bytePos += 4;
+            // json data
+            byte[] jsonBytes = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, jsonLen);
+            string jsonString = Encoding.UTF8.GetString(jsonBytes);
+            Debug.Log(jsonString);
+
+            bytePos += jsonLen;
+            // frame data length
+            int framesLen = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
+
+            bytePos += 4;
+            // frame data
+            byte[] frameData = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, framesLen);
+
+            UnityLinkManager.JsonLightData jsonLightObject = null;
+            UnityLinkManager.JsonCameraData jsonCameraObject = null;
+
+            //try
+            //{
+            switch (typeFlag)
+            {
+                case (RLX_ID_CAMERA):
+                    {
+                        Debug.LogWarning("Processing Camera");
+                        MakeAnimatedCamera(frameData, jsonString);
+                        break;
+                    }
+                case (RLX_ID_LIGHT):
+                    {
+                        Debug.LogWarning("Processing Light");
+                        MakeAnimatedLight(frameData, jsonString);
+                        break;
+                    }
+            }
+            //switch (rlxType)
+            //{
+            //    case RLXType.LIGHT:
+                    {
+                        
+                        //            jsonLightObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightData>(jsonString);
+              //          break;
+                    }
+                //case RLXType.CAMERA:
+                    {
+                        //              jsonCameraObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonCameraData>(jsonString);
+                 //       break;
+                    }
+                    //}
+                    //}
+                    //catch
+                    //{
+                    //    Debug.LogWarning("Cannot deseriaze embedded json in the RLX file");
+            //}
+            return;
+            List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
+            Stream stream = new MemoryStream(frameData);
+            stream.Position = 0;
+            byte[] frameBytes = new byte[85];
+            while (stream.Read(frameBytes, 0, frameBytes.Length) > 0)
+            {
+                frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
+            }
+
+            Debug.Log("Frames processed " + frames.Count);
+
+            GameObject root = new GameObject("Light_" + jsonLightObject.Name + "_Root");
+            root.transform.position = Vector3.zero;
+            root.transform.rotation = Quaternion.identity;
+            root.AddComponent<Animator>();
+            var data = root.AddComponent<DataLinkActorData>();
+            data.linkId = jsonLightObject.LinkId;
+
+            GameObject target = new GameObject(jsonLightObject.Name);
+
+            if (LightProxyType == null)
+            {
+                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
+                if (LightProxyType == null)
+                {
+                    Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
+                    return;// new List<(GameObject, List<AnimationClip>)> { (null, null) };
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
+                }
+            }
+
+            var proxy = target.AddComponent(LightProxyType);
+
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.SetParent(root.transform, true);
+            Light light = target.AddComponent<Light>();
+
+            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
+            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
+            if (jsonLightObject != null)
+            {
+                SetupLight(jsonLightObject, root);
+            }
+        }
+
+        GameObject GetRootSceneObject(string linkId)
+        {
+            GameObject root = null;
+            DataLinkActorData existing = null;
+
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+
+            if (linkedObjects != null && linkedObjects.Length > 0)
+            {
+                existing = linkedObjects.ToList().Find(x => x.linkId == linkId);
+            }
+
+            if (existing != null)
+            {
+                root = existing.gameObject;
+                if (root.transform.childCount > 0)
+                {
+                    for (int i = 0; i < root.transform.childCount; i++)
+                    {
+                        GameObject.DestroyImmediate(root.transform.GetChild(i).gameObject);
+                    }
+                }
+            }
+            else
+            {
+                root = new GameObject();
+            }
+                        
+            root.transform.position = Vector3.zero;
+            root.transform.rotation = Quaternion.identity;
+            if (root.GetComponent<Animator>() == null)
+                root.AddComponent<Animator>();
+
+            if (existing == null)
+            {
+                DataLinkActorData data = root.AddComponent<DataLinkActorData>();
+                data.linkId = linkId;
+            }
+            
+            return root;
+        }
+
+        void MakeAnimatedCamera(byte[] frameData, string jsonString)
+        {
+            UnityLinkManager.JsonCameraData jsonCameraObject = null;
+            try
+            {
+                jsonCameraObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonCameraData>(jsonString);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.Message); return;
+            }
+
+            if (jsonCameraObject == null) { Debug.LogWarning("MakeAnimatedCamera: Could not deserialize embedded json"); return; }
+
+            // read all frames into a list
+            List<UnityLinkManager.DeserializedCameraFrames> frames = new List<UnityLinkManager.DeserializedCameraFrames>();
+
+            Stream stream = new MemoryStream(frameData);
+            stream.Position = 0;
+            byte[] frameBytes = new byte[UnityLinkManager.DeserializedCameraFrames.FRAME_BYTE_COUNT];
+            while (stream.Read(frameBytes, 0, frameBytes.Length) > 0)
+            {
+                frames.Add(new UnityLinkManager.DeserializedCameraFrames(frameBytes));
+            }
+
+            Debug.Log("Frames processed " + frames.Count);
+
+            // construct a camera object paretented to a dolly object
+            GameObject root = GetRootSceneObject(jsonCameraObject.LinkId);
+            root.name = "Camera_" + jsonCameraObject.Name + "_Root";
+
+            GameObject target = new GameObject(jsonCameraObject.Name);
+
+            if (CameraProxyType == null)
+            {
+                CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
+                if (CameraProxyType == null)
+                {
+                    Debug.LogWarning("Cannot create a <CameraProxy> component on the <Light> object.");
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight CAN find the <CameraProxy> class: " + CameraProxyType.GetType().FullName);
+                }
+            }
+
+            target.AddComponent(CameraProxyType);
+            target.AddComponent<Camera>();
+
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.SetParent(root.transform, true);
+
+            AnimationClip clip = MakeCameraAnimationClipFromFramesForObject(jsonString, frames, target, root);
+            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
+            //if (jsonLightObject != null)
+            //{
+            //    SetupLight(jsonLightObject, root);
+            //}
+        }
+
+        AnimationClip MakeCameraAnimationClipFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedCameraFrames> frames, GameObject target, GameObject root)
+        {
+            /*
+             * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
+             * 
+             * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
+             *       |
+             *       --> Child GameObject (with <Camera> component)   | GetAnimatableBindings TARGET object                
+            */
+
+            AnimationClip clip = new AnimationClip();
+            EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
+            // Find binding for property
+
+            // Transform properties
+            // Rotation
+            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Position
+            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Scale
+            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // focal length + fov
+            var b_focalL = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFocalLength", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_fov = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFieldOfView", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // depth of field
+            var b_dofEnable = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofEnable", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofFocus = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFocus", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofRange = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofRange", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofFblur = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFarBlur", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofNblur = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofNearBlur", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofFTran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFarTransition", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofNearTransition", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofMinBlendDist", System.StringComparison.InvariantCultureIgnoreCase));
+            
+            // Make keyframe[] for each bindable property
+
+            // Transform properties
+            // Rotation
+            Keyframe[] f_rotX = new Keyframe[frames.Count];
+            Keyframe[] f_rotY = new Keyframe[frames.Count];
+            Keyframe[] f_rotZ = new Keyframe[frames.Count];
+            Keyframe[] f_rotW = new Keyframe[frames.Count];
+
+            // Position
+            Keyframe[] f_posX = new Keyframe[frames.Count];
+            Keyframe[] f_posY = new Keyframe[frames.Count];
+            Keyframe[] f_posZ = new Keyframe[frames.Count];
+
+            // Scale
+            Keyframe[] f_scaX = new Keyframe[frames.Count];
+            Keyframe[] f_scaY = new Keyframe[frames.Count];
+            Keyframe[] f_scaZ = new Keyframe[frames.Count];
+
+            // focal length + fov
+            Keyframe[] f_focalL = new Keyframe[frames.Count];
+            Keyframe[] f_fov = new Keyframe[frames.Count];
+
+            // depth of field
+            Keyframe[] f_dofEnable = new Keyframe[frames.Count];
+            Keyframe[] f_dofFocus = new Keyframe[frames.Count];
+            Keyframe[] f_dofRange = new Keyframe[frames.Count];
+            Keyframe[] f_dofFblur = new Keyframe[frames.Count];
+            Keyframe[] f_dofNblur = new Keyframe[frames.Count];
+            Keyframe[] f_dofFTran = new Keyframe[frames.Count];
+            Keyframe[] f_dofFNran = new Keyframe[frames.Count];
+            Keyframe[] f_dofMinDist = new Keyframe[frames.Count];
+
+            // Populate keyframe arrays
+            for (int i = 0; i < frames.Count; i++)
+            {
+                // Transform curves
+                // Rotation
+                f_rotX[i] = new Keyframe(frames[i].Time, frames[i].Rot.x);
+                f_rotY[i] = new Keyframe(frames[i].Time, frames[i].Rot.y);
+                f_rotZ[i] = new Keyframe(frames[i].Time, frames[i].Rot.z);
+                f_rotW[i] = new Keyframe(frames[i].Time, frames[i].Rot.w);
+
+                // Position
+                f_posX[i] = new Keyframe(frames[i].Time, frames[i].Pos.x);
+                f_posY[i] = new Keyframe(frames[i].Time, frames[i].Pos.y);
+                f_posZ[i] = new Keyframe(frames[i].Time, frames[i].Pos.z);
+
+                //scale
+                f_scaX[i] = new Keyframe(frames[i].Time, frames[i].Scale.x);
+                f_scaY[i] = new Keyframe(frames[i].Time, frames[i].Scale.y);
+                f_scaZ[i] = new Keyframe(frames[i].Time, frames[i].Scale.z);
+
+                // focal length + fov
+                f_focalL[i] = new Keyframe(frames[i].Time, frames[i].FocalLength);
+                f_fov[i] = new Keyframe(frames[i].Time, frames[i].FieldOfView);
+
+                // depth of field
+                f_dofEnable[i] = new Keyframe(frames[i].Time, frames[i].DofEnable == true ? 1f : 0f);
+                f_dofFocus[i] = new Keyframe(frames[i].Time, frames[i].DofFocus);
+                f_dofRange[i] = new Keyframe(frames[i].Time, frames[i].DofRange);
+                f_dofFblur[i] = new Keyframe(frames[i].Time, frames[i].DofFarBlur);
+                f_dofNblur[i] = new Keyframe(frames[i].Time, frames[i].DofNearBlur);
+                f_dofFTran[i] = new Keyframe(frames[i].Time, frames[i].DofFarTransition);
+                f_dofFNran[i] = new Keyframe(frames[i].Time, frames[i].DofNearTransition);
+                f_dofMinDist[i] = new Keyframe(frames[i].Time, frames[i].DofMinBlendDistance);
+            }
+
+            // bind all keyframes to the appropriate curve
+
+            // Rotation            
+            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
+            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
+            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
+            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
+            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
+            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
+            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
+            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+
+            // Position
+            AnimationCurve c_posX = new AnimationCurve(f_posX);
+            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
+            AnimationCurve c_posY = new AnimationCurve(f_posY);
+            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
+            AnimationCurve c_posZ = new AnimationCurve(f_posZ);
+            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+
+            //scale
+            AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
+            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
+            AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
+            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
+            AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
+            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+
+            // focal length + fov
+            AnimationCurve c_focalL = ReduceCurve(f_focalL);  //new AnimationCurve(f_focalL);
+            AnimationUtility.SetEditorCurve(clip, b_focalL, c_focalL);
+            AnimationCurve c_fov = ReduceCurve(f_fov);  //new AnimationCurve(f_fov);
+            AnimationUtility.SetEditorCurve(clip, b_fov, c_fov);
+
+            // depth of field
+            AnimationCurve c_dofEnable = ReduceCurve(f_dofEnable);  //new AnimationCurve(f_dofEnable);
+            AnimationUtility.SetEditorCurve(clip, b_dofEnable, c_dofEnable);
+            AnimationCurve c_dofFocus = ReduceCurve(f_dofFocus);  //new AnimationCurve(f_dofFocus);
+            AnimationUtility.SetEditorCurve(clip, b_dofFocus, c_dofFocus);
+            AnimationCurve c_dofRange = ReduceCurve(f_dofRange);  //new AnimationCurve(f_dofRange);
+            AnimationUtility.SetEditorCurve(clip, b_dofRange, c_dofRange);
+            AnimationCurve c_dofFblur = ReduceCurve(f_dofFblur);  //new AnimationCurve(f_dofFblur);
+            AnimationUtility.SetEditorCurve(clip, b_dofFblur, c_dofFblur);
+            AnimationCurve c_dofNblur = ReduceCurve(f_dofNblur);  //new AnimationCurve(f_dofNblur);
+            AnimationUtility.SetEditorCurve(clip, b_dofNblur, c_dofNblur);
+            AnimationCurve c_dofFTran = ReduceCurve(f_dofFTran);  //new AnimationCurve(f_f_dofFTran);
+            AnimationUtility.SetEditorCurve(clip, b_dofFTran, c_dofFTran);
+            AnimationCurve c_dofFNran = ReduceCurve(f_dofFNran);  //new AnimationCurve(f_dofFNran);
+            AnimationUtility.SetEditorCurve(clip, b_dofFNran, c_dofFNran);
+            AnimationCurve c_dofMinDist = ReduceCurve(f_dofMinDist);  //new AnimationCurve(f_dofMinDist);
+            AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
+
+            clip.frameRate = 60f;
+
+            Debug.LogWarning("Saving RLX animation to Assets/RLX_CAMERA_CLIP.anim");  // investigate not using disk asset
+            AssetDatabase.CreateAsset(clip, "Assets/RLX_CAMERA_CLIP.anim");
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            List<AnimationClip> clips = new List<AnimationClip>();
+            clips.Add(clip);
+            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
+            try
+            {
+                AddToSceneAndTimeLine((root, clips), false); // add to existing timeline track as overide?
+
+            }
+            catch
+            {
+                Debug.LogWarning("Failed");
+            }
+            return clip;
+        }
+
+        void MakeAnimatedLight(byte[] frameData, string jsonString)
+        {
+            UnityLinkManager.JsonLightData jsonLightObject = null;
+            try
+            {
+                jsonLightObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightData>(jsonString);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.Message); return;
+            }
+
+            if (jsonLightObject == null) { Debug.LogWarning("MakeAnimatedLight: Could not deserialize embedded json"); return; }
+
+            // read all frames into a list
+            List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
+
+            Stream stream = new MemoryStream(frameData);
+            stream.Position = 0;
+            byte[] frameBytes = new byte[UnityLinkManager.DeserializedLightFrames.FRAME_BYTE_COUNT];
+            while (stream.Read(frameBytes, 0, frameBytes.Length) > 0)
+            {
+                frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
+            }
+
+            Debug.Log("Frames processed " + frames.Count);
+
+            // construct a light object paretented to a dolly object
+            GameObject root = GetRootSceneObject(jsonLightObject.LinkId);
+            root.name = "Light_" + jsonLightObject.Name + "_Root";
+
+            GameObject target = new GameObject(jsonLightObject.Name);
+
+            if (LightProxyType == null)
+            {
+                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
+                if (LightProxyType == null)
+                {
+                    Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().FullName);
+                }
+            }
+
+            target.AddComponent(LightProxyType);
+            target.AddComponent<Light>();
+
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.SetParent(root.transform, true);            
+
+            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
+            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
+            if (jsonLightObject != null)
+            {
+                SetupLight(jsonLightObject, root);
+            }
+        }
+
+        AnimationClip MakeLightAnimationFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedLightFrames> frames, GameObject target, GameObject root)
+        {
+            /*
+             * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
+             * 
+             * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
+             *       |
+             *       --> Child GameObject (with <Light> component)    | GetAnimatableBindings TARGET object                
+            */
+
+            // check for changes across the timeline
+
+            float threshold = 0.0001f;
+
+            int active = frames.FindAll(x => x.Active == true).Count();
+            active_delta = !(active == 0 || active == frames.Count);
+            foreach (var frame in frames)
+            {
+                if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
+                if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
+                if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
+
+                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; }
+
+                if (Math.Abs(frame.ScaleX - frames[0].ScaleX) > threshold) { scale_delta = true; }
+                if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
+                if (Math.Abs(frame.ScaleZ - frames[0].ScaleZ) > threshold) { scale_delta = true; }
+
+                if (Math.Abs(frame.ColorR - frames[0].ColorR) > threshold) { color_delta = true; }
+                if (Math.Abs(frame.ColorG - frames[0].ColorG) > threshold) { color_delta = true; }
+                if (Math.Abs(frame.ColorB - frames[0].ColorB) > threshold) { color_delta = true; }
+
+                if (Math.Abs(frame.Multiplier - frames[0].Multiplier) > threshold) { mult_delta = true; }
+                if (Math.Abs(frame.Range - frames[0].Range) > threshold) { range_delta = true; }
+                if (Math.Abs(frame.Angle - frames[0].Angle) > threshold) { angle_delta = true; }
+                if (Math.Abs(frame.Falloff - frames[0].Falloff) > threshold) { fall_delta = true; }
+                if (Math.Abs(frame.Attenuation - frames[0].Attenuation) > threshold) { att_delta = true; }
+                if (Math.Abs(frame.Darkness - frames[0].Darkness) > threshold) { dark_delta = true; }
+            }
+            Debug.LogWarning("*************************************** LAST FRAME TIME: " + frames[frames.Count - 1].ToString());
+            List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, active_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
+
+            AnimationClip clip = new AnimationClip();
+
+            if (changes.FindAll(x => x == true).Count() == 0)
+            {
+                // if there are no changes then no anim is needed
+                clip.name = "EMPTY";
+                return clip;
+            }
+
+            EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
+            // Find binding for property
+
+            // Transform properties
+            // Rotation
+            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Position
+            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Scale
+            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
+                        
+            // Proxy Enabled
+            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Proxy Color
+            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_r", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_g", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_b", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Other Proxy Settings
+            var b_mult = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyMultiplier", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_range = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyRange", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_angle = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAngle", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_fall = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFalloff", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAttenuation", System.StringComparison.InvariantCultureIgnoreCase));
+            var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDarkness", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // Make keyframe[] for each bindable property
+
+            // Transform properties
+            // Rotation
+            Keyframe[] f_rotX = new Keyframe[frames.Count];
+            Keyframe[] f_rotY = new Keyframe[frames.Count];
+            Keyframe[] f_rotZ = new Keyframe[frames.Count];
+            Keyframe[] f_rotW = new Keyframe[frames.Count];
+
+            // Position
+            Keyframe[] f_posX = new Keyframe[frames.Count];
+            Keyframe[] f_posY = new Keyframe[frames.Count];
+            Keyframe[] f_posZ = new Keyframe[frames.Count];
+
+            // Scale
+            Keyframe[] f_scaX = new Keyframe[frames.Count];
+            Keyframe[] f_scaY = new Keyframe[frames.Count];
+            Keyframe[] f_scaZ = new Keyframe[frames.Count];
+
+            // Enabled
+            Keyframe[] f_enabled = new Keyframe[frames.Count];
+
+            // Color
+            Keyframe[] f_colR = new Keyframe[frames.Count];
+            Keyframe[] f_colG = new Keyframe[frames.Count];
+            Keyframe[] f_colB = new Keyframe[frames.Count];
+
+            // Other
+            Keyframe[] f_mult = new Keyframe[frames.Count];
+            Keyframe[] f_range = new Keyframe[frames.Count];
+            Keyframe[] f_angle = new Keyframe[frames.Count];
+            Keyframe[] f_fall = new Keyframe[frames.Count];
+            Keyframe[] f_att = new Keyframe[frames.Count];
+            Keyframe[] f_dark = new Keyframe[frames.Count];
+
+            // Populate keyframe arrays
+            for (int i = 0; i < frames.Count; i++)
+            {
+                // Transform curves
+                // Rotation
+                f_rotX[i] = new Keyframe(frames[i].Time, frames[i].Rot.x);
+                f_rotY[i] = new Keyframe(frames[i].Time, frames[i].Rot.y);
+                f_rotZ[i] = new Keyframe(frames[i].Time, frames[i].Rot.z);
+                f_rotW[i] = new Keyframe(frames[i].Time, frames[i].Rot.w);
+
+                // Position
+                f_posX[i] = new Keyframe(frames[i].Time, frames[i].Pos.x);
+                f_posY[i] = new Keyframe(frames[i].Time, frames[i].Pos.y);
+                f_posZ[i] = new Keyframe(frames[i].Time, frames[i].Pos.z);
+
+                //scale
+                f_scaX[i] = new Keyframe(frames[i].Time, frames[i].Scale.x);
+                f_scaY[i] = new Keyframe(frames[i].Time, frames[i].Scale.y);
+                f_scaZ[i] = new Keyframe(frames[i].Time, frames[i].Scale.z);
+
+                // Enabled
+                f_enabled[i] = new Keyframe(frames[i].Time, frames[i].Active == true ? 1f : 0f);
+
+                // Color
+                f_colR[i] = new Keyframe(frames[i].Time, frames[i].Color.r);
+                f_colG[i] = new Keyframe(frames[i].Time, frames[i].Color.g);
+                f_colB[i] = new Keyframe(frames[i].Time, frames[i].Color.b);
+
+                // Other
+                f_mult[i] = new Keyframe(frames[i].Time, frames[i].Multiplier);
+                f_range[i] = new Keyframe(frames[i].Time, frames[i].Range);
+                f_angle[i] = new Keyframe(frames[i].Time, frames[i].Angle);
+                f_fall[i] = new Keyframe(frames[i].Time, frames[i].Falloff);
+                f_att[i] = new Keyframe(frames[i].Time, frames[i].Attenuation);
+                f_dark[i] = new Keyframe(frames[i].Time, frames[i].Darkness);
+            }
+
+            // bind all keyframes to the appropriate curve
+            // only bind curves that have changes
+
+            // Rotation           
+            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
+            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
+            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
+            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
+            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
+            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
+            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
+            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+
+            // Position
+            AnimationCurve c_posX = new AnimationCurve(f_posX);
+            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
+            AnimationCurve c_posY = new AnimationCurve(f_posY);
+            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
+            AnimationCurve c_posZ = new AnimationCurve(f_posZ);
+            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+
+            //scale
+            AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
+            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
+            AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
+            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
+            AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
+            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+
+            // Color
+            if (color_delta)
+            {
+                AnimationCurve c_colR = new AnimationCurve(f_colR);
+                AnimationUtility.SetEditorCurve(clip, b_colR, c_colR);
+                AnimationCurve c_colG = new AnimationCurve(f_colG);
+                AnimationUtility.SetEditorCurve(clip, b_colG, c_colG);
+                AnimationCurve c_colB = new AnimationCurve(f_colB);
+                AnimationUtility.SetEditorCurve(clip, b_colB, c_colB);
+            }
+
+            if (mult_delta)
+            {
+                AnimationCurve c_mult = new AnimationCurve(f_mult);
+                AnimationUtility.SetEditorCurve(clip, b_mult, c_mult);
+            }
+
+            if (range_delta)
+            {
+                AnimationCurve c_range = new AnimationCurve(f_range);
+                AnimationUtility.SetEditorCurve(clip, b_range, c_range);
+            }
+
+            if (angle_delta || fall_delta || att_delta)
+            {
+                AnimationCurve c_angle = new AnimationCurve(f_angle);
+                AnimationUtility.SetEditorCurve(clip, b_angle, c_angle);
+                AnimationCurve c_fall = new AnimationCurve(f_fall);
+                AnimationUtility.SetEditorCurve(clip, b_fall, c_fall);
+                AnimationCurve c_att = new AnimationCurve(f_att);
+                AnimationUtility.SetEditorCurve(clip, b_att, c_att);
+            }
+
+            if (dark_delta)
+            {
+                AnimationCurve c_dark = new AnimationCurve(f_dark);
+                AnimationUtility.SetEditorCurve(clip, b_dark, c_dark);
+            }
+
+            clip.frameRate = 60f;
+
+            Debug.LogWarning("Saving RLX animation to Assets/RLX_LIGHT_CLIP.anim");  // investigate not using disk asset
+            AssetDatabase.CreateAsset(clip, "Assets/RLX_LIGHT_CLIP.anim");
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            List<AnimationClip> clips = new List<AnimationClip>();
+            clips.Add(clip);
+            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
+            try
+            {
+                AddToSceneAndTimeLine((root, clips), false); // add to existing timeline track as overide?
+
+            }
+            catch
+            {
+                Debug.LogWarning("Failed");
+            }
+            return clip;
+        }
+
+        void SetupLight(UnityLinkManager.JsonLightData json, GameObject root)
+        {
+            if (LightProxyType == null)
+            {
+                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
+                if (LightProxyType == null)
+                {
+                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
+                }
+            }
+
+            Component proxy = root.GetComponentInChildren(LightProxyType);
+            if (proxy != null)
+            {
+                SetupLightMethod = proxy.GetType().GetMethod("SetupLight",
+                                BindingFlags.Public | BindingFlags.Instance,
+                                null,
+                                CallingConventions.Any,
+                                new Type[] { typeof(string) },
+                                null);
+
+                if (SetupLightMethod == null)
+                {
+                    Debug.LogWarning("SetupLight MethodInfo cannot be determined");
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight MethodInfo CAN be determined");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                return;
+            }
+
+            /*
+            this.LinkId = string.Empty;
+            this.Name = string.Empty;
+            this.loc = new float[0];
+            this.rot = new float[0];
+            this.sca = new float[0];
+            this.Active = false;
+            this.color = new float[0];
+            this.Multiplier = 0f;
+            this.Type = string.Empty;
+            this.Range = 0f;
+            this.Angle = 0f;
+            this.Falloff = 0f;
+            this.Attenuation = 0f;
+            this.InverseSquare = false;
+            this.Transmission = false;
+            this.IsTube = false;
+            this.TubeLength = 0f;
+            this.TubeRadius = 0f;
+            this.TubeSoftRadius = 0f;
+            this.IsRect = false;
+            this.rect = new float[0];
+            this.CastShadow = false;
+            this.Darkness = 0f;
+            this.FrameCount = 0;
+            */
+
+            json.pos_delta = pos_delta;
+            json.rot_delta = rot_delta;
+            json.scale_delta = scale_delta;
+            json.active_delta = active_delta;
+            json.color_delta = color_delta;
+            json.mult_delta = mult_delta;
+            json.range_delta = range_delta;
+            json.angle_delta = angle_delta;
+            json.fall_delta = fall_delta;
+            json.att_delta = att_delta;
+            json.dark_delta = dark_delta;
+
+            string jsonString = JsonConvert.SerializeObject(json);
+            SetupLightMethod.Invoke(proxy, new object[] { jsonString });
+        }
+
+
+
+        #region OLD Light Import
         public List<(GameObject, List<AnimationClip>)> ImportLights(string fbxPath, string[] linkIds)
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return new List<(GameObject, List<AnimationClip>)> { (null, null) }; }
@@ -314,10 +1208,10 @@ namespace Reallusion.Import
             bytePos += 4;
             byte[] frameData = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, framesLen);
 
-            UnityLinkManager.JsonLightRlx jsonObject = null;
+            UnityLinkManager.JsonLightData jsonObject = null;
             try
             {
-                jsonObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightRlx>(jsonString);
+                jsonObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightData>(jsonString);
             }
             catch
             {
@@ -334,7 +1228,7 @@ namespace Reallusion.Import
             }
 
             Debug.Log("Frames processed " + frames.Count);
-            
+
             GameObject root = new GameObject("Light_" + jsonObject.Name + "_Root");
             root.transform.position = Vector3.zero;
             root.transform.rotation = Quaternion.identity;
@@ -375,67 +1269,151 @@ namespace Reallusion.Import
             return new List<(GameObject, List<AnimationClip>)> { (null, null) };
         }
 
-        public (GameObject, List<AnimationClip>) ImportProp(string fbxPath, string linkId)
+        Type LightProxyType = null;
+        Type CameraProxyType = null;
+        MethodInfo SetupLightMethod = null;
+        public bool pos_delta = false, rot_delta = false, scale_delta = false, active_delta = false, color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
+
+
+        #endregion Light Import
+
+        #region Scene and Timeline
+        void CreateSceneAndTimeline()
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
-            string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            Debug.Log("Creating new characterinfo with guid " + guid);
-            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
-            CharacterInfo c = new CharacterInfo(guid);
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
 
-            c.linkId = linkId;
-            c.exportType = CharacterInfo.ExportType.PROP;
-            c.projectName = "iclone project name";
-            //c.sceneid = add this later
+            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
+            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
 
-            c.BuildQuality = MaterialQuality.High;
-            Importer import = new Importer(c);
-            import.recordMotionListForTimeLine = importIntoScene;
-            GameObject prefab = import.Import();
-            c.Write();
+            // PlayableGraph graph = PlayableGraph.Create(); // ...
 
-            // add link id
-            var data = prefab.AddComponent<DataLinkActorData>();
-            data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
-            PrefabUtility.SavePrefabAsset(prefab);
-            if (ImporterWindow.Current != null)
-                ImporterWindow.Current.RefreshCharacterList();
-            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            return (prefab, animGuidsForTimeLine);
+            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
+            director.playableAsset = timeline;
+
+
+            UnityLinkManager.timelineSceneCreated = true;
         }
 
-        public (GameObject, List<AnimationClip>) ImportAvatar(string fbxPath, string linkId)
+        TimelineEditorWindow timelineEditorWindow = null;
+
+        void SelectTimeLineObjectAndShowWindow()
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
-            string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            Debug.Log("Creating new characterinfo with guid " + guid);
-            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
-            CharacterInfo charInfo = new CharacterInfo(guid);
+            Selection.activeObject = UnityLinkManager.timelineObject;
 
-            charInfo.linkId = linkId;
-            charInfo.exportType = CharacterInfo.ExportType.AVATAR;
-            charInfo.projectName = "iclone project name";
-            //c.sceneid = add this later
+            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            {
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+            else
+            {
+                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+        }
 
-            charInfo.BuildQuality = MaterialQuality.High;
-            Importer import = new Importer(charInfo);
-            import.recordMotionListForTimeLine = importIntoScene;
-            GameObject prefab = import.Import();
-            charInfo.Write();
+        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple, bool createInScene = true)
+        {
+            GameObject sceneObject;
+            if (createInScene)
+            {
+                Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
+                sceneObject = GameObject.Instantiate(objectTuple.Item1);
+                sceneObject.transform.position = Vector3.zero;
+                sceneObject.transform.rotation = Quaternion.identity;
+            }
+            else
+            {
+                sceneObject = objectTuple.Item1;
+            }
 
-            // add link id
-            var data = prefab.AddComponent<DataLinkActorData>();
-            data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
-            PrefabUtility.SavePrefabAsset(prefab);
-            if (ImporterWindow.Current != null)
-                ImporterWindow.Current.RefreshCharacterList();
+            PlayableDirector director;
+            if (UnityLinkManager.timelineObject == null)
+            {
+                director = (PlayableDirector)GameObject.FindFirstObjectByType(typeof(PlayableDirector));
+            }
+            else
+            {
+                director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
+            }
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+            AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
+            AnimationClip clipToUse = null;
+            // find suitable aniamtion clip (should be the first non T-Pose)
+            foreach (AnimationClip animClip in objectTuple.Item2)
+            {
+                if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                else
+                {
+                    clipToUse = animClip;
+                }
+            }
 
-            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            return (prefab, animGuidsForTimeLine);
+            TimelineClip clip = newTrack.CreateClip(clipToUse);
+            clip.start = 0f;
+            clip.timeScale = 1f;
+            clip.duration = clip.duration / clip.timeScale;
+            Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
+            director.SetGenericBinding(newTrack, sceneObject);
+
+        }
+        #endregion Scene and Timeline
+
+        #region Keyframe Reduction
+        public AnimationCurve ReduceCurve(Keyframe[] keys, bool smooth = false)
+        {
+            Keyframe[] reduced = Reduce(keys, 0.0001f);
+            AnimationCurve result = new AnimationCurve(reduced);
+            if (smooth)
+            {
+                for (int i = 0; i < reduced.Length; i++)
+                {
+                    result.SmoothTangents(i, 0);
+                }
+            }
+            return result;
+        }
+
+        public Keyframe[] Reduce(Keyframe[] keys, float threshold)
+        {
+            List<Keyframe> result = new List<Keyframe>();
+            Keyframe lastAdded = new Keyframe();
+            for (int i = 0; i < keys.Length; i++)
+            {
+                if (i == 0 || i == keys.Length -1)
+                {
+                    result.Add(keys[i]);
+                    lastAdded = keys[i];
+                    continue;
+                }
+
+                if ((keys[i].value - lastAdded.value) > threshold)
+                {
+                    result.Add(keys[i]);
+                    lastAdded = keys[i];
+                }
+            }
+            return result.ToArray();
+        }
+        #endregion Keyframe Reduction
+
+        #region Motion ... placeholder
+        public void CleanDiskAssets(string fbxPath, string queueItemPath)
+        {
+            // clear motion fbx (retain animations - deal with clutter later)
+            // move model data to user nominated place in project
+            // remove external disk assets
         }
 
         public void ImportMotion(string fbxPath, string linkId)
@@ -574,500 +1552,7 @@ namespace Reallusion.Import
 
             return assetPath;
         }
-
-
-        void CreateSceneAndTimeline()
-        {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-
-            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
-            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
-
-            // PlayableGraph graph = PlayableGraph.Create(); // ...
-
-            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
-            director.playableAsset = timeline;
-
-
-            UnityLinkManager.timelineSceneCreated = true;
-        }
-
-        TimelineEditorWindow timelineEditorWindow = null;
-
-        void SelectTimeLineObjectAndShowWindow()
-        {
-            Selection.activeObject = UnityLinkManager.timelineObject;
-
-            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
-            {
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-            else
-            {
-                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-        }
-
-        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple, bool createInScene = true)
-        {
-            GameObject sceneObject;
-            if (createInScene)
-            {
-                Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
-                sceneObject = GameObject.Instantiate(objectTuple.Item1);
-                sceneObject.transform.position = Vector3.zero;
-                sceneObject.transform.rotation = Quaternion.identity;
-            }
-            else
-            {
-                sceneObject = objectTuple.Item1;
-            }
-
-            PlayableDirector director;
-            if (UnityLinkManager.timelineObject == null)
-            {
-                director = (PlayableDirector)GameObject.FindFirstObjectByType(typeof(PlayableDirector));
-            }
-            else
-            {
-                director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
-            }
-            TimelineAsset timeline = director.playableAsset as TimelineAsset;
-            AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
-            AnimationClip clipToUse = null;
-            // find suitable aniamtion clip (should be the first non T-Pose)
-            foreach (AnimationClip animClip in objectTuple.Item2)
-            {
-                if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-                else
-                {
-                    clipToUse = animClip;
-                }
-            }
-
-            TimelineClip clip = newTrack.CreateClip(clipToUse);
-            clip.start = 0f;
-            clip.timeScale = 1f;
-            clip.duration = clip.duration / clip.timeScale;
-            Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
-            director.SetGenericBinding(newTrack, sceneObject);
-
-        }
-
-        public bool pos_delta = false, rot_delta = false, scale_delta = false, active_delta = false, color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
-
-        Type LightProxyType = null;
-        MethodInfo SetupLightMethod = null;
-
-        void SetupLight(UnityLinkManager.JsonLightRlx json, GameObject root)
-        {
-            if (LightProxyType == null)
-            {
-                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
-                if (LightProxyType == null)
-                {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
-                    return;
-                }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
-                }
-            }
-
-            Component proxy = root.GetComponentInChildren(LightProxyType);
-            if (proxy != null)
-            {
-                SetupLightMethod = proxy.GetType().GetMethod("SetupLight",
-                                BindingFlags.Public | BindingFlags.Instance,
-                                null,
-                                CallingConventions.Any,
-                                new Type[] { typeof(string) },
-                                null);
-
-                if (SetupLightMethod == null)
-                {
-                    Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                    return;
-                }
-                else
-                {
-                    Debug.LogWarning("SetupLight MethodInfo CAN be determined");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
-                return;
-            }
-           
-            /*
-            this.LinkId = string.Empty;
-            this.Name = string.Empty;
-            this.loc = new float[0];
-            this.rot = new float[0];
-            this.sca = new float[0];
-            this.Active = false;
-            this.color = new float[0];
-            this.Multiplier = 0f;
-            this.Type = string.Empty;
-            this.Range = 0f;
-            this.Angle = 0f;
-            this.Falloff = 0f;
-            this.Attenuation = 0f;
-            this.InverseSquare = false;
-            this.Transmission = false;
-            this.IsTube = false;
-            this.TubeLength = 0f;
-            this.TubeRadius = 0f;
-            this.TubeSoftRadius = 0f;
-            this.IsRect = false;
-            this.rect = new float[0];
-            this.CastShadow = false;
-            this.Darkness = 0f;
-            this.FrameCount = 0;
-            */
-
-            json.pos_delta = pos_delta;
-            json.rot_delta = rot_delta;
-            json.scale_delta = scale_delta;
-            json.active_delta = active_delta;
-            json.color_delta = color_delta;
-            json.mult_delta = mult_delta;
-            json.range_delta = range_delta;
-            json.angle_delta = angle_delta;
-            json.fall_delta = fall_delta;
-            json.att_delta = att_delta;
-            json.dark_delta = dark_delta;
-
-            string jsonString = JsonConvert.SerializeObject(json);
-            SetupLightMethod.Invoke(proxy, new object[] { jsonString });
-        }
-
-        AnimationClip MakeLightAnimationFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedLightFrames> frames, GameObject target, GameObject root)
-        {
-            /*
-             * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
-             * 
-             * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
-             *       |
-             *       --> Child GameObject (with <Light> component)    | GetAnimatableBindings TARGET object                
-            */
-
-            // check for changes across the timeline
-
-            float threshold = 0.0001f;
-
-
-            int active = frames.FindAll(x => x.Active == true).Count();
-            active_delta = !(active == 0 || active == frames.Count);
-            foreach (var frame in frames)
-            {
-                if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
-                if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
-                if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
-
-                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; }
-
-                if (Math.Abs(frame.ScaleX - frames[0].ScaleX) > threshold) { scale_delta = true; }
-                if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
-                if (Math.Abs(frame.ScaleZ - frames[0].ScaleZ) > threshold) { scale_delta = true; }
-
-                if (Math.Abs(frame.ColorR - frames[0].ColorR) > threshold) { color_delta = true; }
-                if (Math.Abs(frame.ColorG - frames[0].ColorG) > threshold) { color_delta = true; }
-                if (Math.Abs(frame.ColorB - frames[0].ColorB) > threshold) { color_delta = true; }
-
-                if (Math.Abs(frame.Multiplier - frames[0].Multiplier) > threshold) { mult_delta = true; }
-                if (Math.Abs(frame.Range - frames[0].Range) > threshold) { range_delta = true; }
-                if (Math.Abs(frame.Angle - frames[0].Angle) > threshold) { angle_delta = true; }
-                if (Math.Abs(frame.Falloff - frames[0].Falloff) > threshold) { fall_delta = true; }
-                if (Math.Abs(frame.Attenuation - frames[0].Attenuation) > threshold) { att_delta = true; }
-                if (Math.Abs(frame.Darkness - frames[0].Darkness) > threshold) { dark_delta = true; }
-            }
-            Debug.LogWarning("*************************************** LAST FRAME TIME: " + frames[frames.Count - 1].ToString());
-            List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, active_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
-
-            AnimationClip clip = new AnimationClip();
-
-            if (changes.FindAll(x => x == true).Count() == 0)
-            {
-                // if there are no changes then no anim is needed
-                clip.name = "EMPTY";
-                return clip;
-            }
-
-            EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
-            // Find binding for property
-
-            // Transform properties
-            // Rotation
-            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Position
-            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Scale
-            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Color
-            /*
-            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.r", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.g", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.b", System.StringComparison.InvariantCultureIgnoreCase));
-            var alphaColorBind = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Color.a", System.StringComparison.InvariantCultureIgnoreCase));
-            
-            // Enabled
-            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("Enabled", System.StringComparison.InvariantCultureIgnoreCase));             
-             */
-
-
-            // Proxy Enabled
-            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Proxy Color
-            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_r", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_g", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_b", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Other Proxy Settings
-            var b_mult = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyMultiplier", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_range = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyRange", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_angle = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAngle", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_fall = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFalloff", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAttenuation", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDarkness", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Make keyframe[] for each bindable property
-
-            // Transform properties
-            // Rotation
-            Keyframe[] f_rotX = new Keyframe[frames.Count];
-            Keyframe[] f_rotY = new Keyframe[frames.Count];
-            Keyframe[] f_rotZ = new Keyframe[frames.Count];
-            Keyframe[] f_rotW = new Keyframe[frames.Count];
-
-            // Position
-            Keyframe[] f_posX = new Keyframe[frames.Count];
-            Keyframe[] f_posY = new Keyframe[frames.Count];
-            Keyframe[] f_posZ = new Keyframe[frames.Count];
-
-            // Scale
-            Keyframe[] f_scaX = new Keyframe[frames.Count];
-            Keyframe[] f_scaY = new Keyframe[frames.Count];
-            Keyframe[] f_scaZ = new Keyframe[frames.Count];
-
-            // Enabled
-            Keyframe[] f_enabled = new Keyframe[frames.Count];
-
-            // Color
-            Keyframe[] f_colR = new Keyframe[frames.Count];
-            Keyframe[] f_colG = new Keyframe[frames.Count];
-            Keyframe[] f_colB = new Keyframe[frames.Count];
-
-            // Other
-            Keyframe[] f_mult = new Keyframe[frames.Count];
-            Keyframe[] f_range = new Keyframe[frames.Count];
-            Keyframe[] f_angle = new Keyframe[frames.Count];
-            Keyframe[] f_fall = new Keyframe[frames.Count];
-            Keyframe[] f_att = new Keyframe[frames.Count];
-            Keyframe[] f_dark = new Keyframe[frames.Count];
-
-            // Populate keyframe arrays
-            for (int i = 0; i < frames.Count; i++)
-            {
-                // Transform curves
-                // Rotation
-                f_rotX[i] = new Keyframe(frames[i].Time, frames[i].Rot.x);
-                f_rotY[i] = new Keyframe(frames[i].Time, frames[i].Rot.y);
-                f_rotZ[i] = new Keyframe(frames[i].Time, frames[i].Rot.z);
-                f_rotW[i] = new Keyframe(frames[i].Time, frames[i].Rot.w);
-
-                // Position
-                f_posX[i] = new Keyframe(frames[i].Time, frames[i].Pos.x);
-                f_posY[i] = new Keyframe(frames[i].Time, frames[i].Pos.y);
-                f_posZ[i] = new Keyframe(frames[i].Time, frames[i].Pos.z);
-
-                //scale
-                f_scaX[i] = new Keyframe(frames[i].Time, frames[i].Scale.x);
-                f_scaY[i] = new Keyframe(frames[i].Time, frames[i].Scale.y);
-                f_scaZ[i] = new Keyframe(frames[i].Time, frames[i].Scale.z);
-
-                // Enabled
-                f_enabled[i] = new Keyframe(frames[i].Time, frames[i].Active == true ? 1f : 0f);
-
-                // Color
-                f_colR[i] = new Keyframe(frames[i].Time, frames[i].Color.r);
-                f_colG[i] = new Keyframe(frames[i].Time, frames[i].Color.g);
-                f_colB[i] = new Keyframe(frames[i].Time, frames[i].Color.b);
-
-                // Other
-                f_mult[i] = new Keyframe(frames[i].Time, frames[i].Multiplier);
-                f_range[i] = new Keyframe(frames[i].Time, frames[i].Range);
-                f_angle[i] = new Keyframe(frames[i].Time, frames[i].Angle);
-                f_fall[i] = new Keyframe(frames[i].Time, frames[i].Falloff);
-                f_att[i] = new Keyframe(frames[i].Time, frames[i].Attenuation);
-                f_dark[i] = new Keyframe(frames[i].Time, frames[i].Darkness);
-            }
-
-            // bind all keyframes to the appropriate curve
-            // only bind curves that have changes
-
-            // Rotation
-            //if (rot_delta)
-            //{
-            //AnimationCurve c_rotX = ReduceCurve(f_rotX);
-            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
-            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
-            //AnimationCurve c_rotY = ReduceCurve(f_rotY);
-            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
-            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
-            //AnimationCurve c_rotZ = ReduceCurve(f_rotZ);
-            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
-            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
-            //AnimationCurve c_rotW = ReduceCurve(f_rotW);
-            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
-            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
-            //}
-
-            // Position
-            //if (pos_delta)
-            //{
-            AnimationCurve c_posX = ReduceCurve(f_posX);  //new AnimationCurve(f_posX);
-            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
-            AnimationCurve c_posY = ReduceCurve(f_posY);  //new AnimationCurve(f_posY);
-            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
-            AnimationCurve c_posZ = ReduceCurve(f_posZ);  //new AnimationCurve(f_posZ);
-            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
-            //}
-
-            //scale
-            //if (scale_delta)
-            //{
-            AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
-            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
-            AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
-            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
-            AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
-            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
-            //}
-
-            // Color
-            if (color_delta)
-            {
-                AnimationCurve c_colR = new AnimationCurve(f_colR);
-                AnimationUtility.SetEditorCurve(clip, b_colR, c_colR);
-                AnimationCurve c_colG = new AnimationCurve(f_colG);
-                AnimationUtility.SetEditorCurve(clip, b_colG, c_colG);
-                AnimationCurve c_colB = new AnimationCurve(f_colB);
-                AnimationUtility.SetEditorCurve(clip, b_colB, c_colB);
-            }
-
-            if (mult_delta)
-            {
-                AnimationCurve c_mult = new AnimationCurve(f_mult);
-                AnimationUtility.SetEditorCurve(clip, b_mult, c_mult);
-            }
-
-            if (range_delta)
-            {
-                AnimationCurve c_range = new AnimationCurve(f_range);
-                AnimationUtility.SetEditorCurve(clip, b_range, c_range);
-            }
-
-            if (angle_delta || fall_delta || att_delta)
-            {
-                AnimationCurve c_angle = new AnimationCurve(f_angle);
-                AnimationUtility.SetEditorCurve(clip, b_angle, c_angle);
-                AnimationCurve c_fall = new AnimationCurve(f_fall);
-                AnimationUtility.SetEditorCurve(clip, b_fall, c_fall);
-                AnimationCurve c_att = new AnimationCurve(f_att);
-                AnimationUtility.SetEditorCurve(clip, b_att, c_att);
-            }
-
-            if (dark_delta)
-            {
-                AnimationCurve c_dark = new AnimationCurve(f_dark);
-                AnimationUtility.SetEditorCurve(clip, b_dark, c_dark);
-            }
-
-            clip.frameRate = 60f;
-
-            Debug.LogWarning("Saving RLX animation to Assets/RLX_CLIP.anim");
-            AssetDatabase.CreateAsset(clip, "Assets/RLX_CLIP.anim");
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            List<AnimationClip> clips = new List<AnimationClip>();
-            clips.Add(clip);
-            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
-            try
-            {
-                AddToSceneAndTimeLine((root, clips), false);
-            }
-            catch
-            {
-                Debug.LogWarning("Failed");
-            }
-            return clip;
-        }
-
-        public AnimationCurve ReduceCurve(Keyframe[] keys, bool smooth = false)
-        {
-            Keyframe[] reduced = Reduce(keys, 0.0001f);
-            AnimationCurve result = new AnimationCurve(reduced);
-            if (smooth)
-            {
-                for (int i = 0; i < reduced.Length; i++)
-                {
-                    result.SmoothTangents(i, 0);
-                }
-            }
-            return result;
-        }
-
-        public Keyframe[] Reduce(Keyframe[] keys, float threshold)
-        {
-            List<Keyframe> result = new List<Keyframe>();
-            Keyframe lastAdded = new Keyframe();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                if (i == 0 || i == keys.Length -1)
-                {
-                    result.Add(keys[i]);
-                    lastAdded = keys[i];
-                    continue;
-                }
-
-                if ((keys[i].value - lastAdded.value) > threshold)
-                {
-                    result.Add(keys[i]);
-                    lastAdded = keys[i];
-                }
-            }
-            return result.ToArray();
-        }
+        #endregion Motion...
 
     }
 }
