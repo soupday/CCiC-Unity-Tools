@@ -16,13 +16,46 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Drawing.Printing;
-using static UnityEngine.Rendering.DebugUI.Table;
+//using System.Drawing.Printing;
+//using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
     {
+        public static string SAVE_FOLDER_PATH = string.Empty;
+        public static string SCENE_REFERENCE_STRING = string.Empty;
+
+        public static string UNITY_FOLDER_PATH { get { return GetUnityFolderPath(); } }
+        public static string UNITY_SCENE_PATH { get { return GetUnityScenePath(); } }
+        public static string TIMELINE_ASSET_PATH { get { return GetUnityTimelineAssetPath(); } }
+
+        public static GameObject timelineObject;
+
+        private static string GetUnityFolderPath()
+        {
+            string dataPath = Application.dataPath;
+            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING);
+            string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
+            return UnityPath.Replace('\\', '/');
+        }
+
+        private static string GetUnityScenePath()
+        {
+            string dataPath = Application.dataPath;
+            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING + ".unity");
+            string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
+            return UnityPath.Replace('\\', '/');
+        }
+
+        private static string GetUnityTimelineAssetPath()
+        {
+            string dataPath = Application.dataPath;
+            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING, SCENE_REFERENCE_STRING + ".playable");
+            string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
+            return UnityPath.Replace('\\', '/');
+        }
+
         #region Setup
         public static void InitConnection()
         {
@@ -718,7 +751,6 @@ namespace Reallusion.Import
         private static bool queueIsActive = false;
         public static bool ImportIntoCurrentScene = false;
         public static bool timelineSceneCreated = false;
-        public static GameObject timelineObject;
 
         public static void StartQueue()
         {
@@ -1063,29 +1095,6 @@ namespace Reallusion.Import
 
         public class JsonStaging // STAGING = 104
         {
-            /*
-                "path": "C:\\Users\\t3xr9\\AppData\\Local\\Temp\\iClone8Temp\\iClone8Temp\\Unity DataLink\\exports\\Lights_1743085047210000300\\Key.rlx",
-                "remote_id": "1743085050432389100",
-                "names": [
-                "Key",
-                "Side",
-                "Back",
-                "Floor Shadow"
-                ],
-                "types": [
-                "LIGHT",
-                "LIGHT",
-                "LIGHT",
-                "LIGHT"
-                ],
-                "link_ids": [
-                "2134704029872",
-                "2134704018720",
-                "2134704024624",
-                "2134704037744"
-                ]
-             */
-
             public const string remoteIdStr = "remote_id";
             public const string pathStr = "path";
             public const string nameString = "names";
@@ -1529,40 +1538,10 @@ namespace Reallusion.Import
 
 
             // Animated properties (determined by the importer - repackaged here to ease use of <LightProxy> setup
-            public const string posDltStr = "pos_delta";
-            public const string rotDltStr = "rot_delta";
-            public const string scaDltStr = "sca_delta";
-            public const string actDltStr = "act_delta";
-            public const string colDltStr = "col_delta";
-            public const string mulDltStr = "mul_delta";
-            public const string ranDltStr = "ran_delta";
-            public const string angDltStr = "ang_delta";
-            public const string falDltStr = "fal_delta";
-            public const string attDltStr = "att_delta";
-            public const string darDltStr = "dar_delta";
+            public const string dofDltStr = "dof_delta";
 
-            [JsonProperty(posDltStr)]
-            public bool pos_delta { get; set; }
-            [JsonProperty(rotDltStr)]
-            public bool rot_delta { get; set; }
-            [JsonProperty(scaDltStr)]
-            public bool scale_delta { get; set; }
-            [JsonProperty(actDltStr)]
-            public bool active_delta { get; set; }
-            [JsonProperty(colDltStr)]
-            public bool color_delta { get; set; }
-            [JsonProperty(mulDltStr)]
-            public bool mult_delta { get; set; }
-            [JsonProperty(ranDltStr)]
-            public bool range_delta { get; set; }
-            [JsonProperty(angDltStr)]
-            public bool angle_delta { get; set; }
-            [JsonProperty(falDltStr)]
-            public bool fall_delta { get; set; }
-            [JsonProperty(attDltStr)]
-            public bool att_delta { get; set; }
-            [JsonProperty(darDltStr)]
-            public bool dark_delta { get; set; }
+            [JsonProperty(dofDltStr)]
+            public bool dof_delta { get; set; }
 
             public JsonCameraData()
             {
@@ -1591,17 +1570,7 @@ namespace Reallusion.Import
                 this.DofMinBlendDist = 0f;
                 this.FrameCount = 0;
 
-                this.pos_delta = false;
-                this.rot_delta = false;
-                this.scale_delta = false;
-                this.active_delta = false;
-                this.color_delta = false;
-                this.mult_delta = false;
-                this.range_delta = false;
-                this.angle_delta = false;
-                this.fall_delta = false;
-                this.att_delta = false;
-                this.dark_delta = false;
+                this.dof_delta = false;
             }
 
             public Vector3 GetPosition()

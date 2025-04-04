@@ -88,7 +88,7 @@ namespace Reallusion.Import
             foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Scenebuilding tools");
             if (foldoutControlArea)
             {
-                
+                SceneToolsGUI();
             }
 
             foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs");
@@ -97,6 +97,12 @@ namespace Reallusion.Import
                 LogAreaGUI();
             }
             GUILayout.EndVertical();
+
+            if (createAfterGUI)
+            {
+                EditorApplication.delayCall += UnityLinkTimeLine.CreateExampleScene;
+                createAfterGUI = false;
+            }
         }
 
         void ControlAreaGUI()
@@ -129,7 +135,40 @@ namespace Reallusion.Import
             UnityLinkManager.ImportIntoCurrentScene = GUILayout.Toggle(UnityLinkManager.ImportIntoCurrentScene, "Import into current scene.");
             GUILayout.EndHorizontal();
         }
-                
+
+        bool createAfterGUI = false;
+
+        void SceneToolsGUI()
+        {
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Scene Ref", GUILayout.Width(85f));
+            UnityLinkManager.SCENE_REFERENCE_STRING = GUILayout.TextField(UnityLinkManager.SCENE_REFERENCE_STRING);
+            GUILayout.Space(8f);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Folder Name", GUILayout.Width(85f));
+            if (GUILayout.Button(EditorGUIUtility.IconContent("d_FolderOpened Icon").image, GUILayout.Width(20f), GUILayout.Height(20f)))
+            {
+                string proposed = string.IsNullOrEmpty(UnityLinkManager.SAVE_FOLDER_PATH) ? "Assets" : UnityLinkManager.SAVE_FOLDER_PATH;
+                string defaultFolder = string.IsNullOrEmpty(UnityLinkManager.SCENE_REFERENCE_STRING) ? "Folder" : UnityLinkManager.SCENE_REFERENCE_STRING;
+                UnityLinkManager.SAVE_FOLDER_PATH = EditorUtility.OpenFolderPanel("Parent Folder For Scene and Assets", proposed, "");
+            }
+            UnityLinkManager.SAVE_FOLDER_PATH = GUILayout.TextField(UnityLinkManager.SAVE_FOLDER_PATH, GUILayout.MinWidth(100f));
+            GUILayout.Space(8f);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Create New Scene"))
+            {
+                createAfterGUI = true;
+            }
+            GUILayout.Space(8f);
+            GUILayout.EndHorizontal();
+        }
+
+
         Vector2 logScrollPos = new Vector2();
         void LogAreaGUI()
         {

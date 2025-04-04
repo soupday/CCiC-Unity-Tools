@@ -25,18 +25,48 @@ namespace Reallusion.Import
 {
     public class UnityLinkImporter
     {
+        int waitForFramesBeforeStartingImport = 10;
+
         ModelImporter importer;
         UnityLinkManager.QueueItem QueueItem;
         UnityLinkManager.OpCodes opCode;
+
+        // folders for import
         string ROOT_FOLDER = "Assets";
         string IMPORT_PARENT = "Reallusion";
         string IMPORT_FOLDER = "DataLink_Imports";
+
+        // parent folder for asset saving (in a sub folder) - this should include the created scene
+        string SAVE_FOLDER_PATH = string.Empty;
+        string SCENE_NAME = string.Empty; // new scene would be SAVE_FOLDER_PATH/SCENE_NAME.unity
+                                          // associated assets would be in SAVE_FOLDER_PATH/SCENE_NAME/<asset files>
+
         string fbxPath = string.Empty;
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
         bool importStaging = false;
         bool importIntoScene = false;
+
+        // types for reflection
+        Type HDAdditionalLightData = null;
+        Type LightProxyType = null;
+        Type HDAdditionalCameraData = null;
+        Type CameraProxyType = null;
+        MethodInfo SetupLightMethod = null;
+
+        // animated property flags
+        // transform specific
+        public bool pos_delta = false, rot_delta = false, scale_delta = false;
+        
+        // enabled specific - use in building an activation track
+        public bool active_delta = false;
+        
+        // light specific
+        public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
+
+        // camera specific
+        public bool dof_delta = false;
 
         PackageType packageType = PackageType.NONE;
 
@@ -118,21 +148,20 @@ namespace Reallusion.Import
                 fbxPath = RetrieveDiskAsset(zipFolder, name);
                 Directory.Delete(zipFolder, true);
             }
-
+            
             EditorApplication.update -= WaitForFrames;
             EditorApplication.update += WaitForFrames;
         }
-
-        int frame = 0;
+                
         void WaitForFrames()
         {
-            if (frame < 10)
+            if (waitForFramesBeforeStartingImport > 0)
             {
-                frame++;
+                waitForFramesBeforeStartingImport--;
                 return;
             }
             EditorApplication.update -= WaitForFrames;
-            frame = 0;
+            
             DoImport();
         }
 
@@ -349,7 +378,6 @@ namespace Reallusion.Import
         #endregion Avatar Import
 
         #region Staging Import
-
         public void ImportStaging(string folderPath, UnityLinkManager.JsonStaging stagedManifest)
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
@@ -367,29 +395,23 @@ namespace Reallusion.Import
             }
         }
 
-        #endregion Staging Import
-        
         public void ImportRLX(byte[] rlxBytes)
         {
-            //RLXType rlxType = RLXType.NONE;
-
             int bytePos = 0;
             // header
             const int RLX_ID_LIGHT = 0xCC01;
             const int RLX_ID_CAMERA = 0xCC02;
 
-            int typeFlag = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, 0, 4), UnityLinkManager.SourceEndian.BigEndian);
-            
+            int typeWord = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, 0, 4), UnityLinkManager.SourceEndian.BigEndian);
+
             bytePos += 4;
             //json length
             int jsonLen = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
-            Debug.Log("RLX JSON expected length " + jsonLen + " Available bytes in rlxBytes " + rlxBytes.Length);
 
             bytePos += 4;
             // json data
             byte[] jsonBytes = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, jsonLen);
             string jsonString = Encoding.UTF8.GetString(jsonBytes);
-            Debug.Log(jsonString);
 
             bytePos += jsonLen;
             // frame data length
@@ -399,95 +421,28 @@ namespace Reallusion.Import
             // frame data
             byte[] frameData = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, framesLen);
 
-            UnityLinkManager.JsonLightData jsonLightObject = null;
-            UnityLinkManager.JsonCameraData jsonCameraObject = null;
-
-            //try
-            //{
-            switch (typeFlag)
+            switch (typeWord)
             {
                 case (RLX_ID_CAMERA):
                     {
-                        Debug.LogWarning("Processing Camera");
+                        Debug.Log("Processing Camera");
                         MakeAnimatedCamera(frameData, jsonString);
                         break;
                     }
                 case (RLX_ID_LIGHT):
                     {
-                        Debug.LogWarning("Processing Light");
+                        Debug.Log("Processing Light");
                         MakeAnimatedLight(frameData, jsonString);
                         break;
                     }
-            }
-            //switch (rlxType)
-            //{
-            //    case RLXType.LIGHT:
+                default:
                     {
-                        
-                        //            jsonLightObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightData>(jsonString);
-              //          break;
+                        Debug.LogWarning("Error identifying the staging item type.");
+                        break;
                     }
-                //case RLXType.CAMERA:
-                    {
-                        //              jsonCameraObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonCameraData>(jsonString);
-                 //       break;
-                    }
-                    //}
-                    //}
-                    //catch
-                    //{
-                    //    Debug.LogWarning("Cannot deseriaze embedded json in the RLX file");
-            //}
-            return;
-            List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
-            Stream stream = new MemoryStream(frameData);
-            stream.Position = 0;
-            byte[] frameBytes = new byte[85];
-            while (stream.Read(frameBytes, 0, frameBytes.Length) > 0)
-            {
-                frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
-            }
-
-            Debug.Log("Frames processed " + frames.Count);
-
-            GameObject root = new GameObject("Light_" + jsonLightObject.Name + "_Root");
-            root.transform.position = Vector3.zero;
-            root.transform.rotation = Quaternion.identity;
-            root.AddComponent<Animator>();
-            var data = root.AddComponent<DataLinkActorData>();
-            data.linkId = jsonLightObject.LinkId;
-
-            GameObject target = new GameObject(jsonLightObject.Name);
-
-            if (LightProxyType == null)
-            {
-                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
-                if (LightProxyType == null)
-                {
-                    Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
-                    return;// new List<(GameObject, List<AnimationClip>)> { (null, null) };
-                }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
-                }
-            }
-
-            var proxy = target.AddComponent(LightProxyType);
-
-            target.transform.position = Vector3.zero;
-            target.transform.rotation = Quaternion.identity;
-            target.transform.SetParent(root.transform, true);
-            Light light = target.AddComponent<Light>();
-
-            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
-            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
-            if (jsonLightObject != null)
-            {
-                SetupLight(jsonLightObject, root);
             }
         }
-
+        
         GameObject GetRootSceneObject(string linkId)
         {
             GameObject root = null;
@@ -571,14 +526,20 @@ namespace Reallusion.Import
                     Debug.LogWarning("Cannot create a <CameraProxy> component on the <Light> object.");
                     return;
                 }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <CameraProxy> class: " + CameraProxyType.GetType().FullName);
-                }
             }
 
             target.AddComponent(CameraProxyType);
             target.AddComponent<Camera>();
+
+#if HDRP_10_5_0_OR_NEWER
+            if (HDAdditionalCameraData == null)
+                HDAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalCameraData");
+
+            if (HDAdditionalCameraData != null)
+                if (target.GetComponent(HDAdditionalCameraData) == null) target.AddComponent(HDAdditionalCameraData);
+#elif URP_10_5_0_OR_NEWER
+
+#endif
 
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
@@ -590,6 +551,8 @@ namespace Reallusion.Import
             //{
             //    SetupLight(jsonLightObject, root);
             //}
+
+            SetupCamera(jsonCameraObject, root, clip);
         }
 
         AnimationClip MakeCameraAnimationClipFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedCameraFrames> frames, GameObject target, GameObject root)
@@ -758,7 +721,8 @@ namespace Reallusion.Import
             AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
 
             clip.frameRate = 60f;
-
+            Debug.LogWarning("Calculated Frame Rate = " + (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time);
+            /*
             Debug.LogWarning("Saving RLX animation to Assets/RLX_CAMERA_CLIP.anim");  // investigate not using disk asset
             AssetDatabase.CreateAsset(clip, "Assets/RLX_CAMERA_CLIP.anim");
             AssetDatabase.SaveAssets();
@@ -775,8 +739,52 @@ namespace Reallusion.Import
             {
                 Debug.LogWarning("Failed");
             }
+            */
             return clip;
         }
+
+        void SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
+        {
+            
+                if (LightProxyType == null)
+                {
+                    LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
+                    if (LightProxyType == null)
+                    {
+                        Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
+                        return;
+                    }
+                }
+
+                Component proxy = root.GetComponentInChildren(LightProxyType);
+                if (proxy != null)
+                {
+                    SetupLightMethod = proxy.GetType().GetMethod("SetupCamera",
+                                    BindingFlags.Public | BindingFlags.Instance,
+                                    null,
+                                    CallingConventions.Any,
+                                    new Type[] { typeof(string) },
+                                    null);
+
+                    if (SetupLightMethod == null)
+                    {
+                        Debug.LogWarning("SetupLight MethodInfo cannot be determined");
+                        return;
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                    return;
+                }
+
+                json.dof_delta = dof_delta;
+
+                string jsonString = JsonConvert.SerializeObject(json);
+                SetupLightMethod.Invoke(proxy, new object[] { jsonString, clip });
+            
+        }
+
 
         void MakeAnimatedLight(byte[] frameData, string jsonString)
         {
@@ -803,7 +811,7 @@ namespace Reallusion.Import
                 frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
             }
 
-            Debug.Log("Frames processed " + frames.Count);
+            Debug.Log("MakeAnimatedLight: Frames processed " + frames.Count);
 
             // construct a light object paretented to a dolly object
             GameObject root = GetRootSceneObject(jsonLightObject.LinkId);
@@ -819,15 +827,20 @@ namespace Reallusion.Import
                     Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
                     return;
                 }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().FullName);
-                }
             }
 
             target.AddComponent(LightProxyType);
             target.AddComponent<Light>();
 
+#if HDRP_10_5_0_OR_NEWER
+            if (HDAdditionalLightData == null)
+                HDAdditionalLightData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalLightData");
+
+            if (HDAdditionalLightData != null)
+                if (target.GetComponent(HDAdditionalLightData) == null) target.AddComponent(HDAdditionalLightData);
+#elif URP_10_5_0_OR_NEWER
+
+#endif
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
             target.transform.SetParent(root.transform, true);            
@@ -882,7 +895,7 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.Attenuation - frames[0].Attenuation) > threshold) { att_delta = true; }
                 if (Math.Abs(frame.Darkness - frames[0].Darkness) > threshold) { dark_delta = true; }
             }
-            Debug.LogWarning("*************************************** LAST FRAME TIME: " + frames[frames.Count - 1].ToString());
+            
             List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, active_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
 
             AnimationClip clip = new AnimationClip();
@@ -1101,10 +1114,6 @@ namespace Reallusion.Import
                     Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
                     return;
                 }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
-                }
             }
 
             Component proxy = root.GetComponentInChildren(LightProxyType);
@@ -1122,43 +1131,12 @@ namespace Reallusion.Import
                     Debug.LogWarning("SetupLight MethodInfo cannot be determined");
                     return;
                 }
-                else
-                {
-                    Debug.LogWarning("SetupLight MethodInfo CAN be determined");
-                }
             }
             else
             {
                 Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
                 return;
             }
-
-            /*
-            this.LinkId = string.Empty;
-            this.Name = string.Empty;
-            this.loc = new float[0];
-            this.rot = new float[0];
-            this.sca = new float[0];
-            this.Active = false;
-            this.color = new float[0];
-            this.Multiplier = 0f;
-            this.Type = string.Empty;
-            this.Range = 0f;
-            this.Angle = 0f;
-            this.Falloff = 0f;
-            this.Attenuation = 0f;
-            this.InverseSquare = false;
-            this.Transmission = false;
-            this.IsTube = false;
-            this.TubeLength = 0f;
-            this.TubeRadius = 0f;
-            this.TubeSoftRadius = 0f;
-            this.IsRect = false;
-            this.rect = new float[0];
-            this.CastShadow = false;
-            this.Darkness = 0f;
-            this.FrameCount = 0;
-            */
 
             json.pos_delta = pos_delta;
             json.rot_delta = rot_delta;
@@ -1175,7 +1153,7 @@ namespace Reallusion.Import
             string jsonString = JsonConvert.SerializeObject(json);
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
         }
-
+#endregion Staging Import
 
 
         #region OLD Light Import
@@ -1269,13 +1247,9 @@ namespace Reallusion.Import
             return new List<(GameObject, List<AnimationClip>)> { (null, null) };
         }
 
-        Type LightProxyType = null;
-        Type CameraProxyType = null;
-        MethodInfo SetupLightMethod = null;
-        public bool pos_delta = false, rot_delta = false, scale_delta = false, active_delta = false, color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
+        
 
-
-        #endregion Light Import
+        #endregion OLD Light Import
 
         #region Scene and Timeline
         void CreateSceneAndTimeline()
