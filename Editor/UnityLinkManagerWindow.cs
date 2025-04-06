@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -45,8 +46,8 @@ namespace Reallusion.Import
 
             public Styles()
             {
-                queueItemStyle = new GUIStyle(GUI.skin.label);
-                queueItemStyle.normal.textColor = Color.yellow;
+                queueItemStyle = new GUIStyle(GUI.skin.box);// (GUI.skin.label);
+                queueItemStyle.normal.textColor = Color.yellow;                
             }
         }
 
@@ -68,16 +69,14 @@ namespace Reallusion.Import
         bool foldoutLogArea;
         
         private void OnGUI()
-        {
+        {            
             if (styles == null)
                 styles = new Styles();
 
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
 
-            
-
-            GUILayout.BeginVertical();
+            GUILayout.BeginVertical();            
 
             foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls");
             if (foldoutControlArea)
@@ -86,16 +85,19 @@ namespace Reallusion.Import
             }
 
             foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Scenebuilding tools");
-            if (foldoutControlArea)
+            if (foldoutSceneArea)
             {
                 SceneToolsGUI();
             }
 
             foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs");
-            if (foldoutControlArea)
+            if (foldoutLogArea)
             {
                 LogAreaGUI();
             }
+
+            ExampleShowTabbedArea();
+
             GUILayout.EndVertical();
 
             if (createAfterGUI)
@@ -103,6 +105,150 @@ namespace Reallusion.Import
                 EditorApplication.delayCall += UnityLinkTimeLine.CreateExampleScene;
                 createAfterGUI = false;
             }
+        }
+
+        int toolbarIndex = 0;
+        string[] tabNames = new string[] { "One", "Two", "Three" };
+        void ExampleToolbar()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(2f);
+            GUIStyle tabBarStyle = new GUIStyle(GUI.skin.button);
+            tabBarStyle.margin = new RectOffset(0, 0, 1, 0);
+            using (var check = new EditorGUI.ChangeCheckScope())
+            {
+                toolbarIndex = GUILayout.Toolbar(toolbarIndex, tabNames, tabBarStyle, GUI.ToolbarButtonSize.Fixed, GUILayout.Width(position.width - 14 /3f));
+                if (check.changed)
+                {
+
+                }
+            }
+            GUILayout.Space(4f);
+            GUILayout.EndHorizontal();
+        }
+
+        Rect last;
+        public TabStyles tabStyles;
+        float GUTTER = 2f;
+        float TAB_HEIGHT = 26f;
+        int activeTab = 1;
+        void ExampleShowTabbedArea()
+        {
+            if (Event.current.type == EventType.Repaint)
+            {
+                last = GUILayoutUtility.GetLastRect();
+            }
+
+            Rect areaRect = new Rect(last.xMin, last.yMax + GUTTER, position.width - (GUTTER * 2f), position.height - last.yMax + GUTTER - (GUTTER * 2f));
+
+            string[] titles = new string[] { "One", "Two", "Three", "Four" };
+
+            Texture[] pix = new Texture[]
+            {
+                EditorGUIUtility.IconContent("BoxCollider Icon").image,
+                EditorGUIUtility.IconContent("CapsuleCollider Icon").image,
+                EditorGUIUtility.IconContent("ConfigurableJoint Icon").image,
+                EditorGUIUtility.IconContent("RelativeJoint2D Icon").image
+            };
+
+            activeTab = TabbedArea(activeTab, areaRect, 4, TAB_HEIGHT, titles, pix, 20f, 20f);
+        }
+
+        public class TabStyles
+        {
+            public Vector4 activeBorder;
+            public Vector4 inactiveBorder;
+            public Vector4 ghostBorder;
+            public Vector4 contentBorder;
+
+            public Color outline;
+            public Color ghost;
+
+            public Texture2D activeTex;
+            public Texture2D inactiveTex;
+
+            public TabStyles()
+            {
+                outline = Color.black;
+                ghost = Color.gray * 0.4f;
+
+                activeBorder = new Vector4(1, 1, 1, 0);
+                inactiveBorder = new Vector4(0, 0, 0, 1);
+                ghostBorder = new Vector4(1, 1, 1, 0);
+                contentBorder = new Vector4(1, 0, 1, 1);
+
+                activeTex = TextureColor(Color.gray * 0.55f);
+                inactiveTex = TextureColor(Color.gray * 0.35f);
+            }
+        }
+
+        public int TabbedArea(int TabId, Rect area, int tabCount, float tabHeight, string[] names, Texture[] icons, float iconWidth, float iconHeight)
+        {
+            if (tabStyles == null) tabStyles = new TabStyles();
+
+            // round width down to an integer multiple of tabCount
+            float width = (float)Math.Round(area.width / tabCount, MidpointRounding.AwayFromZero) * tabCount;
+
+            Rect areaRect = new Rect(area.x, area.y, width, area.height);            
+
+            Rect[] tabRects = new Rect[tabCount];
+            float tabWidth = areaRect.width / tabCount;
+            for (int i = 0; i < tabCount; i++)
+            {
+                tabRects[i] = new Rect(tabWidth * i, 0f, tabWidth, TAB_HEIGHT);
+            }
+
+            int TAB_ID = TabId;
+            GUILayout.BeginArea(areaRect, GUI.skin.box);
+            for (int i = 0; i < tabCount; i++)
+            {
+                Rect rect = tabRects[i];
+                Rect centre = new Rect(rect.x + ((rect.width / 2) - (iconWidth / 2)), rect.y + ((rect.height / 2) - (iconHeight / 2)), iconWidth, iconHeight);
+
+                if (i == TAB_ID)
+                {
+                    GUI.DrawTexture(rect, tabStyles.activeTex);
+                    GUI.DrawTexture(rect, tabStyles.activeTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.activeBorder, Vector4.zero);
+                    GUI.Box(centre, icons[i], new GUIStyle());
+                }
+                else
+                {
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex);
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.inactiveBorder, Vector4.zero);
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.ghost, tabStyles.ghostBorder, Vector4.zero);
+                    GUI.Box(centre, icons[i], new GUIStyle());
+                }
+
+                Event mouseEvent = Event.current;
+                if (rect.Contains(mouseEvent.mousePosition))
+                {
+                    if (mouseEvent.type == EventType.MouseDown && mouseEvent.clickCount == 1)
+                    {
+                        TAB_ID = i;
+                        Repaint();
+                    }
+                }
+            }
+            Rect contentRect = new Rect(0, TAB_HEIGHT, areaRect.width, areaRect.height - TAB_HEIGHT);
+            GUI.DrawTexture(contentRect, tabStyles.activeTex);
+            GUI.DrawTexture(contentRect, tabStyles.activeTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.contentBorder, Vector4.zero);
+
+            GUILayout.EndArea();
+            return TAB_ID;
+        }
+
+        public static  Texture2D TextureColor(Color color)
+        {
+            const int size = 3;
+            Texture2D texture = new Texture2D(size, size);
+            Color[] pixels = texture.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = color;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply(true);
+            return texture;
         }
 
         void ControlAreaGUI()
@@ -200,4 +346,12 @@ namespace Reallusion.Import
 
         }
     }
+
+    public class UnityLinkManagerHistoryDropdown : EditorWindow
+    {
+        // dropdown gui that detects active import references in the scene and prompts them along with a list of the previous 10 or so used ones
+
+
+    }
+
 }
