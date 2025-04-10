@@ -101,11 +101,30 @@ namespace Reallusion.Import
             int port = 9334;
 
             client = new TcpClient();
-
+            
             #region connection retry
             int retryCount = 10;
             while (retryCount > 0 && retryConnection)
             {
+                // https://stackoverflow.com/questions/17118632/how-to-set-the-timeout-for-a-tcpclient
+                try
+                {
+                    var result = client.BeginConnect(ipAddress, port, null, null); var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+
+                    if (!success)
+                    {
+                        throw new Exception("Failed to connect.");
+                    }
+
+                    // we have connected
+                    client.EndConnect(result);
+                }
+                catch (Exception e)
+                {
+                    NotifyInternalQueue("Attempting connection... " + e.Message);
+                }
+
+                /*
                 try
                 {
                     client.Connect(ipAddress, port);
@@ -114,7 +133,7 @@ namespace Reallusion.Import
                 {
                     NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
-
+                */
                 if (client.Connected)
                 {
                     retryCount = 0;
@@ -553,7 +572,7 @@ namespace Reallusion.Import
                 if (settings != null)
                 {
                     IsClientLocal = settings.isClientLocal;
-                    remoteHost = settings.lastUsedIP;
+                    remoteHost = settings.lastSuccessfulHost;
                 }
                 reconnect = false;
                 InitConnection();

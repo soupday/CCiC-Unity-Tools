@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using UnityEditor;
@@ -60,6 +61,8 @@ namespace Reallusion.Import
             public GUIStyle selectedLabel;
             public GUIStyle statusLabel;
             public GUIStyle minimalButton;
+            public GUIStyle normalTextField;
+            public GUIStyle errorTextField;
 
             public Styles()
             {
@@ -89,6 +92,11 @@ namespace Reallusion.Import
 
                 minimalButton = new GUIStyle(GUI.skin.label);
                 minimalButton.padding = new RectOffset(0, 0, 1, 0);
+
+                normalTextField = new GUIStyle(EditorStyles.textField);
+
+                errorTextField = new GUIStyle(EditorStyles.textField);
+                errorTextField.normal.background = ImporterWindow.TextureColor(Color.red * 0.35f);
             }
         }
 
@@ -122,8 +130,12 @@ namespace Reallusion.Import
 
             if (settings != null)
             {                
-                remoteHost = settings.lastUsedIP;
+                remoteHost = settings.lastSuccessfulHost;
                 isClientLocal = settings.isClientLocal;
+                if (settings.lastTriedHosts != null)
+                    lastTriedHosts = settings.lastTriedHosts;
+                else
+                    lastTriedHosts = new string[0];
             }
         }
 
@@ -134,6 +146,7 @@ namespace Reallusion.Import
 
         static bool isClientLocal = true;
         static string remoteHost = string.Empty;
+        static string[] lastTriedHosts = new string[0];
         static bool connectInProgress = false;
 
         static RLSettingsObject settings;
@@ -322,9 +335,6 @@ namespace Reallusion.Import
 
         static void StartConnection()
         {
-            // tell the gui to disable the connect button
-            connectInProgress = true;
-
             // if a remote connection is needed then validate the address string as IP
             // if the address string cant be validated check if it can be resolved by Dns
             UnityLinkManager.IsClientLocal = isClientLocal;
@@ -417,7 +427,7 @@ namespace Reallusion.Import
             if (settings != null)
             {
                 // since the last remote ip connected properly, save it in settings
-                settings.lastUsedIP = UnityLinkManager.remoteHost;
+                settings.lastSuccessfulHost = UnityLinkManager.remoteHost;
                 SaveSettings();
             }
             else
@@ -520,7 +530,61 @@ namespace Reallusion.Import
         }
 
         Rect ctrlTextField;
-        public bool historyShown;
+        //public bool historyShown;
+
+        
+
+        public string[] RecordHistory(string[] array,  string newEntry, int max)
+        {
+            if (array == null)
+            {
+                array = new string[0];
+            }
+
+            if (array.Contains(newEntry))
+            {
+                string[] reorderedArray = new string[array.Length];
+                reorderedArray[0] = newEntry;
+                int pos = 1;
+                foreach (string item in array)
+                {
+                    if (!item.Equals(newEntry))
+                    {
+                        reorderedArray[pos++] = item;
+                    }
+                }
+                return reorderedArray;
+            }
+
+            if (array.Length < max) Array.Resize(ref array, array.Length + 1);
+
+            string[] shiftedArray = new string[array.Length];
+            shiftedArray[0] = newEntry;
+            for (int i = 1; i < array.Length; i++)
+            {
+                shiftedArray[i] = array[i - 1];
+            }
+            return shiftedArray;
+        }
+
+        public void RecordHostHistory(string newEntry)
+        {
+            lastTriedHosts = RecordHistory(lastTriedHosts, newEntry, 3);
+            if (settings != null)
+            {
+                settings.lastTriedHosts = lastTriedHosts;
+                SaveSettings();
+            }
+        }
+
+        public bool UpdateRemoteHostName(string newName) // a Func<string, bool> to use as a callback for the field history
+        {
+            remoteHost = newName;
+            GUI.FocusControl("");
+            if (control == Control.InValid) { control = Control.Idle; }
+            Repaint();
+            return true;
+        }
 
         void ControlAreaGUI()
         {
@@ -533,6 +597,7 @@ namespace Reallusion.Import
             else if (!isClientLocal && string.IsNullOrEmpty(remoteHost)) disableButton = true;
 
             EditorGUI.BeginDisabledGroup(disableButton);
+            GUI.SetNextControlName("connectButton");
             if (GUILayout.Button(new GUIContent(UnityLinkManager.IsClientThreadActive ? styles.linkOn : styles.linkOff,
                                                 UnityLinkManager.IsClientThreadActive ? "Disconnect from Cc/iClone" : "Connect to Cc/iClone"),
                                                 new GUIStyle(), GUILayout.Width(64f), GUILayout.Height(64f)))
@@ -544,7 +609,13 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    StartClient();
+                    // tell the gui to disable the connect button
+                    connectInProgress = true;
+                    RecordHostHistory(remoteHost);
+                    GUI.FocusControl("connectButton");
+                    Repaint();
+
+                    EditorApplication.delayCall += StartClient; // ();
                 }
             }
             EditorGUI.EndDisabledGroup();
@@ -569,25 +640,37 @@ namespace Reallusion.Import
                 SaveSettings();
             }
 
-            GUIStyle multiLabelText = isClientLocal ? styles.unselectedLabel : styles.selectedLabel;
-            GUILayout.Label("Remote Server", multiLabelText, GUILayout.Width(110f));
+            GUIStyle conLabelText = isClientLocal ? styles.unselectedLabel : styles.selectedLabel;
+            GUILayout.Label("Remote Server", conLabelText, GUILayout.Width(110f));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             EditorGUI.BeginDisabledGroup(isClientLocal);            
             GUILayout.Label("Remote host");
             GUILayout.Space(8f);
-            GUI.SetNextControlName("remoteHostField");
-            remoteHost = EditorGUILayout.TextField(remoteHost, GUILayout.Width(120f));
+            //GUI.SetNextControlName("remoteHostField");
+            EditorGUI.BeginChangeCheck();
+            remoteHost = EditorGUILayout.TextField(remoteHost, control == Control.InValid ? styles.errorTextField : styles.normalTextField, GUILayout.Width(120f));
             if (Event.current.type == EventType.Repaint)
             {
                 ctrlTextField = GUILayoutUtility.GetLastRect();
             }
-                        
+            if (EditorGUI.EndChangeCheck())
+            {
+                control = Control.Idle;
+                Repaint();
+            }
+            /*         
             if (!isClientLocal && !historyShown && ctrlTextField.Contains(Event.current.mousePosition) && GUI.GetNameOfFocusedControl() == "remoteHostField")
             {
                 historyShown = true;
                 TextFieldHistory.ShowAtPosition(new Rect(ctrlTextField.x, ctrlTextField.y, ctrlTextField.width, ctrlTextField.height), Instance);
+                GUI.FocusControl("remoteHostField");
+            }
+            */
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_dropdown_toggle").image, "Show previous connection attempts"), styles.minimalButton))
+            {
+                TextFieldHistory.ShowAtPosition(new Rect(ctrlTextField.x, ctrlTextField.y, ctrlTextField.width, ctrlTextField.height), UpdateRemoteHostName, lastTriedHosts);
             }
 
             GUILayout.FlexibleSpace();
@@ -635,6 +718,8 @@ namespace Reallusion.Import
             {
                 if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_winbtn_mac_close_h").image, "Abort connection attempt."), styles.minimalButton))
                 {
+                    GUI.FocusControl("connectButton");
+                    Repaint();
                     UnityLinkManager.AbortConnectionAttempt();
                 }
             }
@@ -715,7 +800,9 @@ namespace Reallusion.Import
     {
         static TextFieldHistory textFieldHistory = null;
         static long lastClosedTime;
-        static UnityLinkManagerWindow Instance;
+        //static UnityLinkManagerWindow Instance;
+        static Func<string, bool> CallBack;
+        static string[] Contents;
 
         void OnEnable()
         {
@@ -725,14 +812,16 @@ namespace Reallusion.Import
 
         void OnDisable()
         {
-            Instance.historyShown = false;
+            //Instance.historyShown = false;
             AssemblyReloadEvents.beforeAssemblyReload -= Close;
             textFieldHistory = null;            
         }
 
-        public static bool ShowAtPosition(Rect buttonRect, UnityLinkManagerWindow instance)
+        public static bool ShowAtPosition(Rect buttonRect, Func<string, bool> callBack, string[] contents) //UnityLinkManagerWindow instance)
         {
-            Instance = instance;
+            //Instance = instance;
+            CallBack = callBack;
+            Contents = contents;
             long nowMilliSeconds = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
             bool justClosed = nowMilliSeconds < lastClosedTime + 50;
             if (!justClosed)
@@ -756,9 +845,9 @@ namespace Reallusion.Import
         {
             // Has to be done before calling Show / ShowWithMode
             buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
-
+            
             float width = buttonRect.width;//= 100f; //= 
-            float height = buttonRect.height;//26f; //= 
+            float height = (Contents.Length > 0 ? buttonRect.height * Contents.Length : buttonRect.height) + 4f;//26f; //= 
 
             Vector2 windowSize = new Vector2(width, height);
             ShowAsDropDown(buttonRect, windowSize);
@@ -771,15 +860,55 @@ namespace Reallusion.Import
             GUIUtility.ExitGUI();
         }
 
+        public Styles styles;
+
+        public class Styles
+        {
+            public GUIStyle linestyle;
+            public Texture2D lineTex;
+            public Vector4 border;
+
+            public Styles()
+            {
+                lineTex = ImporterWindow.TextureColor(new Color(0.81f, 0.81f, 0.81f));
+                border = new Vector4(1, 1, 1, 1);
+
+                linestyle = new GUIStyle(GUI.skin.label);                
+                linestyle.normal.textColor = Color.black;
+                linestyle.active.textColor = Color.blue * 0.75f;
+                linestyle.hover.textColor = Color.gray;
+            }
+        }
+
+        public bool RunCallback(Func<string, bool> func, string imput)
+        {
+            bool b = func(imput);
+            return b;
+        }
+
         private void OnGUI()
         {
-            GUIStyle label = new GUIStyle(GUI.skin.label);
-            label.normal.background = Texture2D.whiteTexture;
-            label.normal.textColor = Color.black;
+            if (styles == null)
+                styles = new Styles();
+            Rect r = new Rect(0,0,position.width,position.height);  
+            GUI.DrawTexture(r, styles.lineTex, ScaleMode.StretchToFill, false, 1f, Color.black, styles.border, Vector4.zero);
+            GUI.DrawTexture(r, styles.lineTex);
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("History ... tbd", label);
-            GUILayout.EndHorizontal();
+            GUILayout.BeginVertical();
+            if (Contents.Length > 0)
+            {
+                foreach (string content in Contents)
+                {
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button(content, styles.linestyle))
+                    {
+                        RunCallback(CallBack, content);
+                        Close();
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.EndVertical();
         }
     }
 

@@ -28,6 +28,7 @@ namespace Reallusion.Import
         public bool isClientLocal;
         public string[] recentSceneRefs;
         public string lastUsedFolder;
-        public string lastUsedIP;
+        public string lastSuccessfulHost;
+        public string[] lastTriedHosts;
     }
 }
