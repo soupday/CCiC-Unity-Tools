@@ -716,10 +716,8 @@ namespace Reallusion.Import
             GUILayout.Label(statusText, styles.statusLabel);
             if (control == Control.Connecting)
             {
-                if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_winbtn_mac_close_h").image, "Abort connection attempt."), styles.minimalButton))
+                if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("TestFailed").image, "Abort connection attempt."), styles.minimalButton))
                 {
-                    GUI.FocusControl("connectButton");
-                    Repaint();
                     UnityLinkManager.AbortConnectionAttempt();
                 }
             }
