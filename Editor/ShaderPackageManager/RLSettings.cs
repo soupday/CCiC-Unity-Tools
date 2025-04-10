@@ -196,7 +196,7 @@ namespace Reallusion.Import
                 obj.lastPath = assetPath;
             return obj;
         }
-
+        //
         public static void SaveRLSettingsObject(RLSettingsObject obj)
         {
             string assetPath = AssetDatabase.GetAssetPath(obj);

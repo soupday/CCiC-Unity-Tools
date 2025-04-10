@@ -22,5 +22,12 @@ namespace Reallusion.Import
         public string fullJsonFragment;
         public string lastPath;
         public string toolVersion;
+
+        // live link relevant settings
+        public bool sceneImport;
+        public bool isClientLocal;
+        public string[] recentSceneRefs;
+        public string lastUsedFolder;
+        public string lastUsedIP;
     }
 }

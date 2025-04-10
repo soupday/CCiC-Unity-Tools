@@ -197,7 +197,6 @@ namespace Reallusion.Import
             if (importStaging)
             {
                 //timeLineKitList = ImportLights(fbxPath, QueueItem.Lights.LinkIds);
-
                 ImportStaging(fbxPath, QueueItem.Staging);
             }
 

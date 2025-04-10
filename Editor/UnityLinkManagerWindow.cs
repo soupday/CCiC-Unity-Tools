@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,22 +13,27 @@ namespace Reallusion.Import
     {
         public static UnityLinkManagerWindow Instance;
 
-        [MenuItem("Reallusion/Live Link Manager")]
-        public static void OpenLinkManagerWindow()
-        {
-            OpenWindow();
-        }
+        //[MenuItem("Reallusion/Live Link Manager")]
+        //public static void OpenLinkManagerWindow()
+        //{
+        //    OpenWindow();
+        //}
 
-        [MenuItem("Reallusion/Live Link Manager", true)]
-        public static bool ValidateOpenLinkManagerWindow()
-        {
-            return !EditorWindow.HasOpenInstances<UnityLinkManagerWindow>();
-        }
+        //[MenuItem("Reallusion/Live Link Manager", true)]
+        //public static bool ValidateOpenLinkManagerWindow()
+        //{
+        //    return !EditorWindow.HasOpenInstances<UnityLinkManagerWindow>();
+        //}
 
         public static void OpenWindow()
         {
             if (EditorWindow.HasOpenInstances<UnityLinkManagerWindow>())
             {
+                if (EditorWindow.HasOpenInstances<ImporterWindow>())
+                {
+                    ImporterWindow.Current.activeTab = 2;
+                    ImporterWindow.Current.Repaint();
+                }
                 //Instance = GetWindow<UnityLinkManagerWindow>();
             }
             else
@@ -42,71 +49,96 @@ namespace Reallusion.Import
 
         public class Styles
         {
+            public Texture2D toggleLeft;
+            public Texture2D toggleRight;
+            public Texture2D linkOn;
+            public Texture2D linkOff;
+
             public GUIStyle queueItemStyle;
+            public GUIStyle FoldoutTitleLabel;
+            public GUIStyle unselectedLabel;
+            public GUIStyle selectedLabel;
+            public GUIStyle statusLabel;
+            public GUIStyle minimalButton;
 
             public Styles()
             {
-                queueItemStyle = new GUIStyle(GUI.skin.box);// (GUI.skin.label);
-                queueItemStyle.normal.textColor = Color.yellow;                
+                string[] folders = new string[] { "Assets", "Packages" };
+                toggleLeft = Util.FindTexture(folders, "RLIcon_Toggle_L");
+                toggleRight = Util.FindTexture(folders, "RLIcon_Toggle_R");
+                linkOn = Util.FindTexture(folders, "RLIcon_Link_ON");
+                linkOff = Util.FindTexture(folders, "RLIcon_Link_OFF");
+
+                queueItemStyle = new GUIStyle(GUI.skin.box);
+                queueItemStyle.normal.textColor = Color.yellow;
+
+                FoldoutTitleLabel = new GUIStyle(EditorStyles.foldout);
+                FoldoutTitleLabel.fontSize = 14;
+                FoldoutTitleLabel.fontStyle = FontStyle.BoldAndItalic;
+                FoldoutTitleLabel.onFocused.textColor = Color.white;      
+                FoldoutTitleLabel.focused.textColor = Color.white;
+
+                unselectedLabel = new GUIStyle(GUI.skin.label);
+                unselectedLabel.normal.textColor = Color.white * 0.75f;
+
+                selectedLabel = new GUIStyle(GUI.skin.label);
+                selectedLabel.normal.textColor = new Color(0.5f, 0.75f,  0.06f);
+
+                statusLabel = new GUIStyle(GUI.skin.label);
+                statusLabel.normal.textColor = new Color(0.27f, 0.57f, 0.78f);
+
+                minimalButton = new GUIStyle(GUI.skin.label);
+                minimalButton.padding = new RectOffset(0, 0, 1, 0);
             }
         }
 
         private void OnEnable()
         {
-            Instance = this;
+            FetchSettings();
+            UnityLinkManager.ClientConnected -= ConnectedToserver;
+            UnityLinkManager.ClientConnected += ConnectedToserver;
+            UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            UnityLinkManager.ClientDisconnected += DisconnectedFromServer;
 
+            Instance = this;
+            foldoutControlArea = true;
             UnityLinkManager.AttemptAutoReconnect();
-            UnityLinkManager.CleanupBeforeAssemblyReload();            
+            UnityLinkManager.CleanupBeforeAssemblyReload();
         }
+
 
         private void OnDestroy()
         {
             UnityLinkManager.DisconnectAndStopServer();
         }
 
-        bool foldoutControlArea;
-        bool foldoutSceneArea;
-        bool foldoutLogArea;
-        
-        private void OnGUI()
-        {            
-            if (styles == null)
-                styles = new Styles();
-
-            if (UnityLinkManager.activityQueue == null)
-                UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
-
-            GUILayout.BeginVertical();            
-
-            foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls");
-            if (foldoutControlArea)
+        private void FetchSettings()
+        {
+            if (ImporterWindow.Current != null)
             {
-                ControlAreaGUI();
+                if (ImporterWindow.GeneralSettings != null)
+                    settings = ImporterWindow.GeneralSettings;
             }
 
-            foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Scenebuilding tools");
-            if (foldoutSceneArea)
-            {
-                SceneToolsGUI();
-            }
-
-            foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs");
-            if (foldoutLogArea)
-            {
-                LogAreaGUI();
-            }
-
-            ExampleShowTabbedArea();
-
-            GUILayout.EndVertical();
-
-            if (createAfterGUI)
-            {
-                EditorApplication.delayCall += UnityLinkTimeLine.CreateExampleScene;
-                createAfterGUI = false;
+            if (settings != null)
+            {                
+                remoteHost = settings.lastUsedIP;
+                isClientLocal = settings.isClientLocal;
             }
         }
 
+        private static void SaveSettings()
+        {
+            RLSettings.SaveRLSettingsObject(settings);
+        }
+
+        static bool isClientLocal = true;
+        static string remoteHost = string.Empty;
+        static bool connectInProgress = false;
+
+        static RLSettingsObject settings;
+        
+        #region examples
         int toolbarIndex = 0;
         string[] tabNames = new string[] { "One", "Two", "Three" };
         void ExampleToolbar()
@@ -127,11 +159,34 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
         }
 
+        ExampleTabbedUIWindow exampleWindow;
+
+        void ShowTabbedUI(Rect areaRect)
+        {
+            if (exampleWindow == null) 
+                exampleWindow = ScriptableObject.CreateInstance<ExampleTabbedUIWindow>();
+            Rect newRect = new Rect(areaRect.x, areaRect.y+TAB_HEIGHT, areaRect.width, areaRect.height); 
+            GUILayout.BeginArea(newRect);
+            GUILayout.Label("X");
+            exampleWindow.ASTRING = " NEW STRING";
+            exampleWindow.ShowGUI(); //
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(20f);
+            if (GUILayout.Button("X"))
+            {
+                exampleWindow.createAfterGUI = true;
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+
+
         Rect last;
         public TabStyles tabStyles;
         float GUTTER = 2f;
         float TAB_HEIGHT = 26f;
-        int activeTab = 1;
+        int activeTab = 0;
         void ExampleShowTabbedArea()
         {
             if (Event.current.type == EventType.Repaint)
@@ -152,6 +207,7 @@ namespace Reallusion.Import
             };
 
             activeTab = TabbedArea(activeTab, areaRect, 4, TAB_HEIGHT, titles, pix, 20f, 20f);
+            ShowTabbedUI(areaRect);
         }
 
         public class TabStyles
@@ -250,35 +306,343 @@ namespace Reallusion.Import
             texture.Apply(true);
             return texture;
         }
+        #endregion examples
+
+        static Thread startThread;
+        static void StartClient()
+        {
+            UnityLinkManager.ClientConnected -= ConnectedToserver;
+            UnityLinkManager.ClientConnected += ConnectedToserver;
+
+            UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            UnityLinkManager.ClientDisconnected += DisconnectedFromServer;
+
+            StartConnection();
+        }
+
+        static void StartConnection()
+        {
+            // tell the gui to disable the connect button
+            connectInProgress = true;
+
+            // if a remote connection is needed then validate the address string as IP
+            // if the address string cant be validated check if it can be resolved by Dns
+            UnityLinkManager.IsClientLocal = isClientLocal;
+            if (!UnityLinkManager.IsClientLocal)
+            {
+                bool valid = false;
+                control = Control.Validating;
+
+                Debug.LogWarning("Testing host");
+
+                // validate IP address
+                if (IPAddress.TryParse(remoteHost, out IPAddress ip))
+                {
+                    Debug.LogWarning("IP address is an ip address");
+                    valid = true;
+                    UnityLinkManager.remoteHost = remoteHost;
+                }
+                else
+                {
+                    valid = false;
+                    control = Control.InValid;
+
+                    // attempt dns resolution - using async method (client hangs otherwise)
+                    // https://stackoverflow.com/questions/41348873/limit-dns-gethostaddresses-by-time
+                    try
+                    {
+                        Debug.LogWarning("try Dns resolution async");
+                        var addr = Dns.GetHostAddressesAsync(remoteHost);
+                        bool isTaskComplete = addr.Wait(3000);
+                        if (isTaskComplete)
+                        {
+                            IPAddress[] hosts = addr.Result;
+                            if (hosts.Length > 0)
+                            {
+                                Debug.LogWarning("Dns name resolves async");
+                                valid = true;
+                                UnityLinkManager.remoteHost = hosts[0].MapToIPv4().ToString();
+                            }
+                        }
+                        else // Task timed out
+                        {
+                            Debug.LogWarning("Dns name resolution timed out async");
+                        }
+                    }
+                    catch
+                    {
+                        Debug.LogWarning("Dns name does not resolve async");
+                        valid = false;
+                        control = Control.InValid;
+                    }
+
+                    /*
+                    try
+                    {
+                        IPAddress[] hostaddrs = Dns.GetHostAddresses(remoteHost);
+
+                        if(hostaddrs.Length>0)
+                        {
+                            Debug.LogWarning("Dns name resolves");
+                            valid = true;                            
+                            UnityLinkManager.remoteHost = hostaddrs[0].MapToIPv4().ToString();
+                        }
+                    }
+                    catch
+                    {
+                        Debug.LogWarning("Dns name does not resolve");
+                        valid = false;
+                        control = Control.InValid;
+                    }
+                    */
+                    
+                }
+                connectInProgress = valid;
+                Debug.LogWarning("connectInProgress = " + connectInProgress);
+            }
+            if (connectInProgress)
+            {
+                // tell the gui to show a cancel button in case the IP is wrong
+                control = Control.Connecting;
+                UnityLinkManager.InitConnection();
+            }
+        }
+
+        static void ConnectedToserver(object sender, EventArgs e)
+        {
+            Debug.LogWarning("ConnectedToserver");
+            UnityLinkManager.ClientConnected -= ConnectedToserver;
+            control = Control.Connected;
+            connectInProgress = false;
+            if (settings != null)
+            {
+                // since the last remote ip connected properly, save it in settings
+                settings.lastUsedIP = UnityLinkManager.remoteHost;
+                SaveSettings();
+            }
+            else
+            { 
+                Debug.LogWarning("No settings available");
+            }
+        }
+
+        static void DisconnectedFromServer(object sender, EventArgs e)
+        {
+            Debug.LogWarning("DisconnectedFromServer");
+            UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            control = Control.Idle;
+            connectInProgress = false;
+        }
+
+        bool foldoutControlArea;
+        bool foldoutSceneArea;
+        bool foldoutLogArea;
+
+        float PADDING = 4f;
+        float CONTROL_HEIGHT = 100f;
+        float SCENE_HEIGHT = 100f;
+        float MESSAGE_HEIGHT = 100f;
+
+        static Control control = Control.Idle;
+        public enum Control
+        {
+            Idle,
+            Validating,
+            InValid,
+            Connecting,
+            Connected
+        }
+
+        public void ShowGUI(Rect containerRect)
+        {
+            if (settings == null) FetchSettings();
+
+            if (styles == null)
+                styles = new Styles();
+
+            if (UnityLinkManager.activityQueue == null)
+                UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
+
+            GUILayout.Space(PADDING);
+            GUILayout.BeginVertical();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(PADDING);
+            GUILayout.BeginVertical(GUI.skin.box);
+            foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls", true, styles.FoldoutTitleLabel);
+            if (foldoutControlArea)
+            {
+                ControlAreaGUI();
+            }
+            GUILayout.Space(PADDING);
+            GUILayout.EndVertical();
+            GUILayout.Space(PADDING);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(PADDING);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(PADDING);
+            GUILayout.BeginVertical(GUI.skin.box);
+            foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Scenebuilding tools", true, styles.FoldoutTitleLabel);
+            if (foldoutSceneArea)
+            {
+                SceneToolsGUI();
+            }
+            GUILayout.Space(PADDING);
+            GUILayout.EndVertical();
+            GUILayout.Space(PADDING);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(PADDING);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(PADDING);
+            GUILayout.BeginVertical(GUI.skin.box);
+            foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs", true, styles.FoldoutTitleLabel);
+            if (foldoutLogArea)
+            {
+                LogAreaGUI();
+            }
+            GUILayout.Space(PADDING);
+            GUILayout.EndVertical();
+            GUILayout.Space(PADDING);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(PADDING);
+            GUILayout.EndVertical();
+
+            if (createAfterGUI)
+            {
+                EditorApplication.delayCall += UnityLinkTimeLine.CreateExampleScene;
+                createAfterGUI = false;
+            }
+        }
+
+        Rect ctrlTextField;
+        public bool historyShown;
 
         void ControlAreaGUI()
         {
             GUILayout.BeginHorizontal();
-            EditorGUI.BeginDisabledGroup(UnityLinkManager.IsClientThreadActive);
+
+            GUILayout.BeginVertical();
+            bool disableButton = false;
+
+            if (connectInProgress) disableButton = true;
+            else if (!isClientLocal && string.IsNullOrEmpty(remoteHost)) disableButton = true;
+
+            EditorGUI.BeginDisabledGroup(disableButton);
+            if (GUILayout.Button(new GUIContent(UnityLinkManager.IsClientThreadActive ? styles.linkOn : styles.linkOff,
+                                                UnityLinkManager.IsClientThreadActive ? "Disconnect from Cc/iClone" : "Connect to Cc/iClone"),
+                                                new GUIStyle(), GUILayout.Width(64f), GUILayout.Height(64f)))
             {
-                if (GUILayout.Button("Connect"))
-                {
-                    UnityLinkManager.InitConnection();
-                }
-            }
-            EditorGUI.EndDisabledGroup();
-            EditorGUI.BeginDisabledGroup(!UnityLinkManager.IsClientThreadActive);
-            {
-                if (GUILayout.Button("Disconnect"))
+                if (UnityLinkManager.IsClientThreadActive)
                 {
                     UnityLinkManager.DisconnectAndStopServer();
                     Repaint();
                 }
+                else
+                {
+                    StartClient();
+                }
             }
             EditorGUI.EndDisabledGroup();
-            GUILayout.EndHorizontal();
-            
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();
+            bool maskControls = true;
+            if (control == Control.Idle) maskControls = false;
+            else if (control == Control.InValid) maskControls = false; ;
+
+            EditorGUI.BeginDisabledGroup(maskControls);
+
             GUILayout.BeginHorizontal();
-            UnityLinkManager.IsClientLocal = GUILayout.Toggle(UnityLinkManager.IsClientLocal, "Client and server are on the same host");
+            GUIStyle singleLabelText = isClientLocal ? styles.selectedLabel : styles.unselectedLabel;
+            GUILayout.Label("Local Server", singleLabelText, GUILayout.Width(80f));
+
+            Texture2D toggleImg = isClientLocal ? styles.toggleLeft : styles.toggleRight;
+            if (GUILayout.Button(toggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
+            {
+                isClientLocal = !isClientLocal;
+                settings.isClientLocal = isClientLocal;
+                SaveSettings();
+            }
+
+            GUIStyle multiLabelText = isClientLocal ? styles.unselectedLabel : styles.selectedLabel;
+            GUILayout.Label("Remote Server", multiLabelText, GUILayout.Width(110f));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            UnityLinkManager.ImportIntoCurrentScene = GUILayout.Toggle(UnityLinkManager.ImportIntoCurrentScene, "Import into current scene.");
+            EditorGUI.BeginDisabledGroup(isClientLocal);            
+            GUILayout.Label("Remote host");
+            GUILayout.Space(8f);
+            GUI.SetNextControlName("remoteHostField");
+            remoteHost = EditorGUILayout.TextField(remoteHost, GUILayout.Width(120f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                ctrlTextField = GUILayoutUtility.GetLastRect();
+            }
+                        
+            if (!isClientLocal && !historyShown && ctrlTextField.Contains(Event.current.mousePosition) && GUI.GetNameOfFocusedControl() == "remoteHostField")
+            {
+                historyShown = true;
+                TextFieldHistory.ShowAtPosition(new Rect(ctrlTextField.x, ctrlTextField.y, ctrlTextField.width, ctrlTextField.height), Instance);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
+
+
+            GUILayout.BeginHorizontal();
+            string controlText = "Status: ";
+            string statusText = string.Empty;
+            switch (control)
+            {
+                case Control.Idle:
+                    {
+                        statusText += "Connection idle...";
+                        break;
+                    }
+                case Control.Validating:
+                    {
+                        statusText += "Validatig IP...";
+                        break;
+                    }
+                case Control.InValid:
+                    {
+                        statusText += "Invalid IP...";
+                        break;
+                    }
+                case Control.Connecting:
+                    {
+                        statusText += "Connecting...";
+                        break;
+                    }
+                case Control.Connected:
+                    {
+                        statusText += "Connected...";
+                        break;
+                    }
+            }
+
+            GUILayout.Label(controlText);
+            GUILayout.Label(statusText, styles.statusLabel);
+            if (control == Control.Connecting)
+            {
+                if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_winbtn_mac_close_h").image, "Abort connection attempt."), styles.minimalButton))
+                {
+                    UnityLinkManager.AbortConnectionAttempt();
+                }
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+
             GUILayout.EndHorizontal();
         }
 
@@ -344,6 +708,78 @@ namespace Reallusion.Import
 
             GUILayout.EndScrollView();
 
+        }
+    }
+
+    public class TextFieldHistory : EditorWindow
+    {
+        static TextFieldHistory textFieldHistory = null;
+        static long lastClosedTime;
+        static UnityLinkManagerWindow Instance;
+
+        void OnEnable()
+        {
+            AssemblyReloadEvents.beforeAssemblyReload += Close;
+            hideFlags = HideFlags.DontSave;
+        }
+
+        void OnDisable()
+        {
+            Instance.historyShown = false;
+            AssemblyReloadEvents.beforeAssemblyReload -= Close;
+            textFieldHistory = null;            
+        }
+
+        public static bool ShowAtPosition(Rect buttonRect, UnityLinkManagerWindow instance)
+        {
+            Instance = instance;
+            long nowMilliSeconds = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
+            bool justClosed = nowMilliSeconds < lastClosedTime + 50;
+            if (!justClosed)
+            {
+                //Event.current.Use();
+                if (textFieldHistory == null)
+                    textFieldHistory = ScriptableObject.CreateInstance<TextFieldHistory>();
+                else
+                {
+                    textFieldHistory.Cancel();
+                    return false;
+                }
+
+                textFieldHistory.Init(buttonRect);
+                return true;
+            }
+            return false;
+        }
+        
+        void Init(Rect buttonRect)
+        {
+            // Has to be done before calling Show / ShowWithMode
+            buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
+
+            float width = buttonRect.width;//= 100f; //= 
+            float height = buttonRect.height;//26f; //= 
+
+            Vector2 windowSize = new Vector2(width, height);
+            ShowAsDropDown(buttonRect, windowSize);
+        }
+
+        void Cancel()
+        {
+            Close();
+            GUI.changed = true;
+            GUIUtility.ExitGUI();
+        }
+
+        private void OnGUI()
+        {
+            GUIStyle label = new GUIStyle(GUI.skin.label);
+            label.normal.background = Texture2D.whiteTexture;
+            label.normal.textColor = Color.black;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("History ... tbd", label);
+            GUILayout.EndHorizontal();
         }
     }
 

@@ -59,16 +59,21 @@ namespace Reallusion.Import
         #region Setup
         public static void InitConnection()
         {
+            //if (!IsClientLocal && !validHost) return;
+
             SetupUpdateWorker();
             SetupLogging();
             StartQueue();
             StartClient();
-            UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
+            //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
         }        
         #endregion Setup
         
         #region Client
         public static bool IsClientLocal = true; // need to recall this for auto reconnecting ... tbd
+        public const string localHost = "127.0.0.1";
+        public static string remoteHost = string.Empty;
+        public static bool validHost = false;
         static TcpClient client = null;
         static NetworkStream stream = null;
         static Thread clientThread;
@@ -77,7 +82,10 @@ namespace Reallusion.Import
         static bool retryConnection = true;
         static bool reconnect = false;
         static bool listening = false;
-        
+
+        public static event EventHandler ClientConnected;
+        public static event EventHandler ClientDisconnected;
+
         static void StartClient()
         {
             clientThread = new Thread(new ThreadStart(ClientThread));
@@ -88,8 +96,8 @@ namespace Reallusion.Import
         {
             clientThreadActive = true;
             retryConnection = true;
-
-            IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+            Debug.LogWarning("Parsing: " + (IsClientLocal ? localHost : remoteHost));
+            IPAddress ipAddress = IPAddress.Parse(IsClientLocal ? localHost : remoteHost);
             int port = 9334;
 
             client = new TcpClient();
@@ -129,6 +137,7 @@ namespace Reallusion.Import
                 clientThreadActive = false;
                 NotifyInternalQueue("Unable to connect... ");
                 StopQueue();
+                if (ClientDisconnected != null) ClientDisconnected.Invoke(null, null);
                 return;
             }
             #endregion connection retry
@@ -164,6 +173,7 @@ namespace Reallusion.Import
             stream.Close();
             client.Close();
             clientThreadActive = false;
+            if (ClientDisconnected != null) ClientDisconnected.Invoke(null, null);
         }
 
         static OpCodes opCode = OpCodes.NONE;
@@ -461,6 +471,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static void AbortConnectionAttempt()
+        {
+            NotifyInternalQueue("Aborting connection attempt... ");
+            StopQueue();
+            retryConnection = false;
+            listening = false;
+            reconnect = false;
+
+            if (client.Connected && stream.CanWrite)
+            {
+                stream.Close();
+                client.Close();
+            }
+        }
+
         public static void DisconnectAndStopServer()
         {
             SetConnectedTimeStamp(true);
@@ -524,6 +549,12 @@ namespace Reallusion.Import
             if (IsConnectedTimeStampWithin(new TimeSpan(0, 5, 0)))
             {
                 Debug.Log("OnEnable - Attempting to reconnect");
+                RLSettingsObject settings = RLSettings.FindRLSettingsObject();
+                if (settings != null)
+                {
+                    IsClientLocal = settings.isClientLocal;
+                    remoteHost = settings.lastUsedIP;
+                }
                 reconnect = false;
                 InitConnection();
             }
@@ -602,7 +633,11 @@ namespace Reallusion.Import
                     }
                 case OpCodes.HELLO:
                     {
-                        try { qItem.Hello = JsonConvert.DeserializeObject<JsonHello>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        try
+                        {
+                            qItem.Hello = JsonConvert.DeserializeObject<JsonHello>(dataString);
+                        }
+                        catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
                 case OpCodes.NOTIFY:
@@ -653,6 +688,11 @@ namespace Reallusion.Import
                 case OpCodes.STAGING:
                     {
                         try { qItem.Staging = JsonConvert.DeserializeObject<JsonStaging>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        if (qItem.Staging != null)
+                        {
+                            if (!string.IsNullOrEmpty(qItem.Staging.RemoteId)) { qItem.RemoteId = qItem.Staging.RemoteId; }
+                            qItem.Name = qItem.Staging.Names[0];
+                        }
                         break;
                     }
                 case OpCodes.CAMERA: // ...
@@ -695,7 +735,9 @@ namespace Reallusion.Import
             WriteIncomingLog(dataString, add);
 
             if (add)
+            {
                 activityQueue.Add(qItem);
+            }
             else
             {
                 Debug.LogWarning("Broken Item: " + opCode.ToString());
@@ -813,6 +855,8 @@ namespace Reallusion.Import
                 case OpCodes.HELLO:
                     {
                         SendMessage(OpCodes.HELLO, ClientHelloMessage());
+                        if (ClientConnected != null)
+                            ClientConnected.Invoke(null, null); //non threaded
                         break;
                     }
                 case OpCodes.NOTIFY:
