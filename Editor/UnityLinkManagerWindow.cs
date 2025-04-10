@@ -102,6 +102,8 @@ namespace Reallusion.Import
 
         private void OnEnable()
         {
+            EditorApplication.quitting -= QuitCleanup;
+            EditorApplication.quitting += QuitCleanup;
             FetchSettings();
             UnityLinkManager.ClientConnected -= ConnectedToserver;
             UnityLinkManager.ClientConnected += ConnectedToserver;
@@ -117,7 +119,38 @@ namespace Reallusion.Import
 
         private void OnDestroy()
         {
-            UnityLinkManager.DisconnectAndStopServer();
+            UnityLinkManager.DisconnectFromServer();
+        }
+
+        private void QuitCleanup()
+        {
+            UnityLinkManager.DisconnectFromServer();
+        }
+
+
+        private static void RepaintOnUpdate(bool stop = false)
+        {
+            if (stop)
+            {
+                EditorApplication.update -= UpdateDelegate;
+            }
+            else
+            {
+                EditorApplication.update -= UpdateDelegate;
+                EditorApplication.update += UpdateDelegate;
+            }
+        }
+
+        static double updateInterval = 0.5f;
+        static double lastUpdate;
+        private static void UpdateDelegate()
+        {
+            double current = EditorApplication.timeSinceStartup;
+            if (current > lastUpdate + updateInterval)
+            {
+                ImporterWindow.Current.Repaint();
+                lastUpdate = current;
+            }
         }
 
         private void FetchSettings()
@@ -324,6 +357,8 @@ namespace Reallusion.Import
         static Thread startThread;
         static void StartClient()
         {
+            RepaintOnUpdate();
+
             UnityLinkManager.ClientConnected -= ConnectedToserver;
             UnityLinkManager.ClientConnected += ConnectedToserver;
 
@@ -421,6 +456,7 @@ namespace Reallusion.Import
         static void ConnectedToserver(object sender, EventArgs e)
         {
             Debug.LogWarning("ConnectedToserver");
+            RepaintOnUpdate(stop: true);
             UnityLinkManager.ClientConnected -= ConnectedToserver;
             control = Control.Connected;
             connectInProgress = false;
@@ -439,6 +475,7 @@ namespace Reallusion.Import
         static void DisconnectedFromServer(object sender, EventArgs e)
         {
             Debug.LogWarning("DisconnectedFromServer");
+            RepaintOnUpdate(stop: true);
             UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
             control = Control.Idle;
             connectInProgress = false;
@@ -604,7 +641,7 @@ namespace Reallusion.Import
             {
                 if (UnityLinkManager.IsClientThreadActive)
                 {
-                    UnityLinkManager.DisconnectAndStopServer();
+                    UnityLinkManager.DisconnectFromServer();
                     Repaint();
                 }
                 else

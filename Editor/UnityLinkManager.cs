@@ -109,7 +109,8 @@ namespace Reallusion.Import
                 // https://stackoverflow.com/questions/17118632/how-to-set-the-timeout-for-a-tcpclient
                 try
                 {
-                    var result = client.BeginConnect(ipAddress, port, null, null); var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+                    var result = client.BeginConnect(ipAddress, port, null, null); 
+                    var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
 
                     if (!success)
                     {
@@ -147,9 +148,9 @@ namespace Reallusion.Import
                 Thread.Sleep(500);
             }
 
-            if (!client.Connected) // clean up
+            if (client == null || !client.Connected) // clean up
             {
-                client.Close();
+                if (client != null) client.Close();
                 retryConnection = false;
                 listening = false;
                 reconnect = false;
@@ -498,19 +499,32 @@ namespace Reallusion.Import
             listening = false;
             reconnect = false;
 
+            /*
+            if (stream != null)
+            {
+                stream.Close();
+            }
+
+            if (client != null)
+            {
+                client.Close();
+            }
+            */
+            /*
             if (client.Connected && stream.CanWrite)
             {
                 stream.Close();
                 client.Close();
             }
+            */
         }
 
-        public static void DisconnectAndStopServer()
+        public static void DisconnectFromServer()
         {
             SetConnectedTimeStamp(true);
             NotifyInternalQueue("Closing connection... ");
             StopQueue();
-            SendMessage(OpCodes.STOP);
+            SendMessage(OpCodes.DISCONNECT);
 
             retryConnection = false;
             listening = false;

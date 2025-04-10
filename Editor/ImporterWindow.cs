@@ -1466,7 +1466,7 @@ namespace Reallusion.Import
 
             Current = null;
         }
-
+        
         private void OnDestroy()
         {
             ClearAllData();
