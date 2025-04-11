@@ -24,11 +24,20 @@ namespace Reallusion.Import
         public string toolVersion;
 
         // live link relevant settings
-        public bool sceneImport;
+        // control area
+        public string lastExportPath;
         public bool isClientLocal;
-        public string[] recentSceneRefs;
-        public string lastUsedFolder;
         public string lastSuccessfulHost;
         public string[] lastTriedHosts;
+
+        // scene area
+        public bool importIntoScene;
+        public bool useCurrentScene;
+        public bool addToTimeline;
+
+        public string sceneReference;
+        public string[] recentSceneRefs;
+        public string lastSaveFolder;
+        
     }
 }

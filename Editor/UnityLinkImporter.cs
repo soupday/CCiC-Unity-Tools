@@ -94,8 +94,11 @@ namespace Reallusion.Import
             ZIP = 2,
         }
 
+        public static event EventHandler ImportStarted;
+
         public void Import()
         {
+            if (ImportStarted != null) ImportStarted.Invoke(null, null);
             string assetPath = string.Empty;
             string name = string.Empty;
             switch (opCode)

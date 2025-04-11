@@ -23,8 +23,9 @@ namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
     {
-        public static string SAVE_FOLDER_PATH = string.Empty;
-        public static string SCENE_REFERENCE_STRING = string.Empty;
+        #region TimeLine vars
+        public static string TIMELINE_SAVE_FOLDER = "";
+        public static string SCENE_REFERENCE_STRING = "Default Scene Ref...";
 
         public static string UNITY_FOLDER_PATH { get { return GetUnityFolderPath(); } }
         public static string UNITY_SCENE_PATH { get { return GetUnityScenePath(); } }
@@ -34,8 +35,9 @@ namespace Reallusion.Import
 
         private static string GetUnityFolderPath()
         {
+            if (string.IsNullOrEmpty(TIMELINE_SAVE_FOLDER)) return string.Empty;
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING);
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING);
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
         }
@@ -43,7 +45,7 @@ namespace Reallusion.Import
         private static string GetUnityScenePath()
         {
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING + ".unity");
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING + ".unity");
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
         }
@@ -51,29 +53,40 @@ namespace Reallusion.Import
         private static string GetUnityTimelineAssetPath()
         {
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(SAVE_FOLDER_PATH, SCENE_REFERENCE_STRING, SCENE_REFERENCE_STRING + ".playable");
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING, SCENE_REFERENCE_STRING + ".playable");
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
         }
+        #endregion TimeLine vars
 
         #region Setup
         public static void InitConnection()
         {
-            //if (!IsClientLocal && !validHost) return;
-
+            Debug.LogWarning("Starting InitConnection ");
             SetupUpdateWorker();
             SetupLogging();
-            StartQueue();
+            //StartQueue();
             StartClient();
             //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
-        }        
+        }
         #endregion Setup
-        
+
         #region Client
-        public static bool IsClientLocal = true; // need to recall this for auto reconnecting ... tbd
-        public const string localHost = "127.0.0.1";
-        public static string remoteHost = string.Empty;
-        public static bool validHost = false;
+        public static string PLUGIN_VERSION = "2.2.5";
+
+        public static string EXPORTPATH = "D:/DataLink";        
+        public static bool IS_CLIENT_LOCAL = true; // need to recall this for auto reconnecting ... tbd
+        public const string LOCAL_HOST = "127.0.0.1";
+        public static string REMOTE_HOST = string.Empty;
+                
+        public static bool IMPORT_INTO_SCENE = false;
+        public static bool USE_CURRENT_SCENE = true;
+        public static bool ADD_TO_TIMELINE = true;
+        
+        public static bool timelineSceneCreated = false; // hmm
+
+
+        //public static bool validHost = false;
         static TcpClient client = null;
         static NetworkStream stream = null;
         static Thread clientThread;
@@ -83,8 +96,10 @@ namespace Reallusion.Import
         static bool reconnect = false;
         static bool listening = false;
 
+        private static bool queueIsActive = false;
+
         public static event EventHandler ClientConnected;
-        public static event EventHandler ClientDisconnected;
+        public static event EventHandler ClientDisconnected;        
 
         static void StartClient()
         {
@@ -96,8 +111,8 @@ namespace Reallusion.Import
         {
             clientThreadActive = true;
             retryConnection = true;
-            Debug.LogWarning("Parsing: " + (IsClientLocal ? localHost : remoteHost));
-            IPAddress ipAddress = IPAddress.Parse(IsClientLocal ? localHost : remoteHost);
+            Debug.LogWarning("Parsing: " + (IS_CLIENT_LOCAL ? LOCAL_HOST : REMOTE_HOST));
+            IPAddress ipAddress = IPAddress.Parse(IS_CLIENT_LOCAL ? LOCAL_HOST : REMOTE_HOST);
             int port = 9334;
 
             client = new TcpClient();
@@ -107,6 +122,7 @@ namespace Reallusion.Import
             while (retryCount > 0 && retryConnection)
             {
                 // https://stackoverflow.com/questions/17118632/how-to-set-the-timeout-for-a-tcpclient
+                /*
                 try
                 {
                     var result = client.BeginConnect(ipAddress, port, null, null); 
@@ -124,8 +140,8 @@ namespace Reallusion.Import
                 {
                     NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
-
-                /*
+                */
+                
                 try
                 {
                     client.Connect(ipAddress, port);
@@ -134,7 +150,7 @@ namespace Reallusion.Import
                 {
                     NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
-                */
+                
                 if (client.Connected)
                 {
                     retryCount = 0;
@@ -145,7 +161,7 @@ namespace Reallusion.Import
                     retryCount--;
                 }
 
-                Thread.Sleep(500);
+                Thread.Sleep(50);
             }
 
             if (client == null || !client.Connected) // clean up
@@ -156,7 +172,6 @@ namespace Reallusion.Import
                 reconnect = false;
                 clientThreadActive = false;
                 NotifyInternalQueue("Unable to connect... ");
-                StopQueue();
                 if (ClientDisconnected != null) ClientDisconnected.Invoke(null, null);
                 return;
             }
@@ -365,7 +380,7 @@ namespace Reallusion.Import
             return bytes.ToArray();
         }
 
-        static void NotifyInternalQueue(string message)
+        public static void NotifyInternalQueue(string message)
         {
             if (queueIsActive)
             {
@@ -478,7 +493,7 @@ namespace Reallusion.Import
         static void ServerDisconnect()
         {
             NotifyInternalQueue("Server disconnection received... ");
-            StopQueue();
+            //StopQueue();
 
             retryConnection = false;
             listening = false;
@@ -493,30 +508,12 @@ namespace Reallusion.Import
 
         public static void AbortConnectionAttempt()
         {
+            // end the retry and listening loops so the task runs to the end and closes gracefully
             NotifyInternalQueue("Aborting connection attempt... ");
-            StopQueue();
+            //StopQueue();
             retryConnection = false;
             listening = false;
             reconnect = false;
-
-            /*
-            if (stream != null)
-            {
-                stream.Close();
-            }
-
-            if (client != null)
-            {
-                client.Close();
-            }
-            */
-            /*
-            if (client.Connected && stream.CanWrite)
-            {
-                stream.Close();
-                client.Close();
-            }
-            */
         }
 
         public static void DisconnectFromServer()
@@ -585,8 +582,8 @@ namespace Reallusion.Import
                 RLSettingsObject settings = RLSettings.FindRLSettingsObject();
                 if (settings != null)
                 {
-                    IsClientLocal = settings.isClientLocal;
-                    remoteHost = settings.lastSuccessfulHost;
+                    IS_CLIENT_LOCAL = settings.isClientLocal;
+                    REMOTE_HOST = settings.lastSuccessfulHost;
                 }
                 reconnect = false;
                 InitConnection();
@@ -788,10 +785,7 @@ namespace Reallusion.Import
             }
             return sizeBytes;
         }
-
-        public static string EXPORTPATH = "F:/DataLink";
-        public static string PLUGIN_VERSION = "2.2.5";
-
+        
         static string ClientHelloMessage()
         {
             string jsonString = string.Empty;
@@ -811,7 +805,7 @@ namespace Reallusion.Import
             hello.Plugin = PLUGIN_VERSION;
             hello.Exe = EditorApplication.applicationPath;
             hello.Package = Pipeline.VERSION;
-            hello.LocalClient = IsClientLocal;
+            hello.LocalClient = IS_CLIENT_LOCAL;
 
             // Debug.LogWarning(Application.productName);  // update plugin to use the project name (Application.productName)
 
@@ -822,11 +816,6 @@ namespace Reallusion.Import
         #endregion Recieved data handling
 
         #region Activity queue handling
-
-        private static bool queueIsActive = false;
-        public static bool ImportIntoCurrentScene = false;
-        public static bool timelineSceneCreated = false;
-
         public static void StartQueue()
         {
             if (!queueIsActive)
@@ -1010,15 +999,12 @@ namespace Reallusion.Import
                 
         static void ImportItem(QueueItem item)
         {
-            UnityLinkImporter Importer = new UnityLinkImporter(item, ImportIntoCurrentScene);
+            UnityLinkImporter Importer = new UnityLinkImporter(item, IMPORT_INTO_SCENE);
             Importer.Import();
         }
-
-
         #endregion  Activity queue handling
 
-        #region Class data
-               
+        #region Class data               
         public static CharacterInfo.ExportType ParseExportType(string value)
         {
             return Enum.TryParse(value, out CharacterInfo.ExportType result) ? result : CharacterInfo.ExportType.UNKNOWN;            
@@ -2395,7 +2381,6 @@ namespace Reallusion.Import
         #endregion Log Writer
 
         #region Update worker
-
         static bool recreateLogFolder = false;
 
         private static void SetupUpdateWorker()
