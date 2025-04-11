@@ -307,10 +307,15 @@ namespace Reallusion.Import
             {
                 if (settings != null)
                 {
+                    Debug.LogWarning("Import Started Event  settings != null");
                     settings.sceneReference = UnityLinkManager.SCENE_REFERENCE_STRING;
                     settings.recentSceneRefs = recentSceneRefs;
                     settings.lastSaveFolder = UnityLinkManager.TIMELINE_SAVE_FOLDER;
                     Instance.RecordSceneRefHistory(UnityLinkManager.SCENE_REFERENCE_STRING);
+                }
+                else
+                {
+                    Debug.LogWarning("Import Started Event  settings == null");
                 }
             }
         }
@@ -686,54 +691,58 @@ namespace Reallusion.Import
 
                 //ADD_TO_TIMELINE
                 GUILayout.BeginHorizontal();
-                Texture2D timelineToggleImg = UnityLinkManager.ADD_TO_TIMELINE ? styles.toggleLeft : styles.toggleRight;
+                Texture2D timelineToggleImg = UnityLinkManager.ADD_TO_TIMELINE ? styles.toggleRight : styles.toggleLeft;
                 if (GUILayout.Button(timelineToggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
                 {
                     UnityLinkManager.ADD_TO_TIMELINE = !UnityLinkManager.ADD_TO_TIMELINE;
                     settings.isClientLocal = UnityLinkManager.ADD_TO_TIMELINE;
                     SaveSettings();
                 }
-                GUIStyle timelineImp = UnityLinkManager.ADD_TO_TIMELINE ? styles.unselectedLabel : styles.selectedLabel;
+                GUIStyle timelineImp = UnityLinkManager.ADD_TO_TIMELINE ? styles.selectedLabel : styles.unselectedLabel;
                 GUILayout.Label("Add to TimeLine", timelineImp, GUILayout.Width(100f));
                 GUILayout.EndHorizontal();
 
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Scene Ref", GUILayout.Width(90f));
-                UnityLinkManager.SCENE_REFERENCE_STRING = GUILayout.TextField(UnityLinkManager.SCENE_REFERENCE_STRING, GUILayout.Width(180f));
-                if (Event.current.type == EventType.Repaint)
+                if (UnityLinkManager.ADD_TO_TIMELINE)
                 {
-                    sceneRefTextField = GUILayoutUtility.GetLastRect();
-                }
-                if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_dropdown_toggle").image, "Show previously used scene referecnes"), styles.minimalButton))
-                {
-                    TextFieldHistory.ShowAtPosition(new Rect(sceneRefTextField.x, sceneRefTextField.y, sceneRefTextField.width, sceneRefTextField.height), UpdateSceneRef, recentSceneRefs);
-                }
-                GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Scene Ref", GUILayout.Width(90f));
+                    UnityLinkManager.SCENE_REFERENCE_STRING = GUILayout.TextField(UnityLinkManager.SCENE_REFERENCE_STRING, GUILayout.Width(180f));
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        sceneRefTextField = GUILayoutUtility.GetLastRect();
+                    }
+                    if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_dropdown_toggle").image, "Show previously used scene referecnes"), styles.minimalButton))
+                    {
+                        TextFieldHistory.ShowAtPosition(new Rect(sceneRefTextField.x, sceneRefTextField.y, sceneRefTextField.width, sceneRefTextField.height), UpdateSceneRef, recentSceneRefs);
+                    }
+                    GUILayout.EndHorizontal();
 
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Save Folder", GUILayout.Width(90f));
-                if (GUILayout.Button(EditorGUIUtility.IconContent("d_FolderOpened Icon").image, GUILayout.Width(20f), GUILayout.Height(20f)))
-                {
-                    string initialFolder = string.IsNullOrEmpty(UnityLinkManager.TIMELINE_SAVE_FOLDER) ? "Assets" : UnityLinkManager.TIMELINE_SAVE_FOLDER;
-                    string proposed = EditorUtility.OpenFolderPanel("Parent Folder For Scene and Assets", initialFolder, "");
-                    if (!string.IsNullOrEmpty(proposed)) UnityLinkManager.TIMELINE_SAVE_FOLDER = proposed;
-                }
-                //EditorGUI.BeginDisabledGroup(true);
-                string savePath = string.IsNullOrEmpty(UnityLinkManager.UNITY_FOLDER_PATH) ? "Assets" : UnityLinkManager.UNITY_FOLDER_PATH;
-                EditorGUILayout.SelectableLabel(savePath, EditorStyles.textField, GUILayout.Width(180f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
-                //GUILayout.TextField(UnityLinkManager.UNITY_FOLDER_PATH, GUILayout.Width(180f));
-                //EditorGUI.EndDisabledGroup();
-                GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Save Folder", GUILayout.Width(90f));
+                    if (GUILayout.Button(EditorGUIUtility.IconContent("d_FolderOpened Icon").image, GUILayout.Width(20f), GUILayout.Height(20f)))
+                    {
+                        string initialFolder = string.IsNullOrEmpty(UnityLinkManager.TIMELINE_SAVE_FOLDER) ? "Assets" : UnityLinkManager.TIMELINE_SAVE_FOLDER;
+                        string proposed = EditorUtility.OpenFolderPanel("Parent Folder For Scene and Assets", initialFolder, "");
+                        if (!string.IsNullOrEmpty(proposed)) UnityLinkManager.TIMELINE_SAVE_FOLDER = proposed;
+                    }
+                    //EditorGUI.BeginDisabledGroup(true);
+                    string savePath = string.IsNullOrEmpty(UnityLinkManager.UNITY_FOLDER_PATH) ? "Assets" : UnityLinkManager.UNITY_FOLDER_PATH;
+                    EditorGUILayout.SelectableLabel(savePath, EditorStyles.textField, GUILayout.Width(180f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                    //GUILayout.TextField(UnityLinkManager.UNITY_FOLDER_PATH, GUILayout.Width(180f));
+                    //EditorGUI.EndDisabledGroup();
+                    GUILayout.EndHorizontal();
 
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Create New Scene"))
-                {
-                    createSceneAfterGUI = true;
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Create New Scene"))
+                    {
+                        createSceneAfterGUI = true;
+                    }
+                    GUILayout.Space(8f);
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.Space(8f);
-                GUILayout.EndHorizontal();
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
+                
             }
         }
 

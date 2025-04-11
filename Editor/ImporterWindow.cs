@@ -499,6 +499,8 @@ namespace Reallusion.Import
             if (tabStyles == null) tabStyles = new TabStyles();
             if (tabCont == null) tabCont = new TabContents();
 
+            tabStyles.FixMeh();
+
             Rect areaRect = new Rect(0f, 0f, position.width, position.height);
             
             activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true);
@@ -2103,6 +2105,8 @@ namespace Reallusion.Import
                 inactiveTex = TexCol(Color.gray * 0.35f);
                 
                 iconStyle = new GUIStyle();
+
+                FixMeh();
             }
 
             private Texture2D TexCol(Color color)
@@ -2117,6 +2121,18 @@ namespace Reallusion.Import
                 texture.SetPixels(pixels);
                 texture.Apply(true);
                 return texture;
+            }
+
+            public void FixMeh()
+            {
+                if (!activeTex)
+                {
+                    activeTex = TexCol(Color.gray * 0.55f);
+                }
+                if (!inactiveTex)
+                {
+                    inactiveTex = TexCol(Color.gray * 0.35f);
+                }
             }
         }
 
