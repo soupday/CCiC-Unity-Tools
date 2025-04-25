@@ -277,6 +277,7 @@ namespace Reallusion.Import
 
         private void InitData()
         {
+            MonitorConnection();
             SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
             UpdateManager.TryPerformUpdateChecks();
             CheckAvailableAddons();
@@ -503,7 +504,7 @@ namespace Reallusion.Import
 
             Rect areaRect = new Rect(0f, 0f, position.width, position.height);
             
-            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true);
+            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, datalinkActive, RectHandler);
             
             Rect contentRect = new Rect(0, TAB_HEIGHT, position.width, position.height - TAB_HEIGHT);
                         
@@ -613,7 +614,7 @@ namespace Reallusion.Import
             physicsAfterGUI = false;
             processAnimationsAfterGUI = false;
 
-            CheckDragAndDrop();
+            //CheckDragAndDrop();
 
             //OnGUIIconArea(iconBlock);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
@@ -2141,12 +2142,16 @@ namespace Reallusion.Import
             private Texture2D iconAvatarTab;
             private Texture2D iconPropTab;
             private Texture2D iconLinkTab;
+            private Texture2D iconLinkConnected;
+            private Texture2D iconLinkDisconnected;
             private Texture2D iconSettingsTab;
 
             public int tabCount;
             public string[] toolTips;
             public Texture[] icons;
-
+            public int overrideTab;
+            public Texture[] overrideIcons;
+            
             public TabContents()
             {
                 string[] folders = new string[] { "Assets", "Packages" };
@@ -2154,6 +2159,8 @@ namespace Reallusion.Import
                 iconAvatarTab = Util.FindTexture(folders, "RLIcon-Avatar_G");
                 iconPropTab = Util.FindTexture(folders, "RLIcon-Prop_G");
                 iconLinkTab = Util.FindTexture(folders, "RLIcon-Link_G");
+                iconLinkConnected = Util.FindTexture(folders, "RLIcon-Link_CON_G");
+                iconLinkDisconnected = Util.FindTexture(folders, "RLIcon-Link_DIS_G");
                 iconSettingsTab = Util.FindTexture(folders, "RLIcon_Camera");
 
                 tabCount = 4;
@@ -2165,10 +2172,16 @@ namespace Reallusion.Import
                     iconLinkTab,
                     iconSettingsTab
                 };
+                overrideTab = 2;
+                overrideIcons = new Texture[]
+                {
+                    iconLinkConnected,
+                    iconLinkDisconnected
+                };
             }
         }
-
-        public int TabbedArea(int TabId, Rect area, int tabCount, float tabHeight, string[] toolTips, Texture[] icons, float iconWidth, float iconHeight, bool fullWindow)
+        // can override a single tab with icons based on a bool
+        public int TabbedArea(int TabId, Rect area, int tabCount, float tabHeight, string[] toolTips, Texture[] icons, float iconWidth, float iconHeight, bool fullWindow, int overrideTab = -1, Texture[] overrideIcons = null, bool overrideBool = false, Func<Rect, int, bool> RectHandler = null)
         {
             if (tabStyles == null) tabStyles = new TabStyles();
             Rect areaRect;
@@ -2184,12 +2197,12 @@ namespace Reallusion.Import
                 areaRect = area;
             }
 
-
             Rect[] tabRects = new Rect[tabCount];
             float tabWidth = (float)Math.Round (areaRect.width / tabCount, mode: MidpointRounding.AwayFromZero);
             for (int i = 0; i < tabCount; i++)
             {
                 tabRects[i] = new Rect(tabWidth * i, 0f, tabWidth, tabHeight);
+                if (RectHandler != null) RectHandler(tabRects[i], i); // callback to handle interaction with the tab rect, used for drag and drop
             }
 
             int TAB_ID = TabId;
@@ -2199,18 +2212,20 @@ namespace Reallusion.Import
                 Rect rect = tabRects[i];
                 Rect centre = new Rect(rect.x + ((rect.width / 2) - (iconWidth / 2)), rect.y + ((rect.height / 2) - (iconHeight / 2)), iconWidth, iconHeight);
 
+                Texture icon = i == overrideTab ? (overrideBool ? overrideIcons[0] : overrideIcons[1]) : icons[i];
+                // if we arent overriding the icons on a single tab, then the default is icon = icons[i]
                 if (i == TAB_ID)
                 {
                     GUI.DrawTexture(rect, tabStyles.activeTex);
                     GUI.DrawTexture(rect, tabStyles.activeTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.activeBorder, Vector4.zero);
-                    GUI.Box(centre, new GUIContent(icons[i], toolTips[i]), tabStyles.iconStyle);
+                    GUI.Box(centre, new GUIContent(icon, toolTips[i]), tabStyles.iconStyle);
                 }
                 else
                 {
                     GUI.DrawTexture(rect, tabStyles.inactiveTex);
                     GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.inactiveBorder, Vector4.zero);
                     GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.ghost, tabStyles.ghostBorder, Vector4.zero);
-                    GUI.Box(centre, new GUIContent(icons[i], toolTips[i]), tabStyles.iconStyle);
+                    GUI.Box(centre, new GUIContent(icon, toolTips[i]), tabStyles.iconStyle);
                 }
 
                 Event mouseEvent = Event.current;
@@ -2230,6 +2245,59 @@ namespace Reallusion.Import
 
             GUILayout.EndArea();
             return TAB_ID;
+        }
+
+        public bool RectHandler(Rect rect, int TabId)
+        {
+            Event e = Event.current;
+            if (rect.Contains(e.mousePosition))
+            {
+                switch (e.type)
+                {
+                    case EventType.DragUpdated:
+
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+                        break;
+
+                    case EventType.DragPerform:
+
+                        UnityEngine.Object[] refs = DragAndDrop.objectReferences;
+                        if (DragAndDrop.objectReferences.Length > 0)
+                        {
+                            Debug.Log("Tab Id: " + TabId);
+                            //CharacterInfo obj = (CharacterInfo)DragAndDrop.GetGenericData("DragTypeExampleString");
+                            //Debug.Log("Tab Id: " + TabId +  " Character Name: " + obj.CharacterName);
+                            //Debug.Log(refs[0].name);
+                        }
+                        DragAndDrop.AcceptDrag();
+                        break;
+                }
+            }
+            return false;
+        }
+
+        public void MonitorConnection()
+        {
+            UnityLinkManager.ClientConnected -= ConnectedToserver;
+            UnityLinkManager.ClientConnected += ConnectedToserver;
+            UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            UnityLinkManager.ClientDisconnected += DisconnectedFromServer;
+        }
+
+        public bool datalinkActive = false;
+
+        public void ConnectedToserver(object Sender, EventArgs e)
+        {
+            datalinkActive = true;
+            //UnityLinkManager.ClientConnected -= ConnectedToserver;
+            //Repaint();
+        }
+
+        public void DisconnectedFromServer(object Sender, EventArgs e)
+        {
+            datalinkActive = false;
+            //UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            //Repaint();
         }
     }
 }

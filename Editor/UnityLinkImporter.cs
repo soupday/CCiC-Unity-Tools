@@ -20,6 +20,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using System.Reflection;
+using UnityEngine.SceneManagement;
 
 namespace Reallusion.Import
 {
@@ -47,6 +48,9 @@ namespace Reallusion.Import
         bool importProp = false;
         bool importStaging = false;
         bool importIntoScene = false;
+        bool addToTimeLine = false;
+        PlayableDirector selectedTimeline = null;
+        string saveFolder = string.Empty;
 
         // types for reflection
         Type HDAdditionalLightData = null;
@@ -54,6 +58,7 @@ namespace Reallusion.Import
         Type HDAdditionalCameraData = null;
         Type CameraProxyType = null;
         MethodInfo SetupLightMethod = null;
+        MethodInfo SetupCameraMethod = null;
 
         // animated property flags
         // transform specific
@@ -71,19 +76,74 @@ namespace Reallusion.Import
         PackageType packageType = PackageType.NONE;
 
         #region Import Preparation
-        public UnityLinkImporter(UnityLinkManager.QueueItem item, bool sceneImport)
+        public UnityLinkImporter(UnityLinkManager.QueueItem item)//, bool sceneImport)
         {
             QueueItem = item;
             opCode = QueueItem.OpCode;
-            importIntoScene = sceneImport;
+            importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
+            addToTimeLine = UnityLinkManager.ADD_TO_TIMELINE;
+            selectedTimeline = UnityLinkManager.SCENE_TIMELINE_ASSET;
 
-            if (string.IsNullOrEmpty(item.RemoteId))
+            if (importIntoScene)
             {
-                packageType = PackageType.DISK;
-            }
-            else
-            {
-                packageType = PackageType.ZIP;
+                if (addToTimeLine)
+                {
+                    bool haveTimeLine = false;
+                    // got the selected timeline
+                    if (selectedTimeline == null || selectedTimeline.playableAsset == null)
+                    {
+                        if (UnityLinkTimeLine.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
+                        {
+                            UnityLinkManager.SCENE_TIMELINE_ASSET = sceneTimeLine;
+                            selectedTimeline = sceneTimeLine;
+                            haveTimeLine = true;
+                        }
+                        else if (UnityLinkTimeLine.TryCreateTimeLine(out PlayableDirector newTimeLine)) // if nothing in scene create one in default save location
+                        {
+                            UnityLinkManager.SCENE_TIMELINE_ASSET = newTimeLine;
+                            selectedTimeline = newTimeLine;
+                            haveTimeLine = true;
+                        }
+                        else
+                        {
+                            // fail
+                        }
+
+                        if (haveTimeLine)
+                        {
+                            // set the save folder to be the same as the saved locaion of the timeline asset
+                            saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
+                        }
+                        else
+                        {
+                            saveFolder = null;
+                        }
+                    }
+                    else
+                    {
+                        saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
+                    }
+                }
+                else
+                {
+                    // scene only import, requires that the anmim files for staging imports preserved in
+                    // a folder in the same parent folder as the scene.unity file called DataLink_Imports/<scene name>/
+
+                    Scene current = EditorSceneManager.GetActiveScene();
+                    string sceneName = current.name;
+                    string scenePAth = current.path;
+
+                   //EditorSceneManager.
+                }
+
+                if (string.IsNullOrEmpty(item.RemoteId))
+                {
+                    packageType = PackageType.DISK;
+                }
+                else
+                {
+                    packageType = PackageType.ZIP;
+                }
             }
         }
 
@@ -168,19 +228,20 @@ namespace Reallusion.Import
             DoImport();
         }
 
+        List<(GameObject, List<AnimationClip>, bool)> timelineKitList;
+
         void DoImport()
         {
             AssetDatabase.Refresh();
-            //GameObject prefab = null;
-
+            /*
             if (importIntoScene && !UnityLinkManager.timelineSceneCreated)
             {
                 Debug.LogWarning("Creating new scene");
                 CreateSceneAndTimeline();
             }
+            */
 
-            (GameObject, List<AnimationClip>) timelineKit = (null, null);
-            List<(GameObject, List<AnimationClip>)> timeLineKitList = new List<(GameObject, List<AnimationClip>)>();
+            timelineKitList = new List<(GameObject, List<AnimationClip>, bool)>();
 
             if (importMotion)
             {
@@ -189,24 +250,27 @@ namespace Reallusion.Import
 
             if (importAvatar)
             {
-                timelineKit = ImportAvatar(fbxPath, QueueItem.Character.LinkId);
+                ImportAvatar(fbxPath, QueueItem.Character.LinkId);
             }
 
             if (importProp)
             {
-                timelineKit = ImportProp(fbxPath, QueueItem.Prop.LinkId);
+                ImportProp(fbxPath, QueueItem.Prop.LinkId);
             }
 
             if (importStaging)
-            {
-                //timeLineKitList = ImportLights(fbxPath, QueueItem.Lights.LinkIds);
+            {                
                 ImportStaging(fbxPath, QueueItem.Staging);
             }
 
             if (importIntoScene)
             {
-                AddToSceneAndTimeLine(timelineKit);
-                SelectTimeLineObjectAndShowWindow();
+                foreach (var item in timelineKitList)
+                {
+                    UnityLinkTimeLine.AddToSceneAndTimeLine(item);
+                }
+                //AddToSceneAndTimeLine(timelineKit);
+                //SelectTimeLineObjectAndShowWindow();
             }
         }
         #endregion Import Preparation
@@ -313,9 +377,9 @@ namespace Reallusion.Import
         #endregion Asset Retrieval
 
         #region Prop Import
-        public (GameObject, List<AnimationClip>) ImportProp(string fbxPath, string linkId)
+        public void ImportProp(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
             Debug.Log("Creating new characterinfo with guid " + guid);
             Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
@@ -341,14 +405,14 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            return (prefab, animGuidsForTimeLine);
+            timelineKitList.Add((prefab, animGuidsForTimeLine, true));
         }
         #endregion Prop Import
 
         #region Avatar Import
-        public (GameObject, List<AnimationClip>) ImportAvatar(string fbxPath, string linkId)
+        public void ImportAvatar(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return (null, null); }
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
             Debug.Log("Creating new characterinfo with guid " + guid);
             Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
@@ -375,7 +439,7 @@ namespace Reallusion.Import
                 ImporterWindow.Current.RefreshCharacterList();
 
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            return (prefab, animGuidsForTimeLine);
+            timelineKitList.Add((prefab, animGuidsForTimeLine, true));
         }
         #endregion Avatar Import
 
@@ -547,17 +611,17 @@ namespace Reallusion.Import
             target.transform.rotation = Quaternion.identity;
             target.transform.SetParent(root.transform, true);
 
-            AnimationClip clip = MakeCameraAnimationClipFromFramesForObject(jsonString, frames, target, root);
-            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
-            //if (jsonLightObject != null)
-            //{
-            //    SetupLight(jsonLightObject, root);
-            //}
-
-            SetupCamera(jsonCameraObject, root, clip);
+            AnimationClip clip = MakeCameraAnimationClipFromFramesForObject(frames, target, root);
+            
+            if (jsonCameraObject != null)
+            {
+                clip.name = jsonCameraObject.LinkId;
+                SaveAnimationClip(clip);
+                SetupCamera(jsonCameraObject, root, clip);
+            }
         }
 
-        AnimationClip MakeCameraAnimationClipFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedCameraFrames> frames, GameObject target, GameObject root)
+        AnimationClip MakeCameraAnimationClipFromFramesForObject(List<UnityLinkManager.DeserializedCameraFrames> frames, GameObject target, GameObject root)
         {
             /*
              * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
@@ -742,49 +806,60 @@ namespace Reallusion.Import
                 Debug.LogWarning("Failed");
             }
             */
+            
             return clip;
         }
 
         void SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
         {
-            
-                if (LightProxyType == null)
+            if (CameraProxyType == null)
+            {
+                CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
+                if (CameraProxyType == null)
                 {
-                    LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
-                    if (LightProxyType == null)
-                    {
-                        Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
-                        return;
-                    }
-                }
-
-                Component proxy = root.GetComponentInChildren(LightProxyType);
-                if (proxy != null)
-                {
-                    SetupLightMethod = proxy.GetType().GetMethod("SetupCamera",
-                                    BindingFlags.Public | BindingFlags.Instance,
-                                    null,
-                                    CallingConventions.Any,
-                                    new Type[] { typeof(string) },
-                                    null);
-
-                    if (SetupLightMethod == null)
-                    {
-                        Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                        return;
-                    }
+                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class.");
+                    return;
                 }
                 else
                 {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                    Debug.LogWarning("Found " + CameraProxyType.GetType().ToString());
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Already had " + CameraProxyType.GetType().ToString());
+            }
+
+            Component proxy = root.GetComponentInChildren(CameraProxyType);
+            if (proxy != null)
+            {
+                SetupCameraMethod = proxy.GetType().GetMethod("SetupCamera",
+                                    BindingFlags.Public | BindingFlags.Instance,
+                                    null,
+                                    CallingConventions.Any,
+                                    new Type[] { typeof(string), typeof(AnimationClip) },
+                                    null);
+
+                if (SetupCameraMethod == null)
+                {
+                    Debug.LogWarning("SetupLight MethodInfo cannot be determined");
                     return;
                 }
+            }
+            else
+            {
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                return;
+            }
 
-                json.dof_delta = dof_delta;
+            json.dof_delta = dof_delta;
 
-                string jsonString = JsonConvert.SerializeObject(json);
-                SetupLightMethod.Invoke(proxy, new object[] { jsonString, clip });
-            
+            string jsonString = JsonConvert.SerializeObject(json);
+            SetupCameraMethod.Invoke(proxy, new object[] { jsonString, clip });
+
+            List<AnimationClip> clips = new List<AnimationClip>();
+            clips.Add(clip);
+            timelineKitList.Add((root, clips, false));
         }
 
 
@@ -848,10 +923,12 @@ namespace Reallusion.Import
             target.transform.SetParent(root.transform, true);            
 
             AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
-            //if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
+
             if (jsonLightObject != null)
             {
-                SetupLight(jsonLightObject, root);
+                clip.name = jsonLightObject.LinkId;
+                SaveAnimationClip(clip);
+                SetupLight(jsonLightObject, root, clip);
             }
         }
 
@@ -1086,27 +1163,10 @@ namespace Reallusion.Import
             }
 
             clip.frameRate = 60f;
-
-            Debug.LogWarning("Saving RLX animation to Assets/RLX_LIGHT_CLIP.anim");  // investigate not using disk asset
-            AssetDatabase.CreateAsset(clip, "Assets/RLX_LIGHT_CLIP.anim");
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            List<AnimationClip> clips = new List<AnimationClip>();
-            clips.Add(clip);
-            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
-            try
-            {
-                AddToSceneAndTimeLine((root, clips), false); // add to existing timeline track as overide?
-
-            }
-            catch
-            {
-                Debug.LogWarning("Failed");
-            }
             return clip;
         }
 
-        void SetupLight(UnityLinkManager.JsonLightData json, GameObject root)
+        void SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)
         {
             if (LightProxyType == null)
             {
@@ -1154,8 +1214,33 @@ namespace Reallusion.Import
 
             string jsonString = JsonConvert.SerializeObject(json);
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
+
+            List<AnimationClip> clips = new List<AnimationClip>();
+            clips.Add(clip);
+            timelineKitList.Add((root, clips, false));
         }
-#endregion Staging Import
+
+        void SaveAnimationClip(AnimationClip clip)
+        {
+            if (!string.IsNullOrEmpty(saveFolder))
+            {
+                string clipAssetPath = saveFolder + "/" + clip.name + ".anim";
+
+                Debug.LogWarning("Saving RLX animation to " + clipAssetPath);
+                if (File.Exists(clipAssetPath))
+                {
+                    AssetDatabase.SaveAssetIfDirty(clip);
+                }
+                else
+                {
+                    AssetDatabase.CreateAsset(clip, clipAssetPath);
+                }
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+        }
+
+        #endregion Staging Import
 
 
         #region OLD Light Import
@@ -1243,17 +1328,16 @@ namespace Reallusion.Import
             if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
             if (jsonObject != null)
             {
-                SetupLight(jsonObject, root);
+                //SetupLight(jsonObject, root);
             }
 
             return new List<(GameObject, List<AnimationClip>)> { (null, null) };
-        }
-
-        
+        }       
 
         #endregion OLD Light Import
 
         #region Scene and Timeline
+        /*
         void CreateSceneAndTimeline()
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
@@ -1344,6 +1428,7 @@ namespace Reallusion.Import
             director.SetGenericBinding(newTrack, sceneObject);
 
         }
+        */
         #endregion Scene and Timeline
 
         #region Keyframe Reduction

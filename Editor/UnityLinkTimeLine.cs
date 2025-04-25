@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.Timeline;
@@ -14,8 +15,8 @@ namespace Reallusion.Import
 {
     public class UnityLinkTimeLine
     {
-        #region Scene and Timeline
-
+        #region depracated
+        /*
         public static GameObject GetTimeLineObject() // find a timeline object corresponding to the current scene ref, one or make a new one.
         {
             PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
@@ -50,14 +51,138 @@ namespace Reallusion.Import
             return null;
         }
 
+
+        void CreateSceneAndTimeline()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+
+            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
+            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
+
+            // PlayableGraph graph = PlayableGraph.Create(); // ...
+
+            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
+            director.playableAsset = timeline;
+
+
+            UnityLinkManager.timelineSceneCreated = true;
+        }
+
+
+        TimelineEditorWindow timelineEditorWindow = null;
+
+        void SelectTimeLineObjectAndShowWindow()
+        {
+            Selection.activeObject = UnityLinkManager.timelineObject;
+
+            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            {
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+            else
+            {
+                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
+                timelineEditorWindow.locked = false;
+                Selection.activeObject = UnityLinkManager.timelineObject;
+                timelineEditorWindow.Repaint();
+                timelineEditorWindow.locked = true;
+            }
+        }
+        */
+        #endregion depracated
+
+        #region Scene and Timeline
+        // initiated from ui
+        public static void CreateTimelineAsset()
+        {
+            string gameObjectName = "RL_TimeLine_Object (" + UnityLinkManager.TIMELINE_REFERENCE_STRING + ")";
+            GameObject existingTimelineObject = GameObject.Find(gameObjectName);
+            GameObject timelineObject;
+            if (existingTimelineObject == null)
+                timelineObject = new GameObject(gameObjectName);
+            else
+                timelineObject = existingTimelineObject;
+
+            PlayableDirector director = timelineObject.GetComponent<PlayableDirector>();
+            if (director == null)
+                director = timelineObject.AddComponent<PlayableDirector>();
+
+            string timelineFolder = Path.Combine(UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath(), UnityLinkManager.TIMELINE_REFERENCE_STRING);
+
+            string timelinePath = timelineFolder + "/" + UnityLinkManager.TIMELINE_REFERENCE_STRING + ".playable";
+            timelinePath = timelinePath.Replace('\\', '/');
+
+            bool createAsset = true;
+            TimelineAsset timeline;
+            if (director.playableAsset != null)
+            {
+                if (AssetDatabase.GetAssetPath(director.playableAsset).Equals(timelinePath))
+                {
+                    createAsset = false;
+                }
+            }
+
+            if (createAsset)
+            {
+                // if there is an asset at the expected path
+                TimelineAsset t = (TimelineAsset)AssetDatabase.LoadAssetAtPath(timelinePath, typeof(TimelineAsset));
+                if (t == null)
+                {
+                    timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+                    //string timelineFolderPath = Path.GetDirectoryName(timelinePath);
+                    CheckUnityPath(timelineFolder);//(timelineFolderPath);
+                    AssetDatabase.CreateAsset(timeline, timelinePath);
+                }
+                else
+                    timeline = t;
+                director.playableAsset = timeline;
+            }
+        }
+
+        public static bool TryGetSceneTimeLine(out PlayableDirector director)
+        {
+            director = null;
+            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
+            if (directors.Length > 0)
+            {
+                foreach (var d in directors) // return first playable director with a valid timeline asset
+                {
+                    if (d.playableAsset != null)
+                    {
+                        director = d;
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool TryCreateTimeLine(out PlayableDirector director)
+        {
+            director = null;
+            
+            return false;
+        }
+
         public static void CreateExampleScene()
         {
+            /*
             if (EditorSceneManager.GetActiveScene().isDirty)
             {
                 if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             }
 
-            if (EditorSceneManager.GetActiveScene().name.Equals(UnityLinkManager.SCENE_REFERENCE_STRING))
+            if (EditorSceneManager.GetActiveScene().name.Equals(UnityLinkManager.TIMELINE_REFERENCE_STRING))
             {
                 // dont create a new scene or prompt for a re-use/renew of scene
                 GameObject go = GetTimeLineObject();
@@ -71,6 +196,7 @@ namespace Reallusion.Import
                 EditorSceneManager.SaveScene(scene, UnityLinkManager.UNITY_SCENE_PATH);
                 GetTimeLineObject();
             }
+            */
         }
 
         public static void CheckUnityPath(string path) // and create them in the AssetDatabase if needed
@@ -97,77 +223,23 @@ namespace Reallusion.Import
             }
         }
 
-        public static void CreateTimelineInScene()
+        // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
+        // TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+
+        public static void AddToSceneAndTimeLine((GameObject, List<AnimationClip>, bool) objectTuple)
         {
-
-        }
-
-        void CreateSceneAndTimeline()
-        {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-
-            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
-            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
-
-            // PlayableGraph graph = PlayableGraph.Create(); // ...
-
-            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
-            director.playableAsset = timeline;
-
-
-            UnityLinkManager.timelineSceneCreated = true;
-        }
-
-        TimelineEditorWindow timelineEditorWindow = null;
-
-        void SelectTimeLineObjectAndShowWindow()
-        {
-            Selection.activeObject = UnityLinkManager.timelineObject;
-
-            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
+            GameObject sceneObject = objectTuple.Item3 ? GameObject.Instantiate(objectTuple.Item1) : objectTuple.Item1;
+            sceneObject.transform.position = Vector3.zero;
+            sceneObject.transform.rotation = Quaternion.identity;
+           
+            if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-            else
-            {
-                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-        }
-
-        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple, bool createInScene = true)
-        {
-            GameObject sceneObject;
-            if (createInScene)
-            {
-                Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
-                sceneObject = GameObject.Instantiate(objectTuple.Item1);
-                sceneObject.transform.position = Vector3.zero;
-                sceneObject.transform.rotation = Quaternion.identity;
-            }
-            else
-            {
-                sceneObject = objectTuple.Item1;
+                Debug.LogWarning("Cannot add to timeline.");
+                return;
             }
 
-            PlayableDirector director;
-            if (UnityLinkManager.timelineObject == null)
-            {
-                director = (PlayableDirector)GameObject.FindFirstObjectByType(typeof(PlayableDirector));
-            }
-            else
-            {
-                director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
-            }
+            PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
             AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
             AnimationClip clipToUse = null;
@@ -190,7 +262,24 @@ namespace Reallusion.Import
             clip.duration = clip.duration / clip.timeScale;
             Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
             director.SetGenericBinding(newTrack, sceneObject);
+            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+            ShowTimeLineWindow(director);
+        }
 
+        public static void ShowTimeLineWindow(PlayableDirector director)
+        {
+            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            {
+                Debug.LogWarning("TimelineEditorWindow is open");                
+            }
+            else
+            {
+                Debug.LogWarning("TimelineEditorWindow is not open");
+                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+            }
+            EditorWindow.GetWindow<TimelineEditorWindow>().Show();
+            Selection.activeGameObject = director.gameObject;
+            
         }
         #endregion Scene and Timeline
 

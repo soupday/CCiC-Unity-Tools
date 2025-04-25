@@ -542,8 +542,29 @@ namespace Reallusion.Import
             }
             else
             {
-                UpdateManager.activePipeline = InstalledPipeline.Builtin;
-                UpdateManager.activeVersion = new Version(UpdateManager.emptyVersion);
+                // failover based on defines (which wont cope with simultaneous installs of pipelines for varying quality levels) for edge cases when RenderPipelineManager.currentPipeline becomes null
+                Debug.LogWarning("DetermineActivePipelineVersion failing over to Pipeline.GetRenderPipeline");
+                RenderPipeline pipeline = Pipeline.GetRenderPipeline();
+                if (pipeline == RenderPipeline.HDRP)
+                {
+                    string version = packageList.ToList().Find(p => p.name.Equals(hdrpPackage)).version;
+                    UpdateManager.activePipeline = InstalledPipeline.HDRP;
+                    UpdateManager.activeVersion = new Version(version);
+                    UpdateManager.activePackageString = hdrpPackage;
+                }
+                else if (pipeline == RenderPipeline.URP)
+                {
+                    string version = packageList.ToList().Find(p => p.name.Equals(urpPackage)).version;
+                    UpdateManager.activePipeline = InstalledPipeline.URP;
+                    UpdateManager.activeVersion = new Version(version);
+                    UpdateManager.activePackageString = urpPackage;
+                }
+                else if (pipeline == RenderPipeline.Builtin)
+                {
+                    // now it really is builtin
+                    UpdateManager.activePipeline = InstalledPipeline.Builtin;
+                    UpdateManager.activeVersion = new Version(UpdateManager.emptyVersion);
+                }
             }
 
             UpdateManager.platformRestriction = PlatformRestriction.None;

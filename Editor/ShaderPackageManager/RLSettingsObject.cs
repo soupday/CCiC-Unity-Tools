@@ -26,7 +26,7 @@ namespace Reallusion.Import
         // live link relevant settings
         // control area
         public string lastExportPath;
-        public bool isClientLocal;
+        public bool isClientLocal = true;
         public string lastSuccessfulHost;
         public string[] lastTriedHosts;
 
@@ -38,6 +38,5 @@ namespace Reallusion.Import
         public string sceneReference;
         public string[] recentSceneRefs;
         public string lastSaveFolder;
-        
     }
 }

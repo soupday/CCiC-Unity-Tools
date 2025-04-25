@@ -16,36 +16,54 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using UnityEngine.Playables;
 //using System.Drawing.Printing;
 //using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
-    {
+    { 
         #region TimeLine vars
+        // timeline creation only
         public static string TIMELINE_SAVE_FOLDER = "";
-        public static string SCENE_REFERENCE_STRING = "Default Scene Ref...";
+        public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }        
+        public static string TIMELINE_DEFAULT_REFERENCE_STRING = "Timeline Name"; // retain default so UI can see it has been changed before allowing creation
+        public static string TIMELINE_REFERENCE_STRING = TIMELINE_DEFAULT_REFERENCE_STRING;
+        // selected timeline asset - updated by the rowgui level selection in TimeLineTreeView
+        [SerializeField]
+        public static PlayableDirector SCENE_TIMELINE_ASSET;
+        [SerializeField]
+        public static string SCENE_TIMELINE_ASSET_NAME = "UNSELECTED"; // this updates the info text field at the top of the Import controls
 
-        public static string UNITY_FOLDER_PATH { get { return GetUnityFolderPath(); } }
-        public static string UNITY_SCENE_PATH { get { return GetUnityScenePath(); } }
-        public static string TIMELINE_ASSET_PATH { get { return GetUnityTimelineAssetPath(); } }
+        //public static string UNITY_FOLDER_PATH { get { return GetUnityFolderPath(); } }
+        //public static string UNITY_SCENE_PATH { get { return GetUnityScenePath(); } }
+        //public static string TIMELINE_ASSET_PATH { get { return GetUnityTimelineAssetPath(); } }
 
-        public static GameObject timelineObject;
+        //public static GameObject timelineObject;
 
         private static string GetUnityFolderPath()
         {
             if (string.IsNullOrEmpty(TIMELINE_SAVE_FOLDER)) return string.Empty;
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING);
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, TIMELINE_REFERENCE_STRING);
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
+        }
+
+        private static string GetDefaultFullFolderPath()
+        {
+            string defaultPath = "Assets/Reallusion/DataLink_Imports";
+            string fullPath = defaultPath.UnityAssetPathToFullPath();
+            Debug.LogWarningFormat("GetDefaultFullFolderPath " + fullPath);
+            return fullPath;
+
         }
 
         private static string GetUnityScenePath()
         {
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING + ".unity");
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, TIMELINE_REFERENCE_STRING + ".unity");
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
         }
@@ -53,7 +71,7 @@ namespace Reallusion.Import
         private static string GetUnityTimelineAssetPath()
         {
             string dataPath = Application.dataPath;
-            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, SCENE_REFERENCE_STRING, SCENE_REFERENCE_STRING + ".playable");
+            string fullPath = Path.Combine(TIMELINE_SAVE_FOLDER, TIMELINE_REFERENCE_STRING, TIMELINE_REFERENCE_STRING + ".playable");
             string UnityPath = fullPath.Substring(dataPath.Length - 6, fullPath.Length - dataPath.Length + 6);
             return UnityPath.Replace('\\', '/');
         }
@@ -73,8 +91,15 @@ namespace Reallusion.Import
 
         #region Client
         public static string PLUGIN_VERSION = "2.2.5";
-
-        public static string EXPORTPATH = "D:/DataLink";        
+        public static string DEFAULT_EXPORTPATH { get { return GetDefaultExportPath(); } }
+        private static string GetDefaultExportPath()
+        {
+            string datapath = Application.dataPath;
+            string defaultpath = Path.Combine(Path.GetDirectoryName(datapath), "RL_DataLink");
+            if (!Directory.Exists(defaultpath)) { Directory.CreateDirectory(defaultpath); }
+            return defaultpath;
+        }
+        public static string EXPORTPATH = "";        
         public static bool IS_CLIENT_LOCAL = true; // need to recall this for auto reconnecting ... tbd
         public const string LOCAL_HOST = "127.0.0.1";
         public static string REMOTE_HOST = string.Empty;
@@ -93,7 +118,7 @@ namespace Reallusion.Import
         static bool clientThreadActive = false;
         public static bool IsClientThreadActive {  get {  return clientThreadActive; } }
         static bool retryConnection = true;
-        static bool reconnect = false;
+        public static bool reconnect = false;
         static bool listening = false;
 
         private static bool queueIsActive = false;
@@ -572,7 +597,7 @@ namespace Reallusion.Import
             Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
         }
 
-        // Automated reconnection for assembly reloads        
+                // Automated reconnection for assembly reloads        
         public static void AttemptAutoReconnect()
         {
             Debug.Log("OnEnable - AutoReconnect");
@@ -593,8 +618,8 @@ namespace Reallusion.Import
                 Debug.Log("OnEnable - Not AutoReconnect-ing");
             }
         }
-
-        const string connectPrefString = "RL_CC_Server_Disconnect_Timestamp";
+        
+        public const string connectPrefString = "RL_CC_Server_Disconnect_Timestamp";
 
         static void SetConnectedTimeStamp(bool disconnect = false)  
         {
@@ -999,7 +1024,7 @@ namespace Reallusion.Import
                 
         static void ImportItem(QueueItem item)
         {
-            UnityLinkImporter Importer = new UnityLinkImporter(item, IMPORT_INTO_SCENE);
+            UnityLinkImporter Importer = new UnityLinkImporter(item);//, IMPORT_INTO_SCENE);
             Importer.Import();
         }
         #endregion  Activity queue handling
