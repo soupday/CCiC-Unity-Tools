@@ -128,7 +128,8 @@ namespace Reallusion.Import
                 else
                     lastTriedHosts = new string[0];
 
-                // scene area
+                // import area
+                UnityLinkManager.IMPORT_DESTINATION_FOLDER = settings.importDestinationFolder;
                 UnityLinkManager.IMPORT_INTO_SCENE = settings.importIntoScene;
                 UnityLinkManager.USE_CURRENT_SCENE = settings.useCurrentScene;
                 UnityLinkManager.ADD_TO_TIMELINE = settings.addToTimeline;
@@ -767,17 +768,30 @@ namespace Reallusion.Import
 
         void ImportControlsGUI()
         {
-            /*
+            GUILayout.Space(2f);
+
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("PIPE"))
+            string importTooltip = "Folder within the Unity project to use as the parent import folder for live link imports.";
+            GUILayout.Label(new GUIContent("Import Folder", importTooltip), GUILayout.Width(85f));
+            if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER)) UnityLinkManager.IMPORT_DESTINATION_FOLDER = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_FolderOpened Icon").image, importTooltip), GUILayout.Width(20f), GUILayout.Height(20f)))
             {
-                Debug.Log(UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline.GetType().ToString());
-                //UnityEngine.Rendering.RenderPipeline r = UnityEngine.Rendering.RenderPipelineManager.currentPipeline;
-                Debug.Log(UnityEngine.Rendering.RenderPipelineManager.currentPipeline.GetType().ToString());
+                string initialFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+                string proposed = EditorUtility.OpenFolderPanel("Import folder for assets [MUST BE INSIDE PROJECT]", initialFolder, "");
+                if (!string.IsNullOrEmpty(proposed) && proposed.StartsWith(Application.dataPath))
+                {
+                    UnityLinkManager.IMPORT_DESTINATION_FOLDER = proposed;
+                    settings.importDestinationFolder = proposed;
+                }
             }
+            // display only
+            bool importPathExists = Directory.Exists(UnityLinkManager.IMPORT_DESTINATION_FOLDER);
+            string importPath = UnityLinkManager.IMPORT_DESTINATION_FOLDER.StartsWith(Application.dataPath) ? UnityLinkManager.IMPORT_DESTINATION_FOLDER.FullPathToUnityAssetPath() : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+            EditorGUILayout.SelectableLabel(importPath, importPathExists ? styles.normalTextField : styles.errorTextField, GUILayout.Width(247f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
             GUILayout.EndHorizontal();
-            */
-            //
+
+            GUILayout.Space(2f);
+
             GUILayout.BeginHorizontal();
             int lines = 2;
             string text = string.Empty;
@@ -792,6 +806,9 @@ namespace Reallusion.Import
             EditorGUILayout.SelectableLabel(text, styles.textFieldStyle, GUILayout.Width(360f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));                        
 
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(2f);
+
             // IMPORT_INTO_SCENE
             GUILayout.BeginHorizontal();            
             Texture2D sceneImpToggleImg = UnityLinkManager.IMPORT_INTO_SCENE ? styles.toggleRight : styles.toggleLeft;
@@ -812,7 +829,7 @@ namespace Reallusion.Import
                 GUILayout.Space(12f);
 
                 GUILayout.BeginVertical();
-                GUILayout.Space(4f);
+                GUILayout.Space(2f);
                 GUILayout.BeginHorizontal();
                 /*
                 GUIStyle useSceneLabelText = UnityLinkManager.USE_CURRENT_SCENE ? styles.selectedLabel : styles.unselectedLabel;
@@ -845,7 +862,7 @@ namespace Reallusion.Import
                 EditorGUI.EndDisabledGroup();
                 GUILayout.EndHorizontal();
 
-                GUILayout.Space(4f);
+                GUILayout.Space(2f);
 
                 //ADD_TO_TIMELINE
                 GUILayout.BeginHorizontal();
@@ -953,7 +970,11 @@ namespace Reallusion.Import
                     {
                         string initialFolder = string.IsNullOrEmpty(UnityLinkManager.TIMELINE_SAVE_FOLDER) ? UnityLinkManager.TIMELINE_DEFAULT_SAVE_FOLDER : UnityLinkManager.TIMELINE_SAVE_FOLDER;
                         string proposed = EditorUtility.OpenFolderPanel("Folder For TimeLine Asset [MUST BE INSIDE PROJECT]", initialFolder, "");
-                        if (!string.IsNullOrEmpty(proposed) && proposed.StartsWith(Application.dataPath)) UnityLinkManager.TIMELINE_SAVE_FOLDER = proposed;
+                        if (!string.IsNullOrEmpty(proposed) && proposed.StartsWith(Application.dataPath))
+                        {
+                            UnityLinkManager.TIMELINE_SAVE_FOLDER = proposed;
+                            settings.lastSaveFolder = proposed;
+                        }
                     }
                     // display only
                     bool savePathExists = Directory.Exists(UnityLinkManager.TIMELINE_SAVE_FOLDER);

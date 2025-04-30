@@ -23,10 +23,16 @@ using UnityEngine.Playables;
 namespace Reallusion.Import
 {
     public class UnityLinkManager : Editor
-    { 
+    {
+        #region Import
+        public static string IMPORT_DESTINATION_FOLDER = string.Empty;
+        public static string IMPORT_DEFAULT_DESTINATION_FOLDER { get {  return GetDefaultFullFolderPath(); } }
+        public static string STAGING_IMPORT_SUBFOLDER = "Staging Imports";
+        #endregion Import
+
         #region TimeLine vars
         // timeline creation only
-        public static string TIMELINE_SAVE_FOLDER = "";
+        public static string TIMELINE_SAVE_FOLDER = string.Empty;
         public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }        
         public static string TIMELINE_DEFAULT_REFERENCE_STRING = "Timeline Name"; // retain default so UI can see it has been changed before allowing creation
         public static string TIMELINE_REFERENCE_STRING = TIMELINE_DEFAULT_REFERENCE_STRING;

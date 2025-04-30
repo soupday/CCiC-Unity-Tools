@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -136,7 +137,7 @@ namespace Reallusion.Import
                 {
                     timeline = ScriptableObject.CreateInstance<TimelineAsset>();
                     //string timelineFolderPath = Path.GetDirectoryName(timelinePath);
-                    CheckUnityPath(timelineFolder);//(timelineFolderPath);
+                    UnityLinkImporter.CheckUnityPath(timelineFolder);//(timelineFolderPath);
                     AssetDatabase.CreateAsset(timeline, timelinePath);
                 }
                 else
@@ -199,40 +200,18 @@ namespace Reallusion.Import
             */
         }
 
-        public static void CheckUnityPath(string path) // and create them in the AssetDatabase if needed
-        {
-            string[] strings = path.Split(new char[] { '\\', '/' });
-            if (!strings[0].Equals("Assets", StringComparison.InvariantCultureIgnoreCase))
-            {
-                Debug.LogWarning("Not a Unity path.");
-            }
-            if (strings.Length == 1) return; // just Assets
 
-            string pwd = strings[0];
-            string parentFolder = pwd;
-            for (int i = 1; i < strings.Length; i++)
-            {
-                pwd += "/" + strings[i];
-                if (!AssetDatabase.IsValidFolder(pwd))
-                {
-                    Debug.LogWarning("Creating " + pwd);
-                    AssetDatabase.CreateFolder(parentFolder, strings[i]);
-                    AssetDatabase.Refresh();
-                }
-                parentFolder = pwd;
-            }
-        }
 
         // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
         // TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
 
-        public static void AddToSceneAndTimeLine((GameObject, List<AnimationClip>, bool) objectTuple)
+        public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string) objectTuple)
         {
-            Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
-            GameObject sceneObject = objectTuple.Item3 ? GameObject.Instantiate(objectTuple.Item1) : objectTuple.Item1;
+            Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
+            GameObject sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
             sceneObject.transform.position = Vector3.zero;
             sceneObject.transform.rotation = Quaternion.identity;
-           
+
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
                 Debug.LogWarning("Cannot add to timeline.");
@@ -241,27 +220,137 @@ namespace Reallusion.Import
 
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
-            AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
-            AnimationClip clipToUse = null;
-            // find suitable aniamtion clip (should be the first non T-Pose)
-            foreach (AnimationClip animClip in objectTuple.Item2)
+
+            if (objectTuple.Item1 == TrackType.AnimationTrack)
             {
-                if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
+                AnimationTrack workingtrack = null;
+
+                var tracks = timeline.GetOutputTracks();
+                foreach (TrackAsset track in tracks)
                 {
-                    continue;
+                    if (track.name.EndsWith(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
+                    {
+                        workingtrack = track as AnimationTrack;
+                        break;
+                    }
+                }
+
+                if (workingtrack == null)
+                {
+                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item4);
                 }
                 else
                 {
-                    clipToUse = animClip;
+                    // purge bound clips
+                    var clips = workingtrack.GetClips();
+                    if (clips != null)
+                    {
+                        foreach (var c in clips)
+                        {
+                            workingtrack.DeleteClip(c);
+                        }
+                    }
                 }
+
+                //AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name + "_" + objectTuple.Item4);
+                AnimationClip clipToUse = null;
+                // find suitable aniamtion clip (should be the first non T-Pose)
+                foreach (AnimationClip animClip in objectTuple.Item3)
+                {
+                    if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        clipToUse = animClip;
+                    }
+                }
+
+                TimelineClip clip = workingtrack.CreateClip(clipToUse); //newTrack.CreateClip(clipToUse);
+                clip.start = 0f;
+                clip.timeScale = 1f;
+                clip.duration = clip.duration / clip.timeScale;
+                Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
+                director.SetGenericBinding(workingtrack, sceneObject);
             }
 
-            TimelineClip clip = newTrack.CreateClip(clipToUse);
-            clip.start = 0f;
-            clip.timeScale = 1f;
-            clip.duration = clip.duration / clip.timeScale;
-            Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
-            director.SetGenericBinding(newTrack, sceneObject);
+            if (objectTuple.Item1 == TrackType.ActivationTrack)
+            {
+                ActivationTrack workingtrack = null;
+
+                var tracks = timeline.GetOutputTracks();
+                foreach (TrackAsset track in tracks)
+                {
+                    if (track.name.EndsWith(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
+                    {
+                        workingtrack = track as ActivationTrack;
+                        break;
+                    }
+                }
+
+                if (workingtrack == null)
+                {
+                    workingtrack = timeline.CreateTrack<ActivationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item4);
+                }
+                else
+                {
+                    // purge bound clips
+                    var clips = workingtrack.GetClips();
+                    if (clips != null)
+                    {
+                        foreach (var c in clips)
+                        {
+                            workingtrack.DeleteClip(c);
+                        }
+                    }
+                }
+
+                foreach (AnimationClip animClip in objectTuple.Item3)
+                {
+                    var bindings = AnimationUtility.GetCurveBindings(animClip);
+                    var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
+
+                    var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
+                    bool enabled = false;
+                    bool addClip = false;
+                    float start = 0f;
+                    float duration = 0f;
+                    foreach(Keyframe keyframe in curve.keys)
+                    {
+                        if (!enabled)
+                        {
+                            if (keyframe.value == 1)
+                            {
+                                enabled = true;
+                                start = keyframe.time;
+                            }
+                        }
+
+                        if (enabled)
+                        {
+                            if (keyframe.value == 0)
+                            {
+                                enabled = false;
+                                duration = keyframe.time - start;
+                                addClip = true;
+                            }
+                        }
+
+                        if (addClip)
+                        {
+                            TimelineClip t = workingtrack.CreateDefaultClip();
+                            t.start = start;
+                            t.duration = duration;
+                            addClip = false;
+                        }
+
+                    }
+                }
+
+                director.SetGenericBinding(workingtrack, sceneObject);
+            }
+
             TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
             ShowTimeLineWindow(director);
         }
@@ -283,5 +372,13 @@ namespace Reallusion.Import
         }
         #endregion Scene and Timeline
 
+        #region Enum
+        public enum TrackType
+        {
+            AnimationTrack,
+            ActivationTrack,
+            AudioTrack
+        }
+        #endregion Enum
     }
 }

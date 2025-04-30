@@ -1270,7 +1270,8 @@ namespace Reallusion.Import
         public static string UnityAssetPathToFullPath(this string str)
         {
             string datapath = Application.dataPath;
-            return datapath.Remove(datapath.Length - 6, 6) + str;
+            string result = datapath.Remove(datapath.Length - 6, 6) + str;
+            return result.Replace("\\", "/");
         }
     }
 

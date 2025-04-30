@@ -30,7 +30,8 @@ namespace Reallusion.Import
         public string lastSuccessfulHost;
         public string[] lastTriedHosts;
 
-        // scene area
+        // import area
+        public string importDestinationFolder;
         public bool importIntoScene;
         public bool useCurrentScene;
         public bool addToTimeline;

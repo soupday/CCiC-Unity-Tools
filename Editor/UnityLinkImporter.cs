@@ -33,9 +33,9 @@ namespace Reallusion.Import
         UnityLinkManager.OpCodes opCode;
 
         // folders for import
-        string ROOT_FOLDER = "Assets";
-        string IMPORT_PARENT = "Reallusion";
-        string IMPORT_FOLDER = "DataLink_Imports";
+        //string ROOT_FOLDER = "Assets";
+        //string IMPORT_PARENT = "Reallusion";
+        //string IMPORT_FOLDER = "DataLink_Imports";
 
         // parent folder for asset saving (in a sub folder) - this should include the created scene
         string SAVE_FOLDER_PATH = string.Empty;
@@ -51,6 +51,8 @@ namespace Reallusion.Import
         bool addToTimeLine = false;
         PlayableDirector selectedTimeline = null;
         string saveFolder = string.Empty;
+        string importDestinationFolder = string.Empty;
+        string assetImportDestinationPath = string.Empty;
 
         // types for reflection
         Type HDAdditionalLightData = null;
@@ -80,6 +82,7 @@ namespace Reallusion.Import
         {
             QueueItem = item;
             opCode = QueueItem.OpCode;
+            importDestinationFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
             importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
             addToTimeLine = UnityLinkManager.ADD_TO_TIMELINE;
             selectedTimeline = UnityLinkManager.SCENE_TIMELINE_ASSET;
@@ -89,7 +92,7 @@ namespace Reallusion.Import
                 if (addToTimeLine)
                 {
                     bool haveTimeLine = false;
-                    // got the selected timeline
+                    
                     if (selectedTimeline == null || selectedTimeline.playableAsset == null)
                     {
                         if (UnityLinkTimeLine.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
@@ -111,7 +114,7 @@ namespace Reallusion.Import
 
                         if (haveTimeLine)
                         {
-                            // set the save folder to be the same as the saved locaion of the timeline asset
+                            // set the save folder to be the same as the saved locaion of the timeline asset                            
                             saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
                         }
                         else
@@ -121,6 +124,7 @@ namespace Reallusion.Import
                     }
                     else
                     {
+                        // if there is a selected timeline, then use the playableAsset folder as the save folder
                         saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
                     }
                 }
@@ -228,7 +232,7 @@ namespace Reallusion.Import
             DoImport();
         }
 
-        List<(GameObject, List<AnimationClip>, bool)> timelineKitList;
+        List<(UnityLinkTimeLine.TrackType, GameObject, List<AnimationClip>, bool, string)> timelineKitList;
 
         void DoImport()
         {
@@ -241,7 +245,7 @@ namespace Reallusion.Import
             }
             */
 
-            timelineKitList = new List<(GameObject, List<AnimationClip>, bool)>();
+            timelineKitList = new List<(UnityLinkTimeLine.TrackType, GameObject, List<AnimationClip>, bool, string)>();
 
             if (importMotion)
             {
@@ -281,15 +285,25 @@ namespace Reallusion.Import
             string inProjectAssetPath = string.Empty;
 
             //string assetFolder = Path.GetDirectoryName(assetPath);
-            string assetFolderName = name; // Path.GetFileName(assetFolder);            
-
+            string assetFolderName = name; // Path.GetFileName(assetFolder);
+            Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
+            /*
             string PARENT_FOLDER = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT });
             if (!AssetDatabase.IsValidFolder(PARENT_FOLDER)) AssetDatabase.CreateFolder(ROOT_FOLDER, IMPORT_PARENT);
             string IMPORT_PATH = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER });
             if (!AssetDatabase.IsValidFolder(IMPORT_PATH)) AssetDatabase.CreateFolder(PARENT_FOLDER, IMPORT_FOLDER);
 
             string proposedDestinationFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName });
+            */
+
+            // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
+            // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
+            string proposedDestinationFolder = Path.Combine(UnityLinkManager.IMPORT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), assetFolderName);
+            Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
+
             string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);//string.Empty;
+            Debug.LogWarning("RetrieveDiskAsset - destinationFolder " + destinationFolder);
+
             if (string.IsNullOrEmpty(destinationFolder))
             {
                 Debug.LogWarning("Cannot find a folder to import into - " + proposedDestinationFolder + " has too many copies");
@@ -301,13 +315,15 @@ namespace Reallusion.Import
             try
             {
                 Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
+                AssetDatabase.Refresh();
+                assetImportDestinationPath = destinationFolder;
             }
             catch (Exception ex)
             {
                 Debug.LogWarning("Cannot copy asset to AssetDatabase! " + ex.Message); return string.Empty;
             }
-            FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
-            AssetDatabase.Refresh();
+            
 
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
             {
@@ -358,6 +374,13 @@ namespace Reallusion.Import
             return inProjectAssetPath;
         }
 
+        public string GetUniqueImportAssetFolder(string name)
+        {
+            string proposedDestinationFolder = Path.Combine(UnityLinkManager.IMPORT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), name);
+            string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);
+            return destinationFolder;
+        }
+
         public string GetNonDuplicateFolderName(string folderName, bool insideAssetDatabase)
         {
             for (int i = 0; i < 999; i++)
@@ -373,6 +396,17 @@ namespace Reallusion.Import
                 }
             }
             return string.Empty;
+        }
+
+        public void ClearStagingAssetsFolder(string path)
+        {
+            // requires a unity asset path
+            string fullCleanupPath = path.UnityAssetPathToFullPath();
+            string cleanupMetaFile = fullCleanupPath + ".meta";
+            Debug.LogWarning("CLEANING UP: " + fullCleanupPath + " & Meta " + cleanupMetaFile);
+            Directory.Delete(fullCleanupPath, true);
+            File.Delete(cleanupMetaFile);
+            AssetDatabase.Refresh();
         }
         #endregion Asset Retrieval
 
@@ -405,7 +439,7 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((prefab, animGuidsForTimeLine, true));
+            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
         }
         #endregion Prop Import
 
@@ -439,7 +473,7 @@ namespace Reallusion.Import
                 ImporterWindow.Current.RefreshCharacterList();
 
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((prefab, animGuidsForTimeLine, true));
+            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
         }
         #endregion Avatar Import
 
@@ -451,17 +485,17 @@ namespace Reallusion.Import
             string dataPath = Path.GetDirectoryName(Application.dataPath);
             string fullFolderPath = Path.Combine(dataPath, fbxPath);
             string[] fileList = Directory.GetFiles(fullFolderPath);
-
             
             List<string> rlxList = fileList.ToList().FindAll(x => Path.GetExtension(x).Equals(".rlx", StringComparison.InvariantCultureIgnoreCase));
             foreach (string file in rlxList)
             {
                 byte[] fileBytes = File.ReadAllBytes(file);
-                ImportRLX(fileBytes);
+                ImportRLX(folderPath, fileBytes);
             }
+            ClearStagingAssetsFolder(assetImportDestinationPath);
         }
 
-        public void ImportRLX(byte[] rlxBytes)
+        public void ImportRLX(string folderPath, byte[] rlxBytes)
         {
             int bytePos = 0;
             // header
@@ -492,13 +526,13 @@ namespace Reallusion.Import
                 case (RLX_ID_CAMERA):
                     {
                         Debug.Log("Processing Camera");
-                        MakeAnimatedCamera(frameData, jsonString);
+                        MakeAnimatedCamera(folderPath, frameData, jsonString);
                         break;
                     }
                 case (RLX_ID_LIGHT):
                     {
                         Debug.Log("Processing Light");
-                        MakeAnimatedLight(frameData, jsonString);
+                        MakeAnimatedLight(folderPath, frameData, jsonString);
                         break;
                     }
                 default:
@@ -551,7 +585,7 @@ namespace Reallusion.Import
             return root;
         }
 
-        void MakeAnimatedCamera(byte[] frameData, string jsonString)
+        void MakeAnimatedCamera(string folderPath, byte[] frameData, string jsonString)
         {
             UnityLinkManager.JsonCameraData jsonCameraObject = null;
             try
@@ -616,8 +650,9 @@ namespace Reallusion.Import
             if (jsonCameraObject != null)
             {
                 clip.name = jsonCameraObject.LinkId;
-                SaveAnimationClip(clip);
-                SetupCamera(jsonCameraObject, root, clip);
+                SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
+                GameObject toPrefab = SetupCamera(jsonCameraObject, root, clip);
+                SavestagingPrefabAsset(jsonCameraObject.LinkId, jsonCameraObject.Name, toPrefab);
             }
         }
 
@@ -810,7 +845,7 @@ namespace Reallusion.Import
             return clip;
         }
 
-        void SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
+        GameObject SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
         {
             if (CameraProxyType == null)
             {
@@ -818,7 +853,7 @@ namespace Reallusion.Import
                 if (CameraProxyType == null)
                 {
                     Debug.LogWarning("SetupLight cannot find the <CameraProxy> class.");
-                    return;
+                    return null;
                 }
                 else
                 {
@@ -843,13 +878,13 @@ namespace Reallusion.Import
                 if (SetupCameraMethod == null)
                 {
                     Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                    return;
+                    return null;
                 }
             }
             else
             {
                 Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
-                return;
+                return null;
             }
 
             json.dof_delta = dof_delta;
@@ -859,11 +894,13 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((root, clips, false));
+            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, root, clips, false, json.LinkId));
+
+            return root;
         }
 
 
-        void MakeAnimatedLight(byte[] frameData, string jsonString)
+        void MakeAnimatedLight(string folderPath, byte[] frameData, string jsonString)
         {
             UnityLinkManager.JsonLightData jsonLightObject = null;
             try
@@ -927,8 +964,9 @@ namespace Reallusion.Import
             if (jsonLightObject != null)
             {
                 clip.name = jsonLightObject.LinkId;
-                SaveAnimationClip(clip);
-                SetupLight(jsonLightObject, root, clip);
+                SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
+                GameObject toPrefab = SetupLight(jsonLightObject, root, clip);
+                SavestagingPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, toPrefab);
             }
         }
 
@@ -1123,6 +1161,13 @@ namespace Reallusion.Import
             AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
             AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
 
+            // Enabled
+            if (active_delta)
+            {
+                AnimationCurve c_enabled = new AnimationCurve(f_enabled);
+                AnimationUtility.SetEditorCurve(clip, b_enabled, c_enabled);
+            }
+
             // Color
             if (color_delta)
             {
@@ -1166,7 +1211,7 @@ namespace Reallusion.Import
             return clip;
         }
 
-        void SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)
+        GameObject SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)
         {
             if (LightProxyType == null)
             {
@@ -1174,7 +1219,7 @@ namespace Reallusion.Import
                 if (LightProxyType == null)
                 {
                     Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
-                    return;
+                    return null;
                 }
             }
 
@@ -1191,13 +1236,13 @@ namespace Reallusion.Import
                 if (SetupLightMethod == null)
                 {
                     Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                    return;
+                    return null;
                 }
             }
             else
             {
                 Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
-                return;
+                return null;
             }
 
             json.pos_delta = pos_delta;
@@ -1217,19 +1262,28 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((root, clips, false));
+            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, root, clips, false, json.LinkId));
+            timelineKitList.Add((UnityLinkTimeLine.TrackType.ActivationTrack, root, clips, false, json.LinkId));
+            return root;
         }
-
-        void SaveAnimationClip(AnimationClip clip)
+        
+        void SaveStagingAnimationClip(string LinkId, string Name, AnimationClip clip)
         {
-            if (!string.IsNullOrEmpty(saveFolder))
+            if (!string.IsNullOrEmpty(importDestinationFolder))
             {
-                string clipAssetPath = saveFolder + "/" + clip.name + ".anim";
+                string linkedName = Name + "_" + LinkId;
+                string fullClipAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".anim";
+                string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
+                CheckUnityPath(Path.GetDirectoryName(clipAssetPath));
 
-                Debug.LogWarning("Saving RLX animation to " + clipAssetPath);
-                if (File.Exists(clipAssetPath))
+                Debug.LogWarning("Saving RLX animation to " + clipAssetPath);                
+                if (File.Exists(fullClipAssetPath))
                 {
-                    AssetDatabase.SaveAssetIfDirty(clip);
+                    //AnimationClip old = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipAssetPath);
+                    AssetDatabase.DeleteAsset(clipAssetPath);
+                    AssetDatabase.CreateAsset(clip, clipAssetPath);
+                    //old = clip;
+                    //AssetDatabase.SaveAssetIfDirty(old);
                 }
                 else
                 {
@@ -1237,6 +1291,53 @@ namespace Reallusion.Import
                 }
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+            }
+        }
+
+        void SavestagingPrefabAsset(string LinkId, string Name, GameObject toPrefab)
+        {
+            if (!string.IsNullOrEmpty(importDestinationFolder))
+            {
+                string linkedName = Name + "_" + LinkId;
+                string fullPrefabAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".prefab";
+                string prefabAssetPath = fullPrefabAssetPath.FullPathToUnityAssetPath();
+                CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
+
+                //if (File.Exists(fullPrefabAssetPath))
+                //{
+                //    GameObject existing = PrefabUtility.LoadPrefabContents(prefabAssetPath);
+                //    PrefabUtility.ReplacePrefab(toPrefab, existing);
+                //}
+                //else
+                //{
+                //
+                //}
+
+                PrefabUtility.SaveAsPrefabAsset(toPrefab, prefabAssetPath);
+            }
+        }
+
+        public static void CheckUnityPath(string path) // and create them in the AssetDatabase if needed
+        {
+            string[] strings = path.Split(new char[] { '\\', '/' });
+            if (!strings[0].Equals("Assets", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Debug.LogWarning("Not a Unity path.");
+            }
+            if (strings.Length == 1) return; // just Assets
+
+            string pwd = strings[0];
+            string parentFolder = pwd;
+            for (int i = 1; i < strings.Length; i++)
+            {
+                pwd += "/" + strings[i];
+                if (!AssetDatabase.IsValidFolder(pwd))
+                {
+                    Debug.LogWarning("Creating " + pwd);
+                    AssetDatabase.CreateFolder(parentFolder, strings[i]);
+                    AssetDatabase.Refresh();
+                }
+                parentFolder = pwd;
             }
         }
 
@@ -1470,13 +1571,6 @@ namespace Reallusion.Import
         #endregion Keyframe Reduction
 
         #region Motion ... placeholder
-        public void CleanDiskAssets(string fbxPath, string queueItemPath)
-        {
-            // clear motion fbx (retain animations - deal with clutter later)
-            // move model data to user nominated place in project
-            // remove external disk assets
-        }
-
         public void ImportMotion(string fbxPath, string linkId)
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
