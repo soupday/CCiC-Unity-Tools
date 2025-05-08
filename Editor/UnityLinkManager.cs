@@ -28,11 +28,16 @@ namespace Reallusion.Import
         public static string IMPORT_DESTINATION_FOLDER = string.Empty;
         public static string IMPORT_DEFAULT_DESTINATION_FOLDER { get {  return GetDefaultFullFolderPath(); } }
         public static string STAGING_IMPORT_SUBFOLDER = "Staging Imports";
+        public static string SCENE_ASSETS = "Scene Assets";
+        public static string SCENE_FOLDER = string.Empty;
+        public static string SCENE_NAME = string.Empty;
+        public static string SCENE_UNSAVED_NAME = "Unsaved Scene";
         #endregion Import
 
         #region TimeLine vars
         // timeline creation only
         public static string TIMELINE_SAVE_FOLDER = string.Empty;
+        
         public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }        
         public static string TIMELINE_DEFAULT_REFERENCE_STRING = "Timeline Name"; // retain default so UI can see it has been changed before allowing creation
         public static string TIMELINE_REFERENCE_STRING = TIMELINE_DEFAULT_REFERENCE_STRING;
@@ -2367,7 +2372,7 @@ namespace Reallusion.Import
             if (!AssetDatabase.IsValidFolder(IMPORT_PATH)) AssetDatabase.CreateFolder(PARENT_FOLDER, IMPORT_FOLDER);
         }
 
-        static void WriteIncomingLog(string dataString, bool valid)
+        public static void WriteIncomingLog(string dataString, bool valid)
         {
             // Logs all incoming messages from the server
             string fileName = "RL_DataLink_Server_Message_Log.txt";

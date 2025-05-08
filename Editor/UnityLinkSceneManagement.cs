@@ -9,12 +9,14 @@ using UnityEditor.SceneManagement;
 using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using UnityEngine.Timeline;
 
 namespace Reallusion.Import
 {
-    public class UnityLinkTimeLine
+    public class UnityLinkSceneManagement
     {
         #region depracated
         /*
@@ -100,7 +102,7 @@ namespace Reallusion.Import
 
         #region Scene and Timeline
         // initiated from ui
-        public static void CreateTimelineAsset()
+        public static PlayableDirector CreateTimelineAsset()
         {
             string gameObjectName = "RL_TimeLine_Object (" + UnityLinkManager.TIMELINE_REFERENCE_STRING + ")";
             GameObject existingTimelineObject = GameObject.Find(gameObjectName);
@@ -144,6 +146,7 @@ namespace Reallusion.Import
                     timeline = t;
                 director.playableAsset = timeline;
             }
+            return director;
         }
 
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
@@ -170,9 +173,22 @@ namespace Reallusion.Import
 
         public static bool TryCreateTimeLine(out PlayableDirector director)
         {
-            director = null;
-            
-            return false;
+            DateTime now = DateTime.Now;
+            string stamp = TimeStampString();
+
+            UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline Object (" + stamp + ")";
+            UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(UnityLinkManager.IMPORT_DESTINATION_FOLDER, UnityLinkManager.SCENE_ASSETS);
+            UnityLinkImporter.CheckUnityPath(UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
+            UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline" + "-" + stamp;
+            Debug.Log("Creating timeline asset in: " + UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
+            director = CreateTimelineAsset();
+            return (director != null);            
+        }
+
+        public static string TimeStampString()
+        {
+            DateTime now = DateTime.Now;
+            return now.Day.ToString("00") + "." + now.Month.ToString("00") + "-" + now.Hour.ToString("00") + "." + now.Minute.ToString("00");
         }
 
         public static void CreateExampleScene()
@@ -316,6 +332,7 @@ namespace Reallusion.Import
                     bool addClip = false;
                     float start = 0f;
                     float duration = 0f;
+                    int index = 0;
                     foreach(Keyframe keyframe in curve.keys)
                     {
                         if (!enabled)
@@ -329,7 +346,7 @@ namespace Reallusion.Import
 
                         if (enabled)
                         {
-                            if (keyframe.value == 0)
+                            if (keyframe.value == 0 || index == curve.keys.Length -1)
                             {
                                 enabled = false;
                                 duration = keyframe.time - start;
@@ -344,7 +361,7 @@ namespace Reallusion.Import
                             t.duration = duration;
                             addClip = false;
                         }
-
+                        index++;
                     }
                 }
 
@@ -371,6 +388,95 @@ namespace Reallusion.Import
             
         }
         #endregion Scene and Timeline
+
+        #region Scene Dependencies 
+        public static void CreateStagingSceneDependencies()
+        {
+#if HDRP_10_5_0_OR_NEWER
+            CreateHDRPVolumeAsset();
+#elif URP_10_5_0_OR_NEWER
+            DoURPThings();
+#else
+            DoBuiltinThings();
+#endif
+        }
+
+#if HDRP_10_5_0_OR_NEWER
+        private static void CreateHDRPVolumeAsset()
+        {
+            Volume global = null;
+            VolumeProfile sharedProfile = null;
+            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            foreach (Volume volume in volumes)
+            {
+                if (volume.isGlobal)
+                {
+                    global = volume;
+                    break;
+                }
+            }
+
+            if (global == null)
+            {
+                GameObject gameObject = new GameObject("RL_Global_Volume_Object");
+                global = gameObject.AddComponent<Volume>();
+                global.isGlobal = true;
+            }
+
+            if (global == null) { Debug.LogWarning("CreateHDRPVolumeAsset global == null"); return; }
+
+            if (global.sharedProfile == null)
+            {
+                Debug.LogWarning("CreateHDRPVolumeAsset sharedProfile == null");
+                
+                string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
+                Debug.LogWarning("CreateHDRPVolumeAsset volumeGuids found: " + volumeGuids.Length);
+                foreach (string volumeGuid in volumeGuids)
+                {
+                    if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains("CinematicDark", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        Debug.LogWarning("CreateHDRPVolumeAsset CinematicDark found");
+                        VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
+                        sharedProfile = GameObject.Instantiate(found);
+                        if (sharedProfile == null)
+                        {
+                            Debug.LogWarning("CreateHDRPVolumeAsset CinematicDark couldnt be loaded");
+                        }
+                    }
+                }
+
+                if (sharedProfile == null) { Debug.LogWarning("CreateHDRPVolumeAsset sharedProfile == null STILL"); return; }
+
+                // moved saving
+                string sharedProfilePath = UnityLinkManager.SCENE_FOLDER + "/" + "RL_Volume_" + UnityLinkManager.SCENE_NAME + ".asset";
+                Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);
+                AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
+                global.sharedProfile = sharedProfile;
+            }
+
+            // depth of field override
+            if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            //if (!sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            {
+                dof = global.sharedProfile.Add<DepthOfField>(true);
+                //dof = sharedProfile.Add<DepthOfField>(true);
+            }
+            dof.SetAllOverridesTo(true);
+            DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
+            dof.focusMode = mode;
+            FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
+            dof.focusDistanceMode = distanceMode;
+            // other overrides
+
+            // override having no immediate effect
+        }
+#elif URP_10_5_0_OR_NEWER
+        public static void DoURPThings() { }
+#else
+        public static void DoBuiltinThings() { }
+#endif
+        #endregion Scene Dependencies
 
         #region Enum
         public enum TrackType

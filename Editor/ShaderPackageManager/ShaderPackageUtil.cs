@@ -1271,7 +1271,7 @@ namespace Reallusion.Import
         {
             string datapath = Application.dataPath;
             string result = datapath.Remove(datapath.Length - 6, 6) + str;
-            return result.Replace("\\", "/");
+            return result.Replace("\\", "/").Replace('/', Path.DirectorySeparatorChar); // untested
         }
     }
 

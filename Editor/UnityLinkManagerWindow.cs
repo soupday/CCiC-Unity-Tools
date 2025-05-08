@@ -558,7 +558,7 @@ namespace Reallusion.Import
 
             if (createSceneAfterGUI)
             {
-                EditorApplication.delayCall += UnityLinkTimeLine.CreateExampleScene;
+                EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
                 createSceneAfterGUI = false;
             }
         }
@@ -992,7 +992,7 @@ namespace Reallusion.Import
                     if (GUILayout.Button(new GUIContent(styles.newSceneTex, timTip), styles.minimalButton, GUILayout.Height(EditorGUIUtility.singleLineHeight), GUILayout.Width(EditorGUIUtility.singleLineHeight)))
                     {
                         RecordAssetCreationSettings();
-                        UnityLinkTimeLine.CreateTimelineAsset();
+                        UnityLinkSceneManagement.CreateTimelineAsset();
                         CreateTreeView();
                     }
                     EditorGUI.EndDisabledGroup();

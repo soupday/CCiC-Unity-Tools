@@ -78,7 +78,7 @@ namespace Reallusion.Import
         PackageType packageType = PackageType.NONE;
 
         #region Import Preparation
-        public UnityLinkImporter(UnityLinkManager.QueueItem item)//, bool sceneImport)
+        public UnityLinkImporter(UnityLinkManager.QueueItem item)
         {
             QueueItem = item;
             opCode = QueueItem.OpCode;
@@ -91,54 +91,51 @@ namespace Reallusion.Import
             {
                 if (addToTimeLine)
                 {
-                    bool haveTimeLine = false;
-                    
                     if (selectedTimeline == null || selectedTimeline.playableAsset == null)
                     {
-                        if (UnityLinkTimeLine.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
+                        Debug.LogWarning("UnityLinkImporter selectedTimeline || selectedTimeline.playableAsset = null");
+                        if (UnityLinkSceneManagement.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
                         {
                             UnityLinkManager.SCENE_TIMELINE_ASSET = sceneTimeLine;
                             selectedTimeline = sceneTimeLine;
-                            haveTimeLine = true;
                         }
-                        else if (UnityLinkTimeLine.TryCreateTimeLine(out PlayableDirector newTimeLine)) // if nothing in scene create one in default save location
+                        else if (UnityLinkSceneManagement.TryCreateTimeLine(out PlayableDirector newTimeLine)) // if nothing in scene create one in default save location
                         {
                             UnityLinkManager.SCENE_TIMELINE_ASSET = newTimeLine;
                             selectedTimeline = newTimeLine;
-                            haveTimeLine = true;
                         }
                         else
                         {
                             // fail
                         }
+                    }
+                }
+                                
+                // scene-relevant dependencies such as global volume profiles for HDRP will be saved in a 
+                // folder in the same parent folder as the scene.unity file called Scene Assets/<scene name>/
+                bool haveSavedScene = false;
+                Scene current = EditorSceneManager.GetActiveScene();
 
-                        if (haveTimeLine)
-                        {
-                            // set the save folder to be the same as the saved locaion of the timeline asset                            
-                            saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
-                        }
-                        else
-                        {
-                            saveFolder = null;
-                        }
-                    }
-                    else
+                if (current != null)
+                {
+                    if (!string.IsNullOrEmpty(current.name) && !string.IsNullOrEmpty(current.path))
                     {
-                        // if there is a selected timeline, then use the playableAsset folder as the save folder
-                        saveFolder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(selectedTimeline.playableAsset));
+                        haveSavedScene = true;
                     }
+                }
+
+                if (haveSavedScene)
+                {
+                    UnityLinkManager.SCENE_NAME = current.name;
+                    UnityLinkManager.SCENE_FOLDER = Path.Combine(Path.GetDirectoryName(current.path), UnityLinkManager.SCENE_ASSETS, UnityLinkManager.SCENE_NAME);
                 }
                 else
                 {
-                    // scene only import, requires that the anmim files for staging imports preserved in
-                    // a folder in the same parent folder as the scene.unity file called DataLink_Imports/<scene name>/
-
-                    Scene current = EditorSceneManager.GetActiveScene();
-                    string sceneName = current.name;
-                    string scenePAth = current.path;
-
-                   //EditorSceneManager.
+                    UnityLinkManager.SCENE_NAME = UnityLinkManager.SCENE_UNSAVED_NAME + "-" + UnityLinkSceneManagement.TimeStampString();
+                    UnityLinkManager.SCENE_FOLDER = Path.Combine(UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), UnityLinkManager.SCENE_ASSETS, UnityLinkManager.SCENE_NAME);                    
                 }
+
+                UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");                
 
                 if (string.IsNullOrEmpty(item.RemoteId))
                 {
@@ -232,7 +229,7 @@ namespace Reallusion.Import
             DoImport();
         }
 
-        List<(UnityLinkTimeLine.TrackType, GameObject, List<AnimationClip>, bool, string)> timelineKitList;
+        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string)> timelineKitList;
 
         void DoImport()
         {
@@ -245,7 +242,7 @@ namespace Reallusion.Import
             }
             */
 
-            timelineKitList = new List<(UnityLinkTimeLine.TrackType, GameObject, List<AnimationClip>, bool, string)>();
+            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string)>();
 
             if (importMotion)
             {
@@ -271,7 +268,7 @@ namespace Reallusion.Import
             {
                 foreach (var item in timelineKitList)
                 {
-                    UnityLinkTimeLine.AddToSceneAndTimeLine(item);
+                    UnityLinkSceneManagement.AddToSceneAndTimeLine(item);
                 }
                 //AddToSceneAndTimeLine(timelineKit);
                 //SelectTimeLineObjectAndShowWindow();
@@ -439,7 +436,7 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
         }
         #endregion Prop Import
 
@@ -473,7 +470,7 @@ namespace Reallusion.Import
                 ImporterWindow.Current.RefreshCharacterList();
 
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
         }
         #endregion Avatar Import
 
@@ -512,6 +509,7 @@ namespace Reallusion.Import
             // json data
             byte[] jsonBytes = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, jsonLen);
             string jsonString = Encoding.UTF8.GetString(jsonBytes);
+            UnityLinkManager.WriteIncomingLog(jsonString, true);
 
             bytePos += jsonLen;
             // frame data length
@@ -584,7 +582,9 @@ namespace Reallusion.Import
             
             return root;
         }
+        #endregion Staging Import
 
+        #region Animated Camera
         void MakeAnimatedCamera(string folderPath, byte[] frameData, string jsonString)
         {
             UnityLinkManager.JsonCameraData jsonCameraObject = null;
@@ -772,21 +772,21 @@ namespace Reallusion.Import
             // bind all keyframes to the appropriate curve
 
             // Rotation            
-            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
+            AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
             AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
-            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
+            AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
             AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
-            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
+            AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
             AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
-            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
+            AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
             AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
 
             // Position
-            AnimationCurve c_posX = new AnimationCurve(f_posX);
+            AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
             AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
-            AnimationCurve c_posY = new AnimationCurve(f_posY);
+            AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
             AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
-            AnimationCurve c_posZ = new AnimationCurve(f_posZ);
+            AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
             AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
 
             //scale
@@ -823,25 +823,6 @@ namespace Reallusion.Import
 
             clip.frameRate = 60f;
             Debug.LogWarning("Calculated Frame Rate = " + (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time);
-            /*
-            Debug.LogWarning("Saving RLX animation to Assets/RLX_CAMERA_CLIP.anim");  // investigate not using disk asset
-            AssetDatabase.CreateAsset(clip, "Assets/RLX_CAMERA_CLIP.anim");
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            List<AnimationClip> clips = new List<AnimationClip>();
-            clips.Add(clip);
-            Debug.LogWarning("Trying to add to timeline - will fail if no timeline is avaialble");
-            try
-            {
-                AddToSceneAndTimeLine((root, clips), false); // add to existing timeline track as overide?
-
-            }
-            catch
-            {
-                Debug.LogWarning("Failed");
-            }
-            */
-            
             return clip;
         }
 
@@ -894,12 +875,13 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, root, clips, false, json.LinkId));
-
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, root, clips, false, json.LinkId));
+            UnityLinkSceneManagement.CreateStagingSceneDependencies();
             return root;
         }
+        #endregion Animated Camera
 
-
+        #region Animated Light
         void MakeAnimatedLight(string folderPath, byte[] frameData, string jsonString)
         {
             UnityLinkManager.JsonLightData jsonLightObject = null;
@@ -1136,21 +1118,21 @@ namespace Reallusion.Import
             // only bind curves that have changes
 
             // Rotation           
-            AnimationCurve c_rotX = new AnimationCurve(f_rotX);
+            AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
             AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
-            AnimationCurve c_rotY = new AnimationCurve(f_rotY);
+            AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
             AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
-            AnimationCurve c_rotZ = new AnimationCurve(f_rotZ);
+            AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
             AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
-            AnimationCurve c_rotW = new AnimationCurve(f_rotW);
+            AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
             AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
 
             // Position
-            AnimationCurve c_posX = new AnimationCurve(f_posX);
+            AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
             AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
-            AnimationCurve c_posY = new AnimationCurve(f_posY);
+            AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
             AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
-            AnimationCurve c_posZ = new AnimationCurve(f_posZ);
+            AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
             AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
 
             //scale
@@ -1262,11 +1244,14 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((UnityLinkTimeLine.TrackType.AnimationTrack, root, clips, false, json.LinkId));
-            timelineKitList.Add((UnityLinkTimeLine.TrackType.ActivationTrack, root, clips, false, json.LinkId));
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, root, clips, false, json.LinkId));
+            if (active_delta) timelineKitList.Add((UnityLinkSceneManagement.TrackType.ActivationTrack, root, clips, false, json.LinkId));
+            UnityLinkSceneManagement.CreateStagingSceneDependencies();
             return root;
         }
-        
+        #endregion Animated Light
+
+        #region Asset storage
         void SaveStagingAnimationClip(string LinkId, string Name, AnimationClip clip)
         {
             if (!string.IsNullOrEmpty(importDestinationFolder))
@@ -1279,11 +1264,8 @@ namespace Reallusion.Import
                 Debug.LogWarning("Saving RLX animation to " + clipAssetPath);                
                 if (File.Exists(fullClipAssetPath))
                 {
-                    //AnimationClip old = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipAssetPath);
                     AssetDatabase.DeleteAsset(clipAssetPath);
                     AssetDatabase.CreateAsset(clip, clipAssetPath);
-                    //old = clip;
-                    //AssetDatabase.SaveAssetIfDirty(old);
                 }
                 else
                 {
@@ -1302,17 +1284,6 @@ namespace Reallusion.Import
                 string fullPrefabAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".prefab";
                 string prefabAssetPath = fullPrefabAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
-
-                //if (File.Exists(fullPrefabAssetPath))
-                //{
-                //    GameObject existing = PrefabUtility.LoadPrefabContents(prefabAssetPath);
-                //    PrefabUtility.ReplacePrefab(toPrefab, existing);
-                //}
-                //else
-                //{
-                //
-                //}
-
                 PrefabUtility.SaveAsPrefabAsset(toPrefab, prefabAssetPath);
             }
         }
@@ -1340,9 +1311,57 @@ namespace Reallusion.Import
                 parentFolder = pwd;
             }
         }
+        #endregion Asset storage
 
-        #endregion Staging Import
+        #region Keyframe Reduction
+        public AnimationCurve SmoothCurve(Keyframe[] keys)
+        {
+            AnimationCurve curve = new AnimationCurve(keys);
+            for (int i = 0; i < keys.Length; i++)
+            {
+                curve.SmoothTangents(i, 0);
+            }
+            return curve;
+        }
 
+        public AnimationCurve ReduceCurve(Keyframe[] keys, bool smooth = false)
+        {
+            Keyframe[] reduced = Reduce(keys, 0.0001f);
+            AnimationCurve result = new AnimationCurve(reduced);
+            if (smooth)
+            {
+                for (int i = 0; i < reduced.Length; i++)
+                {
+                    result.SmoothTangents(i, 0);
+                }
+            }
+            return result;
+        }
+
+        public Keyframe[] Reduce(Keyframe[] keys, float threshold)
+        {
+            List<Keyframe> result = new List<Keyframe>();
+            Keyframe lastAdded = new Keyframe();
+            for (int i = 0; i < keys.Length; i++)
+            {
+                if (i == 0 || i == keys.Length - 1)
+                {
+                    result.Add(keys[i]);
+                    lastAdded = keys[i];
+                    continue;
+                }
+
+                if ((keys[i].value - lastAdded.value) > threshold)
+                {
+                    result.Add(keys[i]);
+                    lastAdded = keys[i];
+                }
+            }
+            return result.ToArray();
+        }
+        #endregion Keyframe Reduction
+
+        
 
         #region OLD Light Import
         public List<(GameObject, List<AnimationClip>)> ImportLights(string fbxPath, string[] linkIds)
@@ -1436,139 +1455,6 @@ namespace Reallusion.Import
         }       
 
         #endregion OLD Light Import
-
-        #region Scene and Timeline
-        /*
-        void CreateSceneAndTimeline()
-        {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-
-            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
-            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
-
-            // PlayableGraph graph = PlayableGraph.Create(); // ...
-
-            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
-            director.playableAsset = timeline;
-
-
-            UnityLinkManager.timelineSceneCreated = true;
-        }
-
-        TimelineEditorWindow timelineEditorWindow = null;
-
-        void SelectTimeLineObjectAndShowWindow()
-        {
-            Selection.activeObject = UnityLinkManager.timelineObject;
-
-            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
-            {
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-            else
-            {
-                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-        }
-
-        void AddToSceneAndTimeLine((GameObject, List<AnimationClip>) objectTuple, bool createInScene = true)
-        {
-            GameObject sceneObject;
-            if (createInScene)
-            {
-                Debug.LogWarning("Instantiating " + objectTuple.Item1.name);
-                sceneObject = GameObject.Instantiate(objectTuple.Item1);
-                sceneObject.transform.position = Vector3.zero;
-                sceneObject.transform.rotation = Quaternion.identity;
-            }
-            else
-            {
-                sceneObject = objectTuple.Item1;
-            }
-
-            PlayableDirector director;
-            if (UnityLinkManager.timelineObject == null)
-            {
-                director = (PlayableDirector)GameObject.FindFirstObjectByType(typeof(PlayableDirector));
-            }
-            else
-            {
-                director = UnityLinkManager.timelineObject.GetComponent<PlayableDirector>();
-            }
-            TimelineAsset timeline = director.playableAsset as TimelineAsset;
-            AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name);
-            AnimationClip clipToUse = null;
-            // find suitable aniamtion clip (should be the first non T-Pose)
-            foreach (AnimationClip animClip in objectTuple.Item2)
-            {
-                if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-                else
-                {
-                    clipToUse = animClip;
-                }
-            }
-
-            TimelineClip clip = newTrack.CreateClip(clipToUse);
-            clip.start = 0f;
-            clip.timeScale = 1f;
-            clip.duration = clip.duration / clip.timeScale;
-            Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item1.name + " - " + clipToUse.name);
-            director.SetGenericBinding(newTrack, sceneObject);
-
-        }
-        */
-        #endregion Scene and Timeline
-
-        #region Keyframe Reduction
-        public AnimationCurve ReduceCurve(Keyframe[] keys, bool smooth = false)
-        {
-            Keyframe[] reduced = Reduce(keys, 0.0001f);
-            AnimationCurve result = new AnimationCurve(reduced);
-            if (smooth)
-            {
-                for (int i = 0; i < reduced.Length; i++)
-                {
-                    result.SmoothTangents(i, 0);
-                }
-            }
-            return result;
-        }
-
-        public Keyframe[] Reduce(Keyframe[] keys, float threshold)
-        {
-            List<Keyframe> result = new List<Keyframe>();
-            Keyframe lastAdded = new Keyframe();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                if (i == 0 || i == keys.Length -1)
-                {
-                    result.Add(keys[i]);
-                    lastAdded = keys[i];
-                    continue;
-                }
-
-                if ((keys[i].value - lastAdded.value) > threshold)
-                {
-                    result.Add(keys[i]);
-                    lastAdded = keys[i];
-                }
-            }
-            return result.ToArray();
-        }
-        #endregion Keyframe Reduction
 
         #region Motion ... placeholder
         public void ImportMotion(string fbxPath, string linkId)
