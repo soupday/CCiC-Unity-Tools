@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Rendering;
 using UnityEditor.SceneManagement;
 using UnityEditor.Timeline;
 using UnityEngine;
@@ -459,8 +460,9 @@ namespace Reallusion.Import
             if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
             //if (!sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
             {
-                dof = global.sharedProfile.Add<DepthOfField>(true);
+                //dof = global.sharedProfile.Add<DepthOfField>(true);
                 //dof = sharedProfile.Add<DepthOfField>(true);
+                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(global.sharedProfile);
             }
             dof.SetAllOverridesTo(true);
             DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
@@ -469,7 +471,8 @@ namespace Reallusion.Import
             dof.focusDistanceMode = distanceMode;
             // other overrides
 
-            // override having no immediate effect
+            // override having no immediate effect with add global.sharedProfile.Add<DepthOfField>
+            // VolumeProfileFactory.CreateVolumeComponent has effect and saves properly
         }
 #elif URP_10_5_0_OR_NEWER
         public static void DoURPThings() { }
