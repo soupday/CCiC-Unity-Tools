@@ -56,8 +56,10 @@ namespace Reallusion.Import
 
         // types for reflection
         Type HDAdditionalLightData = null;
+        Type URPAdditionalLightData = null;
         Type LightProxyType = null;
         Type HDAdditionalCameraData = null;
+        Type URPAdditionalCameraData = null;
         Type CameraProxyType = null;
         MethodInfo SetupLightMethod = null;
         MethodInfo SetupCameraMethod = null;
@@ -295,7 +297,15 @@ namespace Reallusion.Import
 
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
-            string proposedDestinationFolder = Path.Combine(UnityLinkManager.IMPORT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), assetFolderName);
+
+            // case where the IMPORT_DESTINATION_FOLDER is still null without user setting it
+            string validatedDestFolder = string.Empty;
+            if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER))            
+                validatedDestFolder = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;            
+            else            
+                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;            
+
+            string proposedDestinationFolder = Path.Combine(validatedDestFolder.FullPathToUnityAssetPath(), assetFolderName);
             Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
 
             string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);//string.Empty;
@@ -638,7 +648,11 @@ namespace Reallusion.Import
             if (HDAdditionalCameraData != null)
                 if (target.GetComponent(HDAdditionalCameraData) == null) target.AddComponent(HDAdditionalCameraData);
 #elif URP_10_5_0_OR_NEWER
+            if (URPAdditionalCameraData == null)
+                URPAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData");
 
+            if (URPAdditionalCameraData != null)
+                if (target.GetComponent(URPAdditionalCameraData) == null) target.AddComponent(URPAdditionalCameraData);
 #endif
 
             target.transform.position = Vector3.zero;
