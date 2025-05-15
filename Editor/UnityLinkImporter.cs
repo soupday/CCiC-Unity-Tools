@@ -430,8 +430,8 @@ namespace Reallusion.Import
             // add link id
             var data = prefab.AddComponent<DataLinkActorData>();
             data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
+            data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
+            data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
@@ -463,8 +463,8 @@ namespace Reallusion.Import
             // add link id
             var data = prefab.AddComponent<DataLinkActorData>();
             data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.GUIDFromAssetPath(fbxPath).ToString();
+            data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
+            data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
@@ -672,6 +672,39 @@ namespace Reallusion.Import
 
             // Transform properties
             // Rotation
+            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.x"));
+            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.y"));
+            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.z"));
+            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.w"));
+
+            // Position
+            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.x"));
+            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.y"));
+            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.z"));
+
+            // Scale
+            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.x"));
+            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.y"));
+            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.z"));
+
+            // focal length + fov
+            var b_focalL = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyFocalLength"));
+            var b_fov = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyFieldOfView"));
+
+            // depth of field
+            var b_dofEnable = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofEnable"));
+            var b_dofFocus = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofFocus"));
+            var b_dofRange = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofRange"));
+            var b_dofFblur = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofFarBlur"));
+            var b_dofNblur = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofNearBlur"));
+            var b_dofFTran = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofFarTransition"));
+            var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofNearTransition"));
+            var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofMinBlendDist"));
+
+            // original version - retain
+            /*
+            // Transform properties
+            // Rotation
             var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
             var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
             var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
@@ -700,7 +733,8 @@ namespace Reallusion.Import
             var b_dofFTran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFarTransition", System.StringComparison.InvariantCultureIgnoreCase));
             var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofNearTransition", System.StringComparison.InvariantCultureIgnoreCase));
             var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofMinBlendDist", System.StringComparison.InvariantCultureIgnoreCase));
-            
+            */
+
             // Make keyframe[] for each bindable property
 
             // Transform properties
@@ -936,6 +970,7 @@ namespace Reallusion.Import
                 if (target.GetComponent(HDAdditionalLightData) == null) target.AddComponent(HDAdditionalLightData);
 #elif URP_10_5_0_OR_NEWER
 
+
 #endif
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
@@ -1011,6 +1046,41 @@ namespace Reallusion.Import
 
             // Transform properties
             // Rotation
+            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.x"));
+            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.y"));
+            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.z"));
+            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalRotation.w"));
+
+            // Position
+            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.x"));
+            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.y"));
+            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalPosition.z"));
+
+            // Scale
+            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.x"));
+            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.y"));
+            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.z"));
+                        
+            // Proxy Enabled
+            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
+
+            // Proxy Color
+            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyColor_r"));
+            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyColor_g"));
+            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyColor_b"));
+
+            // Other Proxy Settings
+            var b_mult = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyMultiplier"));
+            var b_range = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyRange"));
+            var b_angle = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyAngle"));
+            var b_fall = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyFalloff"));
+            var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyAttenuation"));
+            var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDarkness"));
+
+            // original - retain
+            /*
+            // Transform properties
+            // Rotation
             var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
             var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
             var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
@@ -1025,7 +1095,7 @@ namespace Reallusion.Import
             var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
             var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
             var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
-                        
+
             // Proxy Enabled
             var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
 
@@ -1041,7 +1111,7 @@ namespace Reallusion.Import
             var b_fall = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFalloff", System.StringComparison.InvariantCultureIgnoreCase));
             var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAttenuation", System.StringComparison.InvariantCultureIgnoreCase));
             var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDarkness", System.StringComparison.InvariantCultureIgnoreCase));
-
+            */
             // Make keyframe[] for each bindable property
 
             // Transform properties
@@ -1241,13 +1311,14 @@ namespace Reallusion.Import
 
             string jsonString = JsonConvert.SerializeObject(json);
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
-
+            
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
             timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, root, clips, false, json.LinkId));
             if (active_delta) timelineKitList.Add((UnityLinkSceneManagement.TrackType.ActivationTrack, root, clips, false, json.LinkId));
             UnityLinkSceneManagement.CreateStagingSceneDependencies();
             return root;
+
         }
         #endregion Animated Light
 

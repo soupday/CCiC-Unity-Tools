@@ -2297,7 +2297,7 @@ namespace Reallusion.Import
             Transform[] hierarchy = new Transform[0];
             foreach (GameObject go in prelist)
             {                
-                if (go.name.Contains("bone", StringComparison.InvariantCultureIgnoreCase) && go.name.Contains("root", StringComparison.InvariantCultureIgnoreCase))
+                if (go.name.iContains("bone") && go.name.iContains("root"))
                 {
                     string extension = ".prefab";
                     string prefabPath = fullExtractPath + "/" + go.name + extension;

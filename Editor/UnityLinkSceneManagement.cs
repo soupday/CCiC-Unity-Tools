@@ -10,10 +10,18 @@ using UnityEditor.SceneManagement;
 using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using UnityEngine.Timeline;
+
+using UnityEngine.Rendering;
+#if HDRP_10_5_0_OR_NEWER
+using UnityEngine.Rendering.HighDefinition;
+#elif URP_10_5_0_OR_NEWER
+using UnityEngine.Rendering.Universal;
+#else
+
+#endif
+
 
 namespace Reallusion.Import
 {
@@ -183,7 +191,7 @@ namespace Reallusion.Import
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline" + "-" + stamp;
             Debug.Log("Creating timeline asset in: " + UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
             director = CreateTimelineAsset();
-            return (director != null);            
+            return (director != null);
         }
 
         public static string TimeStampString()
@@ -234,7 +242,6 @@ namespace Reallusion.Import
                 Debug.LogWarning("Cannot add to timeline.");
                 return;
             }
-
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
@@ -254,7 +261,7 @@ namespace Reallusion.Import
 
                 if (workingtrack == null)
                 {
-                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item4);
+                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item5);
                 }
                 else
                 {
@@ -274,7 +281,7 @@ namespace Reallusion.Import
                 // find suitable aniamtion clip (should be the first non T-Pose)
                 foreach (AnimationClip animClip in objectTuple.Item3)
                 {
-                    if (animClip.name.Contains("T-Pose", StringComparison.InvariantCultureIgnoreCase))
+                    if (animClip.name.iContains("T-Pose"))
                     {
                         continue;
                     }
@@ -326,7 +333,7 @@ namespace Reallusion.Import
                 foreach (AnimationClip animClip in objectTuple.Item3)
                 {
                     var bindings = AnimationUtility.GetCurveBindings(animClip);
-                    var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
+                    var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
 
                     var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
                     bool enabled = false;
@@ -334,7 +341,7 @@ namespace Reallusion.Import
                     float start = 0f;
                     float duration = 0f;
                     int index = 0;
-                    foreach(Keyframe keyframe in curve.keys)
+                    foreach (Keyframe keyframe in curve.keys)
                     {
                         if (!enabled)
                         {
@@ -347,7 +354,7 @@ namespace Reallusion.Import
 
                         if (enabled)
                         {
-                            if (keyframe.value == 0 || index == curve.keys.Length -1)
+                            if (keyframe.value == 0 || index == curve.keys.Length - 1)
                             {
                                 enabled = false;
                                 duration = keyframe.time - start;
@@ -377,7 +384,7 @@ namespace Reallusion.Import
         {
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
-                Debug.LogWarning("TimelineEditorWindow is open");                
+                Debug.LogWarning("TimelineEditorWindow is open");
             }
             else
             {
@@ -386,7 +393,7 @@ namespace Reallusion.Import
             }
             EditorWindow.GetWindow<TimelineEditorWindow>().Show();
             Selection.activeGameObject = director.gameObject;
-            
+
         }
         #endregion Scene and Timeline
 
@@ -396,7 +403,7 @@ namespace Reallusion.Import
 #if HDRP_10_5_0_OR_NEWER
             CreateHDRPVolumeAsset();
 #elif URP_10_5_0_OR_NEWER
-            DoURPThings();
+            CreateURPVolumeAsset();
 #else
             DoBuiltinThings();
 #endif
@@ -405,8 +412,10 @@ namespace Reallusion.Import
 #if HDRP_10_5_0_OR_NEWER
         private static void CreateHDRPVolumeAsset()
         {
+            string defaultProfileToClone = "CinematicDark";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
+                        
             Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
             foreach (Volume volume in volumes)
             {
@@ -424,58 +433,238 @@ namespace Reallusion.Import
                 global.isGlobal = true;
             }
 
-            if (global == null) { Debug.LogWarning("CreateHDRPVolumeAsset global == null"); return; }
+            if (global == null) { Debug.LogWarning("CreateHDRPVolumeAsset no global volume could be found or made."); return; }
 
             if (global.sharedProfile == null)
             {
-                Debug.LogWarning("CreateHDRPVolumeAsset sharedProfile == null");
-                
-                string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
-                Debug.LogWarning("CreateHDRPVolumeAsset volumeGuids found: " + volumeGuids.Length);
-                foreach (string volumeGuid in volumeGuids)
+                string sharedProfilePath = UnityLinkManager.SCENE_FOLDER + "/" + "RL_Volume_" + UnityLinkManager.SCENE_NAME + ".asset";
+
+                // try to load existing scene specific volume profile (one that was previously auto created)
+                // really only relevant to saved scenes - profles for unsaved scene have timestamps
+                if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains("CinematicDark", StringComparison.InvariantCultureIgnoreCase))
+                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(sharedProfilePath);
+                }
+
+                // if no existing asset, clone one of the preview volume profiles from the shader package
+                if (sharedProfile == null)
+                {
+                    string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
+                    foreach (string volumeGuid in volumeGuids)
                     {
-                        Debug.LogWarning("CreateHDRPVolumeAsset CinematicDark found");
-                        VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
-                        sharedProfile = GameObject.Instantiate(found);
-                        if (sharedProfile == null)
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            Debug.LogWarning("CreateHDRPVolumeAsset CinematicDark couldnt be loaded");
+                            VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
+                            if (found != null)
+                            {
+                                sharedProfile = GameObject.Instantiate(found);
+                            }
                         }
                     }
                 }
 
-                if (sharedProfile == null) { Debug.LogWarning("CreateHDRPVolumeAsset sharedProfile == null STILL"); return; }
+                // if unable to clone a preview volume, create a default volume profile
+                if (sharedProfile == null)
+                {
+                    if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                    {
+                        Debug.LogWarning("Creating new volume profile");
+                        UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                        sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
+                    }
+                }
 
-                // moved saving
-                string sharedProfilePath = UnityLinkManager.SCENE_FOLDER + "/" + "RL_Volume_" + UnityLinkManager.SCENE_NAME + ".asset";
-                Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
-                UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);
-                AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
+                // total failure case
+                if (sharedProfile == null)
+                { 
+                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return; 
+                }
+
+                if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                {
+                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                    // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
+                    AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
+                }
+                else
+                {
+                    
+                }          
                 global.sharedProfile = sharedProfile;
+            }
+            else
+            {
+                sharedProfile = global.sharedProfile;
             }
 
             // depth of field override
             if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
-            //if (!sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
             {
                 //dof = global.sharedProfile.Add<DepthOfField>(true);
-                //dof = sharedProfile.Add<DepthOfField>(true);
-                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(global.sharedProfile);
+                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
+                                                                               overrides: true,
+                                                                               saveAsset: true);
             }
+            
             dof.SetAllOverridesTo(true);
             DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
             dof.focusMode = mode;
             FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
-            dof.focusDistanceMode = distanceMode;
+            dof.focusDistanceMode = distanceMode;            
+            dof.quality.levelAndOverride = (2, true);
+            dof.highQualityFiltering = true;
+
             // other overrides
 
-            // override having no immediate effect with add global.sharedProfile.Add<DepthOfField>
-            // VolumeProfileFactory.CreateVolumeComponent has effect and saves properly
+            AssetDatabase.SaveAssetIfDirty(sharedProfile);
+            // https://discussions.unity.com/t/resource-tutorial-urp-hdrp-volumemananger-not-initialized-in-frame-1/1558540
+            v = global;
+            EditorApplication.update -= WaitForFrames;
+            EditorApplication.update += WaitForFrames;
         }
+        static Volume v;
+        static int frames = 10;
+        static void WaitForFrames()
+        {
+            frames--;
+            if (frames > 0) return;
+
+            frames = 10;
+            EditorApplication.update -= WaitForFrames;
+            Debug.LogWarning("Registering Volume");
+            VolumeManager.instance.Unregister(v, 0);
+            VolumeManager.instance.Register(v, 0);
+        }
+
 #elif URP_10_5_0_OR_NEWER
-        public static void DoURPThings() { }
+        public static void CreateURPVolumeAsset()
+        {
+            string defaultProfileToClone = "RL_URP Post Processing Profile";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
+            Volume global = null;
+            VolumeProfile sharedProfile = null;
+
+            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            foreach (Volume volume in volumes)
+            {
+                if (volume.isGlobal)
+                {
+                    global = volume;
+                    break;
+                }
+            }
+
+            if (global == null)
+            {
+                GameObject gameObject = new GameObject("RL_Global_Volume_Object");
+                global = gameObject.AddComponent<Volume>();
+                global.isGlobal = true;
+            }
+
+            if (global == null) { Debug.LogWarning("CreateURPVolumeAsset no global volume could be found or made."); return; }
+
+            if (global.sharedProfile == null)
+            {
+                string sharedProfilePath = UnityLinkManager.SCENE_FOLDER + "/" + "RL_Volume_" + UnityLinkManager.SCENE_NAME + ".asset";
+
+                // try to load existing scene specific volume profile (one that was previously auto created)
+                // really only relevant to saved scenes - profles for unsaved scene have timestamps
+                if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                {
+                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(sharedProfilePath);
+                }
+
+                // if no existing asset, clone one of the preview volume profiles from the shader package
+                if (sharedProfile == null)
+                {
+                    string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
+                    foreach (string volumeGuid in volumeGuids)
+                    {
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
+                            if (found != null)
+                            {
+                                sharedProfile = GameObject.Instantiate(found);
+                            }
+                        }
+                    }
+                }
+
+                // if unable to clone a preview volume, create a default volume profile
+                if (sharedProfile == null)
+                {
+                    if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                    {
+                        Debug.LogWarning("Creating new volume profile");
+                        UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                        sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
+                    }
+                }
+
+                // total failure case
+                if (sharedProfile == null)
+                {
+                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
+                }
+
+                if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                {
+                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                    // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
+                    AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
+                }
+                else
+                {
+
+                }
+                global.sharedProfile = sharedProfile;
+                global.runInEditMode = true;
+            }
+            else
+            {
+                sharedProfile = global.sharedProfile;
+                global.runInEditMode = true;
+            }
+
+            // depth of field override
+            if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            {
+                //dof = global.sharedProfile.Add<DepthOfField>(true);
+                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
+                                                                               overrides: true,
+                                                                               saveAsset: true);
+            }
+            dof.SetAllOverridesTo(true);
+            DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Bokeh, true);
+            dof.mode = mode;
+
+            // other overrides
+
+
+            AssetDatabase.SaveAssetIfDirty(sharedProfile);
+            // https://discussions.unity.com/t/resource-tutorial-urp-hdrp-volumemananger-not-initialized-in-frame-1/1558540
+            v = global;
+            EditorApplication.update -= WaitForFrames;
+            EditorApplication.update += WaitForFrames;
+        }
+        static Volume v;
+        static int frames = 10;
+        static void WaitForFrames()
+        {
+            frames--;
+            if (frames > 0) return;
+
+            frames = 10;
+            EditorApplication.update -= WaitForFrames;
+            Debug.LogWarning("Registering Volume");
+            VolumeManager.instance.Unregister(v, 0);
+            VolumeManager.instance.Register(v, 0);
+        }
+
 #else
         public static void DoBuiltinThings() { }
 #endif
