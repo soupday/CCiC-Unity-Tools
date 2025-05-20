@@ -524,6 +524,7 @@ namespace Reallusion.Import
                     }
                 case 2:
                     {
+                        if (EditorApplication.isPlaying) break;
                         if (linkModule == null)
                         {
                             linkModule = ScriptableObject.CreateInstance<UnityLinkManagerWindow>();
@@ -546,10 +547,10 @@ namespace Reallusion.Import
 
             //RestoreData();
             //RestoreSelection();
-
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+                        
             if (validCharacters == null || validCharacters.Count == 0)
             {
+                EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
                 GUILayout.BeginVertical();
                 GUILayout.FlexibleSpace();
 
@@ -573,9 +574,9 @@ namespace Reallusion.Import
 
                 GUILayout.FlexibleSpace();
                 GUILayout.EndVertical();
+                EditorGUI.EndDisabledGroup();
                 return;
-            }
-            EditorGUI.EndDisabledGroup();
+            }            
 
             float width = position.width - WINDOW_MARGIN;
             float height = position.height - WINDOW_MARGIN - TAB_HEIGHT;

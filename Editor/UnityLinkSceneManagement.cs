@@ -18,10 +18,11 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
+#elif UNITY_POST_PROCESSING_3_1_1
+using UnityEngine.Rendering.PostProcessing;
 #else
 
 #endif
-
 
 namespace Reallusion.Import
 {
@@ -186,7 +187,16 @@ namespace Reallusion.Import
             string stamp = TimeStampString();
 
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline Object (" + stamp + ")";
-            UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(UnityLinkManager.IMPORT_DESTINATION_FOLDER, UnityLinkManager.SCENE_ASSETS);
+            /*
+            string validatedDestFolder = string.Empty;
+            if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER))
+                validatedDestFolder = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;
+            else
+                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+            */
+            string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+
+            UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(validatedDestFolder, UnityLinkManager.SCENE_ASSETS);
             UnityLinkImporter.CheckUnityPath(UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline" + "-" + stamp;
             Debug.Log("Creating timeline asset in: " + UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
@@ -232,8 +242,21 @@ namespace Reallusion.Import
 
         public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string) objectTuple)
         {
+            UnlockTimeLineWindow();
             Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
-            GameObject sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
+
+            GameObject sceneObject = null;
+            if (PrefabUtility.GetPrefabAssetType(objectTuple.Item2) != PrefabAssetType.NotAPrefab)
+            {
+                sceneObject = (objectTuple.Item4 ? PrefabUtility.InstantiatePrefab(objectTuple.Item2) as GameObject: objectTuple.Item2);
+            }
+            else
+            {
+                Debug.LogWarning("NOT A PREFAB");
+                sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
+            }
+
+            //GameObject sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
             sceneObject.transform.position = Vector3.zero;
             sceneObject.transform.rotation = Quaternion.identity;
 
@@ -245,7 +268,7 @@ namespace Reallusion.Import
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            if (objectTuple.Item1 == TrackType.AnimationTrack)
+            if (objectTuple.Item1 == TrackType.AnimationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
             {
                 AnimationTrack workingtrack = null;
 
@@ -299,7 +322,7 @@ namespace Reallusion.Import
                 director.SetGenericBinding(workingtrack, sceneObject);
             }
 
-            if (objectTuple.Item1 == TrackType.ActivationTrack)
+            if (objectTuple.Item1 == TrackType.ActivationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
             {
                 ActivationTrack workingtrack = null;
 
@@ -378,6 +401,7 @@ namespace Reallusion.Import
 
             TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
             ShowTimeLineWindow(director);
+            MarkSceneAsDirty();
         }
 
         public static void ShowTimeLineWindow(PlayableDirector director)
@@ -393,8 +417,22 @@ namespace Reallusion.Import
             }
             EditorWindow.GetWindow<TimelineEditorWindow>().Show();
             Selection.activeGameObject = director.gameObject;
-
         }
+
+        public static void UnlockTimeLineWindow()
+        {
+            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
+            {
+                EditorWindow.GetWindow<TimelineEditorWindow>().locked = false;
+            }
+        }
+
+        public static void MarkSceneAsDirty()
+        {
+            var scene = SceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
         #endregion Scene and Timeline
 
         #region Scene Dependencies 
@@ -404,6 +442,8 @@ namespace Reallusion.Import
             CreateHDRPVolumeAsset();
 #elif URP_10_5_0_OR_NEWER
             CreateURPVolumeAsset();
+#elif UNITY_POST_PROCESSING_3_1_1
+            CreatePostProcessVolumeAsset();
 #else
             DoBuiltinThings();
 #endif
@@ -664,7 +704,118 @@ namespace Reallusion.Import
             VolumeManager.instance.Unregister(v, 0);
             VolumeManager.instance.Register(v, 0);
         }
+#elif UNITY_POST_PROCESSING_3_1_1
+        public static void CreatePostProcessVolumeAsset()
+        {
+            // RL Preview Scene Post Processing Volume Profile 3.1.1
+            string searchTerm = "RL Preview Scene";
+            string defaultProfileToClone = "Post Processing Volume Profile";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
+            PostProcessVolume global = null;
+            PostProcessProfile sharedProfile = null;
 
+            PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>();
+            foreach (PostProcessVolume volume in volumes)
+            {
+                if (volume.isGlobal)
+                {
+                    global = volume;
+                    break;
+                }
+            }
+
+            if (global == null)
+            {
+                GameObject gameObject = new GameObject("RL_Global_Volume_Object");
+                global = gameObject.AddComponent<PostProcessVolume>();
+                global.isGlobal = true;
+            }
+
+            if (global == null) { Debug.LogWarning("CreatePostProcessVolumeAsset no global volume could be found or made."); return; }
+
+            if (global.sharedProfile == null)
+            {
+                string sharedProfilePath = UnityLinkManager.SCENE_FOLDER + "/" + "RL_Volume_" + UnityLinkManager.SCENE_NAME + ".asset";
+
+                // try to load existing scene specific volume profile (one that was previously auto created)
+                // really only relevant to saved scenes - profles for unsaved scene have timestamps
+                if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                {
+                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    sharedProfile = AssetDatabase.LoadAssetAtPath<PostProcessProfile>(sharedProfilePath);
+                }
+
+                // if no existing asset, clone one of the preview volume profiles from the shader package
+                if (sharedProfile == null)
+                {
+                    string[] volumeGuids = AssetDatabase.FindAssets(searchTerm, new string[] { "Assets" });
+                    foreach (string volumeGuid in volumeGuids)
+                    {
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            PostProcessProfile found = AssetDatabase.LoadAssetAtPath<PostProcessProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
+                            if (found != null)
+                            {
+                                sharedProfile = GameObject.Instantiate(found);
+                            }
+                        }
+                    }
+                }
+
+                // if unable to clone a preview volume, create a default volume profile
+                if (sharedProfile == null)
+                {
+                    if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                    {
+                        Debug.LogWarning("Creating new volume profile");
+                        UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                        //sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
+                        sharedProfile = ScriptableObject.CreateInstance<PostProcessProfile>();
+                    }
+                }
+
+                // total failure case
+                if (sharedProfile == null)
+                {
+                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
+                }
+
+                if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
+                {
+                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
+                    // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
+                    AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
+                }
+                else
+                {
+
+                }
+                global.sharedProfile = sharedProfile;
+                global.runInEditMode = true;
+            }
+            else
+            {
+                sharedProfile = global.sharedProfile;
+                global.runInEditMode = true;
+            }
+            /*
+            // depth of field override
+            if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            {
+                //dof = global.sharedProfile.Add<DepthOfField>(true);
+                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
+                                                                               overrides: true,
+                                                                               saveAsset: true);
+            }
+            dof.SetAllOverridesTo(true);
+            DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Bokeh, true);
+            dof.mode = mode;
+
+            // other overrides
+            */
+
+            AssetDatabase.SaveAssetIfDirty(sharedProfile);
+        }
 #else
         public static void DoBuiltinThings() { }
 #endif
@@ -675,6 +826,7 @@ namespace Reallusion.Import
         {
             AnimationTrack,
             ActivationTrack,
+            AnimationAndActivationTracks,
             AudioTrack
         }
         #endregion Enum

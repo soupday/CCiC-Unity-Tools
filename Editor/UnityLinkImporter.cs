@@ -21,6 +21,15 @@ using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using System.Reflection;
 using UnityEngine.SceneManagement;
+#if HDRP_10_5_0_OR_NEWER
+using UnityEngine.Rendering.HighDefinition;
+using UnityEditor.Rendering;
+#elif URP_10_5_0_OR_NEWER
+using UnityEngine.Rendering.Universal;
+using UnityEditor.Rendering;
+#elif UNITY_POST_PROCESSING_3_1_1
+using UnityEngine.Rendering.PostProcessing;
+#endif
 
 namespace Reallusion.Import
 {
@@ -70,8 +79,14 @@ namespace Reallusion.Import
         
         // enabled specific - use in building an activation track
         public bool active_delta = false;
-        
+
         // light specific
+        public const float HDRP_INTENSITY_SCALE = 25000f;
+        public const float URP_INTENSITY_SCALE = 1f;
+        public const float PP_INTENSITY_SCALE = 0.12f;
+        public const float BASE_INTENSITY_SCALE = 1f;
+        public const float RANGE_SCALE = 0.01f;
+
         public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
 
         // camera specific
@@ -84,7 +99,8 @@ namespace Reallusion.Import
         {
             QueueItem = item;
             opCode = QueueItem.OpCode;
-            importDestinationFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+            //importDestinationFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+            importDestinationFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
             importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
             addToTimeLine = UnityLinkManager.ADD_TO_TIMELINE;
             selectedTimeline = UnityLinkManager.SCENE_TIMELINE_ASSET;
@@ -286,24 +302,19 @@ namespace Reallusion.Import
             //string assetFolder = Path.GetDirectoryName(assetPath);
             string assetFolderName = name; // Path.GetFileName(assetFolder);
             Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
-            /*
-            string PARENT_FOLDER = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT });
-            if (!AssetDatabase.IsValidFolder(PARENT_FOLDER)) AssetDatabase.CreateFolder(ROOT_FOLDER, IMPORT_PARENT);
-            string IMPORT_PATH = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER });
-            if (!AssetDatabase.IsValidFolder(IMPORT_PATH)) AssetDatabase.CreateFolder(PARENT_FOLDER, IMPORT_FOLDER);
-
-            string proposedDestinationFolder = Path.Combine(new string[] { ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, assetFolderName });
-            */
-
+            
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
 
             // case where the IMPORT_DESTINATION_FOLDER is still null without user setting it
+            /*
             string validatedDestFolder = string.Empty;
             if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER))            
                 validatedDestFolder = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;            
             else            
-                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;            
+                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
+            */
+            string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
 
             string proposedDestinationFolder = Path.Combine(validatedDestFolder.FullPathToUnityAssetPath(), assetFolderName);
             Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
@@ -489,6 +500,8 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
 
+            UnityLinkSceneManagement.CreateStagingSceneDependencies();
+
             string dataPath = Path.GetDirectoryName(Application.dataPath);
             string fullFolderPath = Path.Combine(dataPath, fbxPath);
             string[] fileList = Directory.GetFiles(fullFolderPath);
@@ -626,7 +639,8 @@ namespace Reallusion.Import
             GameObject root = GetRootSceneObject(jsonCameraObject.LinkId);
             root.name = "Camera_" + jsonCameraObject.Name + "_Root";
 
-            GameObject target = new GameObject(jsonCameraObject.Name);
+            GameObject target = new GameObject();
+            target.name = jsonCameraObject.Name;
 
             if (CameraProxyType == null)
             {
@@ -638,26 +652,61 @@ namespace Reallusion.Import
                 }
             }
 
+            Camera camera = target.GetComponent<Camera>();
+            if (camera == null) camera = target.AddComponent<Camera>();
+
             target.AddComponent(CameraProxyType);
-            target.AddComponent<Camera>();
+            
+            
+            float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
+            float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
+            float initialAperture = alpha * beta;
 
 #if HDRP_10_5_0_OR_NEWER
-            if (HDAdditionalCameraData == null)
-                HDAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalCameraData");
+            //if (HDAdditionalCameraData == null)
+            //    HDAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalCameraData");
 
-            if (HDAdditionalCameraData != null)
-                if (target.GetComponent(HDAdditionalCameraData) == null) target.AddComponent(HDAdditionalCameraData);
+            //if (HDAdditionalCameraData != null)
+            //   if (target.GetComponent(HDAdditionalCameraData) == null) target.AddComponent(HDAdditionalCameraData);
+
+            HDAdditionalCameraData HDCameraData = target.GetComponent<HDAdditionalCameraData>();
+            if (HDCameraData == null) HDCameraData = target.AddComponent<HDAdditionalCameraData>();            
+
+            HDCameraData.physicalParameters.focusDistance = jsonCameraObject.DofFocus;
+            HDCameraData.physicalParameters.aperture = initialAperture;
 #elif URP_10_5_0_OR_NEWER
-            if (URPAdditionalCameraData == null)
-                URPAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData");
+            //if (URPAdditionalCameraData == null)
+            //    URPAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData");
 
-            if (URPAdditionalCameraData != null)
-                if (target.GetComponent(URPAdditionalCameraData) == null) target.AddComponent(URPAdditionalCameraData);
+            //if (URPAdditionalCameraData != null)
+            //    if (target.GetComponent(URPAdditionalCameraData) == null) target.AddComponent(URPAdditionalCameraData);
+
+           UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
+            if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();  
+
+           URPCameraData.renderPostProcessing = true;
+           URPCameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+#elif UNITY_POST_PROCESSING_3_1_1
+            PostProcessLayer layer = target.GetComponent<PostProcessLayer>();
+            if (layer == null) layer = target.AddComponent<PostProcessLayer>();
 #endif
-
+            //Set Initial CameraProperties
+            if (camera != null)
+            {
+                Debug.LogWarning("Camera component is NOT null");
+                camera.usePhysicalProperties = true;
+                camera.focalLength = jsonCameraObject.FocalLength;
+                Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
+                camera.sensorSize = new Vector2(jsonCameraObject.Width, jsonCameraObject.Height);
+            }
+            else
+            {
+                Debug.LogWarning("Camera component is null");
+            }
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
             target.transform.SetParent(root.transform, true);
+            SetInitialCameraTransform(target.transform, jsonCameraObject);
 
             AnimationClip clip = MakeCameraAnimationClipFromFramesForObject(frames, target, root);
             
@@ -665,9 +714,21 @@ namespace Reallusion.Import
             {
                 clip.name = jsonCameraObject.LinkId;
                 SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
-                GameObject toPrefab = SetupCamera(jsonCameraObject, root, clip);
-                SavestagingPrefabAsset(jsonCameraObject.LinkId, jsonCameraObject.Name, toPrefab);
+                SetupCamera(jsonCameraObject, root, clip);
             }
+        }
+
+        public void SetInitialCameraProperties(Camera camera, UnityLinkManager.JsonCameraData jsonCamObject)
+        {
+            // Common settings
+            
+        }
+
+        public void SetInitialCameraTransform(Transform camTransform, UnityLinkManager.JsonCameraData jsonCamObject)
+        {
+            camTransform.localPosition = jsonCamObject.Pos;
+            camTransform.localRotation = jsonCamObject.Rot;
+            camTransform.localScale = jsonCamObject.Scale;
         }
 
         AnimationClip MakeCameraAnimationClipFromFramesForObject(List<UnityLinkManager.DeserializedCameraFrames> frames, GameObject target, GameObject root)
@@ -921,10 +982,13 @@ namespace Reallusion.Import
             string jsonString = JsonConvert.SerializeObject(json);
             SetupCameraMethod.Invoke(proxy, new object[] { jsonString, clip });
 
+            GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);
+            GameObject.DestroyImmediate(root);
+
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, root, clips, false, json.LinkId));
-            UnityLinkSceneManagement.CreateStagingSceneDependencies();
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId));
+            //UnityLinkSceneManagement.CreateStagingSceneDependencies();
             return root;
         }
         #endregion Animated Camera
@@ -961,7 +1025,8 @@ namespace Reallusion.Import
             GameObject root = GetRootSceneObject(jsonLightObject.LinkId);
             root.name = "Light_" + jsonLightObject.Name + "_Root";
 
-            GameObject target = new GameObject(jsonLightObject.Name);
+            GameObject target = new GameObject();
+            target.name = jsonLightObject.Name;
 
             if (LightProxyType == null)
             {
@@ -974,7 +1039,7 @@ namespace Reallusion.Import
             }
 
             target.AddComponent(LightProxyType);
-            target.AddComponent<Light>();
+            var light = target.AddComponent<Light>();
 
 #if HDRP_10_5_0_OR_NEWER
             if (HDAdditionalLightData == null)
@@ -985,10 +1050,17 @@ namespace Reallusion.Import
 #elif URP_10_5_0_OR_NEWER
 
 
+#elif UNITY_POST_PROCESSING_3_1_1
+            //float value = jsonLightObject.Multiplier * PP_INTENSITY_SCALE;
+            //light.intensity = value;
+
+            //light.color = jsonLightObject.Color;
 #endif
+            SetInitialCommonLightProperties(light, jsonLightObject); // ...
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
-            target.transform.SetParent(root.transform, true);            
+            target.transform.SetParent(root.transform, true);
+            SetInitialLightTransform(light.gameObject.transform, jsonLightObject); // ...
 
             AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
 
@@ -996,9 +1068,64 @@ namespace Reallusion.Import
             {
                 clip.name = jsonLightObject.LinkId;
                 SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
-                GameObject toPrefab = SetupLight(jsonLightObject, root, clip);
-                SavestagingPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, toPrefab);
+                SetupLight(jsonLightObject, root, clip);
+
+                //GameObject prefab = GetPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, root);
+                //SetupLight(jsonLightObject, root, clip, prefab);
+                //GameObject toPrefab = SetupLight(jsonLightObject, root, clip);
+                //SavestagingPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, toPrefab);
             }
+        }
+
+        public void SetInitialCommonLightProperties(Light light, UnityLinkManager.JsonLightData jsonLightObject)
+        {
+            const string spot = "SPOT";
+            const string dir = "DIR";
+            const string point = "POINT";
+
+            switch (jsonLightObject.Type)
+            {
+                case (spot):
+                    {
+                        light.type = LightType.Spot;
+                        break;
+                    }
+                case (dir):
+                    {
+                        light.type = LightType.Directional;
+                        break;
+                    }
+                case (point):
+                    {
+                        light.type = LightType.Point;
+                        break;
+                    }
+            }
+            
+            light.useColorTemperature = false;
+#if UNITY_POST_PROCESSING_3_1_1
+            light.lightmapBakeType = LightmapBakeType.Mixed;
+            light.shadows = LightShadows.Soft;
+            light.intensity = jsonLightObject.Multiplier * PP_INTENSITY_SCALE;
+            light.color = jsonLightObject.Color;
+#else
+            light.shadows = LightShadows.Hard;
+#endif
+            light.spotAngle = jsonLightObject.Angle;
+            light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);
+            light.range = jsonLightObject.Range * RANGE_SCALE;
+        }
+
+        public float GetInnerAngle(float fall, float att)
+        {
+            return (fall + att) / 2;
+        }
+
+        public void SetInitialLightTransform(Transform lightTransform, UnityLinkManager.JsonLightData jsonLightObject)
+        {
+            lightTransform.localPosition = jsonLightObject.Pos;
+            lightTransform.localRotation = jsonLightObject.Rot;
+            lightTransform.localScale = jsonLightObject.Scale;
         }
 
         AnimationClip MakeLightAnimationFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedLightFrames> frames, GameObject target, GameObject root)
@@ -1277,7 +1404,7 @@ namespace Reallusion.Import
             return clip;
         }
 
-        GameObject SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)
+        GameObject SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)//, GameObject prefab = null)
         {
             if (LightProxyType == null)
             {
@@ -1326,13 +1453,15 @@ namespace Reallusion.Import
             string jsonString = JsonConvert.SerializeObject(json);
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
             
+            GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);            
+            GameObject.DestroyImmediate(root);
+
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, root, clips, false, json.LinkId));
-            if (active_delta) timelineKitList.Add((UnityLinkSceneManagement.TrackType.ActivationTrack, root, clips, false, json.LinkId));
-            UnityLinkSceneManagement.CreateStagingSceneDependencies();
-            return root;
 
+            timelineKitList.Add((active_delta ? UnityLinkSceneManagement.TrackType.AnimationAndActivationTracks : UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId));
+            //UnityLinkSceneManagement.CreateStagingSceneDependencies();
+            return root;
         }
         #endregion Animated Light
 
@@ -1371,6 +1500,20 @@ namespace Reallusion.Import
                 CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
                 PrefabUtility.SaveAsPrefabAsset(toPrefab, prefabAssetPath);
             }
+        }
+
+        GameObject GetPrefabAsset(string LinkId, string Name, GameObject toPrefab)
+        {
+            GameObject prefab = null;
+            if (!string.IsNullOrEmpty(importDestinationFolder))
+            {
+                string linkedName = Name + "_" + LinkId;
+                string fullPrefabAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".prefab";
+                string prefabAssetPath = fullPrefabAssetPath.FullPathToUnityAssetPath();
+                CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
+                prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(toPrefab, prefabAssetPath, InteractionMode.AutomatedAction);                
+            }
+            return prefab;
         }
 
         public static void CheckUnityPath(string path) // and create them in the AssetDatabase if needed

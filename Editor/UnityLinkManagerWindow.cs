@@ -46,6 +46,12 @@ namespace Reallusion.Import
         public static RLSettingsObject settings;
         private void OnEnable()
         {
+            EditorApplication.quitting -= QuitCleanup;
+            EditorApplication.quitting += QuitCleanup;
+
+            EditorApplication.playModeStateChanged -= OnPlayModeChange;
+            EditorApplication.playModeStateChanged += OnPlayModeChange;
+
             Instance = this;
             foldoutControlArea = true;
 
@@ -69,6 +75,14 @@ namespace Reallusion.Import
         private void QuitCleanup()
         {
             UnityLinkManager.DisconnectFromServer();
+        }
+
+        private void OnPlayModeChange(PlayModeStateChange stateChange)
+        {
+            if (stateChange == PlayModeStateChange.ExitingEditMode)
+            {
+                UnityLinkManager.DisconnectFromServer();
+            }
         }
 
         private static void RepaintOnUpdate(bool stop = false)
@@ -164,7 +178,7 @@ namespace Reallusion.Import
         public static void AttemptAutoReconnect()
         {
             Debug.Log("OnEnable - AutoReconnect");
-            if (IsConnectedTimeStampWithin(new TimeSpan(0, 5, 0)))
+            if (IsConnectedTimeStampWithin(new TimeSpan(0, 5, 0)) && !EditorApplication.isPlaying)
             {
                 Debug.Log("OnEnable - Attempting to reconnect");
                 // mimic of the connect button's UI control elements (connectInProgress + control vars)
@@ -504,7 +518,7 @@ namespace Reallusion.Import
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
 
-            globalScrollPos = GUILayout.BeginScrollView(globalScrollPos);
+            //globalScrollPos = GUILayout.BeginScrollView(globalScrollPos);
             GUILayout.Space(PADDING);
             GUILayout.BeginVertical();
 
@@ -554,7 +568,7 @@ namespace Reallusion.Import
             GUILayout.Space(PADDING);
             GUILayout.EndVertical();
 
-            GUILayout.EndScrollView();
+            //GUILayout.EndScrollView();
 
             if (createSceneAfterGUI)
             {
