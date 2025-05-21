@@ -1064,14 +1064,15 @@ namespace Reallusion.Import
                         break;
                     }
             }
-
-#if HDRP_10_5_0_OR_NEWER
+#if HDRP_17_0_0_OR_NEWER
+            light.shadows = LightShadows.Hard;
+            light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
+#elif HDRP_10_5_0_OR_NEWER
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
             light.shadows = LightShadows.Hard;
-            HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE; // depracated in 6000
-            //light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;  // find minimum version this works on for HDRP
+            HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif URP_10_5_0_OR_NEWER
             light.shadows = LightShadows.Hard;
             light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
@@ -1084,7 +1085,6 @@ namespace Reallusion.Import
             light.shadows = LightShadows.Soft;
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
 #endif
-
             light.useColorTemperature = false;
             light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
