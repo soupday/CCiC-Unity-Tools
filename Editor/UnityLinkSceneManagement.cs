@@ -415,9 +415,12 @@ namespace Reallusion.Import
                 Debug.LogWarning("TimelineEditorWindow is not open");
                 EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
             }
-            EditorWindow.GetWindow<TimelineEditorWindow>().Show();
+            var timelineWindow = EditorWindow.GetWindow<TimelineEditorWindow>();
+            timelineWindow.Show();
+            //EditorWindow.GetWindow<TimelineEditorWindow>().Show();
             Selection.activeGameObject = director.gameObject;
         }
+            
 
         public static void UnlockTimeLineWindow()
         {
@@ -548,12 +551,19 @@ namespace Reallusion.Import
                                                                                saveAsset: true);
             }
             
-            dof.SetAllOverridesTo(true);
+            //dof.SetAllOverridesTo(true);
             DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
             dof.focusMode = mode;
             FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
-            dof.focusDistanceMode = distanceMode;            
-            dof.quality.levelAndOverride = (2, true);
+            dof.focusDistanceMode = distanceMode;
+            
+            dof.quality.levelAndOverride = (2, false);
+
+            //dof.nearMaxBlur = 7f;
+            //dof.nearSampleCount = 8;
+            //dof.farMaxBlur = 13f;
+            //dof.farSampleCount = 14;
+
             dof.highQualityFiltering = true;
 
             // other overrides

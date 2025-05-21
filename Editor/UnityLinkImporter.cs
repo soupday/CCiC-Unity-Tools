@@ -81,7 +81,11 @@ namespace Reallusion.Import
         public bool active_delta = false;
 
         // light specific
+#if HDRP_17_0_0_OR_NEWER
+        public const float HDRP_INTENSITY_SCALE = 6000f;
+#else
         public const float HDRP_INTENSITY_SCALE = 25000f;
+#endif
         public const float URP_INTENSITY_SCALE = 1f;
         public const float PP_INTENSITY_SCALE = 0.12f;
         public const float BASE_INTENSITY_SCALE = 1f;
@@ -661,14 +665,10 @@ namespace Reallusion.Import
             float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
             float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
             float initialAperture = alpha * beta;
-
-#if HDRP_10_5_0_OR_NEWER
-            //if (HDAdditionalCameraData == null)
-            //    HDAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalCameraData");
-
-            //if (HDAdditionalCameraData != null)
-            //   if (target.GetComponent(HDAdditionalCameraData) == null) target.AddComponent(HDAdditionalCameraData);
-
+#if HDRP_17_0_0_OR_NEWER
+            camera.focusDistance = jsonCameraObject.DofFocus;
+            camera.aperture = initialAperture;
+#elif HDRP_10_5_0_OR_NEWER
             HDAdditionalCameraData HDCameraData = target.GetComponent<HDAdditionalCameraData>();
             if (HDCameraData == null) HDCameraData = target.AddComponent<HDAdditionalCameraData>();            
 
@@ -1039,46 +1039,9 @@ namespace Reallusion.Import
             }
 
             target.AddComponent(LightProxyType);
-            var light = target.AddComponent<Light>();
+            Light light = target.GetComponent<Light>();
+            if (light == null) light = target.AddComponent<Light>();
 
-#if HDRP_10_5_0_OR_NEWER
-            if (HDAdditionalLightData == null)
-                HDAdditionalLightData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.HighDefinition.HDAdditionalLightData");
-
-            if (HDAdditionalLightData != null)
-                if (target.GetComponent(HDAdditionalLightData) == null) target.AddComponent(HDAdditionalLightData);
-#elif URP_10_5_0_OR_NEWER
-
-
-#elif UNITY_POST_PROCESSING_3_1_1
-            //float value = jsonLightObject.Multiplier * PP_INTENSITY_SCALE;
-            //light.intensity = value;
-
-            //light.color = jsonLightObject.Color;
-#endif
-            SetInitialCommonLightProperties(light, jsonLightObject); // ...
-            target.transform.position = Vector3.zero;
-            target.transform.rotation = Quaternion.identity;
-            target.transform.SetParent(root.transform, true);
-            SetInitialLightTransform(light.gameObject.transform, jsonLightObject); // ...
-
-            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
-
-            if (jsonLightObject != null)
-            {
-                clip.name = jsonLightObject.LinkId;
-                SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
-                SetupLight(jsonLightObject, root, clip);
-
-                //GameObject prefab = GetPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, root);
-                //SetupLight(jsonLightObject, root, clip, prefab);
-                //GameObject toPrefab = SetupLight(jsonLightObject, root, clip);
-                //SavestagingPrefabAsset(jsonLightObject.LinkId, jsonLightObject.Name, toPrefab);
-            }
-        }
-
-        public void SetInitialCommonLightProperties(Light light, UnityLinkManager.JsonLightData jsonLightObject)
-        {
             const string spot = "SPOT";
             const string dir = "DIR";
             const string point = "POINT";
@@ -1101,31 +1064,54 @@ namespace Reallusion.Import
                         break;
                     }
             }
-            
-            light.useColorTemperature = false;
-#if UNITY_POST_PROCESSING_3_1_1
+
+#if HDRP_10_5_0_OR_NEWER
+            HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
+            if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
+
+            light.shadows = LightShadows.Hard;
+            HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE; // depracated in 6000
+            //light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;  // find minimum version this works on for HDRP
+#elif URP_10_5_0_OR_NEWER
+            light.shadows = LightShadows.Hard;
+            light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
+#elif UNITY_POST_PROCESSING_3_1_1
             light.lightmapBakeType = LightmapBakeType.Mixed;
             light.shadows = LightShadows.Soft;
             light.intensity = jsonLightObject.Multiplier * PP_INTENSITY_SCALE;
-            light.color = jsonLightObject.Color;
 #else
-            light.shadows = LightShadows.Hard;
+            light.lightmapBakeType = LightmapBakeType.Mixed;
+            light.shadows = LightShadows.Soft;
+            light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
 #endif
+
+            light.useColorTemperature = false;
+            light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
             light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);
             light.range = jsonLightObject.Range * RANGE_SCALE;
-        }
+            
+            target.transform.position = Vector3.zero;
+            target.transform.rotation = Quaternion.identity;
+            target.transform.SetParent(root.transform, true);
 
+            target.transform.localPosition = jsonLightObject.Pos;
+            target.transform.localRotation = jsonLightObject.Rot;
+            target.transform.localScale = jsonLightObject.Scale;
+
+            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
+
+            if (jsonLightObject != null)
+            {
+                clip.name = jsonLightObject.LinkId;
+                SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
+                SetupLight(jsonLightObject, root, clip);
+            }
+        }
+        
         public float GetInnerAngle(float fall, float att)
         {
             return (fall + att) / 2;
-        }
-
-        public void SetInitialLightTransform(Transform lightTransform, UnityLinkManager.JsonLightData jsonLightObject)
-        {
-            lightTransform.localPosition = jsonLightObject.Pos;
-            lightTransform.localRotation = jsonLightObject.Rot;
-            lightTransform.localScale = jsonLightObject.Scale;
         }
 
         AnimationClip MakeLightAnimationFromFramesForObject(string jsonString, List<UnityLinkManager.DeserializedLightFrames> frames, GameObject target, GameObject root)
