@@ -1059,6 +1059,9 @@ namespace Reallusion.Import
                     }
             }
 #if HDRP_17_0_0_OR_NEWER // HDRP 17 migrated light intensity to the <Light> component from the <HDAdditionalData> component
+            HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
+            if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
+
             light.shadows = LightShadows.Hard;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif HDRP_10_5_0_OR_NEWER
