@@ -81,7 +81,7 @@ namespace Reallusion.Import
         public bool active_delta = false;
 
         // light specific
-#if HDRP_17_0_0_OR_NEWER
+#if HDRP_14_0_0_OR_NEWER
         public const float HDRP_INTENSITY_SCALE = 6000f;
 #else
         public const float HDRP_INTENSITY_SCALE = 25000f;
@@ -665,7 +665,7 @@ namespace Reallusion.Import
             float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
             float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
             float initialAperture = alpha * beta;
-#if HDRP_17_0_0_OR_NEWER
+#if HDRP_14_0_0_OR_NEWER
             camera.focusDistance = jsonCameraObject.DofFocus;
             camera.aperture = initialAperture;
 #elif HDRP_10_5_0_OR_NEWER
@@ -674,13 +674,7 @@ namespace Reallusion.Import
 
             HDCameraData.physicalParameters.focusDistance = jsonCameraObject.DofFocus;
             HDCameraData.physicalParameters.aperture = initialAperture;
-#elif URP_10_5_0_OR_NEWER
-            //if (URPAdditionalCameraData == null)
-            //    URPAdditionalCameraData = Physics.GetTypeInAssemblies("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData");
-
-            //if (URPAdditionalCameraData != null)
-            //    if (target.GetComponent(URPAdditionalCameraData) == null) target.AddComponent(URPAdditionalCameraData);
-
+#elif URP_10_5_0_OR_NEWER            
            UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
             if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();  
 
@@ -1064,7 +1058,7 @@ namespace Reallusion.Import
                         break;
                     }
             }
-#if HDRP_17_0_0_OR_NEWER
+#if HDRP_14_0_0_OR_NEWER
             light.shadows = LightShadows.Hard;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif HDRP_10_5_0_OR_NEWER
