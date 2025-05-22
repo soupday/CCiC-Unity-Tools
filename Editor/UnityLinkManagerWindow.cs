@@ -54,6 +54,7 @@ namespace Reallusion.Import
 
             Instance = this;
             foldoutControlArea = true;
+            foldoutSceneArea = true;
 
             FetchSettings();
             //CreateTreeView();
@@ -143,6 +144,7 @@ namespace Reallusion.Import
                     lastTriedHosts = new string[0];
 
                 // import area
+                UnityLinkManager.SIMPLE_MODE = settings.simpleMode;
                 UnityLinkManager.IMPORT_DESTINATION_FOLDER = settings.importDestinationFolder;
                 UnityLinkManager.IMPORT_INTO_SCENE = settings.importIntoScene;
                 UnityLinkManager.USE_CURRENT_SCENE = settings.useCurrentScene;
@@ -782,6 +784,60 @@ namespace Reallusion.Import
 
         void ImportControlsGUI()
         {
+            ControlsSelectModeGUI();
+            ControlsTextBoxGUI();
+            if (!UnityLinkManager.SIMPLE_MODE) ImportAdvancedControlsGUI();
+        }
+
+        void ControlsSelectModeGUI()
+        {
+            GUILayout.Space(2f);
+
+            GUILayout.BeginHorizontal();
+            GUIStyle simpleImp = UnityLinkManager.SIMPLE_MODE ? styles.selectedLabel : styles.unselectedLabel;
+            GUILayout.Label("Simple Mode", simpleImp, GUILayout.Width(90f));
+            Texture2D sceneImpToggleImg = UnityLinkManager.SIMPLE_MODE ? styles.toggleLeft : styles.toggleRight;
+            if (GUILayout.Button(sceneImpToggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
+            {
+                UnityLinkManager.SIMPLE_MODE = !UnityLinkManager.SIMPLE_MODE;
+                settings.simpleMode = UnityLinkManager.SIMPLE_MODE;
+                if (UnityLinkManager.SIMPLE_MODE)
+                {
+                    UnityLinkManager.IMPORT_INTO_SCENE = true;
+                    settings.importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
+                    UnityLinkManager.ADD_TO_TIMELINE = true;
+                    settings.addToTimeline = UnityLinkManager.ADD_TO_TIMELINE;
+                }
+                SaveSettings();
+            }
+            GUIStyle advImp = UnityLinkManager.SIMPLE_MODE ? styles.unselectedLabel : styles.selectedLabel;
+            GUILayout.Label("Advanced Mode", advImp, GUILayout.Width(110f));
+            GUILayout.EndHorizontal();
+        }
+
+        void ControlsTextBoxGUI()
+        {
+            GUILayout.Space(2f);
+
+            GUILayout.BeginHorizontal();
+            int lines = 2;
+            string text = string.Empty;
+            //string sceneText = UnityLinkManager.USE_CURRENT_SCENE ? "- Assets will be imported and placed into the current scene." : "- A new scene will be created and assets will be imported and placed into the new scene.";
+            text += UnityLinkManager.IMPORT_INTO_SCENE ? "- Assets will be imported and will also be placed in the current scene." : "- Assets will be imported into the project.";
+            if (UnityLinkManager.IMPORT_INTO_SCENE)
+            {
+                string simpleTimeline = UnityLinkManager.SIMPLE_MODE ? "\n- Imported Assets will be automatically added to a Unity Timeline object." : "\n- Imported Assets will be added to the selected Unity Timeline object, or automatically created if unselected.";
+                text += UnityLinkManager.ADD_TO_TIMELINE ? simpleTimeline : "";
+                lines += UnityLinkManager.ADD_TO_TIMELINE ? 2 : 0;
+            }
+
+            EditorGUILayout.SelectableLabel(text, styles.textFieldStyle, GUILayout.Width(360f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));
+
+            GUILayout.EndHorizontal();
+        }
+
+        void ImportAdvancedControlsGUI()
+        { 
             GUILayout.Space(2f);
 
             GUILayout.BeginHorizontal();
@@ -804,24 +860,7 @@ namespace Reallusion.Import
             EditorGUILayout.SelectableLabel(importPath, importPathExists ? styles.normalTextField : styles.errorTextField, GUILayout.Width(247f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(2f);
-
-            GUILayout.BeginHorizontal();
-            int lines = 2;
-            string text = string.Empty;
-            //string sceneText = UnityLinkManager.USE_CURRENT_SCENE ? "- Assets will be imported and placed into the current scene." : "- A new scene will be created and assets will be imported and placed into the new scene.";
-            text += UnityLinkManager.IMPORT_INTO_SCENE ? "- Assets will be imported and will also be placed in the current scene." : "- Assets will be imported into the project.";
-            if (UnityLinkManager.IMPORT_INTO_SCENE)
-            {
-                text += UnityLinkManager.ADD_TO_TIMELINE ? ("\n- Imported Assets will be added to a Unity Timeline object named: " + UnityLinkManager.SCENE_TIMELINE_ASSET_NAME) : "";
-                lines += UnityLinkManager.ADD_TO_TIMELINE ? 2 : 0;
-            }
-
-            EditorGUILayout.SelectableLabel(text, styles.textFieldStyle, GUILayout.Width(360f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));                        
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(2f);
+            GUILayout.Space(2f);            
 
             // IMPORT_INTO_SCENE
             GUILayout.BeginHorizontal();            

@@ -122,6 +122,11 @@ namespace Reallusion.Import
             else
                 timelineObject = existingTimelineObject;
 
+            DataLinkActorData data = timelineObject.GetComponent<DataLinkActorData>();
+            if (data == null) data = timelineObject.AddComponent<DataLinkActorData>();
+            data.linkId = Util.RandomString(20);
+            data.createdTimeStamp = DateTime.Now.Ticks;
+
             PlayableDirector director = timelineObject.GetComponent<PlayableDirector>();
             if (director == null)
                 director = timelineObject.AddComponent<PlayableDirector>();
@@ -163,8 +168,29 @@ namespace Reallusion.Import
         {
             director = null;
             PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
+
             if (directors.Length > 0)
             {
+                var valids = directors.ToList().FindAll(y => y.playableAsset != null);
+                if (valids.Count > 0)
+                {
+                    List<DataLinkActorData> actorDatas = new List<DataLinkActorData>();
+                    foreach (var pd  in valids)
+                    {
+                        var data = pd.gameObject.GetComponent<DataLinkActorData>();
+                        if (data != null)
+                        {
+                            actorDatas.Add(data);
+                        }
+                    }
+                    if (actorDatas.Count > 0)
+                    {
+                        actorDatas.OrderByDescending(x => x.createdTimeStamp).ToList();
+                        director = actorDatas[0].gameObject.GetComponent<PlayableDirector>();
+                        return true;
+                    }
+                }
+
                 foreach (var d in directors) // return first playable director with a valid timeline asset
                 {
                     if (d.playableAsset != null)
@@ -439,10 +465,10 @@ namespace Reallusion.Import
         #endregion Scene and Timeline
 
         #region Scene Dependencies 
-        public static void CreateStagingSceneDependencies()
+        public static void CreateStagingSceneDependencies(bool dofEnabled)
         {
 #if HDRP_10_5_0_OR_NEWER
-            CreateHDRPVolumeAsset();
+            CreateHDRPVolumeAsset(dofEnabled);
 #elif URP_10_5_0_OR_NEWER
             CreateURPVolumeAsset();
 #elif UNITY_POST_PROCESSING_3_1_1
@@ -453,7 +479,7 @@ namespace Reallusion.Import
         }
 
 #if HDRP_10_5_0_OR_NEWER
-        private static void CreateHDRPVolumeAsset()
+        private static void CreateHDRPVolumeAsset(bool dofEnabled)
         {
             string defaultProfileToClone = "CinematicDark";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
@@ -541,31 +567,32 @@ namespace Reallusion.Import
             {
                 sharedProfile = global.sharedProfile;
             }
-
-            // depth of field override
-            if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            if (dofEnabled)
             {
-                //dof = global.sharedProfile.Add<DepthOfField>(true);
-                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
-                                                                               overrides: true,
-                                                                               saveAsset: true);
+                // depth of field override
+                if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+                {
+                    //dof = global.sharedProfile.Add<DepthOfField>(true);
+                    dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
+                                                                                   overrides: true,
+                                                                                   saveAsset: true);
+                }
+
+                //dof.SetAllOverridesTo(true);
+                DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
+                dof.focusMode = mode;
+                FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
+                dof.focusDistanceMode = distanceMode;
+
+                dof.quality.levelAndOverride = (2, false);
+
+                //dof.nearMaxBlur = 7f;
+                //dof.nearSampleCount = 8;
+                //dof.farMaxBlur = 13f;
+                //dof.farSampleCount = 14;
+
+                dof.highQualityFiltering = true;
             }
-            
-            //dof.SetAllOverridesTo(true);
-            DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
-            dof.focusMode = mode;
-            FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
-            dof.focusDistanceMode = distanceMode;
-            
-            dof.quality.levelAndOverride = (2, false);
-
-            //dof.nearMaxBlur = 7f;
-            //dof.nearSampleCount = 8;
-            //dof.farMaxBlur = 13f;
-            //dof.farSampleCount = 14;
-
-            dof.highQualityFiltering = true;
-
             // other overrides
 
             AssetDatabase.SaveAssetIfDirty(sharedProfile);

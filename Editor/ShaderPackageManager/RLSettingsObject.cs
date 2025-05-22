@@ -31,10 +31,11 @@ namespace Reallusion.Import
         public string[] lastTriedHosts;
 
         // import area
+        public bool simpleMode = true;
         public string importDestinationFolder;
-        public bool importIntoScene;
+        public bool importIntoScene = true;
         public bool useCurrentScene;
-        public bool addToTimeline;
+        public bool addToTimeline = true;
 
         public string sceneReference;
         public string[] recentSceneRefs;

@@ -9,5 +9,6 @@ namespace Reallusion.Import
         public string linkId;
         public string prefabGuid;
         public string fbxGuid;
+        public long createdTimeStamp;
     }
 }

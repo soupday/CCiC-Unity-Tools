@@ -25,6 +25,7 @@ namespace Reallusion.Import
     public class UnityLinkManager : Editor
     {
         #region Import
+        public static bool SIMPLE_MODE;
         public static string IMPORT_DESTINATION_FOLDER = string.Empty;
         public static string IMPORT_DEFAULT_DESTINATION_FOLDER { get {  return GetDefaultFullFolderPath(); } }
         public static string STAGING_IMPORT_SUBFOLDER = "Staging Imports";
@@ -45,7 +46,7 @@ namespace Reallusion.Import
         [SerializeField]
         public static PlayableDirector SCENE_TIMELINE_ASSET;
         [SerializeField]
-        public static string SCENE_TIMELINE_ASSET_NAME = "UNSELECTED"; // this updates the info text field at the top of the Import controls
+        public static string SCENE_TIMELINE_ASSET_NAME = "[Automatically Created]"; // this updates the info text field at the top of the Import controls
 
         //public static string UNITY_FOLDER_PATH { get { return GetUnityFolderPath(); } }
         //public static string UNITY_SCENE_PATH { get { return GetUnityScenePath(); } }
@@ -115,7 +116,7 @@ namespace Reallusion.Import
         public const string LOCAL_HOST = "127.0.0.1";
         public static string REMOTE_HOST = string.Empty;
                 
-        public static bool IMPORT_INTO_SCENE = false;
+        public static bool IMPORT_INTO_SCENE = true;
         public static bool USE_CURRENT_SCENE = true;
         public static bool ADD_TO_TIMELINE = true;
         

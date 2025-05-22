@@ -454,9 +454,10 @@ namespace Reallusion.Import
 
             // add link id
             var data = prefab.AddComponent<DataLinkActorData>();
-            data.linkId = linkId;
+            data.linkId = linkId;            
             data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
             data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
+            data.createdTimeStamp = DateTime.Now.Ticks;
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
@@ -490,6 +491,7 @@ namespace Reallusion.Import
             data.linkId = linkId;
             data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
             data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
+            data.createdTimeStamp = DateTime.Now.Ticks;
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
@@ -504,7 +506,7 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
 
-            UnityLinkSceneManagement.CreateStagingSceneDependencies();
+            //UnityLinkSceneManagement.CreateStagingSceneDependencies();
 
             string dataPath = Path.GetDirectoryName(Application.dataPath);
             string fullFolderPath = Path.Combine(dataPath, fbxPath);
@@ -590,6 +592,7 @@ namespace Reallusion.Import
                         GameObject.DestroyImmediate(root.transform.GetChild(i).gameObject);
                     }
                 }
+                existing.createdTimeStamp = DateTime.Now.Ticks;
             }
             else
             {
@@ -605,8 +608,8 @@ namespace Reallusion.Import
             {
                 DataLinkActorData data = root.AddComponent<DataLinkActorData>();
                 data.linkId = linkId;
-            }
-            
+                data.createdTimeStamp = DateTime.Now.Ticks;
+            }            
             return root;
         }
         #endregion Staging Import
@@ -625,6 +628,8 @@ namespace Reallusion.Import
             }
 
             if (jsonCameraObject == null) { Debug.LogWarning("MakeAnimatedCamera: Could not deserialize embedded json"); return; }
+
+            UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
 
             // read all frames into a list
             List<UnityLinkManager.DeserializedCameraFrames> frames = new List<UnityLinkManager.DeserializedCameraFrames>();
@@ -660,7 +665,6 @@ namespace Reallusion.Import
             if (camera == null) camera = target.AddComponent<Camera>();
 
             target.AddComponent(CameraProxyType);
-            
             
             float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
             float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
@@ -1001,6 +1005,8 @@ namespace Reallusion.Import
             }
 
             if (jsonLightObject == null) { Debug.LogWarning("MakeAnimatedLight: Could not deserialize embedded json"); return; }
+
+            UnityLinkSceneManagement.CreateStagingSceneDependencies(false);
 
             // read all frames into a list
             List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
@@ -1571,102 +1577,7 @@ namespace Reallusion.Import
             return result.ToArray();
         }
         #endregion Keyframe Reduction
-
-        
-
-        #region OLD Light Import
-        public List<(GameObject, List<AnimationClip>)> ImportLights(string fbxPath, string[] linkIds)
-        {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return new List<(GameObject, List<AnimationClip>)> { (null, null) }; }
-
-            string dataPath = Path.GetDirectoryName(Application.dataPath);
-            string fullFolderPath = Path.Combine(dataPath, fbxPath);
-            string[] fileList = Directory.GetFiles(fullFolderPath);
-            List<string> rlxList = fileList.ToList().FindAll(x => Path.GetExtension(x).Equals(".rlx"));
-            Debug.Log("RLX files");
-            foreach (string file in rlxList)
-            {
-                Debug.Log(file);
-            }
-
-            byte[] rlxBytes = File.ReadAllBytes(rlxList[0]);
-            int bytePos = 0;
-            // header code 4-bytes
-            bytePos += 4;
-            int len = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
-            Debug.Log("RLX JSON expected length " + len + " Available bytes in rlxBytes " + rlxBytes.Length);
-            bytePos += 4;
-            byte[] jsonBytes = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, len);
-            string jsonString = Encoding.UTF8.GetString(jsonBytes);
-            Debug.Log(jsonString);
-            bytePos += len;
-            int framesLen = UnityLinkManager.GetCurrentEndianWord(UnityLinkManager.ExtractBytes(rlxBytes, bytePos, 4), UnityLinkManager.SourceEndian.BigEndian);
-            bytePos += 4;
-            byte[] frameData = UnityLinkManager.ExtractBytes(rlxBytes, bytePos, framesLen);
-
-            UnityLinkManager.JsonLightData jsonObject = null;
-            try
-            {
-                jsonObject = JsonConvert.DeserializeObject<UnityLinkManager.JsonLightData>(jsonString);
-            }
-            catch
-            {
-                Debug.LogWarning("Cannot deseriaze embedded json in the RLX file");
-            }
-
-            List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
-            Stream stream = new MemoryStream(frameData);
-            stream.Position = 0;
-            byte[] frameBytes = new byte[85];
-            while (stream.Read(frameBytes, 0, frameBytes.Length) > 0)
-            {
-                frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
-            }
-
-            Debug.Log("Frames processed " + frames.Count);
-
-            GameObject root = new GameObject("Light_" + jsonObject.Name + "_Root");
-            root.transform.position = Vector3.zero;
-            root.transform.rotation = Quaternion.identity;
-            root.AddComponent<Animator>();
-            var data = root.AddComponent<DataLinkActorData>();
-            data.linkId = linkIds[0];
-
-            GameObject target = new GameObject(jsonObject.Name);
-
-            if (LightProxyType == null)
-            {
-                LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
-                if (LightProxyType == null)
-                {
-                    Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
-                    return new List<(GameObject, List<AnimationClip>)> { (null, null) };
-                }
-                else
-                {
-                    Debug.LogWarning("SetupLight CAN find the <LightProxy> class: " + LightProxyType.GetType().ToString());
-                }
-            }
-
-            var proxy = target.AddComponent(LightProxyType);
-
-            target.transform.position = Vector3.zero;
-            target.transform.rotation = Quaternion.identity;
-            target.transform.SetParent(root.transform, true);
-            Light light = target.AddComponent<Light>();
-
-            AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
-            if (clip.name.Equals("Empty", StringComparison.InvariantCultureIgnoreCase)) { GameObject.Destroy(proxy); }
-            if (jsonObject != null)
-            {
-                //SetupLight(jsonObject, root);
-            }
-
-            return new List<(GameObject, List<AnimationClip>)> { (null, null) };
-        }       
-
-        #endregion OLD Light Import
-
+                
         #region Motion ... placeholder
         public void ImportMotion(string fbxPath, string linkId)
         {
