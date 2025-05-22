@@ -81,7 +81,7 @@ namespace Reallusion.Import
         public bool active_delta = false;
 
         // light specific
-#if HDRP_14_0_0_OR_NEWER
+#if HDRP_17_0_0_OR_NEWER
         public const float HDRP_INTENSITY_SCALE = 6000f;
 #else
         public const float HDRP_INTENSITY_SCALE = 25000f;
@@ -665,7 +665,7 @@ namespace Reallusion.Import
             float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
             float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
             float initialAperture = alpha * beta;
-#if HDRP_14_0_0_OR_NEWER
+#if HDRP_14_0_0_OR_NEWER // HDRP 14 migrated focus and aperture to the <Camera> component from the <HDAdditionalCameraData> component
             camera.focusDistance = jsonCameraObject.DofFocus;
             camera.aperture = initialAperture;
 #elif HDRP_10_5_0_OR_NEWER
@@ -1058,7 +1058,7 @@ namespace Reallusion.Import
                         break;
                     }
             }
-#if HDRP_14_0_0_OR_NEWER
+#if HDRP_17_0_0_OR_NEWER // HDRP 17 migrated light intensity to the <Light> component from the <HDAdditionalData> component
             light.shadows = LightShadows.Hard;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif HDRP_10_5_0_OR_NEWER
