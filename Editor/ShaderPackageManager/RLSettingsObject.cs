@@ -36,6 +36,7 @@ namespace Reallusion.Import
         public bool importIntoScene = true;
         public bool useCurrentScene;
         public bool addToTimeline = true;
+        public bool lockTimelineToLast = true;
 
         public string sceneReference;
         public string[] recentSceneRefs;

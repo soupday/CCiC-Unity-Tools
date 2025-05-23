@@ -38,7 +38,7 @@ namespace Reallusion.Import
         #region TimeLine vars
         // timeline creation only
         public static string TIMELINE_SAVE_FOLDER = string.Empty;
-        
+        public static bool LOCK_TIMELINE_TO_LAST_USED;
         public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }        
         public static string TIMELINE_DEFAULT_REFERENCE_STRING = "Timeline Name"; // retain default so UI can see it has been changed before allowing creation
         public static string TIMELINE_REFERENCE_STRING = TIMELINE_DEFAULT_REFERENCE_STRING;

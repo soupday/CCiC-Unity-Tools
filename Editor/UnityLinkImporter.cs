@@ -88,7 +88,7 @@ namespace Reallusion.Import
 #endif
         public const float URP_INTENSITY_SCALE = 1f;
         public const float PP_INTENSITY_SCALE = 0.12f;
-        public const float BASE_INTENSITY_SCALE = 1f;
+        public const float BASE_INTENSITY_SCALE = 0.12f;
         public const float RANGE_SCALE = 0.01f;
 
         public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
@@ -575,7 +575,8 @@ namespace Reallusion.Import
             GameObject root = null;
             DataLinkActorData existing = null;
 
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+            //DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>(true);
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
             if (linkedObjects != null && linkedObjects.Length > 0)
             {
@@ -714,12 +715,6 @@ namespace Reallusion.Import
                 SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
                 SetupCamera(jsonCameraObject, root, clip);
             }
-        }
-
-        public void SetInitialCameraProperties(Camera camera, UnityLinkManager.JsonCameraData jsonCamObject)
-        {
-            // Common settings
-            
         }
 
         public void SetInitialCameraTransform(Transform camTransform, UnityLinkManager.JsonCameraData jsonCamObject)

@@ -167,7 +167,8 @@ namespace Reallusion.Import
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
         {
             director = null;
-            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
+            //PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
+            PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
             if (directors.Length > 0)
             {
@@ -213,13 +214,7 @@ namespace Reallusion.Import
             string stamp = TimeStampString();
 
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline Object (" + stamp + ")";
-            /*
-            string validatedDestFolder = string.Empty;
-            if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER))
-                validatedDestFolder = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;
-            else
-                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
-            */
+            
             string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
 
             UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(validatedDestFolder, UnityLinkManager.SCENE_ASSETS);
@@ -268,7 +263,7 @@ namespace Reallusion.Import
 
         public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string) objectTuple)
         {
-            UnlockTimeLineWindow();
+            LockStateTimeLineWindow(false);
             Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
 
             GameObject sceneObject = null;
@@ -282,7 +277,6 @@ namespace Reallusion.Import
                 sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
             }
 
-            //GameObject sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
             sceneObject.transform.position = Vector3.zero;
             sceneObject.transform.rotation = Quaternion.identity;
 
@@ -301,7 +295,7 @@ namespace Reallusion.Import
                 var tracks = timeline.GetOutputTracks();
                 foreach (TrackAsset track in tracks)
                 {
-                    if (track.name.EndsWith(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
+                    if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
                     {
                         workingtrack = track as AnimationTrack;
                         break;
@@ -310,7 +304,7 @@ namespace Reallusion.Import
 
                 if (workingtrack == null)
                 {
-                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item5);
+                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_ANIM_" + objectTuple.Item5);
                 }
                 else
                 {
@@ -325,7 +319,6 @@ namespace Reallusion.Import
                     }
                 }
 
-                //AnimationTrack newTrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item1.name + "_" + objectTuple.Item4);
                 AnimationClip clipToUse = null;
                 // find suitable aniamtion clip (should be the first non T-Pose)
                 foreach (AnimationClip animClip in objectTuple.Item3)
@@ -340,7 +333,7 @@ namespace Reallusion.Import
                     }
                 }
 
-                TimelineClip clip = workingtrack.CreateClip(clipToUse); //newTrack.CreateClip(clipToUse);
+                TimelineClip clip = workingtrack.CreateClip(clipToUse);
                 clip.start = 0f;
                 clip.timeScale = 1f;
                 clip.duration = clip.duration / clip.timeScale;
@@ -355,7 +348,7 @@ namespace Reallusion.Import
                 var tracks = timeline.GetOutputTracks();
                 foreach (TrackAsset track in tracks)
                 {
-                    if (track.name.EndsWith(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
+                    if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
                     {
                         workingtrack = track as ActivationTrack;
                         break;
@@ -364,7 +357,7 @@ namespace Reallusion.Import
 
                 if (workingtrack == null)
                 {
-                    workingtrack = timeline.CreateTrack<ActivationTrack>(objectTuple.Item2.name + "_" + objectTuple.Item4);
+                    workingtrack = timeline.CreateTrack<ActivationTrack>(objectTuple.Item2.name + "_ACTI_" + objectTuple.Item5);
                 }
                 else
                 {
@@ -443,16 +436,17 @@ namespace Reallusion.Import
             }
             var timelineWindow = EditorWindow.GetWindow<TimelineEditorWindow>();
             timelineWindow.Show();
-            //EditorWindow.GetWindow<TimelineEditorWindow>().Show();
+            
             Selection.activeGameObject = director.gameObject;
+            if (UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED) LockStateTimeLineWindow(true);
         }
             
 
-        public static void UnlockTimeLineWindow()
+        public static void LockStateTimeLineWindow(bool locked)
         {
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
-                EditorWindow.GetWindow<TimelineEditorWindow>().locked = false;
+                EditorWindow.GetWindow<TimelineEditorWindow>().locked = locked;
             }
         }
 
@@ -470,7 +464,7 @@ namespace Reallusion.Import
 #if HDRP_10_5_0_OR_NEWER
             CreateHDRPVolumeAsset(dofEnabled);
 #elif URP_10_5_0_OR_NEWER
-            CreateURPVolumeAsset();
+            CreateURPVolumeAsset(dofEnabled);
 #elif UNITY_POST_PROCESSING_3_1_1
             CreatePostProcessVolumeAsset();
 #else
@@ -485,7 +479,9 @@ namespace Reallusion.Import
             Volume global = null;
             VolumeProfile sharedProfile = null;
                         
-            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            //Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
             foreach (Volume volume in volumes)
             {
                 if (volume.isGlobal)
@@ -611,18 +607,26 @@ namespace Reallusion.Import
             frames = 10;
             EditorApplication.update -= WaitForFrames;
             Debug.LogWarning("Registering Volume");
+
+#if UNITY_6000_0_OR_NEWER
+            VolumeManager.instance.Unregister(v);
+            VolumeManager.instance.Register(v);
+#else
             VolumeManager.instance.Unregister(v, 0);
             VolumeManager.instance.Register(v, 0);
+#endif
         }
 
 #elif URP_10_5_0_OR_NEWER
-        public static void CreateURPVolumeAsset()
+        public static void CreateURPVolumeAsset(bool dofEnabled)
         {
             string defaultProfileToClone = "RL_URP Post Processing Profile";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
 
-            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            //Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+            Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
             foreach (Volume volume in volumes)
             {
                 if (volume.isGlobal)
@@ -656,7 +660,7 @@ namespace Reallusion.Import
                 // if no existing asset, clone one of the preview volume profiles from the shader package
                 if (sharedProfile == null)
                 {
-                    string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
+                    string[] volumeGuids = AssetDatabase.FindAssets("RL_URP Post Processing Profile", new string[] { "Assets" });
                     foreach (string volumeGuid in volumeGuids)
                     {
                         if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
@@ -706,21 +710,21 @@ namespace Reallusion.Import
                 sharedProfile = global.sharedProfile;
                 global.runInEditMode = true;
             }
-
-            // depth of field override
-            if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+            if (dofEnabled)
             {
-                //dof = global.sharedProfile.Add<DepthOfField>(true);
-                dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
-                                                                               overrides: true,
-                                                                               saveAsset: true);
+                // depth of field override
+                if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
+                {
+                    //dof = global.sharedProfile.Add<DepthOfField>(true);
+                    dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
+                                                                                   overrides: true,
+                                                                                   saveAsset: true);
+                }
+                dof.SetAllOverridesTo(true);
+                DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Bokeh, true);
+                dof.mode = mode;
             }
-            dof.SetAllOverridesTo(true);
-            DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Bokeh, true);
-            dof.mode = mode;
-
             // other overrides
-
 
             AssetDatabase.SaveAssetIfDirty(sharedProfile);
             // https://discussions.unity.com/t/resource-tutorial-urp-hdrp-volumemananger-not-initialized-in-frame-1/1558540
@@ -738,8 +742,14 @@ namespace Reallusion.Import
             frames = 10;
             EditorApplication.update -= WaitForFrames;
             Debug.LogWarning("Registering Volume");
+
+#if UNITY_6000_0_OR_NEWER
+            VolumeManager.instance.Unregister(v);
+            VolumeManager.instance.Register(v);
+#else
             VolumeManager.instance.Unregister(v, 0);
             VolumeManager.instance.Register(v, 0);
+#endif
         }
 #elif UNITY_POST_PROCESSING_3_1_1
         public static void CreatePostProcessVolumeAsset()
@@ -750,7 +760,9 @@ namespace Reallusion.Import
             PostProcessVolume global = null;
             PostProcessProfile sharedProfile = null;
 
-            PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>();
+            //PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>();
+            PostProcessVolume[] volumes = GameObject.FindObjectsByType<PostProcessVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
             foreach (PostProcessVolume volume in volumes)
             {
                 if (volume.isGlobal)

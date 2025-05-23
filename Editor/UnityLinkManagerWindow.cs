@@ -149,6 +149,7 @@ namespace Reallusion.Import
                 UnityLinkManager.IMPORT_INTO_SCENE = settings.importIntoScene;
                 UnityLinkManager.USE_CURRENT_SCENE = settings.useCurrentScene;
                 UnityLinkManager.ADD_TO_TIMELINE = settings.addToTimeline;
+                UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED = settings.lockTimelineToLast;
 
                 if (!string.IsNullOrEmpty(settings.sceneReference))
                     UnityLinkManager.TIMELINE_REFERENCE_STRING = settings.sceneReference;
@@ -807,6 +808,9 @@ namespace Reallusion.Import
                     settings.importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
                     UnityLinkManager.ADD_TO_TIMELINE = true;
                     settings.addToTimeline = UnityLinkManager.ADD_TO_TIMELINE;
+                    UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED = true;
+                    settings.lockTimelineToLast = UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED;
+                    
                 }
                 SaveSettings();
             }
@@ -991,6 +995,20 @@ namespace Reallusion.Import
                         if (Event.current.type == EventType.Repaint) { timeLinesBoxRect = GUILayoutUtility.GetLastRect(); }                        
                         GUI.DrawTexture(timeLinesBoxRect, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, Color.gray * 0.85f, new Vector4(1, 1, 1, 1), Vector4.zero);
                     //}
+
+                    // LOCK_TIMELINE_TO_LAST_USED
+                    GUILayout.BeginHorizontal();
+                    string lockTooltip = "This will focus the timeline window onto the timeline that was used by the last import";
+                    Texture2D timelineLockImg = UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED ? styles.toggleRight : styles.toggleLeft;
+                    if (GUILayout.Button(new GUIContent(timelineLockImg, lockTooltip), GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
+                    {
+                        UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED = !UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED;
+                        settings.lockTimelineToLast = UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED;
+                        SaveSettings();
+                    }
+                    GUIStyle timelineLock = UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED ? styles.selectedLabel : styles.unselectedLabel;
+                    GUILayout.Label(new GUIContent("Lock timeline to last used timeline object", lockTooltip), timelineLock, GUILayout.Width(240f));
+                    GUILayout.EndHorizontal();
 
                     GUILayout.Space(4f);
 
