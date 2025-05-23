@@ -1063,26 +1063,27 @@ namespace Reallusion.Import
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
-            light.shadows = LightShadows.Hard;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif HDRP_10_5_0_OR_NEWER
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
-            light.shadows = LightShadows.Hard;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
             HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif URP_10_5_0_OR_NEWER
-            light.shadows = LightShadows.Hard;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
 #elif UNITY_POST_PROCESSING_3_1_1
             light.lightmapBakeType = LightmapBakeType.Mixed;
-            light.shadows = LightShadows.Soft;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * PP_INTENSITY_SCALE;
 #else
             light.lightmapBakeType = LightmapBakeType.Mixed;
-            light.shadows = LightShadows.Soft;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
 #endif
+
             light.useColorTemperature = false;
             light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
