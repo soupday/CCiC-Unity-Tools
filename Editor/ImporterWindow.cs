@@ -2424,7 +2424,7 @@ namespace Reallusion.Import
             {
                 if (rect.Contains(e.mousePosition) && e.type == EventType.MouseDrag)
                 {
-                    GameObject obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(data.guid));
+                    GameObject obj = data.GetDraggablePrefab();//AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(data.guid));
                     GUIUtility.hotControl = 0;
                     StartDrag(obj, data);
                     e.Use();
