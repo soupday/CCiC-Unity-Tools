@@ -1923,7 +1923,7 @@ namespace Reallusion.Import
 
                 if (HandleListClick(boxRect))
                 {
-                    RepaintOnUpdate();
+                    //RepaintOnUpdate();
                     SetContextCharacter(info.guid);
                     if (fakeButtonDoubleClick)
                     {
@@ -2010,7 +2010,7 @@ namespace Reallusion.Import
 
                 if (HandleListClick(boxRect))
                 {
-                    RepaintOnUpdate();
+                    //RepaintOnUpdate();
                     SetContextCharacter(info.guid);
                     if (fakeButtonDoubleClick)
                     {
