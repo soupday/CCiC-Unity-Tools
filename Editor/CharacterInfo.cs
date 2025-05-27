@@ -102,8 +102,7 @@ namespace Reallusion.Import
         public RigOverride UnknownRigType { get; set; }
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
-        private GameObject prefabAsset;
-
+        
         public struct GUIDRemap
         {
             public string from;
@@ -377,8 +376,7 @@ namespace Reallusion.Import
         {
             get
             {
-                if (!prefabAsset) prefabAsset = Util.FindCharacterPrefabAsset(Fbx);
-                return prefabAsset;
+                return Util.FindCharacterPrefabAsset(Fbx);
             }
         }
 
@@ -388,6 +386,16 @@ namespace Reallusion.Import
             {
                 return Util.FindCharacterPrefabAsset(Fbx, true);
             }
+        }
+
+        public GameObject GetDraggablePrefab()
+        {
+            GameObject prefabAsset = PrefabAsset;
+            if (prefabAsset == null)
+            {
+                return Fbx;
+            }
+            return PrefabAsset;
         }
 
         public GameObject GetPrefabInstance(bool baked = false)
