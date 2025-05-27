@@ -44,6 +44,12 @@ namespace Reallusion.Import
             generalSettings = settingsObj;
             if (save) RLSettings.SaveRLSettingsObject(generalSettings);
         }
+
+        private static void SaveSettings()
+        {
+            RLSettings.SaveRLSettingsObject(generalSettings);
+        }
+
         // Settings end
 
         [SerializeField]
@@ -61,6 +67,7 @@ namespace Reallusion.Import
         private static CharacterInfo contextCharacter;
         private static List<CharacterInfo> validCharacters;
         private static List<CharacterInfo> validProps;
+        private static bool showProps = true;
         private static string backScenePath;
         private static Mode mode;
         public static ImporterWindow Current { get; private set; }
@@ -140,8 +147,8 @@ namespace Reallusion.Import
         private Texture2D iconLighting;
         private Texture2D iconCamera;
         private Texture2D iconBuildMaterials;
+        private Texture2D iconProp;
 
-        
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
         // is not closed. If the attribute is omitted then the state is still serialized/deserialized.
@@ -308,10 +315,12 @@ namespace Reallusion.Import
             iconSettingsOn = Util.FindTexture(folders, "RLIcon_Settings_Sel");
             iconLighting = Util.FindTexture(folders, "RLIcon_Lighting");
             iconCamera = Util.FindTexture(folders, "RLIcon_Camera");
-            iconBuildMaterials = Util.FindTexture(folders, "RLIcon_ActionBuildMaterials");           
+            iconBuildMaterials = Util.FindTexture(folders, "RLIcon_ActionBuildMaterials");
+            iconProp = Util.FindTexture(folders, "RLIcon-Prop_W");
 
             Current = this;
 
+            showProps = generalSettings.showProps;
             RefreshCharacterList();
 
             if (titleContent.text != windowTitle) titleContent.text = windowTitle;
@@ -420,6 +429,8 @@ namespace Reallusion.Import
                     if (info.exportType == CharacterInfo.ExportType.PROP)
                         validProps.Add(info);
                 }
+
+                if (showProps) validCharacters.AddRange(validProps);
             }
         }
 
@@ -520,16 +531,24 @@ namespace Reallusion.Import
                     }
                 case 1:
                     {
-                        break;
-                    }
-                case 2:
-                    {
                         if (EditorApplication.isPlaying) break;
                         if (linkModule == null)
                         {
                             linkModule = ScriptableObject.CreateInstance<UnityLinkManagerWindow>();
                         }
                         linkModule.ShowGUI(contentRect);
+                        break;
+                    }
+                case 2:
+                    {
+                        /*
+                        if (EditorApplication.isPlaying) break;
+                        if (linkModule == null)
+                        {
+                            linkModule = ScriptableObject.CreateInstance<UnityLinkManagerWindow>();
+                        }
+                        linkModule.ShowGUI(contentRect);                        
+                        */
                         break;
                     }
                 case 3:
@@ -593,7 +612,7 @@ namespace Reallusion.Import
 
             if (ICON_AREA_WIDTH > width - 51f) ICON_AREA_WIDTH = Mathf.Max(ICON_WIDTH, width - 51f);
 
-            Rect iconBlock = new Rect(0f, TOP_PADDING, ICON_AREA_WIDTH, innerHeight);
+            Rect iconBlock = new Rect(0f, TOP_PADDING, ICON_AREA_WIDTH, innerHeight - 16f); // -16f to accomodate temporary show props toggle
 
             // additions for draggable width icon area
             Rect dragBar = new Rect(iconBlock.xMax, TOP_PADDING, DRAG_BAR_WIDTH, innerHeight);
@@ -1739,20 +1758,38 @@ namespace Reallusion.Import
             {
                 OnGUILargeIconArea(iconBlock); // adapted original icon area layaout
             }
-        }
 
+            Rect toggleRect = new Rect(iconBlock.x, iconBlock.yMax + 1f, iconBlock.width, 22f);
+            GUILayout.BeginArea(toggleRect);
+            GUILayout.BeginHorizontal();
+
+            GUILayout.FlexibleSpace();
+            EditorGUI.BeginChangeCheck();
+            showProps = GUILayout.Toggle(showProps, "Show Props");
+            if (EditorGUI.EndChangeCheck())
+            {
+                RefreshCharacterList();
+                generalSettings.showProps = showProps;
+                SaveSettings();
+            }
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+        
         // adapted original icon area layaout
-        private void OnGUILargeIconArea(Rect iconBlock)
+        private void OnGUIOriginalIconArea(Rect iconBlock)
         {
             GUILayout.BeginArea(iconBlock);
-
+            
             Event e = Event.current;
             if (e.isMouse && e.type == EventType.MouseDown)
             {
                 if (e.clickCount == 2) doubleClick = true;
                 else doubleClick = false;
             }
-
+            
             using (var iconScrollViewScope = new EditorGUILayout.ScrollViewScope(iconScrollView, GUILayout.Width(iconBlock.width - 1f), GUILayout.Height(iconBlock.height - 10f)))
             {
                 iconScrollView = iconScrollViewScope.scrollPosition;
@@ -1784,6 +1821,11 @@ namespace Reallusion.Import
                     GUILayout.FlexibleSpace();
 
                     GUILayout.BeginVertical();
+
+                    GUILayout.Box(iconTexture, GUI.skin.button,
+                    GUILayout.Width(ICON_SIZE),
+                    GUILayout.Height(ICON_SIZE));
+                    
                     if (GUILayout.Button(iconTexture,
                         GUILayout.Width(ICON_SIZE),
                         GUILayout.Height(ICON_SIZE)))
@@ -1793,7 +1835,7 @@ namespace Reallusion.Import
                         {
                             previewCharacterAfterGUI = true;
                         }
-                    }
+                    }                    
 
                     GUI.backgroundColor = background;
 
@@ -1809,6 +1851,89 @@ namespace Reallusion.Import
                 GUILayout.EndVertical();
             }
             GUILayout.EndArea();
+        }
+
+        private void OnGUILargeIconArea(Rect iconBlock)
+        {
+            GUILayout.Space(TOP_PADDING);
+
+            float rowHeight = ICON_SIZE + 24;
+
+            Rect boxRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 4f, rowHeight);
+            Rect posRect = new Rect(iconBlock);
+            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * validCharacters.Count);
+
+            iconScrollView = GUI.BeginScrollView(posRect, iconScrollView, viewRect, false, false);
+
+            for (int idx = 0; idx < validCharacters.Count; idx++)
+            {
+                CharacterInfo info = validCharacters[idx];
+                Texture2D iconTexture = iconUnprocessed;
+                string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
+
+                if (info.exportType == CharacterInfo.ExportType.PROP)
+                {
+                    iconTexture = iconProp;
+                }
+                else
+                {
+                    if (info.bakeIsBaked)
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconMixed;
+                        else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                    }
+                    else
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconBasic;
+                        else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                    }
+                }
+
+                Color background = GUI.backgroundColor;
+                Color tint = background;
+                if (contextCharacter == info)
+                    tint = Color.green;
+                GUI.backgroundColor = Color.Lerp(background, tint, 0.25f);
+
+                boxRect.y = idx * rowHeight;
+
+                GUILayout.BeginArea(boxRect);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+
+                GUILayout.BeginVertical();
+
+                GUILayout.Box(iconTexture, GUI.skin.button,
+                GUILayout.Width(ICON_SIZE),
+                GUILayout.Height(ICON_SIZE));
+
+                GUI.backgroundColor = background;
+
+                GUILayout.Space(2f);
+
+                GUILayout.Box(name, importerStyles.iconStyle, GUILayout.Width(ICON_SIZE));
+                GUILayout.Space(2f);
+                GUILayout.EndVertical();
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.EndArea();
+
+                if (HandleListClick(boxRect))
+                {
+                    RepaintOnUpdate();
+                    SetContextCharacter(info.guid);
+                    if (fakeButtonDoubleClick)
+                    {
+                        previewCharacterAfterGUI = true;
+                    }
+                }
+
+                HandleDrag(boxRect, info);
+            }
+            GUI.EndScrollView();
         }
 
         // detail view icon area layout
@@ -1831,15 +1956,22 @@ namespace Reallusion.Import
                 
                 Texture2D iconTexture = iconUnprocessed;
                 string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
-                if (info.bakeIsBaked)
+                if (info.exportType == CharacterInfo.ExportType.PROP)
                 {
-                    if (info.BuiltBasicMaterials) iconTexture = iconMixed;
-                    else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                    iconTexture = iconProp;
                 }
                 else
                 {
-                    if (info.BuiltBasicMaterials) iconTexture = iconBasic;
-                    else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                    if (info.bakeIsBaked)
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconMixed;
+                        else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                    }
+                    else
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconBasic;
+                        else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                    }
                 }
 
                 float heightDelta = ICON_SIZE_SMALL + 2 * ICON_DETAIL_MARGIN;
@@ -1885,6 +2017,8 @@ namespace Reallusion.Import
                         previewCharacterAfterGUI = true;
                     }
                 }
+                                
+                HandleDrag(boxRect, info);
             }
             GUI.EndScrollView();
         }
@@ -1932,6 +2066,7 @@ namespace Reallusion.Import
                     }
                     else
                         fakeButtonDoubleClick = false;
+                    //mouseEvent.Use();
                     return true;
                 }
             }
@@ -2164,16 +2299,16 @@ namespace Reallusion.Import
                 iconLinkDisconnected = Util.FindTexture(folders, "RLIcon-Link_DIS_G");
                 iconSettingsTab = Util.FindTexture(folders, "RLIcon_Camera");
 
-                tabCount = 4;
+                tabCount = 2; // was 4
                 toolTips = new string[] { "Characters", "Props", "Live Link to Character Creator or iClone", "Settings" };
                 icons = new Texture[]
                 {
                     iconAvatarTab,
-                    iconPropTab,
+                    //iconPropTab,
                     iconLinkTab,
-                    iconSettingsTab
+                    //iconSettingsTab
                 };
-                overrideTab = 2;
+                overrideTab = 1; // was 2
                 overrideIcons = new Texture[]
                 {
                     iconLinkConnected,
@@ -2276,6 +2411,42 @@ namespace Reallusion.Import
             }
             return false;
         }
+
+        public void HandleDrag(Rect rect, CharacterInfo data)
+        {
+            Event e = Event.current;
+            if (rect.Contains(e.mousePosition))
+            {
+                EditorGUIUtility.AddCursorRect(rect, MouseCursor.MoveArrow);
+            }
+            
+            if (e.isMouse)
+            {
+                if (rect.Contains(e.mousePosition) && e.type == EventType.MouseDrag)
+                {
+                    GameObject obj = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(data.guid));
+                    GUIUtility.hotControl = 0;
+                    StartDrag(obj, data);
+                    e.Use();
+                }
+            }
+        }
+
+        public const string DRAG_TYPE = "DragTypeExampleString";
+        public const string DRAG_TITLE = "DragTitleString";
+
+        public void StartDrag(GameObject obj, CharacterInfo data)
+        {
+            DragAndDrop.PrepareStartDrag();
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+
+            DragAndDrop.SetGenericData(DRAG_TYPE, data);
+            DragAndDrop.paths = null;
+            DragAndDrop.objectReferences = new UnityEngine.Object[] { obj };
+
+            DragAndDrop.StartDrag(DRAG_TITLE);
+        }
+
 
         public void MonitorConnection()
         {

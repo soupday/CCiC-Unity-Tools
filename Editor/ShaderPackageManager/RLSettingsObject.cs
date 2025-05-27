@@ -23,6 +23,8 @@ namespace Reallusion.Import
         public string lastPath;
         public string toolVersion;
 
+        public bool showProps = true;
+
         // live link relevant settings
         // control area
         public string lastExportPath;

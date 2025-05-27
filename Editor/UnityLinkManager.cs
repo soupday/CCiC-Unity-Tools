@@ -564,11 +564,11 @@ namespace Reallusion.Import
             listening = false;
             reconnect = false;
 
-            if (client.Connected && stream.CanWrite)
-            {
-                stream.Close();
-                client.Close();
-            }
+            if (stream != null)
+                if (stream.CanWrite) stream.Close();
+            if (client != null)
+                if (client.Connected) client.Close();
+                  
         }
 
         public static void CleanupBeforeAssemblyReload()
