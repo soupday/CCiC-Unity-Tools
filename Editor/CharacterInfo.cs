@@ -390,12 +390,10 @@ namespace Reallusion.Import
 
         public GameObject GetDraggablePrefab()
         {
-            GameObject prefabAsset = PrefabAsset;
-            if (prefabAsset == null)
-            {
-                return Fbx;
-            }
-            return PrefabAsset;
+            GameObject fbx = Fbx;
+            GameObject prefabAsset = Util.FindCharacterPrefabAsset(Fbx, true);
+            if (prefabAsset) return prefabAsset;
+            return fbx;            
         }
 
         public GameObject GetPrefabInstance(bool baked = false)
