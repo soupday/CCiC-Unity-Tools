@@ -82,7 +82,7 @@ namespace Reallusion.Import
 
         // light specific
 #if HDRP_17_0_0_OR_NEWER
-        public const float HDRP_INTENSITY_SCALE = 6000f;
+        public const float HDRP_INTENSITY_SCALE = 3000f;
 #else
         public const float HDRP_INTENSITY_SCALE = 25000f;
 #endif

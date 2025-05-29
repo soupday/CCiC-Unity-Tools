@@ -66,6 +66,7 @@ namespace Reallusion.Import
         private static readonly string windowTitle = "CC/iC Importer " + Pipeline.FULL_VERSION;
         private static CharacterInfo contextCharacter;
         private static List<CharacterInfo> validCharacters;
+        private static List<CharacterInfo> validAvatars;
         private static List<CharacterInfo> validProps;
         private static bool showProps = true;
         private static string backScenePath;
@@ -73,6 +74,7 @@ namespace Reallusion.Import
         public static ImporterWindow Current { get; private set; }
         public CharacterInfo Character { get { return contextCharacter; } }
         public static List<CharacterInfo> ValidCharacters => validCharacters;
+        public static List <CharacterInfo> ValidAvatars => validAvatars;
 
         private Vector2 iconScrollView;
         private bool previewCharacterAfterGUI;
@@ -387,6 +389,11 @@ namespace Reallusion.Import
             else
                 validCharacters.Clear();
 
+            if (validAvatars == null)
+                validAvatars = new List<CharacterInfo>();
+            else
+                validAvatars.Clear();
+
             if (validProps == null)
                 validProps = new List<CharacterInfo>();
             else
@@ -408,11 +415,11 @@ namespace Reallusion.Import
                 {
                     string guid = AssetDatabase.AssetPathToGUID(editorPrefsContextPath);
                     if (!string.IsNullOrEmpty(guid))
-                        validCharacters.Add(new CharacterInfo(guid));
+                        validAvatars.Add(new CharacterInfo(guid));
                 }
 
                 // fallback to multi mode
-                if (validCharacters.Count == 0) mode = Mode.multi;
+                if (validAvatars.Count == 0) mode = Mode.multi;
             }
 
             if (mode == Mode.multi)
@@ -424,12 +431,13 @@ namespace Reallusion.Import
 
                     CharacterInfo info = new CharacterInfo(validGUID);
                     if (info.exportType == CharacterInfo.ExportType.AVATAR || info.exportType == CharacterInfo.ExportType.NONE || info.exportType == CharacterInfo.ExportType.UNKNOWN)
-                        validCharacters.Add(info);
+                        validAvatars.Add(info);
 
                     if (info.exportType == CharacterInfo.ExportType.PROP)
                         validProps.Add(info);
                 }
 
+                validCharacters = validAvatars;
                 if (showProps) validCharacters.AddRange(validProps);
             }
         }

@@ -993,7 +993,44 @@ namespace Reallusion.Import
 
         static void CameraSync(QueueItem item)
         {
-            GameObject camera = GameObject.Find("Main Camera");
+            SceneView scene = SceneView.lastActiveSceneView;
+            Vector3 rawPosition = item.CameraSync.Position;
+            Vector3 targetPosition = item.CameraSync.Target;
+            Vector3 cameraPos = new Vector3(-rawPosition.x, rawPosition.z, -rawPosition.y) * 0.01f;
+            Vector3 targetPos = new Vector3(-targetPosition.x, targetPosition.z, -targetPosition.y) * 0.01f;
+
+            Quaternion blenderQuaternion = item.CameraSync.Rotation;
+            // convert blender quaternion to unity
+            Quaternion unityQuaternion = new Quaternion(blenderQuaternion.x,
+                                                        -blenderQuaternion.z,
+                                                         blenderQuaternion.y,
+                                                         blenderQuaternion.w);
+            // correct rotation to point blender camera's forward -Y (in Unity space) to forward +Z
+            Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
+            Quaternion corrected = unityQuaternion * cameraCorrection;
+
+            // put the scene into focus so it updates
+            scene.Focus();
+
+            scene.cameraSettings.fieldOfView = item.CameraSync.Fov;
+            float halfAngle = scene.cameraSettings.fieldOfView / 2f;
+
+            float opposite = scene.cameraViewport.width / 2f;
+            float adjacent = opposite / Mathf.Tan(halfAngle * Mathf.Deg2Rad);
+
+            adjacent = 10 * adjacent / scene.cameraViewport.width;
+
+            Vector3 dir = new Vector3(0, 0, 1);
+            dir = corrected * dir;
+            Vector3 pointToLookAt = cameraPos + dir * adjacent;
+            // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SceneView-size.html
+            float size = Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
+            scene.LookAt(pointToLookAt, corrected, size * 0.9f);
+            //Debug.LogWarning("lookPos " + pointToLookAt + " focalLength " + adjacent);
+        }
+        static void OLDCameraSync(QueueItem item)
+        {
+            //GameObject camera = GameObject.Find("Main Camera");
 
             SceneView scene = SceneView.lastActiveSceneView;
             Vector3 rawPosition = item.CameraSync.Position;
@@ -1011,8 +1048,8 @@ namespace Reallusion.Import
             Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
             Quaternion corrected = unityQuaternion * cameraCorrection;
             
-            camera.transform.position = cameraPos;
-            camera.transform.rotation = corrected;
+            //camera.transform.position = cameraPos;
+            //camera.transform.rotation = corrected;
             
             // put the scene into focus so it updates
             scene.Focus();

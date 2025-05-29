@@ -82,6 +82,7 @@ namespace Reallusion.Import
         private Texture2D iconFilterEdit;
         private Texture2D iconFilterRemove;
         private Texture2D iconRefreshList;
+        private Texture2D iconProp;
 
         Rect prev = new Rect();
 
@@ -153,6 +154,8 @@ namespace Reallusion.Import
             iconFilterEdit = Util.FindTexture(folders, "RLIcon_FilterEdit");
             iconFilterRemove = Util.FindTexture(folders, "RLIcon_FilterRemove");
             iconStartProcessing = Util.FindTexture(folders, "RLIcon_StartProcessing");
+            iconProp = Util.FindTexture(folders, "RLIcon-Prop_W");
+
             initDone = true;
         }
 
@@ -700,22 +703,29 @@ namespace Reallusion.Import
             listScrollPosition = GUI.BeginScrollView(posRect, listScrollPosition, viewRect, false, false);
             for (int idx = 0; idx < displayList.Count; idx++)
             {
-                CharacterListDisplay info = displayList[idx];
+                CharacterListDisplay info = displayList[idx];                
                 CharacterInfo importerWindowInfo = ImporterWindow.ValidCharacters.Where(t => t.guid == info.guid).FirstOrDefault();
                 Texture2D iconTexture = iconUnprocessed;
                 string name = "";
                 if (importerWindowInfo != null)
                 {
                     name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(importerWindowInfo.guid));
-                    if (importerWindowInfo.bakeIsBaked)
+                    if (importerWindowInfo.exportType == CharacterInfo.ExportType.PROP)
                     {
-                        if (importerWindowInfo.BuiltBasicMaterials) iconTexture = iconMixed;
-                        else if (importerWindowInfo.BuiltHQMaterials) iconTexture = iconBaked;
+                        iconTexture = iconProp;
                     }
                     else
                     {
-                        if (importerWindowInfo.BuiltBasicMaterials) iconTexture = iconBasic;
-                        else if (importerWindowInfo.BuiltHQMaterials) iconTexture = iconHQ;
+                        if (importerWindowInfo.bakeIsBaked)
+                        {
+                            if (importerWindowInfo.BuiltBasicMaterials) iconTexture = iconMixed;
+                            else if (importerWindowInfo.BuiltHQMaterials) iconTexture = iconBaked;
+                        }
+                        else
+                        {
+                            if (importerWindowInfo.BuiltBasicMaterials) iconTexture = iconBasic;
+                            else if (importerWindowInfo.BuiltHQMaterials) iconTexture = iconHQ;
+                        }
                     }
                 }
                 else
