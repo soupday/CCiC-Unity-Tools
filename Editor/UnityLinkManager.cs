@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using UnityEngine.Playables;
+using NUnit.Framework;
 //using System.Drawing.Printing;
 //using static UnityEngine.Rendering.DebugUI.Table;
 
@@ -1018,7 +1019,8 @@ namespace Reallusion.Import
             Vector3 dir = new Vector3(0, 0, 1);
             dir = corrected * dir;
             Vector3 toPivot = targetPos - cameraPos;
-            float adjacent = Vector3.Dot(dir, toPivot);                                               
+            float adjacent = Vector3.Dot(dir, toPivot);
+            if (adjacent < 0.00001f) adjacent = 1.0f;
             Vector3 pointToLookAt = cameraPos + dir * adjacent;
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SceneView-size.html
             float size = Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
