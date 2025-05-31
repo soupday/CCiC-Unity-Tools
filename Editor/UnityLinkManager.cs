@@ -1010,21 +1010,18 @@ namespace Reallusion.Import
             Quaternion corrected = unityQuaternion * cameraCorrection;
 
             // put the scene into focus so it updates
-            scene.Focus();
+            scene.Focus();            
 
             scene.cameraSettings.fieldOfView = item.CameraSync.Fov;
             float halfAngle = scene.cameraSettings.fieldOfView / 2f;
 
-            float opposite = scene.cameraViewport.width / 2f;
-            float adjacent = opposite / Mathf.Tan(halfAngle * Mathf.Deg2Rad);
-
-            adjacent = 10 * adjacent / scene.cameraViewport.width;
-
             Vector3 dir = new Vector3(0, 0, 1);
             dir = corrected * dir;
+            Vector3 toPivot = targetPos - cameraPos;
+            float adjacent = Vector3.Dot(dir, toPivot);                                               
             Vector3 pointToLookAt = cameraPos + dir * adjacent;
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SceneView-size.html
-            float size = Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
+            float size = 0.75f * Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
             scene.LookAt(pointToLookAt, corrected, size * 0.9f);
             //Debug.LogWarning("lookPos " + pointToLookAt + " focalLength " + adjacent);
         }
