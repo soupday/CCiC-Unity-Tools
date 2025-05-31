@@ -1021,7 +1021,7 @@ namespace Reallusion.Import
             float adjacent = Vector3.Dot(dir, toPivot);                                               
             Vector3 pointToLookAt = cameraPos + dir * adjacent;
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SceneView-size.html
-            float size = 0.75f * Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
+            float size = Mathf.Sin(halfAngle * Mathf.Deg2Rad) * adjacent;
             scene.LookAt(pointToLookAt, corrected, size * 0.9f);
             //Debug.LogWarning("lookPos " + pointToLookAt + " focalLength " + adjacent);
         }
