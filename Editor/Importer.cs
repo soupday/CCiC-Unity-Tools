@@ -89,6 +89,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static float MIPMAP_BIAS_HAIR
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Importer_Mipmap_Bias_Hair"))
+                    return EditorPrefs.GetFloat("RL_Importer_Mipmap_Bias_Hair");
+                return -0.65f;
+            }
+
+            set
+            {
+                EditorPrefs.SetFloat("RL_Importer_Mipmap_Bias_Hair", value);
+            }
+        }
+
         public static bool USE_AMPLIFY_SHADER
         {
             get
@@ -2432,15 +2447,14 @@ namespace Reallusion.Import
             // apply the sRGB and alpha settings for re-import.
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.mipmapEnabled = true;
-            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
-            importer.mipMapBias = Importer.MIPMAP_BIAS;
+            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;            
             if ((flags & FLAG_SRGB) > 0)
             {
                 importer.sRGBTexture = true;
                 importer.alphaIsTransparency = true;                
                 importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;                
                 if ((flags & FLAG_HAIR) > 0)
-                {
+                {                    
                     importer.mipMapsPreserveCoverage = true;
                     importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR;                    
                 }
@@ -2463,9 +2477,18 @@ namespace Reallusion.Import
                 importer.mipMapsPreserveCoverage = false;
             }
 
+            if ((flags & FLAG_HAIR) > 0)
+            {
+                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;                
+            }
+            else
+            {
+                importer.mipMapBias = Importer.MIPMAP_BIAS;                
+            }
+
             if ((flags & FLAG_HAIR_ID) > 0)
             {
-                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR_ID_MAP;
+                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
                 importer.mipmapEnabled = true;
             }
 

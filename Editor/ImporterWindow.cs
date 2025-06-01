@@ -1279,6 +1279,12 @@ namespace Reallusion.Import
             GUILayout.Label(Importer.MIPMAP_BIAS.ToString("0.00"),
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
+            GUILayout.Label("Hair Mip-map Bias");
+            GUILayout.BeginHorizontal();
+            Importer.MIPMAP_BIAS_HAIR = GUILayout.HorizontalSlider(Importer.MIPMAP_BIAS_HAIR, -1f, 1f, GUILayout.Width(160f));
+            GUILayout.Label(Importer.MIPMAP_BIAS_HAIR.ToString("0.00"),
+                            GUILayout.Width(40f));
+            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             GUILayout.Space(ROW_SPACE);
 
@@ -1722,6 +1728,7 @@ namespace Reallusion.Import
         public static void ResetOptions()
         {
             Importer.MIPMAP_BIAS = 0f;
+            Importer.MIPMAP_BIAS_HAIR = -0.65f;
             Importer.RECONSTRUCT_FLOW_NORMALS = false;
             Importer.REBAKE_BLENDER_UNITY_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;

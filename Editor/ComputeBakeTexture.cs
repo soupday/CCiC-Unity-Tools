@@ -87,7 +87,8 @@ namespace Reallusion.Import
                     importer.mipmapEnabled = true;
                     importer.mipMapBias = Importer.MIPMAP_BIAS;
                     if (IsHair)
-                    {                        
+                    {
+                        importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
                         importer.mipMapsPreserveCoverage = true;
                         importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR_BAKED;
                     }         
