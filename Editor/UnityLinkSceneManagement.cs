@@ -167,9 +167,12 @@ namespace Reallusion.Import
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
         {
             director = null;
-            //PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
+            
+#if UNITY_2021_3_OR_NEWER
             PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-
+#else       // 2021.2 is the minimum compatible version
+            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>(true);
+#endif
             if (directors.Length > 0)
             {
                 var valids = directors.ToList().FindAll(y => y.playableAsset != null);
@@ -456,7 +459,7 @@ namespace Reallusion.Import
             EditorSceneManager.MarkSceneDirty(scene);
         }
 
-        #endregion Scene and Timeline
+#endregion Scene and Timeline
 
         #region Scene Dependencies 
         public static void CreateStagingSceneDependencies(bool dofEnabled)
@@ -760,8 +763,11 @@ namespace Reallusion.Import
             PostProcessVolume global = null;
             PostProcessProfile sharedProfile = null;
 
-            //PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>();
+#if UNITY_2021_3_OR_NEWER
             PostProcessVolume[] volumes = GameObject.FindObjectsByType<PostProcessVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>(true);
+#endif
 
             foreach (PostProcessVolume volume in volumes)
             {
@@ -774,8 +780,38 @@ namespace Reallusion.Import
 
             if (global == null)
             {
-                GameObject gameObject = new GameObject("RL_Global_Volume_Object");
-                global = gameObject.AddComponent<PostProcessVolume>();
+#if UNITY_2021_3_OR_NEWER
+                GameObject go = GameObject.Find("RL_Global_Volume_Object");
+#else
+                GameObject go = GameObject.Find("RL_Global_Volume_Object");
+#endif
+                if (go == null)
+                {
+                    Debug.LogWarning("No volume object");
+                    go = new GameObject("RL_Global_Volume_Object");
+                }
+                else
+                {
+                    Debug.LogWarning("FOUND volume object");
+                }
+                global = go.GetComponent<PostProcessVolume>();
+                if (global == null)
+                {
+                    Debug.LogWarning("No postprocess volume on the volume object");
+                    global = go.AddComponent<PostProcessVolume>();
+                    if (global == null)
+                    {
+                        Debug.LogWarning("Failed to create postprocess volume on the volume object");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Created postprocess volume on the volume object");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("FOUND postprocess volume on the volume object");
+                }
                 global.isGlobal = true;
             }
 
@@ -868,7 +904,7 @@ namespace Reallusion.Import
 #else
         public static void DoBuiltinThings() { }
 #endif
-        #endregion Scene Dependencies
+#endregion Scene Dependencies
 
         #region Enum
         public enum TrackType

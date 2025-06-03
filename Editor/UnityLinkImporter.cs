@@ -29,6 +29,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEditor.Rendering;
 #elif UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
+using Object = UnityEngine.Object;
 #endif
 
 namespace Reallusion.Import
@@ -575,8 +576,11 @@ namespace Reallusion.Import
             GameObject root = null;
             DataLinkActorData existing = null;
 
-            //DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>(true);
+#if UNITY_2021_3_OR_NEWER
             DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>(true);
+#endif
 
             if (linkedObjects != null && linkedObjects.Length > 0)
             {
@@ -588,6 +592,13 @@ namespace Reallusion.Import
                 root = existing.gameObject;
                 if (root.transform.childCount > 0)
                 {
+                    if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(root.gameObject))
+                    {
+                        UnityEditor.PrefabUtility.UnpackPrefabInstance(root.gameObject,
+                              UnityEditor.PrefabUnpackMode.Completely,
+                              UnityEditor.InteractionMode.AutomatedAction);
+                    }
+                
                     for (int i = 0; i < root.transform.childCount; i++)
                     {
                         GameObject.DestroyImmediate(root.transform.GetChild(i).gameObject);
@@ -613,7 +624,7 @@ namespace Reallusion.Import
             }            
             return root;
         }
-        #endregion Staging Import
+#endregion Staging Import
 
         #region Animated Camera
         void MakeAnimatedCamera(string folderPath, byte[] frameData, string jsonString)
@@ -630,7 +641,7 @@ namespace Reallusion.Import
 
             if (jsonCameraObject == null) { Debug.LogWarning("MakeAnimatedCamera: Could not deserialize embedded json"); return; }
 
-            UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
+            //UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
 
             // read all frames into a list
             List<UnityLinkManager.DeserializedCameraFrames> frames = new List<UnityLinkManager.DeserializedCameraFrames>();
@@ -679,7 +690,7 @@ namespace Reallusion.Import
 
             HDCameraData.physicalParameters.focusDistance = jsonCameraObject.DofFocus;
             HDCameraData.physicalParameters.aperture = initialAperture;
-#elif URP_10_5_0_OR_NEWER            
+#elif URP_10_5_0_OR_NEWER
            UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
             if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();  
 
@@ -715,6 +726,8 @@ namespace Reallusion.Import
                 SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
                 SetupCamera(jsonCameraObject, root, clip);
             }
+
+            UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
         }
 
         public void SetInitialCameraTransform(Transform camTransform, UnityLinkManager.JsonCameraData jsonCamObject)
@@ -928,7 +941,7 @@ namespace Reallusion.Import
             return clip;
         }
 
-        GameObject SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
+        void SetupCamera(UnityLinkManager.JsonCameraData json, GameObject root, AnimationClip clip)
         {
             if (CameraProxyType == null)
             {
@@ -936,7 +949,7 @@ namespace Reallusion.Import
                 if (CameraProxyType == null)
                 {
                     Debug.LogWarning("SetupLight cannot find the <CameraProxy> class.");
-                    return null;
+                    return;// null;
                 }
                 else
                 {
@@ -961,13 +974,13 @@ namespace Reallusion.Import
                 if (SetupCameraMethod == null)
                 {
                     Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                    return null;
+                    return;// null;
                 }
             }
             else
             {
                 Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
-                return null;
+                return;// null;
             }
 
             json.dof_delta = dof_delta;
@@ -976,13 +989,13 @@ namespace Reallusion.Import
             SetupCameraMethod.Invoke(proxy, new object[] { jsonString, clip });
 
             GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);
-            GameObject.DestroyImmediate(root);
+            //GameObject.DestroyImmediate(root);
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
             timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId));
             //UnityLinkSceneManagement.CreateStagingSceneDependencies();
-            return root;
+            //return root;
         }
         #endregion Animated Camera
 
@@ -1439,7 +1452,7 @@ namespace Reallusion.Import
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
             
             GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);            
-            GameObject.DestroyImmediate(root);
+            //GameObject.DestroyImmediate(root);
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
@@ -1489,6 +1502,7 @@ namespace Reallusion.Import
 
         GameObject GetPrefabAsset(string LinkId, string Name, GameObject toPrefab)
         {
+            //return new GameObject("GetPrefabAsset");
             GameObject prefab = null;
             if (!string.IsNullOrEmpty(importDestinationFolder))
             {
@@ -1496,8 +1510,51 @@ namespace Reallusion.Import
                 string fullPrefabAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".prefab";
                 string prefabAssetPath = fullPrefabAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
-                prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(toPrefab, prefabAssetPath, InteractionMode.AutomatedAction);                
+
+                if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
+                {
+                    prefab = PrefabUtility.SavePrefabAsset(toPrefab);
+                }
+                else 
+                {
+                    prefab = PrefabUtility.SaveAsPrefabAsset(toPrefab, prefabAssetPath);
+                }               
             }
+
+            if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
+            {
+                Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
+                UnityEditor.PrefabUtility.UnpackPrefabInstance(toPrefab, UnityEditor.PrefabUnpackMode.Completely, UnityEditor.InteractionMode.AutomatedAction);
+            }
+            else
+            {
+                Debug.LogWarning("Is NOT PartOfPrefabInstance toPrefab " + toPrefab.name);
+            }
+#if UNITY_POST_PROCESSING_3_1_1
+            if (CameraProxyType == null)
+            {
+                CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");                
+            }
+            if (CameraProxyType != null)
+            {
+                var camProxy = toPrefab.GetComponentInChildren(CameraProxyType);
+                if (camProxy != null)
+                {
+                    Debug.LogWarning("toPrefab has a camProxy " + toPrefab.name);
+                    Object.DestroyImmediate(toPrefab.GetComponentInChildren(typeof(PostProcessLayer)), true);
+                    Object.DestroyImmediate(toPrefab.GetComponentInChildren(typeof(Camera)), true);
+                    camProxy.gameObject.SendMessage("OnDisable");
+                    Object.DestroyImmediate(camProxy, true);
+
+                }
+                else
+                {
+                    Debug.LogWarning("toPrefab does not have a camProxy " + toPrefab.name);
+                }
+            }
+#endif
+            GameObject.DestroyImmediate(toPrefab, true);
+            
             return prefab;
         }
 

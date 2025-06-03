@@ -156,7 +156,7 @@ namespace Reallusion.Import
             client = new TcpClient();
             
             #region connection retry
-            int retryCount = 10;
+            int retryCount = 100;
             while (retryCount > 0 && retryConnection)
             {
                 // https://stackoverflow.com/questions/17118632/how-to-set-the-timeout-for-a-tcpclient
@@ -199,7 +199,7 @@ namespace Reallusion.Import
                     retryCount--;
                 }
 
-                Thread.Sleep(50);
+                Thread.Sleep(500);
             }
 
             if (client == null || !client.Connected) // clean up
@@ -610,7 +610,8 @@ namespace Reallusion.Import
             Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
         }
 
-                // Automated reconnection for assembly reloads        
+        // Automated reconnection for assembly reloads
+        /*
         public static void AttemptAutoReconnect()
         {
             Debug.Log("OnEnable - AutoReconnect");
@@ -631,7 +632,9 @@ namespace Reallusion.Import
                 Debug.Log("OnEnable - Not AutoReconnect-ing");
             }
         }
-        
+        */
+
+
         public const string connectPrefString = "RL_CC_Server_Disconnect_Timestamp";
 
         static void SetConnectedTimeStamp(bool disconnect = false)  
