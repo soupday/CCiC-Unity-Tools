@@ -561,11 +561,23 @@ namespace Reallusion.Import
                     
                 }          
                 global.sharedProfile = sharedProfile;
+                global.runInEditMode = true;
             }
             else
             {
                 sharedProfile = global.sharedProfile;
+                global.runInEditMode = true;
             }
+            
+            // From Volume.cs
+            // Modifying sharedProfile changes every Volumes that uses this Profile and also changes
+            // the Profile settings stored in the Project.            
+            // You should not modify Profiles that sharedProfile returns. If you want
+            // to modify the Profile of a Volume, use profile instead.  
+
+
+            // NB changes to profile in edit mode will be lost in play mode
+
             if (dofEnabled)
             {
                 // depth of field override
@@ -627,8 +639,11 @@ namespace Reallusion.Import
             Volume global = null;
             VolumeProfile sharedProfile = null;
 
-            //Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+#if UNITY_2021_3_OR_NEWER
             Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+#endif
 
             foreach (Volume volume in volumes)
             {
@@ -682,7 +697,7 @@ namespace Reallusion.Import
                 {
                     if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                     {
-                        Debug.LogWarning("Creating new volume profile");
+                        Debug.LogWarning("Creating new volume profile at " + UnityLinkManager.SCENE_FOLDER);
                         UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                         sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
                     }
@@ -696,7 +711,7 @@ namespace Reallusion.Import
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    Debug.LogWarning("Creating URP VolumeAsset: " + sharedProfilePath);
                     UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                     // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
                     AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
@@ -705,6 +720,7 @@ namespace Reallusion.Import
                 {
 
                 }
+                Debug.LogWarning("Assigning URP VolumeAsset: " + sharedProfile.name);
                 global.sharedProfile = sharedProfile;
                 global.runInEditMode = true;
             }
@@ -713,15 +729,14 @@ namespace Reallusion.Import
                 sharedProfile = global.sharedProfile;
                 global.runInEditMode = true;
             }
+            
             if (dofEnabled)
             {
                 // depth of field override
                 if (!global.sharedProfile.TryGet<DepthOfField>(out DepthOfField dof))
                 {
-                    //dof = global.sharedProfile.Add<DepthOfField>(true);
-                    dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile,
-                                                                                   overrides: true,
-                                                                                   saveAsset: true);
+                    //dof = global.profile.Add<DepthOfField>(true);
+                    dof = VolumeProfileFactory.CreateVolumeComponent<DepthOfField>(profile: global.sharedProfile, overrides: true, saveAsset: true);
                 }
                 dof.SetAllOverridesTo(true);
                 DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Bokeh, true);
@@ -754,7 +769,7 @@ namespace Reallusion.Import
             VolumeManager.instance.Register(v, 0);
 #endif
         }
-#elif UNITY_POST_PROCESSING_3_1_1
+#elif UNITY_POST_PROCESSING_3_1_1                            
         public static void CreatePostProcessVolumeAsset()
         {
             // RL Preview Scene Post Processing Volume Profile 3.1.1
@@ -906,7 +921,7 @@ namespace Reallusion.Import
 #endif
 #endregion Scene Dependencies
 
-        #region Enum
+                #region Enum
         public enum TrackType
         {
             AnimationTrack,
