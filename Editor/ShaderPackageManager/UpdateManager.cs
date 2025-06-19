@@ -26,7 +26,16 @@ namespace Reallusion.Import
         public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
         public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;
         public static List<ShaderPackageUtil.ShaderPackageItem> missingShaderPackageItems;
-        public static ShaderPackageUtil.ShaderActionRules determinedShaderAction = null;
+        public static ShaderPackageUtil.ActionRules determinedShaderAction = null;
+
+        //runtime package validation
+        public static ShaderPackageUtil.ShaderPackageManifest currentRuntimePackageManifest;
+        public static Version installedRuntimeVersion = new Version(0, 0, 0);
+        public static ShaderPackageUtil.InstalledPackageStatus installedRuntimeStatus;
+        public static List<ShaderPackageUtil.ShaderPackageManifest> availableRuntimePackages;
+        public static List<ShaderPackageUtil.ShaderPackageItem> missingRuntimePackageItems;
+        public static ShaderPackageUtil.PackageVailidity runtimePackageValid = ShaderPackageUtil.PackageVailidity.None;
+        public static ShaderPackageUtil.ActionRules determinedRuntimeAction = null;
 
         //software package update checker
         public static bool updateChecked = false;
@@ -73,6 +82,7 @@ namespace Reallusion.Import
         {
             //Debug.LogWarning("ALL UPDATE CHECKS COMPLETED");
             ShaderPackageUtil.DetermineShaderAction();
+            ShaderPackageUtil.DetermineRuntimeAction();
             checkIsLocked = false;
             ShowUpdateUtilityWindow();
 
@@ -214,7 +224,7 @@ namespace Reallusion.Import
 
         public static void ShowUpdateUtilityWindow()
         {
-            PlayerSettings.productGUID.ToString();
+            //PlayerSettings.productGUID.ToString();
 
             if(ImporterWindow.GeneralSettings != null)
                     settings = ImporterWindow.GeneralSettings;
@@ -227,14 +237,15 @@ namespace Reallusion.Import
             EditorApplication.quitting -= HandleQuitEvent;
             EditorApplication.quitting += HandleQuitEvent;
 
-            if (UpdateManager.determinedShaderAction != null)
+            if (UpdateManager.determinedShaderAction != null && UpdateManager.determinedRuntimeAction != null)
             {
-                if (UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force)
+                if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force)
                 {
                     if (!IsInitialInstallCompleted())
                     {
                         if (settings != null) settings.postInstallShowPopupNotWindow = true;
-                        ShaderPackageUtil.InstallPackage(UpdateManager.currentPackageManifest, false);
+                        ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                        ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                         SetInitialInstallCompleted();
                         return;
                     }
@@ -255,13 +266,13 @@ namespace Reallusion.Import
                 bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
                 if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
                 
-                bool valid = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.CurrentValid;
+                bool valid = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid;
 
-                bool force = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Error || UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force;
+                bool force = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Error || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Error || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force;
 
-                bool incompatible = (determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.Incompatible);
+                bool incompatible = (determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Incompatible);
 
-                bool optional = UpdateManager.determinedShaderAction.DeterminedAction == ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional;
+                bool optional = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional;
 
                 bool pipelineActionRequired = incompatible;
 
@@ -309,6 +320,10 @@ namespace Reallusion.Import
                         ShaderPackageUpdater.Instance.softwareActionRequired = swUpdateAvailable;
                     }
                 }
+            }
+            else if (calledFromMenu)
+            {
+                ShaderPackageUpdater.CreateWindow();
             }
         }
 

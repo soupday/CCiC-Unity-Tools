@@ -520,59 +520,62 @@ namespace Reallusion.Import
 
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
-
-            //globalScrollPos = GUILayout.BeginScrollView(globalScrollPos);
-            GUILayout.Space(PADDING);
-            GUILayout.BeginVertical();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(PADDING);
-            GUILayout.BeginVertical(GUI.skin.box);
-            foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls", true, styles.FoldoutTitleLabel);
-            if (foldoutControlArea)
+            using (var scrollViewScope = new GUILayout.ScrollViewScope(globalScrollPos, GUILayout.ExpandWidth(true)))
             {
-                ControlAreaGUI();
+                globalScrollPos = scrollViewScope.scrollPosition;
+
+                //globalScrollPos = GUILayout.BeginScrollView(globalScrollPos);
+                GUILayout.Space(PADDING);
+                GUILayout.BeginVertical();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(PADDING);
+                GUILayout.BeginVertical(GUI.skin.box);
+                foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls", true, styles.FoldoutTitleLabel);
+                if (foldoutControlArea)
+                {
+                    ControlAreaGUI();
+                }
+                GUILayout.Space(PADDING);
+                GUILayout.EndVertical();
+                GUILayout.Space(PADDING);
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(PADDING);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(PADDING);
+                GUILayout.BeginVertical(GUI.skin.box);
+                foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Import controls", true, styles.FoldoutTitleLabel);
+                if (foldoutSceneArea)
+                {
+                    ImportControlsGUI();
+                }
+                GUILayout.Space(PADDING);
+                GUILayout.EndVertical();
+                GUILayout.Space(PADDING);
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(PADDING);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(PADDING);
+                GUILayout.BeginVertical(GUI.skin.box);
+                foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs", true, styles.FoldoutTitleLabel);
+                if (foldoutLogArea)
+                {
+                    ImportLogsGUI();
+                }
+                GUILayout.Space(PADDING);
+                GUILayout.EndVertical();
+                GUILayout.Space(PADDING);
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(PADDING);
+                GUILayout.EndVertical();
+
+                //GUILayout.EndScrollView();
             }
-            GUILayout.Space(PADDING);
-            GUILayout.EndVertical();
-            GUILayout.Space(PADDING);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(PADDING);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(PADDING);
-            GUILayout.BeginVertical(GUI.skin.box);
-            foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Import controls", true, styles.FoldoutTitleLabel);
-            if (foldoutSceneArea)
-            {
-                ImportControlsGUI();
-            }
-            GUILayout.Space(PADDING);
-            GUILayout.EndVertical();
-            GUILayout.Space(PADDING);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(PADDING);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(PADDING);
-            GUILayout.BeginVertical(GUI.skin.box);
-            foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs", true, styles.FoldoutTitleLabel);
-            if (foldoutLogArea)
-            {
-                ImportLogsGUI();
-            }
-            GUILayout.Space(PADDING);
-            GUILayout.EndVertical();
-            GUILayout.Space(PADDING);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(PADDING);
-            GUILayout.EndVertical();
-
-            //GUILayout.EndScrollView();
-
             if (createSceneAfterGUI)
             {
                 EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
