@@ -249,6 +249,23 @@ namespace Reallusion.Import
                         SetInitialInstallCompleted();
                         return;
                     }
+                    else
+                    {
+                        if (settings != null)
+                        {
+                            if (settings.postReloadShaderInstall)
+                            {
+                                ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                                settings.postReloadShaderInstall = false;
+                            }
+
+                            if (settings.postReloadRuntimeInstall)
+                            {
+                                ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
+                                settings.postReloadRuntimeInstall = false;
+                            }
+                        }    
+                    }
                 }
 
                 bool sos = false;                

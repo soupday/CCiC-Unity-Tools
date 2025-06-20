@@ -668,7 +668,8 @@ namespace Reallusion.Import
         private string GetShaderLabel()
         {
             string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
-            return UpdateManager.installedShaderPipelineVersion.ToString() + shaderVersion;
+            //return UpdateManager.installedShaderPipelineVersion.ToString() + shaderVersion;
+            return shaderVersion;
         }
 
         private string GetRuntimeLabel()
@@ -909,6 +910,10 @@ namespace Reallusion.Import
             string shaderLabelTooltip = "";
             switch (UpdateManager.installedPackageStatus)
             {
+                case ShaderPackageUtil.InstalledPackageStatus.Absent:
+                    shaderLabelStyle = guiStyles.shMismatchLabel;
+                    shaderLabelTooltip = "Not Installed";
+                    break;
                 case ShaderPackageUtil.InstalledPackageStatus.Mismatch:
                     shaderLabelStyle = guiStyles.shMismatchLabel;
                     shaderLabelTooltip = "Installed shaders are for a different pipeline.";

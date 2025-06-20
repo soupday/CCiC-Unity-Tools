@@ -972,7 +972,7 @@ namespace Reallusion.Import
 
             if (uninstall)
             {
-                UnInstallShaderPackage();
+                UnInstallShaderPackage(install);
             }
 
             if (install)
@@ -1028,7 +1028,7 @@ namespace Reallusion.Import
 
             if (uninstall)
             {
-                //UnInstallShaderPackage();
+                UnInstallShaderPackage(install);
             }
 
             if (install)
@@ -1052,13 +1052,17 @@ namespace Reallusion.Import
             //AssetDatabase.onImportPackageItemsCompleted += OnImportPackageItemsCompleted;
 #else
 
-#endif
+#endif            
             if (ImporterWindow.GeneralSettings != null)
             {
                 ImporterWindow.GeneralSettings.performPostInstallationCheck = true;
                 ImporterWindow.GeneralSettings.postInstallShowUpdateWindow = true;
             }
             AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
+            }
         }
 
         public static void InstallRuntimePackage(ShaderPackageManifest runtimePackageManifest, bool interactive = true)
@@ -1068,6 +1072,10 @@ namespace Reallusion.Import
                 ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck = true;
             }
             AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
+            }
         }
 
         private static void OnImportPackageCompleted(string packagename)
@@ -1076,7 +1084,12 @@ namespace Reallusion.Import
 #if UNITY_2021_3_OR_NEWER
             // this will be handled by the callback: AssetDatabase.onImportPackageItemsCompleted
 #else
-            PostImportPackageItemCompare();
+            PackageType packageType = PackageType.None;
+            //"_RL_shadermanifest";  Shader Package_2.0.0_BuiltIn_RL_shaderpackage
+            //"_RL_runtimemanifest";  Runtime Package_2.1.0_RL_runtimepackage
+            if (packagename.iContains("_RL_shaderpackage")) packageType = PackageType.Shader;
+            else if (packagename.iContains("_RL_runtimepackage")) packageType = PackageType.Runtime;
+            PostImportPackageItemCompare(packageType);
 #endif
             AssetDatabase.importPackageCompleted -= OnImportPackageCompleted;
         }
@@ -1261,8 +1274,16 @@ namespace Reallusion.Import
         }
 
 
-        public static void UnInstallShaderPackage()
-        {            
+        public static void UnInstallShaderPackage(bool flagReinstall = false)
+        {
+            if (flagReinstall)
+            {
+                if (ImporterWindow.GeneralSettings != null)
+                {
+                    ImporterWindow.GeneralSettings.postReloadShaderInstall = true;
+                }
+            }
+
             string manifestLabel = "_RL_shadermanifest";
             string[] searchLoc = new string[] { "Assets" };
             string[] mainifestGuids = AssetDatabase.FindAssets(manifestLabel, searchLoc);
@@ -1283,6 +1304,48 @@ namespace Reallusion.Import
                 string[] split = assetPath.Split('_');
                 Debug.Log("Trying to uninstall shader package:  Pipeline:" + split[split.Length -3] + " Version: " + split[split.Length - 4]);
                 
+                if (TryUnInstallPackage(guid))
+                {
+                    Debug.Log("Package uninstalled.");
+                }
+                else
+                {
+                    Debug.Log("Package could not be fully uninstalled.");
+                }
+            }
+        }
+
+
+        public static void UnInstallRuntimePackage(bool flagReinstall = false)
+        {
+            if (flagReinstall)
+            {
+                if (ImporterWindow.GeneralSettings != null)
+                {
+                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = true;
+                }
+            }
+
+            string manifestLabel = "_RL_runtimemanifest";
+            string[] searchLoc = new string[] { "Assets" };
+            string[] mainifestGuids = AssetDatabase.FindAssets(manifestLabel, searchLoc);
+
+            if (mainifestGuids.Length == 0)
+            {
+                //Debug.LogWarning("No shader packages have been found!!");
+            }
+
+            if (mainifestGuids.Length > 1)
+            {
+                Debug.LogWarning("Multiple installed shader packages have been found!! - uninstalling ALL");
+            }
+
+            foreach (string guid in mainifestGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string[] split = assetPath.Split('_');
+                Debug.Log("Trying to uninstall shader package:  Pipeline:" + split[split.Length - 3] + " Version: " + split[split.Length - 4]);
+
                 if (TryUnInstallPackage(guid))
                 {
                     Debug.Log("Package uninstalled.");

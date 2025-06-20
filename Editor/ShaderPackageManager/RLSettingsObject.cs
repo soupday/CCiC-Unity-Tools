@@ -13,6 +13,9 @@ namespace Reallusion.Import
         public bool postInstallShowPopupNotWindow;
         public bool performPostInstallationCheck;
 
+        public bool postReloadShaderInstall;
+        public bool postReloadRuntimeInstall;
+
         public bool performPostInstallationRuntimeCheck;
 
         public bool updateAvailable;
