@@ -695,15 +695,12 @@ namespace Reallusion.Import
         }
 
         private void AddSpringBones()
-        {
-            if (addHairPhysics)
-            {
-                if (addHairSpringBones)
-                    AddDynamicBoneSpringBones();
+        {          
+            if (addHairSpringBones)
+                AddDynamicBoneSpringBones();
 
-                if (addMagicaHairSpringBones)
-                    AddMagicaBoneCloth();
-            }
+            if (addMagicaHairSpringBones)
+                AddMagicaBoneCloth();
         }
 
         private void AddDynamicBoneSpringBones()
