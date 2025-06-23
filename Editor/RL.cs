@@ -446,7 +446,15 @@ namespace Reallusion.Import
                 human.armStretch = 0.05f;
                 human.legStretch = 0.05f;
                 human.feetSpacing = 0.0f;
-                human.hasTranslationDoF = true;
+
+                if (info.IsBlenderProject)
+                {
+                    human.hasTranslationDoF = false;
+                }
+                else
+                {
+                    human.hasTranslationDoF = true;
+                }
 
                 if (info.JsonData != null)
                 {
