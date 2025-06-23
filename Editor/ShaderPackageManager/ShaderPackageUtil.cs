@@ -53,10 +53,12 @@ namespace Reallusion.Import
 
                 //Debug.LogWarning("runForce " + runForce);
 
-                bool shaderActionRequired = force || optional || runForce || runOptional;
+                bool shaderActionRequired = force || optional; 
+                bool runtimeActionRequired = runForce || runOptional;
                 if (ShaderPackageUpdater.Instance != null)
                 {
                     ShaderPackageUpdater.Instance.shaderActionRequired = shaderActionRequired;
+                    ShaderPackageUpdater.Instance.runtimeActionRequired = runtimeActionRequired;
                 }
             }
         }
@@ -978,6 +980,7 @@ namespace Reallusion.Import
             if (install)
             {
                 InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                UpdaterWindowCheckStatus();
             }
         }
 
@@ -1028,13 +1031,14 @@ namespace Reallusion.Import
 
             if (uninstall)
             {
-                UnInstallShaderPackage(install);
+                UnInstallRuntimePackage(install);
             }
 
             if (install)
             {
                 Debug.Log(UpdateManager.currentRuntimePackageManifest.referenceShaderPackagePath);
-                InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, true);
+                InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
+                UpdaterWindowCheckStatus();
             }
         }
 

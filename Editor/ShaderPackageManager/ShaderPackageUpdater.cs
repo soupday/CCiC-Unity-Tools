@@ -267,8 +267,8 @@ namespace Reallusion.Import
         bool currentSoftwareVersionFoldout = false;
         public bool pipeLineActionRequired = false;
         bool allInstPipeFoldout = false;
-        bool instShaderFoldout = false;
-        bool instRuntimeFoldout = false;
+        public bool instShaderFoldout = false;
+        public bool instRuntimeFoldout = false;
         Vector2 mainScrollPos;
 
         private void OnGUI()
@@ -668,7 +668,6 @@ namespace Reallusion.Import
         private string GetShaderLabel()
         {
             string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
-            //return UpdateManager.installedShaderPipelineVersion.ToString() + shaderVersion;
             return shaderVersion;
         }
 
@@ -1018,7 +1017,6 @@ namespace Reallusion.Import
         }
 
         Vector2 scrollPosShaderPackage = new Vector2();
-
         private void ValidateShaderPackageGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // validate shader package
@@ -1075,6 +1073,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // validate shader package
         }
 
+        Vector2 scrollPosRuntimePackage = new Vector2();
         private void ValidateRuntimePackageGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // validate shader package
@@ -1105,7 +1104,7 @@ namespace Reallusion.Import
                 else
                     scrollHeight = 112f;
 
-                scrollPosShaderPackage = GUILayout.BeginScrollView(scrollPosShaderPackage, GUILayout.Height(scrollHeight));
+                scrollPosRuntimePackage = GUILayout.BeginScrollView(scrollPosRuntimePackage, GUILayout.Height(scrollHeight));
                 foreach (ShaderPackageUtil.ShaderPackageItem item in UpdateManager.missingRuntimePackageItems)
                 {
                     GUILayout.BeginHorizontal();
@@ -1186,7 +1185,9 @@ namespace Reallusion.Import
         }
 
         public bool shaderActionRequired = false;
+        public bool runtimeActionRequired = false;
         bool actionToFollowFoldout = false;
+
         private void ActionToFollowFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
@@ -1197,7 +1198,7 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            if (shaderActionRequired)
+            if (shaderActionRequired || runtimeActionRequired)
                 actionToFollowFoldout = true;
 
             string actionString = shaderActionRequired ? "Action required..." : "No action required...";
@@ -1405,19 +1406,21 @@ namespace Reallusion.Import
 
         private void ActionGUI()
         {
-            GUILayout.BeginVertical(GUI.skin.box);
+            float actionwidth = (Instance.position.width - (HORIZ_INDENT * 10)) / 2;
 
+            GUILayout.BeginVertical(GUI.skin.box);
+            
             GUILayout.Space(VERT_INDENT);
 
             GUILayout.BeginHorizontal();
 
             GUILayout.Space(HORIZ_INDENT);
 
-            ShaderActionGUI();
+            ShaderActionGUI(actionwidth);
 
             GUILayout.Space(HORIZ_INDENT);
 
-            RuntimeActionGUI();
+            RuntimeActionGUI(actionwidth);
 
             GUILayout.Space(HORIZ_INDENT);
 
@@ -1428,9 +1431,9 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        private void ShaderActionGUI()
+        private void ShaderActionGUI(float actionwidth)
         {
-            GUILayout.BeginVertical();// GUI.skin.box);
+            GUILayout.BeginVertical(GUILayout.Width(actionwidth));// GUI.skin.box);
 
             if (UpdateManager.determinedShaderAction != null)
             {
@@ -1501,9 +1504,9 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        private void RuntimeActionGUI()
+        private void RuntimeActionGUI(float actionwidth)
         {
-            GUILayout.BeginVertical();// GUI.skin.box);
+            GUILayout.BeginVertical(GUILayout.Width(actionwidth));// GUI.skin.box);
 
             if (UpdateManager.determinedRuntimeAction != null)
             {
