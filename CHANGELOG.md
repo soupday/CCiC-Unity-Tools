@@ -5,6 +5,7 @@ Changelog
 - Fix to Magica Cloth hair only collider generation.
 - Fix to spring bone build generation.
 - Fix to addition motion processing with differing Avatar's.
+- Unity 6000.1 (HDRP/URP-17.1) shader support added.
 
 ### 2.0.1
 - Fix to combined mesh & morph eye depth.
