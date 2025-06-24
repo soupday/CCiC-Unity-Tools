@@ -556,11 +556,11 @@ namespace Reallusion.Import
                     }
                 case InstalledPipeline.HDRP:
                     {
-                        return GetVersion(InstalledPipeline.HDRP, UpdateManager.activeVersion.Major);
+                        return GetVersion(InstalledPipeline.HDRP, UpdateManager.activeVersion.Major, UpdateManager.activeVersion.Minor);
                     }
                 case InstalledPipeline.URP:
                     {
-                        return GetVersion(InstalledPipeline.URP, UpdateManager.activeVersion.Major);
+                        return GetVersion(InstalledPipeline.URP, UpdateManager.activeVersion.Major, UpdateManager.activeVersion.Minor);
                     }
                 case InstalledPipeline.None:
                     {
@@ -584,7 +584,7 @@ namespace Reallusion.Import
             }
         }
 
-        public static PipelineVersion GetVersion(InstalledPipeline pipe, int major)
+        public static PipelineVersion GetVersion(InstalledPipeline pipe, int major, int minor)
         {
             Func<int, int, PipelineVersion, VersionLimits> Rule = (min, max, ver) => new VersionLimits(min, max, ver);
 
@@ -596,6 +596,8 @@ namespace Reallusion.Import
                     UpdateManager.platformRestriction = PlatformRestriction.URPWebGL;
                     return PipelineVersion.URP12;
                 }
+
+                if (major >= 17 && minor >= 1) return PipelineVersion.URP171;
 
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
@@ -622,12 +624,16 @@ namespace Reallusion.Import
 
             if (pipe == InstalledPipeline.HDRP)
             {
+                if (major >= 17 && minor >= 1) return PipelineVersion.HDRP171;
+
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
                     Rule(0, 9, PipelineVersion.Incompatible),
                     Rule(10, 11, PipelineVersion.HDRP10),
-                    Rule(12, 100, PipelineVersion.HDRP12)
+                    Rule(12, 13, PipelineVersion.HDRP12),
+                    Rule(14, 16, PipelineVersion.HDRP14),
+                    Rule(17, 100, PipelineVersion.HDRP17)
                 };
 
                 List<VersionLimits> byMax = hdrpRules.FindAll(z => major <= z.Max);
@@ -646,14 +652,15 @@ namespace Reallusion.Import
 
         public static void TestVersionResponse()
         {
+            int minor = 0;
             for (int i = 10; i < 18; i++)
             {
-                Debug.Log("Major URP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.URP, i));
+                Debug.Log("Major URP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.URP, i, minor));
             }
 
             for (int i = 10; i < 18; i++)
             {
-                Debug.Log("Major HDRP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.HDRP, i));
+                Debug.Log("Major HDRP Package Version: " + i + " -- " + GetVersion(InstalledPipeline.HDRP, i, minor));
             }
         }
 
@@ -1096,6 +1103,8 @@ namespace Reallusion.Import
             URP15 = 115,
             URP16 = 116,
             URP17 = 117,
+            URP171 = 1171,
+            URP172 = 1172,
             URP18 = 118,
             URP19 = 119,
             URP20 = 120,
@@ -1112,6 +1121,8 @@ namespace Reallusion.Import
             HDRP15 = 215,
             HDRP16 = 216,
             HDRP17 = 217,
+            HDRP171 = 2171,
+            HDRP172 = 2172,
             HDRP18 = 218,
             HDRP19 = 219,
             HDRP20 = 220,

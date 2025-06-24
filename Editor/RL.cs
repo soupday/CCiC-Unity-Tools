@@ -446,7 +446,7 @@ namespace Reallusion.Import
                 human.armStretch = 0.05f;
                 human.legStretch = 0.05f;
                 human.feetSpacing = 0.0f;
-                human.hasTranslationDoF = true;
+                human.hasTranslationDoF = false;
 
                 if (info.JsonData != null)
                 {
@@ -664,7 +664,7 @@ namespace Reallusion.Import
         public static void DoMotionImport(CharacterInfo info, Avatar sourceAvatar, string motionFbxPath)
         {            
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(motionFbxPath);            
-            HumanoidImportSettings(null, importer, info, sourceAvatar);
+            HumanoidImportSettings(null, importer, info, null);
             SetupAnimation(importer, info, true);            
         }      
 
