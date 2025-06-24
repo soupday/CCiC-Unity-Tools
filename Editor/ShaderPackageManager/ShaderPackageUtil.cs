@@ -631,7 +631,8 @@ namespace Reallusion.Import
                     // Rule(min max, version)
                     Rule(0, 9, PipelineVersion.Incompatible),
                     Rule(10, 11, PipelineVersion.HDRP10),
-                    Rule(12, 16, PipelineVersion.HDRP12),
+                    Rule(12, 13, PipelineVersion.HDRP12),
+                    Rule(14, 16, PipelineVersion.HDRP14),
                     Rule(17, 100, PipelineVersion.HDRP17)
                 };
 
