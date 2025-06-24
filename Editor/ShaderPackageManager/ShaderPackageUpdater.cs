@@ -976,11 +976,17 @@ namespace Reallusion.Import
                     shaderLabelStyle = guiStyles.shMismatchLabel;
                     version = "Not Installed";
                     break;
-                case ShaderPackageUtil.InstalledPackageStatus.Current:                    
+                case ShaderPackageUtil.InstalledPackageStatus.Current:
                     if (UpdateManager.currentRuntimePackageManifest != null)
-                        version = "Version : " + UpdateManager.currentRuntimePackageManifest.Version;
+                    {
+                        version = "v" + UpdateManager.currentRuntimePackageManifest.Version;
+                        shaderLabelStyle = guiStyles.shCurrentLabel;
+                    }
                     else
+                    {
                         version = "Unknown or not correctly installed";
+                        shaderLabelStyle = guiStyles.shMismatchLabel;
+                    }
                     break;
             }
             GUILayout.Label(version, shaderLabelStyle);
