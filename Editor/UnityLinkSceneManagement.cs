@@ -428,6 +428,7 @@ namespace Reallusion.Import
 
         public static void ShowTimeLineWindow(PlayableDirector director)
         {
+#if UNITY_2021_1_OR_NEWER
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
                 Debug.LogWarning("TimelineEditorWindow is open");
@@ -442,15 +443,18 @@ namespace Reallusion.Import
             
             Selection.activeGameObject = director.gameObject;
             if (UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED) LockStateTimeLineWindow(true);
+#endif
         }
             
 
         public static void LockStateTimeLineWindow(bool locked)
         {
+#if UNITY_2021_1_OR_NEWER
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
                 EditorWindow.GetWindow<TimelineEditorWindow>().locked = locked;
             }
+#endif
         }
 
         public static void MarkSceneAsDirty()
@@ -681,7 +685,7 @@ namespace Reallusion.Import
                     string[] volumeGuids = AssetDatabase.FindAssets("RL_URP Post Processing Profile", new string[] { "Assets" });
                     foreach (string volumeGuid in volumeGuids)
                     {
-                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).iContains(defaultProfileToClone))//, StringComparison.InvariantCultureIgnoreCase))
                         {
                             VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
                             if (found != null)
@@ -769,7 +773,7 @@ namespace Reallusion.Import
             VolumeManager.instance.Register(v, 0);
 #endif
         }
-#elif UNITY_POST_PROCESSING_3_1_1                            
+#elif UNITY_POST_PROCESSING_3_1_1
         public static void CreatePostProcessVolumeAsset()
         {
             // RL Preview Scene Post Processing Volume Profile 3.1.1

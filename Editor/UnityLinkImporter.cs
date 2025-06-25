@@ -27,6 +27,7 @@ using UnityEditor.Rendering;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
 using UnityEditor.Rendering;
+using Object = UnityEngine.Object;
 #elif UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
 using Object = UnityEngine.Object;
@@ -65,11 +66,17 @@ namespace Reallusion.Import
         string assetImportDestinationPath = string.Empty;
 
         // types for reflection
-        Type HDAdditionalLightData = null;
-        Type URPAdditionalLightData = null;
+#if HDRP_10_5_0_OR_NEWER
+        //Type HDAdditionalLightData = null;
+        //Type HDAdditionalCameraData = null;
+#elif URP_10_5_0_OR_NEWER
+        //Type URPAdditionalLightData = null;
+        //Type URPAdditionalCameraData = null;
+#else
+
+#endif
         Type LightProxyType = null;
-        Type HDAdditionalCameraData = null;
-        Type URPAdditionalCameraData = null;
+                
         Type CameraProxyType = null;
         MethodInfo SetupLightMethod = null;
         MethodInfo SetupCameraMethod = null;
@@ -230,7 +237,14 @@ namespace Reallusion.Import
             {
                 string zipPath = Path.Combine(UnityLinkManager.EXPORTPATH, QueueItem.RemoteId + ".zip");
                 string zipFolder = Path.Combine(UnityLinkManager.EXPORTPATH, QueueItem.RemoteId);
+#if UNITY_2021_1_OR_NEWER
                 ZipFile.ExtractToDirectory(zipPath, zipFolder);
+#else
+                //System.IO.Compression.FileSystem.ZipFile.ExtractToDirectory(zipPath, zipFolder);
+                // either use nuget < PackageReference Include = "System.IO.Compression.ZipFile" Version = "4.3.0" />
+                // or requires a reference to System.IO.Compression.FileSystem to be added to the solution 
+                Debug.LogError("Cannot process files from a remote host in Unity versions prior to 2021.1");
+#endif
                 File.Delete(zipPath);
                 fbxPath = RetrieveDiskAsset(zipFolder, name);
                 Directory.Delete(zipFolder, true);
@@ -1630,10 +1644,13 @@ namespace Reallusion.Import
             return result.ToArray();
         }
         #endregion Keyframe Reduction
-                
+
+
         #region Motion ... placeholder
+
         public void ImportMotion(string fbxPath, string linkId)
         {
+#if MOTION_ENABLED
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
 
@@ -1699,6 +1716,7 @@ namespace Reallusion.Import
                     AssetDatabase.Refresh();
                 }
             }
+#endif
         }
 
         public static void GenerateCharacterTargetedAnimations(string motionAssetPath,
@@ -1767,8 +1785,8 @@ namespace Reallusion.Import
             }
 
             return assetPath;
+
         }
         #endregion Motion...
-
     }
 }

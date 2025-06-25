@@ -522,10 +522,15 @@ namespace Reallusion.Import
             }
             if (stream.CanWrite)
             {
+#if UNITY_2021_1_OR_NEWER
                 stream.Write(message.ToArray());
+#else
+                byte[] buffer = message.ToArray();
+                stream.Write(buffer, 0, buffer.Length);
+#endif
             }
         }
-        #endregion Server messaging
+#endregion Server messaging
 
         #region Connection
         static void ServerDisconnect()
@@ -1978,9 +1983,8 @@ namespace Reallusion.Import
             public const string focalStr = "focal_length";  // focal_length: Float - Focal length of lens
             public const string targetStr = "target";       // target: Float list [x, y, z] average pos of selection (i.e. iclone camera pivot)    
             /*
-            #
-            # I have no idea what the following are, but I send them anyway
-            #
+                // I have no idea what the following are, but I send them anyway
+                
                 min: Float list - (Min Bounds Vector) [x, y, z]
                 max: Float list - (Max Bounds Vector) [x, y, z]
                 center: Float list - (Centre Bounds Vector) [x, y, z]

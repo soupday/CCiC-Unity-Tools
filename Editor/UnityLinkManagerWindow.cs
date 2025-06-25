@@ -388,9 +388,9 @@ namespace Reallusion.Import
         bool foldoutLogArea;
 
         float PADDING = 4f;
-        float CONTROL_HEIGHT = 100f;
-        float SCENE_HEIGHT = 100f;
-        float MESSAGE_HEIGHT = 100f;
+        //float CONTROL_HEIGHT = 100f;
+        //float SCENE_HEIGHT = 100f;
+        //float MESSAGE_HEIGHT = 100f;
 
         static Control control = Control.Idle;
         Rect remoteHostTextField; // rect of control area remote host text field for history dropdown;
@@ -513,23 +513,25 @@ namespace Reallusion.Import
         Vector2 globalScrollPos = new Vector2();
         public void ShowGUI(Rect containerRect)
         {
-            if (settings == null) FetchSettings();
+            if (settings == null)
+                FetchSettings();
 
             if (styles == null)
                 styles = new Styles();
 
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
+
+            GUILayout.BeginVertical();
             using (var scrollViewScope = new GUILayout.ScrollViewScope(globalScrollPos, GUILayout.ExpandWidth(true)))
             {
                 globalScrollPos = scrollViewScope.scrollPosition;
 
-                //globalScrollPos = GUILayout.BeginScrollView(globalScrollPos);
-                GUILayout.Space(PADDING);
-                GUILayout.BeginVertical();
+                GUILayout.Space(PADDING);               
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(PADDING);
+
                 GUILayout.BeginVertical(GUI.skin.box);
                 foldoutControlArea = EditorGUILayout.Foldout(foldoutControlArea, "Connection controls", true, styles.FoldoutTitleLabel);
                 if (foldoutControlArea)
@@ -538,6 +540,7 @@ namespace Reallusion.Import
                 }
                 GUILayout.Space(PADDING);
                 GUILayout.EndVertical();
+
                 GUILayout.Space(PADDING);
                 GUILayout.EndHorizontal();
 
@@ -545,6 +548,7 @@ namespace Reallusion.Import
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(PADDING);
+
                 GUILayout.BeginVertical(GUI.skin.box);
                 foldoutSceneArea = EditorGUILayout.Foldout(foldoutSceneArea, "Import controls", true, styles.FoldoutTitleLabel);
                 if (foldoutSceneArea)
@@ -553,6 +557,7 @@ namespace Reallusion.Import
                 }
                 GUILayout.Space(PADDING);
                 GUILayout.EndVertical();
+
                 GUILayout.Space(PADDING);
                 GUILayout.EndHorizontal();
 
@@ -560,6 +565,7 @@ namespace Reallusion.Import
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(PADDING);
+
                 GUILayout.BeginVertical(GUI.skin.box);
                 foldoutLogArea = EditorGUILayout.Foldout(foldoutLogArea, "Message logs", true, styles.FoldoutTitleLabel);
                 if (foldoutLogArea)
@@ -568,14 +574,13 @@ namespace Reallusion.Import
                 }
                 GUILayout.Space(PADDING);
                 GUILayout.EndVertical();
+
                 GUILayout.Space(PADDING);
                 GUILayout.EndHorizontal();
 
                 GUILayout.Space(PADDING);
-                GUILayout.EndVertical();
-
-                //GUILayout.EndScrollView();
             }
+            GUILayout.EndVertical();
             if (createSceneAfterGUI)
             {
                 EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
@@ -669,6 +674,12 @@ namespace Reallusion.Import
             GUILayout.Space(3f);
 
             GUILayout.BeginHorizontal();
+#if UNITY_2021_1_OR_NEWER
+
+#else
+            EditorGUI.BeginDisabledGroup(true);
+            UnityLinkManager.IS_CLIENT_LOCAL = true;
+#endif
             GUIStyle singleLabelText = UnityLinkManager.IS_CLIENT_LOCAL ? styles.selectedLabel : styles.unselectedLabel;
             GUILayout.Label("Local Server", singleLabelText, GUILayout.Width(80f));
 
@@ -686,6 +697,12 @@ namespace Reallusion.Import
 
             GUIStyle conLabelText = UnityLinkManager.IS_CLIENT_LOCAL ? styles.unselectedLabel : styles.selectedLabel;
             GUILayout.Label("Remote Server", conLabelText, GUILayout.Width(110f));
+#if UNITY_2021_1_OR_NEWER
+
+#else
+            EditorGUI.EndDisabledGroup();
+            UnityLinkManager.IS_CLIENT_LOCAL = true;
+#endif
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -1126,7 +1143,7 @@ namespace Reallusion.Import
             }
             GUILayout.EndScrollView();
         }
-        #endregion GUI
+#endregion GUI
 
         #region TextFieldHistory
         public string[] RecordHistory(string[] array,  string newEntry, int max)
