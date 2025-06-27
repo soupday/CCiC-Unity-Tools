@@ -593,7 +593,7 @@ namespace Reallusion.Import
 #if UNITY_2021_3_OR_NEWER
             DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>(true);
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
 
             if (linkedObjects != null && linkedObjects.Length > 0)

@@ -1266,7 +1266,7 @@ namespace Reallusion.Import
         private void ShaderActionGUI(float actionwidth)
         {
             GUILayout.BeginVertical(GUILayout.Width(actionwidth));// GUI.skin.box);
-
+            bool incompatible = false;
             if (UpdateManager.determinedShaderAction != null)
             {
                 ShaderPackageUtil.DeterminedAction action = UpdateManager.determinedShaderAction.DeterminedShaderAction;
@@ -1310,9 +1310,18 @@ namespace Reallusion.Import
                         }
                 }
                 GUILayout.BeginHorizontal();
+                
+                if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Incompatible) incompatible = true;
                 if (GUILayout.Button(picture, GUILayout.Width(50f), GUILayout.Height(50f)))
                 {
-                    ShaderPackageUtil.GUIPerformShaderAction(action);
+                    if (incompatible)
+                    {
+                        SettingsService.OpenProjectSettings("Project/Graphics");
+                    }
+                    else
+                    {
+                        ShaderPackageUtil.GUIPerformShaderAction(action);
+                    }
                 }
                 GUILayout.BeginVertical();
                 GUILayout.Space(6f);
@@ -1327,7 +1336,16 @@ namespace Reallusion.Import
 
             GUILayout.BeginHorizontal();
 
-            string infoString = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.None ? "No action required" : "Please click the above icon to update/fix the shader files installation";
+            string infoString = string.Empty;
+
+            if (incompatible)
+            {
+                infoString = "Click the above icon to change the graphics pipeline settings";
+            }
+            else
+            {
+                infoString = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.None ? "No action required" : "Please click the above icon to update/fix the shader files installation";
+            }
 
             EditorGUILayout.HelpBox(infoString, MessageType.Info, true);
 

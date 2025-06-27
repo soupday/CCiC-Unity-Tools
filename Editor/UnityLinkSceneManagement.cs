@@ -167,11 +167,11 @@ namespace Reallusion.Import
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
         {
             director = null;
-            
+
 #if UNITY_2021_3_OR_NEWER
             PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else       // 2021.2 is the minimum compatible version
-            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>(true);
+#else       
+            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
 #endif
             if (directors.Length > 0)
             {
@@ -311,6 +311,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
+#if UNITY_2020_1_OR_NEWER
                     // purge bound clips
                     var clips = workingtrack.GetClips();
                     if (clips != null)
@@ -320,6 +321,7 @@ namespace Reallusion.Import
                             workingtrack.DeleteClip(c);
                         }
                     }
+#endif
                 }
 
                 AnimationClip clipToUse = null;
@@ -364,6 +366,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
+#if UNITY_2020_1_OR_NEWER
                     // purge bound clips
                     var clips = workingtrack.GetClips();
                     if (clips != null)
@@ -373,6 +376,7 @@ namespace Reallusion.Import
                             workingtrack.DeleteClip(c);
                         }
                     }
+#endif
                 }
 
                 foreach (AnimationClip animClip in objectTuple.Item3)
