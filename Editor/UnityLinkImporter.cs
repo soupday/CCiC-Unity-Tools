@@ -698,11 +698,15 @@ namespace Reallusion.Import
 #if HDRP_14_0_0_OR_NEWER // HDRP 14 migrated focus and aperture to the <Camera> component from the <HDAdditionalCameraData> component
             camera.focusDistance = jsonCameraObject.DofFocus;
             camera.aperture = initialAperture;
+#elif HDRP_12_0_0_OR_NEWER
+            HDAdditionalCameraData HDCameraData = target.GetComponent<HDAdditionalCameraData>();
+            if (HDCameraData == null) HDCameraData = target.AddComponent<HDAdditionalCameraData>();
+            HDCameraData.physicalParameters.focusDistance = jsonCameraObject.DofFocus;
+            HDCameraData.physicalParameters.aperture = initialAperture;
 #elif HDRP_10_5_0_OR_NEWER
             HDAdditionalCameraData HDCameraData = target.GetComponent<HDAdditionalCameraData>();
-            if (HDCameraData == null) HDCameraData = target.AddComponent<HDAdditionalCameraData>();            
-
-            HDCameraData.physicalParameters.focusDistance = jsonCameraObject.DofFocus;
+            if (HDCameraData == null) HDCameraData = target.AddComponent<HDAdditionalCameraData>();
+            camera.focalLength = jsonCameraObject.DofFocus;
             HDCameraData.physicalParameters.aperture = initialAperture;
 #elif URP_10_5_0_OR_NEWER
            UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();

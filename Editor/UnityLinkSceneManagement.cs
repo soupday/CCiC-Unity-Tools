@@ -489,9 +489,12 @@ namespace Reallusion.Import
             string defaultProfileToClone = "CinematicDark";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
-                        
-            //Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+
+#if UNITY_2021_1_OR_NEWER
             Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
+#endif
 
             foreach (Volume volume in volumes)
             {
@@ -529,7 +532,7 @@ namespace Reallusion.Import
                     string[] volumeGuids = AssetDatabase.FindAssets("RL_previewGlobalProfile_", new string[] { "Assets" });
                     foreach (string volumeGuid in volumeGuids)
                     {
-                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).iContains(defaultProfileToClone))
                         {
                             VolumeProfile found = AssetDatabase.LoadAssetAtPath<VolumeProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
                             if (found != null)
@@ -600,9 +603,13 @@ namespace Reallusion.Import
                 //dof.SetAllOverridesTo(true);
                 DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.UsePhysicalCamera, true);
                 dof.focusMode = mode;
+#if UNITY_2021_1_OR_NEWER
                 FocusDistanceModeParameter distanceMode = new FocusDistanceModeParameter(FocusDistanceMode.Camera, true);
                 dof.focusDistanceMode = distanceMode;
-
+#else
+                dof.focusDistance = new MinFloatParameter(10f, 0.1f, true);
+                dof.physicallyBased = true;
+#endif
                 dof.quality.levelAndOverride = (2, false);
 
                 //dof.nearMaxBlur = 7f;
