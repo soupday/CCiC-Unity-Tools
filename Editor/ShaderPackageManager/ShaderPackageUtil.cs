@@ -992,8 +992,15 @@ namespace Reallusion.Import
 
             if (install)
             {
-                InstallShaderPackage(UpdateManager.currentPackageManifest, false);
-                UpdaterWindowCheckStatus();
+                if (UpdateManager.currentPackageManifest != null)
+                {
+                    InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                    UpdaterWindowCheckStatus();
+                }
+                else
+                {
+                    Debug.Log("No package for the current pipeline is available.");
+                }
             }
         }
 
@@ -1075,10 +1082,19 @@ namespace Reallusion.Import
                 ImporterWindow.GeneralSettings.performPostInstallationCheck = true;
                 ImporterWindow.GeneralSettings.postInstallShowUpdateWindow = true;
             }
-            AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
-            if (ImporterWindow.GeneralSettings != null)
+
+            if (UpdateManager.currentPackageManifest != null)
             {
-                ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
+                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+
+                if (ImporterWindow.GeneralSettings != null)
+                {
+                    ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
+                }
+            }
+            else
+            {
+                Debug.Log("No package for the current pipeline is available.");
             }
         }
 
@@ -1088,10 +1104,18 @@ namespace Reallusion.Import
             {
                 ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck = true;
             }
-            AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
-            if (ImporterWindow.GeneralSettings != null)
+
+            if (UpdateManager.currentRuntimePackageManifest != null)
             {
-                ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
+                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
+                if (ImporterWindow.GeneralSettings != null)
+                {
+                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
+                }
+            }
+            else
+            {
+                Debug.Log("No runtime package is available.");
             }
         }
 
@@ -1277,7 +1301,23 @@ namespace Reallusion.Import
 
             if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.UpdateGUI();
 
-            UpdateManager.updateMessage = "Shader package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString() + " has been imported.";
+            string message = UpdateManager.updateMessage;
+
+            switch (packageType)
+            {
+                case PackageType.Shader:
+                    {
+                        message += "Shader package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString() + " has been imported." + "\\n";
+                        break;
+                    }
+                case PackageType.Runtime:
+                    {
+                        message += "Runtime package: " + manifest.Version.ToString() + " has been imported." + "\\n";
+                        break;
+                    }
+            }
+
+            UpdateManager.updateMessage = message;  // clear UpdateManager.updateMessage after closing the message.
         }
 
         public static void PostImportShaderPackageItemCompare()

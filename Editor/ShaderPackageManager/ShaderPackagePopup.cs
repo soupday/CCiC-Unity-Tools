@@ -88,6 +88,11 @@ namespace Reallusion.Import
             }
         }
 
+        private void OnDestroy()
+        {
+            UpdateManager.updateMessage = string.Empty;
+        }
+
         private void CompletionGUI()
         {
             GUILayout.BeginVertical();
