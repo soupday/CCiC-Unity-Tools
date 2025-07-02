@@ -904,7 +904,9 @@ namespace Reallusion.Import
                     // Rule(min max, version)
                     Rule(0, 9, PipelineVersion.Incompatible),
                     Rule(10, 11, PipelineVersion.HDRP10),
-                    Rule(12, 100, PipelineVersion.HDRP12)
+                    Rule(12, 13, PipelineVersion.HDRP12),
+                    Rule(14, 16, PipelineVersion.HDRP14),
+                    Rule(17, 100, PipelineVersion.HDRP17)
                 };
 
                 List<VersionLimits> byMax = hdrpRules.FindAll(z => major <= z.Max);
@@ -1307,12 +1309,12 @@ namespace Reallusion.Import
             {
                 case PackageType.Shader:
                     {
-                        message += "Shader package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString() + " has been imported." + "\\n";
+                        message += "Shader package: " + manifest.Pipeline.ToString() + " " + manifest.Version.ToString() + " has been imported." + System.Environment.NewLine;
                         break;
                     }
                 case PackageType.Runtime:
                     {
-                        message += "Runtime package: " + manifest.Version.ToString() + " has been imported." + "\\n";
+                        message += "Runtime package: " + manifest.Version.ToString() + " has been imported." + System.Environment.NewLine;
                         break;
                     }
             }

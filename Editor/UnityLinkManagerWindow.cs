@@ -1101,7 +1101,11 @@ namespace Reallusion.Import
 
         private bool CreateTreeView()
         {
-            PlayableDirector[] playableDirectors = GameObject.FindObjectsOfType<PlayableDirector>();            
+#if UNITY_2023_OR_NEWER
+            PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsSortMode.None);  
+#else
+            PlayableDirector[] playableDirectors = GameObject.FindObjectsOfType<PlayableDirector>();
+#endif
             treeViewState = new TreeViewState();
             timeLineTreeViewState = new TimeLineTreeView(treeViewState, playableDirectors);
             return true;
