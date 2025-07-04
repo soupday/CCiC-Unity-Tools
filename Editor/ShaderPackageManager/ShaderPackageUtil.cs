@@ -1091,7 +1091,7 @@ namespace Reallusion.Import
 
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.FULL_VERSION;
+                    ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
                 }
             }
@@ -1114,7 +1114,7 @@ namespace Reallusion.Import
 
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.FULL_VERSION;
+                    ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
                 }
             }

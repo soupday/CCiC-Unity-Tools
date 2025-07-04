@@ -8,7 +8,7 @@ namespace Reallusion.Import
     public class UpdateManager
     {
         public static bool checkIsLocked = false;
-        public static bool calledFromMenu = false;
+        public static bool showOverride = false;
         public static RLSettingsObject settings;
 
         //shader package validation
@@ -51,7 +51,7 @@ namespace Reallusion.Import
         {
             if (!checkIsLocked)
             {
-                calledFromMenu = fromMenu;
+                showOverride = fromMenu;
                 PerformUpdateChecks();
             }
         }
@@ -223,9 +223,6 @@ namespace Reallusion.Import
 
         public static bool IsPackageUpgradeRequired(PackageType packageType)
         {
-            Version last = new Version(0, 0, 0);
-            Version current = new Version(0, 0, 0);
-
             string lastUsedToolVersion = string.Empty;
 
             switch (packageType)
@@ -242,9 +239,15 @@ namespace Reallusion.Import
                     }
             }
 
-            Version.TryParse(lastUsedToolVersion, out last);
-            Version.TryParse(Pipeline.FULL_VERSION, out current);
+            if(!Version.TryParse(lastUsedToolVersion, out Version last))
+            {
+                last = new Version(0, 0, 0);
+            }
 
+            if(!Version.TryParse(Pipeline.VERSION, out Version current))
+            {
+                current = new Version(0, 0, 0);
+            }
             if (last < current)
                 return true;
             else
@@ -272,6 +275,11 @@ namespace Reallusion.Import
             EditorApplication.quitting -= HandleQuitEvent;
             EditorApplication.quitting += HandleQuitEvent;
 
+            if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Shader))
+            {
+                showOverride = true;
+            }
+
             if (UpdateManager.determinedShaderAction != null && UpdateManager.determinedRuntimeAction != null)
             {
                 if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force)
@@ -283,16 +291,7 @@ namespace Reallusion.Import
                         ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                         SetInitialInstallCompleted();
                         return;
-                    }
-                    else if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Shader))
-                    {
-                        if (settings != null) settings.postInstallShowPopupNotWindow = true;
-                        if (IsPackageUpgradeRequired(PackageType.Shader))
-                            ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
-                        if (IsPackageUpgradeRequired(PackageType.Shader))
-                            ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
-                        return;
-                    }
+                    }                    
                     else
                     {
                         if (settings != null)
@@ -361,14 +360,14 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (showWindow || calledFromMenu)
+                if (showWindow || showOverride)
                 {
                     if (!Application.isPlaying)
                     {
                         bool ignore = false;
                         if (settings != null)
                         {
-                            if (!calledFromMenu)
+                            if (!showOverride)
                                 ignore = settings.ignoreAllErrors;
                         }
                         if (!ignore) ShaderPackageUpdater.CreateWindow();
@@ -382,7 +381,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            else if (calledFromMenu)
+            else if (showOverride)
             {
                 ShaderPackageUpdater.CreateWindow();
             }
