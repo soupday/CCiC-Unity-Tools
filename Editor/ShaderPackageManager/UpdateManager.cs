@@ -248,7 +248,8 @@ namespace Reallusion.Import
             {
                 current = new Version(0, 0, 0);
             }
-            if (last < current)
+
+            if (last < new Version(2, 1, 0))  // essential breakpoint to move .cs files to runtime package
                 return true;
             else
                 return false;
@@ -275,8 +276,9 @@ namespace Reallusion.Import
             EditorApplication.quitting -= HandleQuitEvent;
             EditorApplication.quitting += HandleQuitEvent;
 
-            if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Shader))
+            if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
             {
+                settings.ignoreAllErrors = false;
                 showOverride = true;
             }
 
