@@ -221,6 +221,41 @@ namespace Reallusion.Import
             return false;
         }
 
+        public static bool IsPackageUpgradeRequired(PackageType packageType)
+        {
+            Version last = new Version(0, 0, 0);
+            Version current = new Version(0, 0, 0);
+
+            string lastUsedToolVersion = string.Empty;
+
+            switch (packageType)
+            {
+                case PackageType.Shader:
+                    {
+                        lastUsedToolVersion = settings.shaderToolVersion;
+                        break;
+                    }
+                case PackageType.Runtime:
+                    {
+                        lastUsedToolVersion = settings.runtimeToolVersion;
+                        break;
+                    }
+            }
+
+            Version.TryParse(lastUsedToolVersion, out last);
+            Version.TryParse(Pipeline.FULL_VERSION, out current);
+
+            if (last < current)
+                return true;
+            else
+                return false;
+        }
+
+        public enum PackageType
+        {
+            Shader,
+            Runtime
+        }
 
         public static void ShowUpdateUtilityWindow()
         {
@@ -249,6 +284,15 @@ namespace Reallusion.Import
                         SetInitialInstallCompleted();
                         return;
                     }
+                    else if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Shader))
+                    {
+                        if (settings != null) settings.postInstallShowPopupNotWindow = true;
+                        if (IsPackageUpgradeRequired(PackageType.Shader))
+                            ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                        if (IsPackageUpgradeRequired(PackageType.Shader))
+                            ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
+                        return;
+                    }
                     else
                     {
                         if (settings != null)
@@ -264,7 +308,7 @@ namespace Reallusion.Import
                                 ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                                 settings.postReloadRuntimeInstall = false;
                             }
-                        }    
+                        }
                     }
                 }
 

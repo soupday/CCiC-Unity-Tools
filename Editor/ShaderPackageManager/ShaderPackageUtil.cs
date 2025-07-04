@@ -1091,6 +1091,7 @@ namespace Reallusion.Import
 
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.FULL_VERSION;
                     ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
                 }
             }
@@ -1110,8 +1111,10 @@ namespace Reallusion.Import
             if (UpdateManager.currentRuntimePackageManifest != null)
             {
                 AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
+
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.FULL_VERSION;
                     ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
                 }
             }

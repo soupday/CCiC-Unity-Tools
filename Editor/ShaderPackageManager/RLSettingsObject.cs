@@ -28,6 +28,8 @@ namespace Reallusion.Import
         public string fullJsonFragment;
         public string lastPath;
         public string toolVersion;
+        public string shaderToolVersion;
+        public string runtimeToolVersion;
 
         public bool showProps = true;
 
