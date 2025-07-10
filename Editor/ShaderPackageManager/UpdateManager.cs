@@ -225,6 +225,16 @@ namespace Reallusion.Import
         {
             string lastUsedToolVersion = string.Empty;
 
+            if (string.IsNullOrEmpty(settings.shaderToolVersion))
+            {
+                settings.shaderToolVersion = UpdateManager.installedShaderVersion.ToString();
+            }
+
+            if (string.IsNullOrEmpty(settings.runtimeToolVersion))
+            {
+                settings.runtimeToolVersion = UpdateManager.installedRuntimeVersion.ToString();
+            }
+
             switch (packageType)
             {
                 case PackageType.Shader:
@@ -250,7 +260,10 @@ namespace Reallusion.Import
             }
 
             if (last < new Version(2, 1, 0))  // essential breakpoint to move .cs files to runtime package
+            {
+                Debug.LogWarning("Critical package updates for version 2.1.0 and above are required (when this message is show, the ignore all errors flag will be overridden)");
                 return true;
+            }
             else
                 return false;
         }
@@ -278,6 +291,7 @@ namespace Reallusion.Import
 
             if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
             {
+                Debug.LogWarning("User must complete upgrade steps.");
                 settings.ignoreAllErrors = false;
                 showOverride = true;
             }
