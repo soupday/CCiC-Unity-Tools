@@ -1515,8 +1515,13 @@ namespace Reallusion.Import
                     matJson, "Textures/HDRP");
             }
 
-            ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
+            bool use_cavity = ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
                 matJson, "Custom Shader/Image/Cavity Map");
+            if (use_cavity)
+            {
+                mat.EnableKeyword("BOOLEAN_USE_CAVITY_ON");
+                mat.SetFloatIf("BOOLEAN_USE_CAVITY", 1f);
+            }
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
                 matJson, "Textures/MetallicAlpha");
