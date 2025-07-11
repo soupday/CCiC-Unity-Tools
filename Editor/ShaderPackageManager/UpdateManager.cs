@@ -295,6 +295,8 @@ namespace Reallusion.Import
                 if (settings != null)
                 {
                     settings.criticalUpdateRequired = true;
+                    settings.pendingShaderUninstall = true;
+                    settings.pendingRuntimeUninstall = true;
                 }
 
                 Debug.LogWarning("User must complete upgrade steps.");

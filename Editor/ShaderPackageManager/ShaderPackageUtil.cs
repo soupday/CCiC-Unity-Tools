@@ -1081,8 +1081,7 @@ namespace Reallusion.Import
                     InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                 }
 
-                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;
-                ImporterWindow.GeneralSettings.postInstallShowPopupNotWindow = true;
+                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;                
             }
         }
 
