@@ -11,11 +11,16 @@ namespace Reallusion.Import
         public bool updateWindowShownOnce;
         public bool postInstallShowUpdateWindow;
         public bool postInstallShowPopupNotWindow;
+
+        public bool criticalUpdateRequired;
+
+        public bool pendingShaderUninstall;
+        public bool pendingRuntimeUninstall;
+
+        public bool pendingShaderInstall;
+        public bool pendingRuntimeInstall;
+
         public bool performPostInstallationCheck;
-
-        public bool postReloadShaderInstall;
-        public bool postReloadRuntimeInstall;
-
         public bool performPostInstallationRuntimeCheck;
 
         public bool updateAvailable;

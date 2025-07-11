@@ -1057,6 +1057,33 @@ namespace Reallusion.Import
             }
         }
 
+        public static void ProcessPendingActions()
+        {
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                if (ImporterWindow.GeneralSettings.pendingShaderUninstall)
+                {
+                    UnInstallShaderPackage(true);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingShaderInstall)
+                {
+                    InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingRuntimeUninstall)
+                {
+                    UnInstallRuntimePackage(true);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingRuntimeInstall)
+                {
+                    InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
+                }
+
+                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;                
+            }
+        }
 
         public static void InstallShaderPackage(ShaderPackageManifest shaderPackageManifest, bool interactive = true)
         {
@@ -1080,13 +1107,13 @@ namespace Reallusion.Import
 
             if (UpdateManager.currentPackageManifest != null)
             {
-                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
-
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.VERSION;
-                    ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
+                    ImporterWindow.GeneralSettings.pendingShaderInstall = false;
                 }
+
+                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1103,13 +1130,13 @@ namespace Reallusion.Import
 
             if (UpdateManager.currentRuntimePackageManifest != null)
             {
-                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
-
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.VERSION;
-                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
+                    ImporterWindow.GeneralSettings.pendingRuntimeInstall = false;
                 }
+
+                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1331,11 +1358,14 @@ namespace Reallusion.Import
 
         public static void UnInstallShaderPackage(bool flagReinstall = false)
         {
+            if (ImporterWindow.GeneralSettings != null)
+                ImporterWindow.GeneralSettings.pendingShaderUninstall = false;
+
             if (flagReinstall)
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.postReloadShaderInstall = true;
+                    ImporterWindow.GeneralSettings.pendingShaderInstall = true;
                 }
             }
 
@@ -1373,11 +1403,14 @@ namespace Reallusion.Import
 
         public static void UnInstallRuntimePackage(bool flagReinstall = false)
         {
+            if (ImporterWindow.GeneralSettings != null)
+                ImporterWindow.GeneralSettings.pendingRuntimeUninstall = false;
+
             if (flagReinstall)
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = true;
+                    ImporterWindow.GeneralSettings.pendingRuntimeInstall = true;
                 }
             }
 
