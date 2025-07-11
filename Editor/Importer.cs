@@ -22,6 +22,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 namespace Reallusion.Import
 {
@@ -48,7 +49,7 @@ namespace Reallusion.Import
         private Dictionary<Material, Texture2D> bakedHDRPMaps;
         private readonly BaseGeneration generation;
         private readonly bool blenderProject;
-
+        
         public bool recordMotionListForTimeLine;
         public List<AnimationClip> clipListForTimeLine = new List<AnimationClip>();
 
@@ -1514,6 +1515,9 @@ namespace Reallusion.Import
                     matJson, "Textures/HDRP");
             }
 
+            ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
+                matJson, "Custom Shader/Image/Cavity Map");
+
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
                 matJson, "Textures/MetallicAlpha");
 
@@ -1649,6 +1653,7 @@ namespace Reallusion.Import
                     }
                 }
 
+                mat.SetFloatIf("_CavityStrength", matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
@@ -1657,6 +1662,8 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_MicroNormalTiling", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Tiling"));
                 mat.SetFloatIf("_MicroNormalStrength", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Strength"));                                
                 float smoothnessMax = Util.CombineSpecularToSmoothness(specular, ValueByPipeline(1f, 0.9f, 1f));
+                float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
+                mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
                 //float secondarySmoothness = 0.85f * smoothnessMax;
                 //float smoothnessMix = Mathf.Clamp(0.15f * ((1f / Mathf.Pow(secondarySmoothness, 4f)) - 1f), 0.05f, 0.9f);

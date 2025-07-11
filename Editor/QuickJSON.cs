@@ -17,7 +17,9 @@
  */
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace Reallusion.Import
@@ -360,25 +362,25 @@ namespace Reallusion.Import
             return 0;
         }
 
-        public float GetFloatValue(string path)
+        public float GetFloatValue(string path, float defaultValue=0.0f)
         {
             string[] paths = path.Split('/');
 
-            return GetFloatValue(paths);
+            return GetFloatValue(paths, defaultValue);
         }
 
-        public float GetFloatValue(string[] paths)
+        public float GetFloatValue(string[] paths, float defaultValue=0.0f)
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetFloatValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetFloatValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.Float)
                     return mv.FloatValue;
             }
 
-            return 0.0f;
+            return defaultValue;
         }
 
         public string GetStringValue(string path)
