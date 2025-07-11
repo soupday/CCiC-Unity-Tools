@@ -1108,13 +1108,13 @@ namespace Reallusion.Import
 
             if (UpdateManager.currentPackageManifest != null)
             {
-                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
-
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.pendingShaderInstall = false;
                 }
+
+                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1131,13 +1131,13 @@ namespace Reallusion.Import
 
             if (UpdateManager.currentRuntimePackageManifest != null)
             {
-                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
-
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.pendingRuntimeInstall = false;
                 }
+
+                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1359,6 +1359,9 @@ namespace Reallusion.Import
 
         public static void UnInstallShaderPackage(bool flagReinstall = false)
         {
+            if (ImporterWindow.GeneralSettings != null)
+                ImporterWindow.GeneralSettings.pendingShaderUninstall = false;
+
             if (flagReinstall)
             {
                 if (ImporterWindow.GeneralSettings != null)
@@ -1401,6 +1404,9 @@ namespace Reallusion.Import
 
         public static void UnInstallRuntimePackage(bool flagReinstall = false)
         {
+            if (ImporterWindow.GeneralSettings != null)
+                ImporterWindow.GeneralSettings.pendingRuntimeUninstall = false;
+
             if (flagReinstall)
             {
                 if (ImporterWindow.GeneralSettings != null)
