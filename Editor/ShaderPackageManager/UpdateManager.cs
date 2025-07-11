@@ -292,11 +292,25 @@ namespace Reallusion.Import
             bool critical = false;
             if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
             {
+                if (settings != null)
+                {
+                    settings.criticalUpdateRequired = true;
+                }
+
                 Debug.LogWarning("User must complete upgrade steps.");
                 settings.ignoreAllErrors = false;
                 showOverride = true;
                 critical = true;
             }
+
+            if (settings != null)
+            {
+                if (settings.criticalUpdateRequired)
+                {
+                    ShaderPackageUtil.ProcessPendingActions();
+                }
+            }
+
 
             if (UpdateManager.determinedShaderAction != null && UpdateManager.determinedRuntimeAction != null)
             {
@@ -304,7 +318,10 @@ namespace Reallusion.Import
                 {
                     if (!IsInitialInstallCompleted())
                     {
-                        if (settings != null) settings.postInstallShowPopupNotWindow = true;
+                        if (settings != null)
+                        {
+                            settings.postInstallShowPopupNotWindow = true;
+                        }
                         ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
                         ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                         SetInitialInstallCompleted();
@@ -314,16 +331,16 @@ namespace Reallusion.Import
                     {
                         if (settings != null)
                         {
-                            if (settings.postReloadShaderInstall)
+                            if (settings.pendingShaderInstall)
                             {
                                 ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
-                                settings.postReloadShaderInstall = false;
+                                settings.pendingShaderInstall = false;
                             }
 
-                            if (settings.postReloadRuntimeInstall)
+                            if (settings.pendingRuntimeInstall)
                             {
                                 ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
-                                settings.postReloadRuntimeInstall = false;
+                                settings.pendingRuntimeInstall = false;
                             }
                         }
                     }

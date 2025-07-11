@@ -1057,6 +1057,34 @@ namespace Reallusion.Import
             }
         }
 
+        public static void ProcessPendingActions()
+        {
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                if (ImporterWindow.GeneralSettings.pendingShaderUninstall)
+                {
+                    UnInstallShaderPackage(true);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingShaderInstall)
+                {
+                    InstallShaderPackage(UpdateManager.currentPackageManifest, false);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingRuntimeUninstall)
+                {
+                    UnInstallRuntimePackage(true);
+                }
+
+                if (ImporterWindow.GeneralSettings.pendingRuntimeInstall)
+                {
+                    InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
+                }
+
+                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;
+                ImporterWindow.GeneralSettings.postInstallShowPopupNotWindow = true;
+            }
+        }
 
         public static void InstallShaderPackage(ShaderPackageManifest shaderPackageManifest, bool interactive = true)
         {
@@ -1085,7 +1113,7 @@ namespace Reallusion.Import
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.VERSION;
-                    ImporterWindow.GeneralSettings.postReloadShaderInstall = false;
+                    ImporterWindow.GeneralSettings.pendingShaderInstall = false;
                 }
             }
             else
@@ -1108,7 +1136,7 @@ namespace Reallusion.Import
                 if (ImporterWindow.GeneralSettings != null)
                 {
                     ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.VERSION;
-                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = false;
+                    ImporterWindow.GeneralSettings.pendingRuntimeInstall = false;
                 }
             }
             else
@@ -1335,7 +1363,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.postReloadShaderInstall = true;
+                    ImporterWindow.GeneralSettings.pendingShaderInstall = true;
                 }
             }
 
@@ -1377,7 +1405,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
-                    ImporterWindow.GeneralSettings.postReloadRuntimeInstall = true;
+                    ImporterWindow.GeneralSettings.pendingRuntimeInstall = true;
                 }
             }
 
