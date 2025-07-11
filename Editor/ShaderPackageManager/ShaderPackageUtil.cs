@@ -464,8 +464,8 @@ namespace Reallusion.Import
             ActionRules actionobj = null;
             List<ActionRules> packageStatus = null;
             
-            Debug.LogWarning("UpdateManager.installedRuntimeStatus " + UpdateManager.installedRuntimeStatus);
-            Debug.LogWarning("UpdateManager.runtimePackageValid " + UpdateManager.runtimePackageValid);
+            //Debug.LogWarning("UpdateManager.installedRuntimeStatus " + UpdateManager.installedRuntimeStatus);
+            //Debug.LogWarning("UpdateManager.runtimePackageValid " + UpdateManager.runtimePackageValid);
 
             packageStatus = ActionRulesList.FindAll(x => x.InstalledPackageStatus == UpdateManager.installedRuntimeStatus);
             if (UpdateManager.runtimePackageValid != PackageVailidity.Waiting || UpdateManager.runtimePackageValid != PackageVailidity.None)
@@ -475,7 +475,7 @@ namespace Reallusion.Import
             {                
                 UpdateManager.determinedRuntimeAction = actionobj;
                 //Debug.Log(Application.dataPath + " -- " + actionobj.ResultString);
-                Debug.LogWarning("actionobj UpdateManager.determinedRuntimeAction " + UpdateManager.determinedRuntimeAction.DeterminedShaderAction);
+                //Debug.LogWarning("actionobj UpdateManager.determinedRuntimeAction " + UpdateManager.determinedRuntimeAction.DeterminedShaderAction);
             }
             else
             {
@@ -598,14 +598,7 @@ namespace Reallusion.Import
         {
             UpdateManager.availablePackages = BuildPackageMap("_RL_referencemanifest");
             UpdateManager.availableRuntimePackages = BuildPackageMap("_RL_reference_runtimemanifest");
-
-            Debug.LogWarning("BuildPackageMaps availableRuntimePackages found: " + UpdateManager.availableRuntimePackages.Count);
-            foreach(var package in UpdateManager.availableRuntimePackages)
-            {
-                Debug.LogWarning("FOUND: " + package.SourcePackageName);
-            }
-
-        } // Runtime Package_2.1.0_RL_reference_runtimemanifest
+        }
 
         private static List<ShaderPackageManifest> BuildPackageMap(string search)
         {

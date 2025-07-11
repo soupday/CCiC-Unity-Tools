@@ -289,11 +289,13 @@ namespace Reallusion.Import
             EditorApplication.quitting -= HandleQuitEvent;
             EditorApplication.quitting += HandleQuitEvent;
 
+            bool critical = false;
             if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
             {
                 Debug.LogWarning("User must complete upgrade steps.");
                 settings.ignoreAllErrors = false;
                 showOverride = true;
+                critical = true;
             }
 
             if (UpdateManager.determinedShaderAction != null && UpdateManager.determinedRuntimeAction != null)
@@ -354,7 +356,8 @@ namespace Reallusion.Import
 
                 bool shaderActionRequired = force || (optional && sos) || incompatible;                
                 
-                if (optional) Debug.LogWarning("An optional shader package is available.");
+                if (critical) Debug.LogWarning("Critical package updates are required.");
+                else if (optional) Debug.LogWarning("An optional shader package is available.");
                 else if (!valid) Debug.LogWarning("Problem with shader installation.");
 
                 if (valid || optional)
