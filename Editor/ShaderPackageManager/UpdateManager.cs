@@ -261,7 +261,7 @@ namespace Reallusion.Import
 
             if (last < new Version(2, 1, 0))  // essential breakpoint to move .cs files to runtime package
             {
-                Debug.LogWarning("Critical package updates for version 2.1.0 and above are required (when this message is show, the ignore all errors flag will be overridden)");
+                Debug.Log("Critical package updates for version 2.1.0 and above are required (this will be performed autoatically)");
                 return true;
             }
             else
@@ -289,20 +289,19 @@ namespace Reallusion.Import
             EditorApplication.quitting -= HandleQuitEvent;
             EditorApplication.quitting += HandleQuitEvent;
 
-            bool critical = false;
-            if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
+            //bool critical = false;
+            if (settings != null)
             {
-                if (settings != null)
+                if (!settings.criticalUpdateRequired)
                 {
-                    settings.criticalUpdateRequired = true;
-                    settings.pendingShaderUninstall = true;
-                    settings.pendingRuntimeUninstall = true;
+                    if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
+                    {
+                        settings.updateMessage = string.Empty;
+                        settings.criticalUpdateRequired = true;
+                        settings.pendingShaderUninstall = true;
+                        settings.pendingRuntimeUninstall = true;
+                    }
                 }
-
-                Debug.LogWarning("User must complete upgrade steps.");
-                settings.ignoreAllErrors = false;
-                showOverride = true;
-                critical = true;
             }
 
             if (settings != null)
@@ -313,6 +312,7 @@ namespace Reallusion.Import
                 }
             }
 
+            //critical = settings.criticalUpdateRequired;
 
             if (UpdateManager.determinedShaderAction != null && UpdateManager.determinedRuntimeAction != null)
             {
@@ -322,6 +322,7 @@ namespace Reallusion.Import
                     {
                         if (settings != null)
                         {
+                            ImporterWindow.GeneralSettings.updateMessage = string.Empty;
                             settings.postInstallShowPopupNotWindow = true;
                         }
                         ShaderPackageUtil.InstallShaderPackage(UpdateManager.currentPackageManifest, false);
@@ -375,9 +376,9 @@ namespace Reallusion.Import
 
                 bool shaderActionRequired = force || (optional && sos) || incompatible;                
                 
-                if (critical) Debug.LogWarning("Critical package updates are required.");
-                else if (optional) Debug.LogWarning("An optional shader package is available.");
-                else if (!valid) Debug.LogWarning("Problem with shader installation.");
+                //if (critical) Debug.LogWarning("Critical package updates are required.");
+                //else if (optional) Debug.LogWarning("An optional shader package is available.");
+                //else if (!valid) Debug.LogWarning("Problem with shader installation.");
 
                 if (valid || optional)
                     showWindow = sos && !shownOnce;
@@ -393,7 +394,7 @@ namespace Reallusion.Import
                 {
                     if (!Application.isPlaying)
                     {
-                        ShaderPackagePopup.OpenPopupWindow(ShaderPackagePopup.PopupType.Completion, UpdateManager.updateMessage);
+                        ShaderPackagePopup.OpenPopupWindow(ShaderPackagePopup.PopupType.Completion, settings.updateMessage);//UpdateManager.updateMessage);
                         return;
                     }
                 }

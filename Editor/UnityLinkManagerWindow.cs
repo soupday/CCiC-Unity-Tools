@@ -123,7 +123,7 @@ namespace Reallusion.Import
 
             if (settings == null)
             {
-                Debug.LogWarning("getting settings directly");
+                //Debug.LogWarning("getting settings directly");
                 settings = RLSettings.FindRLSettingsObject();
             }
 
@@ -180,10 +180,10 @@ namespace Reallusion.Import
         // Automated reconnection for assembly reloads        
         public static void AttemptAutoReconnect()
         {
-            Debug.Log("OnEnable - AutoReconnect");
+            //Debug.Log("OnEnable - AutoReconnect");
             if (IsConnectedTimeStampWithin(new TimeSpan(0, 5, 0)) && !EditorApplication.isPlaying)
             {
-                Debug.Log("OnEnable - Attempting to reconnect");
+                //Debug.Log("OnEnable - Attempting to reconnect");
                 // mimic of the connect button's UI control elements (connectInProgress + control vars)
                 // all of the required info recoverred from settings by FetchSettings().
                 UnityLinkManager.reconnect = false;
@@ -194,7 +194,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.Log("OnEnable - Not AutoReconnect-ing");
+                //Debug.Log("OnEnable - Not AutoReconnect-ing");
             }
         }
 
@@ -686,13 +686,9 @@ namespace Reallusion.Import
             Texture2D toggleImg = UnityLinkManager.IS_CLIENT_LOCAL ? styles.toggleLeft : styles.toggleRight;
             if (GUILayout.Button(toggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
             {
-                Debug.Log("GeneralSettings - ANTE: " + ImporterWindow.GeneralSettings.isClientLocal);
                 UnityLinkManager.IS_CLIENT_LOCAL = !UnityLinkManager.IS_CLIENT_LOCAL;
                 settings.isClientLocal = UnityLinkManager.IS_CLIENT_LOCAL;
-                Debug.Log("GeneralSettings - POST local change: " + ImporterWindow.GeneralSettings.isClientLocal);
                 SaveSettings();
-
-                Debug.Log("GeneralSettings - POST save: " + ImporterWindow.GeneralSettings.isClientLocal);
             }
 
             GUIStyle conLabelText = UnityLinkManager.IS_CLIENT_LOCAL ? styles.unselectedLabel : styles.selectedLabel;

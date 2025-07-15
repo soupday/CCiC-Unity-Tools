@@ -1063,25 +1063,31 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings.pendingShaderUninstall)
                 {
+                    //Debug.Log("Beginning uninstall of existing shader package");
                     UnInstallShaderPackage(true);
                 }
 
                 if (ImporterWindow.GeneralSettings.pendingShaderInstall)
                 {
+                    //Debug.Log("Beginning installation of current shader package");
                     InstallShaderPackage(UpdateManager.currentPackageManifest, false);
                 }
 
                 if (ImporterWindow.GeneralSettings.pendingRuntimeUninstall)
                 {
+                    //Debug.Log("Beginning uninstall of existing runtime package");
                     UnInstallRuntimePackage(true);
                 }
 
                 if (ImporterWindow.GeneralSettings.pendingRuntimeInstall)
                 {
+                    //Debug.Log("Beginning installation of current runtime package");
                     InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                 }
 
-                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;                
+                ImporterWindow.GeneralSettings.criticalUpdateRequired = false;
+                Debug.Log("Critical package update complete");
+                //ImporterWindow.GeneralSettings.postInstallShowPopupNotWindow = true;
             }
         }
 
@@ -1109,6 +1115,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    //Debug.Log("Attempting installation of current shader package");
                     ImporterWindow.GeneralSettings.shaderToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.pendingShaderInstall = false;
                 }
@@ -1132,6 +1139,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    //Debug.Log("Attempting installation of current runtime package");
                     ImporterWindow.GeneralSettings.runtimeToolVersion = Pipeline.VERSION;
                     ImporterWindow.GeneralSettings.pendingRuntimeInstall = false;
                 }
@@ -1286,7 +1294,7 @@ namespace Reallusion.Import
 
         public static void PostImportPackageItemCompare(PackageType packageType)
         {
-            Debug.LogWarning("Performing post installation checks... " + packageType);
+            Debug.Log("Performing post installation checks... " + packageType);
             string guid = GetLatestManifestGUID(packageType);
             if (guid == string.Empty) return;
 
@@ -1326,7 +1334,12 @@ namespace Reallusion.Import
 
             if (ShaderPackageUpdater.Instance != null) ShaderPackageUpdater.Instance.UpdateGUI();
 
-            string message = UpdateManager.updateMessage;
+            string message = string.Empty;
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                message = ImporterWindow.GeneralSettings.updateMessage;
+            }
+            //string message = UpdateManager.updateMessage;
 
             switch (packageType)
             {
@@ -1342,7 +1355,11 @@ namespace Reallusion.Import
                     }
             }
 
-            UpdateManager.updateMessage = message;  // clear UpdateManager.updateMessage after closing the message.
+            //UpdateManager.updateMessage = message;  // clear UpdateManager.updateMessage after closing the message.
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                ImporterWindow.GeneralSettings.updateMessage = message;
+            }
         }
 
         public static void PostImportShaderPackageItemCompare()
@@ -1365,6 +1382,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    //Debug.Log("Attempting uninstall of existing shader package");
                     ImporterWindow.GeneralSettings.pendingShaderInstall = true;
                 }
             }
@@ -1410,6 +1428,7 @@ namespace Reallusion.Import
             {
                 if (ImporterWindow.GeneralSettings != null)
                 {
+                    //Debug.Log("Attempting uninstall of existing runtime package");
                     ImporterWindow.GeneralSettings.pendingRuntimeInstall = true;
                 }
             }

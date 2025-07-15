@@ -68,7 +68,7 @@ namespace Reallusion.Import
         {
             string defaultPath = "Assets/Reallusion/DataLink_Imports";
             string fullPath = defaultPath.UnityAssetPathToFullPath();
-            Debug.LogWarningFormat("GetDefaultFullFolderPath " + fullPath);
+            //Debug.LogWarningFormat("GetDefaultFullFolderPath " + fullPath);
             return fullPath;
 
         }
@@ -579,22 +579,22 @@ namespace Reallusion.Import
 
         public static void CleanupBeforeAssemblyReload()
         {
-            Debug.LogWarning("adding CleanupDelegate to AssemblyReloadEvents.beforeAssemblyReload");
+            //Debug.LogWarning("adding CleanupDelegate to AssemblyReloadEvents.beforeAssemblyReload");
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
             AssemblyReloadEvents.beforeAssemblyReload += CleanupDelegate;
         }
 
         static void CleanupDelegate()
         {
-            Debug.LogWarning("CleanupDelegate called by AssemblyReloadEvents.beforeAssemblyReload");
+            //Debug.LogWarning("CleanupDelegate called by AssemblyReloadEvents.beforeAssemblyReload");
             if (reconnect)
             {
-                Debug.Log("Setting up reconnect");
+                //Debug.Log("Setting up reconnect");
                 SetConnectedTimeStamp();
             }
             else
             {
-                Debug.LogWarning("SetConnectedTimeStamp(true)");
+                //Debug.LogWarning("SetConnectedTimeStamp(true)");
                 SetConnectedTimeStamp(true);
             }
 
@@ -612,7 +612,7 @@ namespace Reallusion.Import
             listening = false;
             EditorApplication.update -= QueueDelegate;
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
-            Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
+            //Debug.LogWarning("AssemblyReloadEvents.beforeAssemblyReload done");
         }
 
         // Automated reconnection for assembly reloads
@@ -654,7 +654,7 @@ namespace Reallusion.Import
             }
 
             EditorPrefs.SetString(connectPrefString, time.ToString());
-            Debug.Log("Writing timestamp string: " + time.ToString() + " to EditorPrefs: " + connectPrefString);
+            //Debug.Log("Writing timestamp string: " + time.ToString() + " to EditorPrefs: " + connectPrefString);
         }
 
         static bool IsConnectedTimeStampWithin(TimeSpan interval)

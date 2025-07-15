@@ -90,7 +90,11 @@ namespace Reallusion.Import
 
         private void OnDestroy()
         {
-            UpdateManager.updateMessage = string.Empty;
+            //UpdateManager.updateMessage = string.Empty;
+            if (ImporterWindow.GeneralSettings != null)
+            {
+                ImporterWindow.GeneralSettings.updateMessage = string.Empty;
+            }
         }
 
         private void CompletionGUI()

@@ -23,6 +23,8 @@ namespace Reallusion.Import
         public bool performPostInstallationCheck;
         public bool performPostInstallationRuntimeCheck;
 
+        public string updateMessage;
+
         public bool updateAvailable;
         public long lastUpdateCheck;
         public string jsonTagName;
