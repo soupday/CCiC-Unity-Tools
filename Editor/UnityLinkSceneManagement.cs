@@ -267,7 +267,7 @@ namespace Reallusion.Import
         public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string) objectTuple)
         {
             LockStateTimeLineWindow(false);
-            Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
+            //Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
 
             GameObject sceneObject = null;
             if (PrefabUtility.GetPrefabAssetType(objectTuple.Item2) != PrefabAssetType.NotAPrefab)
@@ -342,7 +342,7 @@ namespace Reallusion.Import
                 clip.start = 0f;
                 clip.timeScale = 1f;
                 clip.duration = clip.duration / clip.timeScale;
-                Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
+                //Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
                 director.SetGenericBinding(workingtrack, sceneObject);
             }
 
@@ -726,7 +726,7 @@ namespace Reallusion.Import
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Creating URP VolumeAsset: " + sharedProfilePath);
+                    Debug.Log("Creating URP VolumeAsset: " + sharedProfilePath);
                     UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                     // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
                     AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
@@ -735,7 +735,7 @@ namespace Reallusion.Import
                 {
 
                 }
-                Debug.LogWarning("Assigning URP VolumeAsset: " + sharedProfile.name);
+                Debug.Log("Assigning URP VolumeAsset: " + sharedProfile.name);
                 global.sharedProfile = sharedProfile;
                 global.runInEditMode = true;
             }
@@ -774,7 +774,7 @@ namespace Reallusion.Import
 
             frames = 10;
             EditorApplication.update -= WaitForFrames;
-            Debug.LogWarning("Registering Volume");
+            //Debug.LogWarning("Registering Volume");
 
 #if UNITY_6000_0_OR_NEWER
             VolumeManager.instance.Unregister(v);

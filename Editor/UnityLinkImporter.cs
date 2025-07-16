@@ -123,7 +123,7 @@ namespace Reallusion.Import
                 {
                     if (selectedTimeline == null || selectedTimeline.playableAsset == null)
                     {
-                        Debug.LogWarning("UnityLinkImporter selectedTimeline || selectedTimeline.playableAsset = null");
+                        //Debug.LogWarning("UnityLinkImporter selectedTimeline || selectedTimeline.playableAsset = null");
                         if (UnityLinkSceneManagement.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
                         {
                             UnityLinkManager.SCENE_TIMELINE_ASSET = sceneTimeLine;
@@ -320,7 +320,7 @@ namespace Reallusion.Import
 
             //string assetFolder = Path.GetDirectoryName(assetPath);
             string assetFolderName = name; // Path.GetFileName(assetFolder);
-            Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
+            //Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
             
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
@@ -336,10 +336,10 @@ namespace Reallusion.Import
             string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
 
             string proposedDestinationFolder = Path.Combine(validatedDestFolder.FullPathToUnityAssetPath(), assetFolderName);
-            Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
+            //Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
 
             string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);//string.Empty;
-            Debug.LogWarning("RetrieveDiskAsset - destinationFolder " + destinationFolder);
+            //Debug.LogWarning("RetrieveDiskAsset - destinationFolder " + destinationFolder);
 
             if (string.IsNullOrEmpty(destinationFolder))
             {
@@ -351,7 +351,7 @@ namespace Reallusion.Import
             //if (Directory.GetFiles(destinationFolder).Length > 0) { Debug.LogWarning("Destination folder: " + destinationFolder +  " has files in it!"); return string.Empty; }
             try
             {
-                Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                 FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
                 AssetDatabase.Refresh();
                 assetImportDestinationPath = destinationFolder;
@@ -379,7 +379,7 @@ namespace Reallusion.Import
                         if (Util.IsCC3CharacterAtPath(projectAssetPath))
                         {
                             string charName = Path.GetFileNameWithoutExtension(projectAssetPath);
-                            Debug.Log("Valid CC character: " + charName + " found.");
+                            //Debug.Log("Valid CC character: " + charName + " found.");
                             inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                             break;
                         }
@@ -389,7 +389,7 @@ namespace Reallusion.Import
                         string modelName = Path.GetFileNameWithoutExtension(projectAssetPath);
                         if (modelName.EndsWith("_motion", System.StringComparison.InvariantCultureIgnoreCase))
                         {
-                            Debug.Log("Valid motion: " + modelName + " found.");
+                            //Debug.Log("Valid motion: " + modelName + " found.");
                             inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                             break;
                         }
@@ -400,14 +400,14 @@ namespace Reallusion.Import
                         string propName = Path.GetFileName(projectAssetPath);
                         if (propExt.Equals(".fbx", System.StringComparison.InvariantCultureIgnoreCase))
                         {
-                            Debug.Log("FBX: " + propName + " found.");
+                            //Debug.Log("FBX: " + propName + " found.");
                             inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                         }
                     }
                 }
             }
 
-            Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
+            //Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
             return inProjectAssetPath;
         }
 
@@ -440,7 +440,7 @@ namespace Reallusion.Import
             // requires a unity asset path
             string fullCleanupPath = path.UnityAssetPathToFullPath();
             string cleanupMetaFile = fullCleanupPath + ".meta";
-            Debug.LogWarning("CLEANING UP: " + fullCleanupPath + " & Meta " + cleanupMetaFile);
+            //Debug.LogWarning("CLEANING UP: " + fullCleanupPath + " & Meta " + cleanupMetaFile);
             Directory.Delete(fullCleanupPath, true);
             File.Delete(cleanupMetaFile);
             AssetDatabase.Refresh();
@@ -452,8 +452,8 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            Debug.Log("Creating new characterinfo with guid " + guid);
-            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+            //Debug.Log("Creating new characterinfo with guid " + guid);
+            //Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
             CharacterInfo c = new CharacterInfo(guid);
 
             c.linkId = linkId;
@@ -486,8 +486,8 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            Debug.Log("Creating new characterinfo with guid " + guid);
-            Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+            //Debug.Log("Creating new characterinfo with guid " + guid);
+            //Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
             CharacterInfo charInfo = new CharacterInfo(guid);
 
             charInfo.linkId = linkId;
@@ -668,7 +668,7 @@ namespace Reallusion.Import
                 frames.Add(new UnityLinkManager.DeserializedCameraFrames(frameBytes));
             }
 
-            Debug.Log("Frames processed " + frames.Count);
+            Debug.Log("Make Animated Camera: Frames processed " + frames.Count);
 
             // construct a camera object paretented to a dolly object
             GameObject root = GetRootSceneObject(jsonCameraObject.LinkId);
@@ -721,15 +721,15 @@ namespace Reallusion.Import
             //Set Initial CameraProperties
             if (camera != null)
             {
-                Debug.LogWarning("Camera component is NOT null");
+                //Debug.LogWarning("Camera component is NOT null");
                 camera.usePhysicalProperties = true;
                 camera.focalLength = jsonCameraObject.FocalLength;
-                Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
+                //Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
                 camera.sensorSize = new Vector2(jsonCameraObject.Width, jsonCameraObject.Height);
             }
             else
             {
-                Debug.LogWarning("Camera component is null");
+                //Debug.LogWarning("Camera component is null");
             }
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
@@ -954,8 +954,9 @@ namespace Reallusion.Import
             AnimationCurve c_dofMinDist = ReduceCurve(f_dofMinDist);  //new AnimationCurve(f_dofMinDist);
             AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
 
-            clip.frameRate = 60f;
-            Debug.LogWarning("Calculated Frame Rate = " + (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time);
+            float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
+            clip.frameRate = frameRate;
+            Debug.Log("Make Camera Animation - Calculated Frame Rate = " + frameRate);
             return clip;
         }
 
@@ -971,12 +972,12 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("Found " + CameraProxyType.GetType().ToString());
+                    //Debug.LogWarning("Found " + CameraProxyType.GetType().ToString());
                 }
             }
             else
             {
-                Debug.LogWarning("Already had " + CameraProxyType.GetType().ToString());
+                //Debug.LogWarning("Already had " + CameraProxyType.GetType().ToString());
             }
 
             Component proxy = root.GetComponentInChildren(CameraProxyType);
@@ -1045,7 +1046,7 @@ namespace Reallusion.Import
                 frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
             }
 
-            Debug.Log("MakeAnimatedLight: Frames processed " + frames.Count);
+            Debug.Log("Make Animated Light: Frames processed " + frames.Count);
 
             // construct a light object paretented to a dolly object
             GameObject root = GetRootSceneObject(jsonLightObject.LinkId);
@@ -1416,7 +1417,9 @@ namespace Reallusion.Import
                 AnimationUtility.SetEditorCurve(clip, b_dark, c_dark);
             }
 
-            clip.frameRate = 60f;
+            float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
+            clip.frameRate = frameRate;
+            Debug.Log("Make Light Animation - Calculated Frame Rate = " + frameRate);
             return clip;
         }
 
@@ -1491,7 +1494,7 @@ namespace Reallusion.Import
                 string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(clipAssetPath));
 
-                Debug.LogWarning("Saving RLX animation to " + clipAssetPath);                
+                //Debug.LogWarning("Saving RLX animation to " + clipAssetPath);                
                 if (File.Exists(fullClipAssetPath))
                 {
                     AssetDatabase.DeleteAsset(clipAssetPath);
@@ -1541,12 +1544,12 @@ namespace Reallusion.Import
 
             if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
             {
-                Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
+                //Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
                 UnityEditor.PrefabUtility.UnpackPrefabInstance(toPrefab, UnityEditor.PrefabUnpackMode.Completely, UnityEditor.InteractionMode.AutomatedAction);
             }
             else
             {
-                Debug.LogWarning("Is NOT PartOfPrefabInstance toPrefab " + toPrefab.name);
+                //Debug.LogWarning("Is NOT PartOfPrefabInstance toPrefab " + toPrefab.name);
             }
 #if UNITY_POST_PROCESSING_3_1_1
             if (CameraProxyType == null)
@@ -1592,7 +1595,7 @@ namespace Reallusion.Import
                 pwd += "/" + strings[i];
                 if (!AssetDatabase.IsValidFolder(pwd))
                 {
-                    Debug.LogWarning("Creating " + pwd);
+                    Debug.Log("Creating " + pwd);
                     AssetDatabase.CreateFolder(parentFolder, strings[i]);
                     AssetDatabase.Refresh();
                 }

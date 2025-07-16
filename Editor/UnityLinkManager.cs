@@ -93,7 +93,7 @@ namespace Reallusion.Import
         #region Setup
         public static void InitConnection()
         {
-            Debug.LogWarning("Starting InitConnection ");
+            //Debug.LogWarning("Starting InitConnection ");
             SetupUpdateWorker();
             SetupLogging();
             //StartQueue();
@@ -149,7 +149,7 @@ namespace Reallusion.Import
         {
             clientThreadActive = true;
             retryConnection = true;
-            Debug.LogWarning("Parsing: " + (IS_CLIENT_LOCAL ? LOCAL_HOST : REMOTE_HOST));
+            //Debug.LogWarning("Parsing: " + (IS_CLIENT_LOCAL ? LOCAL_HOST : REMOTE_HOST));
             IPAddress ipAddress = IPAddress.Parse(IS_CLIENT_LOCAL ? LOCAL_HOST : REMOTE_HOST);
             int port = 9334;
 
@@ -395,7 +395,7 @@ namespace Reallusion.Import
 
         static (OpCodes, int) HeaderUnpack(byte[] headerBytes)
         {
-            Debug.Log("HeaderUnpack.");
+            //Debug.Log("HeaderUnpack.");
             byte[] opCodeBytes = ExtractBytes(headerBytes, 0, 4);
             byte[] sizeBytes = ExtractBytes(headerBytes, 4, 4);
             OpCodes opCode = OpCode(GetCurrentEndianWord(opCodeBytes, SourceEndian.BigEndian));
@@ -856,7 +856,7 @@ namespace Reallusion.Import
             // Debug.LogWarning(Application.productName);  // update plugin to use the project name (Application.productName)
 
             jsonString = JsonConvert.SerializeObject(hello);
-            Debug.Log(jsonString);
+            //Debug.Log(jsonString);
             return jsonString;
         }
         #endregion Recieved data handling
@@ -907,7 +907,7 @@ namespace Reallusion.Import
                 return;
             }
 
-            Debug.Log("Processing next queue item.");
+            //Debug.Log("Processing next queue item.");
 
             switch (next.OpCode)
             {
@@ -929,37 +929,37 @@ namespace Reallusion.Import
                     }
                 case OpCodes.NOTIFY:
                     {
-                        Debug.Log(next.Notify.ToString());
+                        //Debug.Log(next.Notify.ToString());
                         break;
                     }
                 case OpCodes.FILE:
                     {
-                        Debug.Log("File remote id: " + next.RemoteId);
+                        //Debug.Log("File remote id: " + next.RemoteId);
                         break;
                     }
                 case OpCodes.CHARACTER:
                     {
                         next.Processed = true;
-                        Debug.Log(next.Character.ToString());
+                        //Debug.Log(next.Character.ToString());
                         ImportItem(next);                        
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:
                     {
-                        Debug.Log(next.CharacterUpdate.ToString());
+                        //Debug.Log(next.CharacterUpdate.ToString());
                         break;
                     }
                 case OpCodes.PROP:
                     {
                         next.Processed = true;
-                        Debug.Log(next.Prop.ToString());
+                        //Debug.Log(next.Prop.ToString());
                         ImportItem(next);
                         break;
                     }
                 case OpCodes.STAGING:
                     {
                         next.Processed = true;
-                        Debug.Log(next.Staging.ToString());
+                        //Debug.Log(next.Staging.ToString());
                         ImportItem(next);
                         break;
                     }
@@ -969,30 +969,30 @@ namespace Reallusion.Import
                     }
                 case OpCodes.UPDATE_REPLACE:
                     {
-                        Debug.Log(next.UpdateReplace.ToString());
+                        //Debug.Log(next.UpdateReplace.ToString());
                         break;
                     }
                 case OpCodes.MOTION:
                     {
                         next.Processed = true;
-                        Debug.Log(next.Motion.ToString());
+                        //Debug.Log(next.Motion.ToString());
                         ImportItem(next);
                         break;
                     }
                 case OpCodes.LIGHTING:
                     {
-                        Debug.Log(next.Lighting.ToString());
+                        //Debug.Log(next.Lighting.ToString());
                         break;
                     }
                 case OpCodes.CAMERA_SYNC:
                     {
                         CameraSync(next);
-                        Debug.Log(next.CameraSync.ToString());
+                        //Debug.Log(next.CameraSync.ToString());
                         break;
                     }
                 case OpCodes.FRAME_SYNC:
                     {
-                        Debug.Log(next.FrameSync.ToString());
+                        //Debug.Log(next.FrameSync.ToString());
                         break;
                     }
             }

@@ -111,7 +111,7 @@ namespace Reallusion.Import
         #endregion SETUP
 
         #region GUI
-        private const string titleString = "Shader Package Updater";
+        private const string titleString = "CC/iC Importer - Shader Package Updater";
         public Styles guiStyles;
         private float VERT_INDENT = 2f;
         private float HORIZ_INDENT = 5f;

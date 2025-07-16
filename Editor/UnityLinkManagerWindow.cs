@@ -234,7 +234,7 @@ namespace Reallusion.Import
 
         static void StartConnection()
         {
-            Debug.LogWarning("Starting StartConnection ");
+            //Debug.LogWarning("Starting StartConnection ");
             // if a remote connection is needed then validate the address string as IP
             // if the address string cant be validated check if it can be resolved by Dns
             //UnityLinkManager.IS_CLIENT_LOCAL = isClientLocal;
@@ -365,17 +365,16 @@ namespace Reallusion.Import
         static void OnImportStarted(object sender, EventArgs e)
         {
             UnityLinkImporter.ImportStarted -= OnImportStarted;
-            Debug.LogWarning("Import Started Event");
+            //Debug.LogWarning("Import Started Event");
             if (UnityLinkManager.ADD_TO_TIMELINE)
             {
                 if (settings != null)
                 {
-                    Debug.LogWarning("Import Started Event  settings != null");
-                    
+                    //Debug.LogWarning("Import Started Event  settings != null");                    
                 }
                 else
                 {
-                    Debug.LogWarning("Import Started Event  settings == null");
+                    //Debug.LogWarning("Import Started Event  settings == null");
                 }
             }
         }
