@@ -1711,6 +1711,7 @@ namespace Reallusion.Import
             bool native = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.UnityClothPhysics);
             bool nativeHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.UnityClothHairPhysics);
             bool magica = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaCloth) && MagicaCloth2IsAvailable();
+            bool magicaMeshClothHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaClothHairPhysics) && MagicaCloth2IsAvailable();
             bool magicaBoneHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaBone) && MagicaCloth2IsAvailable();
             bool dynamic = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBoneHair) && DynamicBoneIsAvailable();
             abstractColliders = new List<ColliderManager.AbstractCapsuleCollider>();
@@ -1751,7 +1752,7 @@ namespace Reallusion.Import
                         }
                     }
 
-                    if (magica || magicaBoneHair)
+                    if (magica || magicaBoneHair || magicaMeshClothHair)
                     {
                         if (colliderManager.magicaColliderType == null)
                             colliderManager.magicaColliderType = GetTypeInAssemblies("MagicaCloth2.MagicaCapsuleCollider");

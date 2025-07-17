@@ -435,11 +435,11 @@ namespace Reallusion.Import
 #if UNITY_2021_1_OR_NEWER
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
-                Debug.LogWarning("TimelineEditorWindow is open");
+                //Debug.LogWarning("TimelineEditorWindow is open");
             }
             else
             {
-                Debug.LogWarning("TimelineEditorWindow is not open");
+                //Debug.LogWarning("TimelineEditorWindow is not open");
                 EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
             }
             var timelineWindow = EditorWindow.GetWindow<TimelineEditorWindow>();
