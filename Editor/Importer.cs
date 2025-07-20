@@ -1523,6 +1523,14 @@ namespace Reallusion.Import
                 mat.SetFloatIf("BOOLEAN_USE_CAVITY", 1f);
             }
 
+            bool use_displacement = ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
+                matJson, "Textures/Displacement");
+            if (use_displacement)
+            {
+                mat.EnableKeyword("BOOLEAN_USE_DISPLACEMENT_ON");
+                mat.SetFloatIf("BOOLEAN_USE_DISPLACEMENT", 1f);
+            }
+
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
                 matJson, "Textures/MetallicAlpha");
 
@@ -1679,7 +1687,12 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_MicroSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Micro Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Unmasked Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedScatterScale", matJson.GetFloatValue("Custom Shader/Variable/Unmasked Scatter Scale"));
-                mat.SetColorIf("_DiffuseColor", Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color")));                
+                mat.SetColorIf("_DiffuseColor", Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color")));
+
+                float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
+                float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
+                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.001f);
+
 
                 if (materialType == MaterialType.Head)
                 {
