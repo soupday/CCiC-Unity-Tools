@@ -70,7 +70,9 @@ namespace Reallusion.Import
         public const int FLAG_HAIR_ID = 64;
         public const int FLAG_WRAP_CLAMP = 1024;
         public const int FLAG_READ_WRITE = 2048;
-        public const int FLAG_UNCOMPRESSED = 2048;
+        public const int FLAG_UNCOMPRESSED = 4096;
+        public const int FLAG_SINGLE_CHANNEL = 8192;
+        public const int FLAG_FLOAT = 16384;
 
         public const float MAX_SMOOTHNESS = 0.897f;        
         public const float TRA_SPECULAR_SCALE = 0.2f;
@@ -1526,9 +1528,8 @@ namespace Reallusion.Import
             bool use_displacement = ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
                 matJson, "Textures/Displacement");
             if (use_displacement)
-            {
-                mat.EnableKeyword("BOOLEAN_USE_DISPLACEMENT_ON");
-                mat.SetFloatIf("BOOLEAN_USE_DISPLACEMENT", 1f);
+            {                                
+                mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
             }
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
@@ -1621,6 +1622,15 @@ namespace Reallusion.Import
                     ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap3", "Wrinkle_Flow3",
                         matJson, "Wrinkle/Textures/Flow_3");
 
+                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap1", "_ResourceMap_Wrinkle Dis 1",
+                        matJson, "Resource Textures/Wrinkle Dis 1");
+
+                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap2", "_ResourceMap_Wrinkle Dis 2",
+                        matJson, "Resource Textures/Wrinkle Dis 2");
+
+                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap3", "_ResourceMap_Wrinkle Dis 3",
+                        matJson, "Resource Textures/Wrinkle Dis 3");
+
                     ApplyWrinkleMasks(mat);                    
                 }
 
@@ -1691,7 +1701,8 @@ namespace Reallusion.Import
 
                 float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
                 float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
-                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.001f);
+                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.02f);
+                mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * 0.005f);
 
 
                 if (materialType == MaterialType.Head)
@@ -2467,12 +2478,12 @@ namespace Reallusion.Import
             // now fix the import settings for the texture.
             string path = AssetDatabase.GetAssetPath(tex);
             TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
-            importer.maxTextureSize = 4096;
+            importer.maxTextureSize = 8192;
 
             // apply the sRGB and alpha settings for re-import.
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.mipmapEnabled = true;
-            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;            
+            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
             if ((flags & FLAG_SRGB) > 0)
             {
                 importer.sRGBTexture = true;
@@ -2500,6 +2511,29 @@ namespace Reallusion.Import
                 importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
                 importer.mipMapBias = Importer.MIPMAP_BIAS;
                 importer.mipMapsPreserveCoverage = false;
+            }
+
+            if ((flags & FLAG_SINGLE_CHANNEL) > 0)
+            {
+                if ((flags & FLAG_FLOAT) > 0)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                if ((flags & FLAG_FLOAT) > 0)
+                {
+
+                }
+                else
+                {
+
+                }
             }
 
             if ((flags & FLAG_HAIR) > 0)
@@ -2538,13 +2572,13 @@ namespace Reallusion.Import
                 // turn off texture compression and unlock max size to 4k, for the best possible quality bake
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.compressionQuality = 0;
-                importer.maxTextureSize = 4096;
+                importer.maxTextureSize = 8192;
             }
             else
             {
                 importer.textureCompression = TextureImporterCompression.Compressed;
                 importer.compressionQuality = 50;
-                importer.maxTextureSize = 4096;
+                importer.maxTextureSize = 8192;
             }
 
             if ((flags & FLAG_WRAP_CLAMP) > 0)
