@@ -328,6 +328,8 @@ namespace Reallusion.Import
                 // find suitable aniamtion clip (should be the first non T-Pose)
                 foreach (AnimationClip animClip in objectTuple.Item3)
                 {
+                    if (animClip == null) continue;
+
                     if (animClip.name.iContains("T-Pose"))
                     {
                         continue;
@@ -337,11 +339,13 @@ namespace Reallusion.Import
                         clipToUse = animClip;
                     }
                 }
-
-                TimelineClip clip = workingtrack.CreateClip(clipToUse);
-                clip.start = 0f;
-                clip.timeScale = 1f;
-                clip.duration = clip.duration / clip.timeScale;
+                if (clipToUse != null)
+                {
+                    TimelineClip clip = workingtrack.CreateClip(clipToUse);
+                    clip.start = 0f;
+                    clip.timeScale = 1f;
+                    clip.duration = clip.duration / clip.timeScale;
+                }
                 //Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
                 director.SetGenericBinding(workingtrack, sceneObject);
             }
