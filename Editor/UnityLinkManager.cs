@@ -1681,11 +1681,14 @@ namespace Reallusion.Import
             public int FrameCount { get; set; }
 
 
-            // Animated properties (determined by the importer - repackaged here to ease use of <LightProxy> setup
+            // Animated properties (determined by the importer - repackaged here to ease use of <CameraProxy> setup
             public const string dofDltStr = "dof_delta";
+            public const string fovDltStr = "fov_delta";
 
             [JsonProperty(dofDltStr)]
             public bool dof_delta { get; set; }
+            [JsonProperty(fovDltStr)]
+            public bool fov_delta { get; set; }
 
             public JsonCameraData()
             {
@@ -1715,6 +1718,7 @@ namespace Reallusion.Import
                 this.FrameCount = 0;
 
                 this.dof_delta = false;
+                this.fov_delta = false;
             }
 
             public Vector3 GetPosition()

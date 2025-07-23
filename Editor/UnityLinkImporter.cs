@@ -99,10 +99,11 @@ namespace Reallusion.Import
         public const float BASE_INTENSITY_SCALE = 0.12f;
         public const float RANGE_SCALE = 0.01f;
 
-        public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
+        public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false, not_animated = false;
 
         // camera specific
         public bool dof_delta = false;
+        public bool fov_delta = false;
 
         PackageType packageType = PackageType.NONE;
 
@@ -266,7 +267,7 @@ namespace Reallusion.Import
             DoImport();
         }
 
-        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string)> timelineKitList;
+        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, bool)> timelineKitList;
 
         void DoImport()
         {
@@ -279,7 +280,7 @@ namespace Reallusion.Import
             }
             */
 
-            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string)>();
+            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, bool)>();
 
             if (importMotion)
             {
@@ -476,8 +477,8 @@ namespace Reallusion.Import
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
-            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
+            List<AnimationClip> animsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animsForTimeLine, true, linkId, IsNotAnimated(animsForTimeLine)));
         }
         #endregion Prop Import
 
@@ -512,7 +513,7 @@ namespace Reallusion.Import
                 ImporterWindow.Current.RefreshCharacterList();
 
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId));
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId, false));
         }
         #endregion Avatar Import
 
@@ -765,7 +766,50 @@ namespace Reallusion.Import
              *       --> Child GameObject (with <Camera> component)   | GetAnimatableBindings TARGET object                
             */
 
+            float threshold = 0.0001f;
+
+            int dofActive  = frames.FindAll(x => x.DofEnable == true).Count();
+            dof_delta = !(dofActive == 0 || dofActive == frames.Count);
+            foreach (var frame in frames)
+            {
+                if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
+                if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
+                if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
+
+                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; }
+
+                if (Math.Abs(frame.ScaleX - frames[0].ScaleX) > threshold) { scale_delta = true; }
+                if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
+                if (Math.Abs(frame.ScaleZ - frames[0].ScaleZ) > threshold) { scale_delta = true; }
+
+                
+                if (Math.Abs(frame.DofFocus - frames[0].DofFocus) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofRange - frames[0].DofRange) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofFarBlur - frames[0].DofFarBlur) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofNearBlur - frames[0].DofNearBlur) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofFarTransition - frames[0].DofFarTransition) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofNearTransition - frames[0].DofNearTransition) > threshold) { dof_delta = true; }
+                if (Math.Abs(frame.DofMinBlendDistance - frames[0].DofMinBlendDistance) > threshold) { dof_delta = true; }
+
+                if (Math.Abs(frame.FocalLength - frames[0].FocalLength) > threshold) { fov_delta = true; }
+                if (Math.Abs(frame.DofFocus - frames[0].DofFocus) > threshold) { fov_delta = true; }
+            }
+            
+            List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, dof_delta, fov_delta };
+
             AnimationClip clip = new AnimationClip();
+
+            if (changes.FindAll(x => x == true).Count() == 0)
+            {
+                // if there are no changes then no anim is needed
+                not_animated = true;
+                clip.name = "EMPTY";
+                return clip;
+            }
+
             EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
             // Find binding for property
 
@@ -904,55 +948,70 @@ namespace Reallusion.Import
 
             // bind all keyframes to the appropriate curve
 
-            // Rotation            
-            AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
-            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
-            AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
-            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
-            AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
-            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
-            AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
-            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+            // Rotation
+            if (rot_delta)
+            {
+                AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
+                AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
+                AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
+                AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
+                AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
+                AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
+                AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
+                AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+            }
 
             // Position
-            AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
-            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
-            AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
-            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
-            AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
-            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+            if (pos_delta)
+            {
+                AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
+                AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
+                AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
+                AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
+                AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
+                AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+            }
 
             //scale
-            AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
-            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
-            AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
-            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
-            AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
-            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+            if (scale_delta)
+            {
+                AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
+                AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
+                AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
+                AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
+                AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
+                AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+            }
 
             // focal length + fov
-            AnimationCurve c_focalL = ReduceCurve(f_focalL);  //new AnimationCurve(f_focalL);
-            AnimationUtility.SetEditorCurve(clip, b_focalL, c_focalL);
-            AnimationCurve c_fov = ReduceCurve(f_fov);  //new AnimationCurve(f_fov);
-            AnimationUtility.SetEditorCurve(clip, b_fov, c_fov);
+            if (fov_delta)
+            {
+                AnimationCurve c_focalL = ReduceCurve(f_focalL);  //new AnimationCurve(f_focalL);
+                AnimationUtility.SetEditorCurve(clip, b_focalL, c_focalL);
+                AnimationCurve c_fov = ReduceCurve(f_fov);  //new AnimationCurve(f_fov);
+                AnimationUtility.SetEditorCurve(clip, b_fov, c_fov);
+            }
 
             // depth of field
-            AnimationCurve c_dofEnable = ReduceCurve(f_dofEnable);  //new AnimationCurve(f_dofEnable);
-            AnimationUtility.SetEditorCurve(clip, b_dofEnable, c_dofEnable);
-            AnimationCurve c_dofFocus = ReduceCurve(f_dofFocus);  //new AnimationCurve(f_dofFocus);
-            AnimationUtility.SetEditorCurve(clip, b_dofFocus, c_dofFocus);
-            AnimationCurve c_dofRange = ReduceCurve(f_dofRange);  //new AnimationCurve(f_dofRange);
-            AnimationUtility.SetEditorCurve(clip, b_dofRange, c_dofRange);
-            AnimationCurve c_dofFblur = ReduceCurve(f_dofFblur);  //new AnimationCurve(f_dofFblur);
-            AnimationUtility.SetEditorCurve(clip, b_dofFblur, c_dofFblur);
-            AnimationCurve c_dofNblur = ReduceCurve(f_dofNblur);  //new AnimationCurve(f_dofNblur);
-            AnimationUtility.SetEditorCurve(clip, b_dofNblur, c_dofNblur);
-            AnimationCurve c_dofFTran = ReduceCurve(f_dofFTran);  //new AnimationCurve(f_f_dofFTran);
-            AnimationUtility.SetEditorCurve(clip, b_dofFTran, c_dofFTran);
-            AnimationCurve c_dofFNran = ReduceCurve(f_dofFNran);  //new AnimationCurve(f_dofFNran);
-            AnimationUtility.SetEditorCurve(clip, b_dofFNran, c_dofFNran);
-            AnimationCurve c_dofMinDist = ReduceCurve(f_dofMinDist);  //new AnimationCurve(f_dofMinDist);
-            AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
+            if (dof_delta)
+            {
+                AnimationCurve c_dofEnable = ReduceCurve(f_dofEnable);  //new AnimationCurve(f_dofEnable);
+                AnimationUtility.SetEditorCurve(clip, b_dofEnable, c_dofEnable);
+                AnimationCurve c_dofFocus = ReduceCurve(f_dofFocus);  //new AnimationCurve(f_dofFocus);
+                AnimationUtility.SetEditorCurve(clip, b_dofFocus, c_dofFocus);
+                AnimationCurve c_dofRange = ReduceCurve(f_dofRange);  //new AnimationCurve(f_dofRange);
+                AnimationUtility.SetEditorCurve(clip, b_dofRange, c_dofRange);
+                AnimationCurve c_dofFblur = ReduceCurve(f_dofFblur);  //new AnimationCurve(f_dofFblur);
+                AnimationUtility.SetEditorCurve(clip, b_dofFblur, c_dofFblur);
+                AnimationCurve c_dofNblur = ReduceCurve(f_dofNblur);  //new AnimationCurve(f_dofNblur);
+                AnimationUtility.SetEditorCurve(clip, b_dofNblur, c_dofNblur);
+                AnimationCurve c_dofFTran = ReduceCurve(f_dofFTran);  //new AnimationCurve(f_f_dofFTran);
+                AnimationUtility.SetEditorCurve(clip, b_dofFTran, c_dofFTran);
+                AnimationCurve c_dofFNran = ReduceCurve(f_dofFNran);  //new AnimationCurve(f_dofFNran);
+                AnimationUtility.SetEditorCurve(clip, b_dofFNran, c_dofFNran);
+                AnimationCurve c_dofMinDist = ReduceCurve(f_dofMinDist);  //new AnimationCurve(f_dofMinDist);
+                AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
+            }
 
             float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
             clip.frameRate = frameRate;
@@ -1003,6 +1062,7 @@ namespace Reallusion.Import
             }
 
             json.dof_delta = dof_delta;
+            json.fov_delta = fov_delta;
 
             string jsonString = JsonConvert.SerializeObject(json);
             SetupCameraMethod.Invoke(proxy, new object[] { jsonString, clip });
@@ -1012,7 +1072,8 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId));
+
+            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId, not_animated));
             //UnityLinkSceneManagement.CreateStagingSceneDependencies();
             //return root;
         }
@@ -1188,17 +1249,24 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.Darkness - frames[0].Darkness) > threshold) { dark_delta = true; }
             }
             
-            List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, active_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
-
+            List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
+            
             AnimationClip clip = new AnimationClip();
 
             if (changes.FindAll(x => x == true).Count() == 0)
             {
-                // if there are no changes then no anim is needed
+                not_animated = true;                
+            }
+            
+            if (!active_delta && not_animated)
+            {
+                // if there are no changes then no anim is needed                
                 clip.name = "EMPTY";
                 return clip;
-            }
 
+                // falls through to allow activation data to be written into an animation that is only used for a timeline activation track
+            }
+            
             EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
             // Find binding for property
 
@@ -1345,31 +1413,38 @@ namespace Reallusion.Import
             // bind all keyframes to the appropriate curve
             // only bind curves that have changes
 
-            // Rotation           
-            AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
-            AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
-            AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
-            AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
-            AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
-            AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
-            AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
-            AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
-
+            // Rotation
+            if (rot_delta)
+            {
+                AnimationCurve c_rotX = SmoothCurve(f_rotX);//new AnimationCurve(f_rotX);
+                AnimationUtility.SetEditorCurve(clip, b_rotX, c_rotX);
+                AnimationCurve c_rotY = SmoothCurve(f_rotY);//new AnimationCurve(f_rotY);
+                AnimationUtility.SetEditorCurve(clip, b_rotY, c_rotY);
+                AnimationCurve c_rotZ = SmoothCurve(f_rotZ);//new AnimationCurve(f_rotZ);
+                AnimationUtility.SetEditorCurve(clip, b_rotZ, c_rotZ);
+                AnimationCurve c_rotW = SmoothCurve(f_rotW);//new AnimationCurve(f_rotW);
+                AnimationUtility.SetEditorCurve(clip, b_rotW, c_rotW);
+            }
             // Position
-            AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
-            AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
-            AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
-            AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
-            AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
-            AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
-
+            if (pos_delta)
+            {
+                AnimationCurve c_posX = SmoothCurve(f_posX);//new AnimationCurve(f_posX);
+                AnimationUtility.SetEditorCurve(clip, b_posX, c_posX);
+                AnimationCurve c_posY = SmoothCurve(f_posY);//new AnimationCurve(f_posY);
+                AnimationUtility.SetEditorCurve(clip, b_posY, c_posY);
+                AnimationCurve c_posZ = SmoothCurve(f_posZ);//new AnimationCurve(f_posZ);
+                AnimationUtility.SetEditorCurve(clip, b_posZ, c_posZ);
+            }
             //scale
-            AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
-            AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
-            AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
-            AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
-            AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
-            AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+            if (scale_delta)
+            {
+                AnimationCurve c_scaX = ReduceCurve(f_scaX);  //new AnimationCurve(f_scaX);
+                AnimationUtility.SetEditorCurve(clip, b_scaX, c_scaX);
+                AnimationCurve c_scaY = ReduceCurve(f_scaY);  //new AnimationCurve(f_scaY);
+                AnimationUtility.SetEditorCurve(clip, b_scaY, c_scaY);
+                AnimationCurve c_scaZ = ReduceCurve(f_scaZ);  //new AnimationCurve(f_scaZ);
+                AnimationUtility.SetEditorCurve(clip, b_scaZ, c_scaZ);
+            }
 
             // Enabled
             if (active_delta)
@@ -1477,8 +1552,8 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-
-            timelineKitList.Add((active_delta ? UnityLinkSceneManagement.TrackType.AnimationAndActivationTracks : UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId));
+                        
+            timelineKitList.Add((active_delta ? UnityLinkSceneManagement.TrackType.AnimationAndActivationTracks : UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId, not_animated));
             //UnityLinkSceneManagement.CreateStagingSceneDependencies();
             return root;
         }
@@ -1652,6 +1727,47 @@ namespace Reallusion.Import
         }
         #endregion Keyframe Reduction
 
+        #region Util
+        public bool IsNotAnimated(List<AnimationClip> clips)
+        {
+            float threshold = 0.0001f;
+
+            if (clips != null)
+            {
+                if (clips.Count == 0) return true;
+
+                AnimationClip clipToUse = null;
+                // find suitable aniamtion clip (should be the first non T-Pose)
+                foreach (AnimationClip animClip in clips)
+                {
+                    if (animClip == null) continue;
+
+                    if (animClip.name.iContains("T-Pose"))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        clipToUse = animClip;
+                        break;
+                    }
+                }
+
+                EditorCurveBinding[] bindings = AnimationUtility.GetCurveBindings(clipToUse);
+                foreach (var binding in bindings)
+                {
+                    AnimationCurve curve = AnimationUtility.GetEditorCurve(clipToUse, binding);
+                    Keyframe[] keys = curve.keys;
+
+                    foreach (Keyframe key in keys)
+                    {
+                        if (Math.Abs(key.value - keys[0].value) > threshold) { return false; }
+                    }
+                }
+            }
+            return true;
+        }
+        #endregion
 
         #region Motion ... placeholder
 

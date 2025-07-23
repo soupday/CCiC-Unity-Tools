@@ -264,7 +264,7 @@ namespace Reallusion.Import
         // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
         // TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
 
-        public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string) objectTuple)
+        public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string, bool) objectTuple)
         {
             LockStateTimeLineWindow(false);
             //Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
@@ -283,6 +283,8 @@ namespace Reallusion.Import
             sceneObject.transform.position = Vector3.zero;
             sceneObject.transform.rotation = Quaternion.identity;
 
+            bool notAnimated = objectTuple.Item6;
+
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
                 Debug.LogWarning("Cannot add to timeline.");
@@ -291,63 +293,66 @@ namespace Reallusion.Import
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            if (objectTuple.Item1 == TrackType.AnimationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
+            if (!notAnimated)
             {
-                AnimationTrack workingtrack = null;
+                if (objectTuple.Item1 == TrackType.AnimationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
+                {
+                    AnimationTrack workingtrack = null;
 
-                var tracks = timeline.GetOutputTracks();
-                foreach (TrackAsset track in tracks)
-                {
-                    if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
+                    var tracks = timeline.GetOutputTracks();
+                    foreach (TrackAsset track in tracks)
                     {
-                        workingtrack = track as AnimationTrack;
-                        break;
-                    }
-                }
-
-                if (workingtrack == null)
-                {
-                    workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_ANIM_" + objectTuple.Item5);
-                }
-                else
-                {
-#if UNITY_2020_1_OR_NEWER
-                    // purge bound clips
-                    var clips = workingtrack.GetClips();
-                    if (clips != null)
-                    {
-                        foreach (var c in clips)
+                        if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
                         {
-                            workingtrack.DeleteClip(c);
+                            workingtrack = track as AnimationTrack;
+                            break;
                         }
                     }
-#endif
-                }
 
-                AnimationClip clipToUse = null;
-                // find suitable aniamtion clip (should be the first non T-Pose)
-                foreach (AnimationClip animClip in objectTuple.Item3)
-                {
-                    if (animClip == null) continue;
-
-                    if (animClip.name.iContains("T-Pose"))
+                    if (workingtrack == null)
                     {
-                        continue;
+                        workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_ANIM_" + objectTuple.Item5);
                     }
                     else
                     {
-                        clipToUse = animClip;
+#if UNITY_2020_1_OR_NEWER
+                        // purge bound clips
+                        var clips = workingtrack.GetClips();
+                        if (clips != null)
+                        {
+                            foreach (var c in clips)
+                            {
+                                workingtrack.DeleteClip(c);
+                            }
+                        }
+#endif
                     }
+
+                    AnimationClip clipToUse = null;
+                    // find suitable aniamtion clip (should be the first non T-Pose)
+                    foreach (AnimationClip animClip in objectTuple.Item3)
+                    {
+                        if (animClip == null) continue;
+
+                        if (animClip.name.iContains("T-Pose"))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            clipToUse = animClip;
+                        }
+                    }
+                    if (clipToUse != null)
+                    {
+                        TimelineClip clip = workingtrack.CreateClip(clipToUse);
+                        clip.start = 0f;
+                        clip.timeScale = 1f;
+                        clip.duration = clip.duration / clip.timeScale;
+                    }
+                    //Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
+                    director.SetGenericBinding(workingtrack, sceneObject);
                 }
-                if (clipToUse != null)
-                {
-                    TimelineClip clip = workingtrack.CreateClip(clipToUse);
-                    clip.start = 0f;
-                    clip.timeScale = 1f;
-                    clip.duration = clip.duration / clip.timeScale;
-                }
-                //Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
-                director.SetGenericBinding(workingtrack, sceneObject);
             }
 
             if (objectTuple.Item1 == TrackType.ActivationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
