@@ -240,6 +240,15 @@ namespace Reallusion.Import
             {
                 MassProcessingWindowValidate();
             }
+
+            DrawOutline(new Rect(0f, 0f, this.position.width, this.position.height), Color.gray);
+        }
+
+        private void DrawOutline(Rect container, Color color)
+        {
+            Vector4 border = new Vector4(1f, 1f, 1f, 1f);
+
+            GUI.DrawTexture(container, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, color, border, Vector4.zero);
         }
 
         private bool DrawFlagSelectionLine(int line, CharacterInfo.ShaderFeatureFlags flag, string overrideLabel = "", float indent = 0f, CharacterInfo.ShaderFeatureFlags [] radioGroup = null)
