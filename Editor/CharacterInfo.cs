@@ -44,7 +44,9 @@ namespace Reallusion.Import
             UnityClothPhysics = 128, // Unity Cloth for clothing items 
             UnityClothHairPhysics = 256, // Unity Cloth for hair items
             MagicaClothHairPhysics = 512, // Magica Mesh Cloth for hair items
-            SpringBonePhysics = 1024  // group flag to allow selection between SpringBoneHair & MagicaBone
+            SpringBonePhysics = 1024,  // group flag to allow selection between SpringBoneHair & MagicaBone
+            Displacement = 2048,
+            TexturePacking = 4096
         }
 
         public enum ExportType

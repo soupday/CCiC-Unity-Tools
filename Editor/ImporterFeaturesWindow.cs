@@ -155,9 +155,15 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
                 flagChanged = true;
 
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "", SECTION_INDENT))
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
                 flagChanged = true;
-            
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
+                flagChanged = true;
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
+                flagChanged = true;
+
             DrawLabelLine(line++, "Character Physics:");
 
             // Cloth Physics
