@@ -1730,6 +1730,9 @@ namespace Reallusion.Import
         #region Util
         public bool IsNotAnimated(List<AnimationClip> clips)
         {
+            bool cleanupRedundantAnimationCurves = true; // toggle for redundant curve removal - will allow Unity users to animate/change properties that would otherwise be held static by the anim clip
+
+            bool isNotAnimated = true; // if there are no changing animation data, we can avoid adding static props to the TimeLine
             float threshold = 0.0001f;
 
             if (clips != null)
@@ -1754,18 +1757,63 @@ namespace Reallusion.Import
                 }
 
                 EditorCurveBinding[] bindings = AnimationUtility.GetCurveBindings(clipToUse);
+                List<EditorCurveBinding> animatedBindings = new List<EditorCurveBinding>();
+                List<EditorCurveBinding> staticBindings = new List<EditorCurveBinding>();
+
                 foreach (var binding in bindings)
                 {
                     AnimationCurve curve = AnimationUtility.GetEditorCurve(clipToUse, binding);
                     Keyframe[] keys = curve.keys;
-
+                    bool bindingIsAnimated = false;
                     foreach (Keyframe key in keys)
                     {
-                        if (Math.Abs(key.value - keys[0].value) > threshold) { return false; }
+                        if (Math.Abs(key.value - keys[0].value) > threshold)
+                        {
+                            isNotAnimated = false;
+                            animatedBindings.Add(binding);
+                            bindingIsAnimated = true;
+                            break;
+                        }
+                    }
+
+                    if (!bindingIsAnimated) staticBindings.Add(binding);                    
+                }
+
+                // if we arent cleaning up the clip (or it isnt animated or theres nothing to do), then jump out now
+                if (!cleanupRedundantAnimationCurves || isNotAnimated || staticBindings.Count == 0) return isNotAnimated;
+
+                if (animatedBindings.Count > 0)
+                {
+                    foreach (var binding in animatedBindings)
+                    {
+                        // properties such as Position have 3 curves named (propertyName) m_localPosition.x .y & .z - where one or two are animated then the remaining ones should be be preserved 
+
+                        if (staticBindings.Count > 0)
+                        {
+                            // get a list of static bindings that have a common path and first portion of the propertyname (e.g. just "m_localPosition") with the animated binding
+                            List<EditorCurveBinding> partials = staticBindings.FindAll(x => x.path == binding.path && x.propertyName.Split('.')[0] == binding.propertyName.Split('.')[0]);
+                            foreach (var partial in partials)
+                            {
+                                Debug.Log("Animation curve: " + partial.path + "  " + partial.propertyName + " in clip: " + clipToUse.name + " is partially animated and will be retained.");
+                            }
+                            // remove the static bindings that have an animated common path+property from the static list
+                            IEnumerable<EditorCurveBinding> trimmed = staticBindings.Except(partials);
+                            staticBindings = trimmed.ToList();
+                        }
+                    }
+
+                    // remove the remaining curves on the static list
+                    if (staticBindings.Count > 0)
+                    {
+                        foreach (var binding in staticBindings)
+                        {
+                            Debug.Log("Animation curve: " + binding.path + "  " + binding.propertyName + " in clip: " + clipToUse.name + " is redundant and will be removed.");
+                            AnimationUtility.SetEditorCurve(clipToUse, binding, null);
+                        }
                     }
                 }
             }
-            return true;
+            return isNotAnimated;
         }
         #endregion
 
