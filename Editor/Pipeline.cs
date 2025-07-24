@@ -34,7 +34,8 @@ namespace Reallusion.Import
     public enum MaterialType
     {
         None, Skin, Head, Eye, Cornea, EyeOcclusion, Tearline, Hair, Scalp,
-        Eyelash, Teeth, Tongue, DefaultOpaque, DefaultAlpha, BlendAlpha, SSS
+        Eyelash, Teeth, Tongue, DefaultOpaque, DefaultAlpha, BlendAlpha, SSS, 
+        TearlinePlus, EyeOcclusionPlus
     }
 
     public enum MaterialQuality { None, Default, High, Baked }
@@ -56,7 +57,9 @@ namespace Reallusion.Import
         public const string SHADER_HQ_CORNEA = "RL_CorneaShaderBasic_HDRP";
         public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_HDRP"; // Dummy shader (unlit no textures)
         public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_HDRP";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_HDRP";
         public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_HDRP";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_HDRP";
         public const string SHADER_HQ_HAIR = "RL_HairShader_Variants_HDRP";
         public const string SHADER_HQ_SCALPBASE = "HDRP/Lit";
         public const string SHADER_HQ_EYELASH = "HDRP/Lit";
@@ -84,6 +87,8 @@ namespace Reallusion.Import
         public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_HDRP";        
         public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_HDRP";
         public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_HDRP";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_HDRP";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_HDRP";
         public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_HDRP";
         public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_HDRP";
         public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_HDRP";
@@ -135,6 +140,8 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_HDRP";
         public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_HDRP";
         public const string MATERIAL_BAKED_TEARLINE = "";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_HDRP";
+        public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
         public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_HDRP";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
@@ -150,6 +157,7 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_HDRP";        
         public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_HDRP";
         public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_HDRP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_HDRP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_HDRP";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCustom_HDRP";
         // 2 pass        
@@ -173,6 +181,8 @@ namespace Reallusion.Import
         public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_URP"; // Dummy shader (unlit no textures)
         public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_URP";
         public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_URP";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_URP";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_URP";
         public const string SHADER_HQ_HAIR = "RL_HairShader_Variants_URP";
         public const string SHADER_HQ_SCALPBASE = "Universal Render Pipeline/Lit";
         public const string SHADER_HQ_EYELASH = "Universal Render Pipeline/Lit";
@@ -200,6 +210,8 @@ namespace Reallusion.Import
         public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_URP";
         public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_URP";
         public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_URP";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_URP";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_URP";
         public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_URP";
         public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_URP";
         public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_URP";
@@ -229,6 +241,8 @@ namespace Reallusion.Import
         public const string MATERIAL_DEFAULT_EYE = "RL_Template_Default_Opaque_URP";
         public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL_Template_Default_EyeOcclusion_URP";
         public const string MATERIAL_DEFAULT_TEARLINE = "RL_Template_Default_Tearline_URP";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL_Template_Default_EyeOcclusionPlus_URP";
+        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL_Template_Default_TearlinePlus_URP";
         public const string MATERIAL_DEFAULT_HAIR = "RL_Template_Default_Hair_URP";
         public const string MATERIAL_DEFAULT_SCALPBASE = "RL_Template_Default_ScalpBase_URP";
         public const string MATERIAL_DEFAULT_EYELASH = "RL_Template_Default_Eyelash_URP";
@@ -251,6 +265,8 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_URP";
         public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_URP";
         public const string MATERIAL_BAKED_TEARLINE = "";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_URP";
+        public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
         public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_URP";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
@@ -266,6 +282,7 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_Dummy_URP";
         public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_Dummy_URP";
         public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_URP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_URP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_URP";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCoverageCustom_URP";
         // 2 pass        
@@ -289,6 +306,8 @@ namespace Reallusion.Import
         public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_3D"; // Dummy shader (unlit no textures)
         public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_3D";
         public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_3D";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_3D";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_3D";
         public const string SHADER_HQ_HAIR = "RL_HairShader_Clipped_3D";
         public const string SHADER_HQ_SCALPBASE = "Standard";
         public const string SHADER_HQ_EYELASH = "Standard";
@@ -316,6 +335,8 @@ namespace Reallusion.Import
         public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_3D";
         public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_3D";
         public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_3D";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_3D";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_3D";
         public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_3D";
         public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_3D";
         public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_3D";
@@ -345,6 +366,8 @@ namespace Reallusion.Import
         public const string MATERIAL_DEFAULT_EYE = "RL_Template_Default_Opaque_3D";
         public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL_Template_Default_EyeOcclusion_3D";
         public const string MATERIAL_DEFAULT_TEARLINE = "RL_Template_Default_Tearline_3D";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL_Template_Default_EyeOcclusionPlus_3D";
+        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL_Template_Default_TearlinePlus_3D";
         public const string MATERIAL_DEFAULT_HAIR = "RL_Template_Default_Hair_3D";
         public const string MATERIAL_DEFAULT_SCALPBASE = "RL_Template_Default_ScalpBase_3D";
         public const string MATERIAL_DEFAULT_EYELASH = "RL_Template_Default_Eyelash_3D";
@@ -366,7 +389,9 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_CORNEA = "RL_Template_Baked_CorneaBasic_3D";
         public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_3D";
         public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_3D";
         public const string MATERIAL_BAKED_TEARLINE = "";
+        public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
         public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_3D";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
@@ -382,6 +407,7 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_Dummy_3D";
         public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_Dummy_3D";
         public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_3D";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_3D";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCoverageCustom_3D";
         // 2 pass        
@@ -400,7 +426,9 @@ namespace Reallusion.Import
             { MaterialType.Cornea, SHADER_HQ_CORNEA },
             { MaterialType.Eye, SHADER_HQ_EYE },
             { MaterialType.EyeOcclusion, SHADER_HQ_EYE_OCCLUSION },
+            { MaterialType.EyeOcclusionPlus, SHADER_HQ_EYE_OCCLUSION_PLUS },
             { MaterialType.Tearline, SHADER_HQ_TEARLINE },
+            { MaterialType.TearlinePlus, SHADER_HQ_TEARLINE_PLUS },
             { MaterialType.Hair, SHADER_HQ_HAIR },
             { MaterialType.Scalp, SHADER_HQ_SCALPBASE },
             { MaterialType.Eyelash, SHADER_HQ_EYELASH },
@@ -420,6 +448,8 @@ namespace Reallusion.Import
             { MaterialType.Eye, MATERIAL_DEFAULT_EYE },
             { MaterialType.EyeOcclusion, MATERIAL_DEFAULT_EYE_OCCLUSION },
             { MaterialType.Tearline, MATERIAL_DEFAULT_TEARLINE },
+            { MaterialType.EyeOcclusionPlus, MATERIAL_DEFAULT_EYE_OCCLUSION },
+            { MaterialType.TearlinePlus, MATERIAL_DEFAULT_TEARLINE },
             { MaterialType.Hair, MATERIAL_DEFAULT_HAIR },
             { MaterialType.Scalp, MATERIAL_DEFAULT_SCALPBASE },
             { MaterialType.Eyelash, MATERIAL_DEFAULT_EYELASH },
@@ -439,6 +469,8 @@ namespace Reallusion.Import
             { MaterialType.Eye, MATERIAL_HQ_EYE },
             { MaterialType.EyeOcclusion, MATERIAL_HQ_EYE_OCCLUSION },
             { MaterialType.Tearline, MATERIAL_HQ_TEARLINE },
+            { MaterialType.EyeOcclusionPlus, MATERIAL_HQ_EYE_OCCLUSION_PLUS },
+            { MaterialType.TearlinePlus, MATERIAL_HQ_TEARLINE_PLUS },
             { MaterialType.Hair, MATERIAL_HQ_HAIR },
             { MaterialType.Scalp, MATERIAL_HQ_SCALPBASE },
             { MaterialType.Eyelash, MATERIAL_HQ_EYELASH },
@@ -458,6 +490,8 @@ namespace Reallusion.Import
             { MaterialType.Eye, MATERIAL_BAKED_EYE },
             { MaterialType.EyeOcclusion, MATERIAL_BAKED_EYE_OCCLUSION },
             { MaterialType.Tearline, MATERIAL_BAKED_TEARLINE },
+            { MaterialType.EyeOcclusionPlus, MATERIAL_BAKED_EYE_OCCLUSION_PLUS },
+            { MaterialType.TearlinePlus, MATERIAL_BAKED_TEARLINE_PLUS },
             { MaterialType.Hair, MATERIAL_BAKED_HAIR },
             { MaterialType.Scalp, MATERIAL_BAKED_SCALPBASE },
             { MaterialType.Eyelash, MATERIAL_BAKED_EYELASH },
@@ -744,6 +778,9 @@ namespace Reallusion.Import
                                        
                     if (materialType == MaterialType.EyeOcclusion)
                         return MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM;
+
+                    if (materialType == MaterialType.EyeOcclusionPlus)
+                        return MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM;
 
 
                     if (info.BuiltFeatureWrinkleMaps)

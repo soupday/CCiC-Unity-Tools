@@ -598,17 +598,24 @@ namespace Reallusion.Import
 
             texGuids = AssetDatabase.FindAssets("t:prefab RL_PreviewScenePrefab");
 
+            GameObject localPreviewScene = null;
+            GameObject previewScene = null;
+
             foreach (string guid in texGuids)
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                 string name = Path.GetFileNameWithoutExtension(assetPath);
-                if (name.Equals("RL_PreviewScenePrefab", System.StringComparison.InvariantCultureIgnoreCase))
+                if (!previewScene && name.Equals("RL_PreviewScenePrefab", System.StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                    previewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                }
+                else if (!localPreviewScene && name.Equals("RL_PreviewScenePrefab_Local", System.StringComparison.InvariantCultureIgnoreCase))
+                {
+                    localPreviewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 }
             }
 
-            return null;
+            return localPreviewScene != null ? localPreviewScene : previewScene;
         }
 
         public static string GetSourceMaterialName(string fbxPath, Material sharedMaterial)
