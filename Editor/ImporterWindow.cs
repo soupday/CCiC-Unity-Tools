@@ -25,6 +25,7 @@ using System;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using Object = UnityEngine.Object;
+using System.Linq;
 
 namespace Reallusion.Import
 {
@@ -790,6 +791,44 @@ namespace Reallusion.Import
                     menu.AddItem(new GUIContent("High Quality Materials"), contextCharacter.HQMaterials, MaterialOptionSelected, false);
                 menu.ShowAsContext();
             }
+
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexSize.ToString())),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+
+                string[] itemNames = Enum.GetNames(typeof(CharacterInfo.TexSizeQuality));
+                CharacterInfo.TexSizeQuality[] itemValues = Enum.GetValues(typeof(CharacterInfo.TexSizeQuality)).Cast<CharacterInfo.TexSizeQuality>().ToArray();
+                for (int i = 0; i < itemNames.Length; i++)
+                {
+                    menu.AddItem(new GUIContent(Util.CamelCaseToSpaces(itemNames[i])),
+                                                contextCharacter.QualTexSize == itemValues[i], 
+                                                TexSizeOptionSelect, 
+                                                itemValues[i]);
+                }
+                menu.ShowAsContext();
+            }
+
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexCompress.ToString())),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+
+                string[] itemNames = Enum.GetNames(typeof(CharacterInfo.TexCompressionQuality));
+                CharacterInfo.TexCompressionQuality[] itemValues = Enum.GetValues(typeof(CharacterInfo.TexCompressionQuality)).Cast<CharacterInfo.TexCompressionQuality>().ToArray();
+                for (int i = 0; i < itemNames.Length; i++)
+                {
+                    menu.AddItem(new GUIContent(Util.CamelCaseToSpaces(itemNames[i])),
+                                                contextCharacter.QualTexCompress == itemValues[i], 
+                                                TexCompressOptionSelect, 
+                                                itemValues[i]);
+                }
+                menu.ShowAsContext();
+            }
+
+
             EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
@@ -1432,6 +1471,16 @@ namespace Reallusion.Import
         private void HairOptionSelected(object sel)
         {
             contextCharacter.QualHair = (CharacterInfo.HairQuality)sel;
+        }
+
+        private void TexSizeOptionSelect(object sel)
+        {
+            contextCharacter.QualTexSize = (CharacterInfo.TexSizeQuality)sel;
+        }
+
+        private void TexCompressOptionSelect(object sel)
+        {
+            contextCharacter.QualTexCompress = (CharacterInfo.TexCompressionQuality)sel;
         }
 
         private void MaterialOptionSelected(object sel)

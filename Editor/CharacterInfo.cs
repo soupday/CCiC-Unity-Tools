@@ -28,6 +28,9 @@ namespace Reallusion.Import
         public enum ProcessingType { None, Basic, HighQuality }
         public enum EyeQuality { None, Basic, Parallax, Refractive }
         public enum HairQuality { None, Default, TwoPass, Coverage }
+
+        public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, UltraTextureSize }
+        public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality }
         public enum ShaderFeatureFlags 
         { 
             NoFeatures = 0, 
@@ -99,6 +102,8 @@ namespace Reallusion.Import
         private ProcessingType logType = ProcessingType.None;
         private EyeQuality qualEyes = EyeQuality.Parallax;
         private HairQuality qualHair = HairQuality.TwoPass;
+        private TexSizeQuality qualTexSize = TexSizeQuality.HighTextureSize;
+        private TexCompressionQuality qualTexCompress = TexCompressionQuality.HighTextureQuality;
         public RigOverride UnknownRigType { get; set; }
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
@@ -219,6 +224,8 @@ namespace Reallusion.Import
         public bool DefaultHair { get { return qualHair == HairQuality.Default; } }
         public bool BakeCustomShaders { get { return bakeCustomShaders; } set { bakeCustomShaders = value; } }
         public bool BakeSeparatePrefab { get { return bakeSeparatePrefab; } set { bakeSeparatePrefab = value; } }        
+        public TexSizeQuality QualTexSize { get { return qualTexSize; } set { qualTexSize = value; } }
+        public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
         // these are the settings the character has been built to.  
         private ProcessingType builtLogType = ProcessingType.None;
@@ -908,7 +915,17 @@ namespace Reallusion.Import
                             exportType = (ExportType)System.Enum.Parse(typeof (ExportType), value);
                             break;
                         }
-        }
+                    case "qualTexSize":
+                        {
+                            qualTexSize = (TexSizeQuality)System.Enum.Parse(typeof(TexSizeQuality), value);
+                            break;
+                        }
+                    case "qualTexCompress":
+                        {
+                            qualTexCompress = (TexCompressionQuality)System.Enum.Parse(typeof(TexCompressionQuality), value);
+                            break;
+                        }
+                }
             }
             ApplySettings();
         }
@@ -933,6 +950,8 @@ namespace Reallusion.Import
             writer.WriteLine("linkId=" + linkId);
             writer.WriteLine("projectName=" + projectName);
             writer.WriteLine("exportType=" + exportType.ToString());
+            writer.WriteLine("qualTexSize=" + qualTexSize.ToString());
+            writer.WriteLine("qualTexCompress=" + qualTexCompress.ToString());
             foreach (GUIDRemap gr in guidRemaps)
             {
                 writer.WriteLine("GUIDRemap=" + gr.from + "|" + gr.to);

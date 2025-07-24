@@ -25,6 +25,7 @@ using UnityEditor;
 using Object = UnityEngine.Object;
 using System.Linq;
 using System.Data.Sql;
+using System.Text.RegularExpressions;
 
 namespace Reallusion.Import
 {
@@ -1148,9 +1149,10 @@ namespace Reallusion.Import
             return false;
         }
 
-
-
-
+        public static string CamelCaseToSpaces(string s)
+        {
+            return Regex.Replace(s, "([A-Z0-9]+)", " $1").Trim();
+        }
 
 
         public static GameObject EditPrefabContents(GameObject prefabAsset)
