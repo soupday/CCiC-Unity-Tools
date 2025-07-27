@@ -48,23 +48,43 @@ namespace Reallusion.Import
             // RenderTextureReadWrite.sRGB/Linear is ignored:
             //     on windows platforms it is always linear
             //     on MacOS platforms it is always gamma
-            renderTexture = new RenderTexture(width, height, 0,
-                RenderTextureFormat.ARGB32,
-                IsRGB ? RenderTextureReadWrite.sRGB : RenderTextureReadWrite.Linear);
-            saveTexture = new Texture2D(width, height, TextureFormat.ARGB32, true, !IsRGB);
+            if ((flags & Importer.FLAG_FLOAT) > 0)
+            {
+                renderTexture = new RenderTexture(width, height, 0,
+                    RenderTextureFormat.ARGBFloat,
+                    IsRGB ? RenderTextureReadWrite.sRGB : RenderTextureReadWrite.Linear);
+                saveTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, true, !IsRGB);
+            }
+            else
+            {
+                renderTexture = new RenderTexture(width, height, 0,
+                    RenderTextureFormat.ARGB32,
+                    IsRGB ? RenderTextureReadWrite.sRGB : RenderTextureReadWrite.Linear);
+                saveTexture = new Texture2D(width, height, TextureFormat.ARGB32, true, !IsRGB);
+            }
             folderPath = folder;
             textureName = name;
         }
 
-        private string WritePNG()
-        {
-            string filePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), folderPath, textureName + ".png");
+        private string WriteImageFile()
+        {            
+            bool isFloat = (flags & Importer.FLAG_FLOAT) > 0f;
+            string ext = isFloat ? ".exr" : ".png";
+            
+            string filePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), folderPath, textureName + ext);
 
             Util.EnsureAssetsFolderExists(folderPath);
 
-            byte[] pngArray = saveTexture.EncodeToPNG();
-
-            File.WriteAllBytes(filePath, pngArray);
+            if (isFloat)
+            {
+                byte[] exrArray = saveTexture.EncodeToEXR(Texture2D.EXRFlags.CompressZIP | Texture2D.EXRFlags.OutputAsFloat);
+                File.WriteAllBytes(filePath, exrArray);
+            }
+            else
+            {
+                byte[] pngArray = saveTexture.EncodeToPNG();
+                File.WriteAllBytes(filePath, pngArray);
+            }
 
             string assetPath = Util.GetRelativePath(filePath);
             if (File.Exists(filePath)) return assetPath;
@@ -78,12 +98,23 @@ namespace Reallusion.Import
                 AssetDatabase.Refresh();
 
                 TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(filePath);
+                SetTextureImport(importer, flags);
+            }
+        }
+
+        private void OldApplyImportSettings(string filePath)
+        {
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                AssetDatabase.Refresh();
+
+                TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(filePath);
                 if (importer)
-                {                    
+                {
                     importer.textureType = IsNormal ? TextureImporterType.NormalMap : TextureImporterType.Default;
                     importer.sRGBTexture = IsRGB;
                     importer.alphaIsTransparency = IsRGB && !IsAlphaData;
-                    importer.maxTextureSize = 4096;
+                    importer.maxTextureSize = 8192;
                     importer.mipmapEnabled = true;
                     importer.mipMapBias = Importer.MIPMAP_BIAS;
                     if (IsHair)
@@ -91,9 +122,9 @@ namespace Reallusion.Import
                         importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
                         importer.mipMapsPreserveCoverage = true;
                         importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR_BAKED;
-                    }         
+                    }
                     else if (IsAlphaClip)
-                    {                        
+                    {
                         importer.mipMapsPreserveCoverage = true;
                         importer.alphaTestReferenceValue = 0.5f;
                     }
@@ -117,6 +148,121 @@ namespace Reallusion.Import
             }
         }
 
+
+        public static void SetTextureImport(TextureImporter importer, int flags = 0)
+        {
+            string name = Path.GetFileName(importer.assetPath);
+            importer.maxTextureSize = 8192;
+
+            // apply the sRGB and alpha settings for re-import.
+            importer.alphaSource = TextureImporterAlphaSource.FromInput;
+            importer.mipmapEnabled = true;
+            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
+            if ((flags & Importer.FLAG_SRGB) > 0)
+            {
+                importer.sRGBTexture = true;
+                importer.alphaIsTransparency = true;
+                importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
+                if ((flags & Importer.FLAG_HAIR) > 0)
+                {
+                    importer.mipMapsPreserveCoverage = true;
+                    importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR;
+                }
+                else if ((flags & Importer.FLAG_ALPHA_CLIP) > 0)
+                {
+                    importer.mipMapsPreserveCoverage = true;
+                    importer.alphaTestReferenceValue = 0.5f;
+                }
+                else
+                {
+                    importer.mipMapsPreserveCoverage = false;
+                }
+            }
+            else
+            {
+                importer.sRGBTexture = false;
+                importer.alphaIsTransparency = false;
+                importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
+                importer.mipMapBias = Importer.MIPMAP_BIAS;
+                importer.mipMapsPreserveCoverage = false;
+            }
+
+            if ((flags & Importer.FLAG_SINGLE_CHANNEL) > 0)
+            {
+                if ((flags & Importer.FLAG_FLOAT) > 0)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                if ((flags & Importer.FLAG_FLOAT) > 0)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+
+            if ((flags & Importer.FLAG_HAIR) > 0)
+            {
+                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
+            }
+            else
+            {
+                importer.mipMapBias = Importer.MIPMAP_BIAS;
+            }
+
+            if ((flags & Importer.FLAG_HAIR_ID) > 0)
+            {
+                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
+                importer.mipmapEnabled = true;
+            }
+
+            // apply the texture type for re-import.
+            if ((flags & Importer.FLAG_NORMAL) > 0)
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                if (name.iEndsWith("Bump"))
+                {
+                    importer.convertToNormalmap = true;
+                    importer.heightmapScale = 0.025f;
+                    importer.normalmapFilter = TextureImporterNormalFilter.Standard;
+                }
+            }
+            else
+            {
+                importer.textureType = TextureImporterType.Default;
+            }
+
+            if ((flags & Importer.FLAG_FOR_BAKE) > 0)
+            {
+                // turn off texture compression and unlock max size to 8k, for the best possible quality bake
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.compressionQuality = 0;
+                importer.maxTextureSize = 8192;
+                importer.crunchedCompression = false;
+            }
+            else
+            {
+                importer.textureCompression = TextureImporterCompression.CompressedHQ;
+                importer.crunchedCompression = false;
+                importer.compressionQuality = 50;
+            }
+
+            if ((flags & Importer.FLAG_WRAP_CLAMP) > 0)
+            {
+                importer.wrapMode = TextureWrapMode.Clamp;
+            }            
+        }
+
+
         public void Create(ComputeShader shader, int kernel)
         {
             renderTexture.enableRandomWrite = true;
@@ -133,7 +279,8 @@ namespace Reallusion.Import
             saveTexture.Apply();
             RenderTexture.active = old;
 
-            string filePath = WritePNG();
+            string filePath = WriteImageFile();
+            AssetDatabase.WriteImportSettingsIfDirty(filePath);
             ApplyImportSettings(filePath);
 
             Texture2D assetTex = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);

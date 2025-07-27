@@ -42,7 +42,7 @@ namespace Reallusion.Import
         private readonly string texFolder;
         private readonly List<string> importAssets;        
 
-        public const int MAX_SIZE = 4096;
+        public const int MAX_SIZE = 8192;
         public const int MIN_SIZE = 128;
         public const string COMPUTE_SHADER = "RLBakeShader";
         public const string BAKE_FOLDER = "Baked";
@@ -1899,20 +1899,46 @@ namespace Reallusion.Import
         //
 
         public Texture2D BakeChannelPackLinear(string folder,
-            Texture2D redChannel, Texture2D greenChannel, Texture2D blueChannel, Texture2D alphaChannel,            
-            string name)
+            Texture2D redChannel, Texture2D greenChannel, Texture2D blueChannel, Texture2D alphaChannel,
+            string name, int flags = 0, 
+            float defaultRed = 0f, float defaultGreen = 0f, float defaultBlue = 0f, float defaultAlpha = 0f)
         {
+            if (alphaChannel) flags |= Importer.FLAG_ALPHA_DATA;
+
             Vector2Int maxSize = GetMaxSize(redChannel, greenChannel, blueChannel, alphaChannel);
             ComputeBakeTexture bakeTarget =
-                new ComputeBakeTexture(maxSize, folder, name, Importer.FLAG_ALPHA_DATA);
+                new ComputeBakeTexture(maxSize, folder, name, flags);
 
             ComputeShader bakeShader = Util.FindComputeShader(COMPUTE_SHADER);
             if (bakeShader)
-            {
-                redChannel = CheckBlank(redChannel);
-                greenChannel = CheckBlank(greenChannel);
-                blueChannel = CheckBlank(blueChannel);
-                alphaChannel = CheckBlank(alphaChannel);
+            {                
+                if (defaultRed == 0f)
+                    redChannel = CheckBlank(redChannel);
+                else if (defaultRed == 1f)
+                    redChannel = CheckMask(redChannel);
+                else
+                    redChannel = CheckGray(redChannel);
+
+                if (defaultGreen == 0f)
+                    greenChannel = CheckBlank(greenChannel);
+                else if (defaultGreen == 1f)
+                    greenChannel = CheckMask(greenChannel);
+                else
+                    greenChannel = CheckGray(greenChannel);
+
+                if (defaultBlue == 0f)
+                    blueChannel = CheckBlank(blueChannel);
+                else if (defaultBlue == 1f)
+                    blueChannel = CheckMask(blueChannel);
+                else
+                    blueChannel = CheckGray(blueChannel);
+
+                if (defaultAlpha == 0f)
+                    alphaChannel = CheckBlank(alphaChannel);
+                else if (defaultAlpha == 1f)
+                    alphaChannel = CheckMask(alphaChannel);
+                else
+                    alphaChannel = CheckGray(alphaChannel);
 
                 int kernel = bakeShader.FindKernel("RLChannelPackLinear");
                 bakeTarget.Create(bakeShader, kernel);                

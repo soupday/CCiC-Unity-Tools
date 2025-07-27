@@ -443,10 +443,10 @@ void RLChannelPackLinear(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
 
-    float redChannel = SAMPLE(RedChannel, uv).g;
-    float greenChannel = SAMPLE(GreenChannel, uv).g;
-    float blueChannel = SAMPLE(BlueChannel, uv).g;
-    float alphaChannel = SAMPLE(AlphaChannel, uv).g;    
+    float redChannel = SAMPLE(RedChannel, uv).r;
+    float greenChannel = SAMPLE(GreenChannel, uv).r;
+    float blueChannel = SAMPLE(BlueChannel, uv).r;
+    float alphaChannel = SAMPLE(AlphaChannel, uv).r;
 
     float4 packed = float4(redChannel, greenChannel, blueChannel, alphaChannel);
 

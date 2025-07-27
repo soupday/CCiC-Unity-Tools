@@ -16,13 +16,17 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Codice.Client.BaseCommands;
+using Codice.Client.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Diagnostics;
+using UnityEngine.WSA;
 
 namespace Reallusion.Import
 {
@@ -98,7 +102,7 @@ namespace Reallusion.Import
             {
                 if (EditorPrefs.HasKey("RL_Importer_Mipmap_Bias_Hair"))
                     return EditorPrefs.GetFloat("RL_Importer_Mipmap_Bias_Hair");
-                return -0.65f;
+                return -0.25f;
             }
 
             set
@@ -194,6 +198,21 @@ namespace Reallusion.Import
             set
             {
                 EditorPrefs.SetBool("RL_Rebake_Blender_Unity_Maps", value);
+            }
+        }
+
+        public static bool REBAKE_PACKED_TEXTURE_MAPS
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Rebake_Packed_Texture_Maps"))
+                    return EditorPrefs.GetBool("RL_Rebake_Packed_Texture_Maps");
+                return false;
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Rebake_Packed_Texture_Maps", value);
             }
         }
 
@@ -509,6 +528,9 @@ namespace Reallusion.Import
                             if (blenderProject)
                                 PrepBlenderTextures(sourceName, matJson);
 
+                            if (characterInfo.FeatureUseTexturePacking)
+                                PrepPackedTextures(sourceName, matJson, materialType);
+
                             if ((materialType == MaterialType.SSS || characterInfo.BasicMaterials) && Pipeline.isHDRP)
                             {
                                 if (materialType == MaterialType.Skin || 
@@ -567,6 +589,11 @@ namespace Reallusion.Import
                         {
                             if (blenderProject)
                                 BakeBlenderTextures(sourceName, matJson);
+
+                            if (characterInfo.FeatureUseTexturePacking)
+                            {
+                                BakePackedTextures(obj, sourceName, matJson, materialType);
+                            }
 
                             if (materialType == MaterialType.SSS || characterInfo.BasicMaterials)
                             {
@@ -750,7 +777,17 @@ namespace Reallusion.Import
 
                 return MaterialType.DefaultOpaque;
             }
-        }        
+        }
+
+        private string GetMaterialTextureFolder(GameObject obj, string sourceName)
+        {
+            if (obj.name.StartsWith("CC_Base_Body") ||
+                obj.name.StartsWith("CC_Base_Tongue"))
+            {
+                return Path.Combine(texFolder, characterName, obj.name, sourceName);
+            }
+            return Path.Combine(texFolder, obj.name, sourceName);
+        }
 
         private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, string sourceName)
         {            
@@ -1024,6 +1061,193 @@ namespace Reallusion.Import
             if (!DoneTexture(roughness)) SetTextureImport(roughness, "", FLAG_FOR_BAKE);
             if (!DoneTexture(occlusion)) SetTextureImport(occlusion, "", FLAG_FOR_BAKE);
             if (!DoneTexture(microNormalMask)) SetTextureImport(microNormalMask, "", FLAG_FOR_BAKE);
+        }
+
+        private string GetPackedTextureFolder(GameObject obj, string sourceName, string folder)
+        {
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+                return folder;
+
+            string defaultFolder = GetMaterialTextureFolder(obj, sourceName);
+            if (Directory.Exists(defaultFolder)) return defaultFolder;
+
+            return ComputeBake.BakeTexturesFolder(fbxPath);
+        }
+
+        private void BakePackedTextures(GameObject obj, string sourceName, QuickJSON matJson, MaterialType materialType)
+        {
+            ComputeBake baker = new ComputeBake(characterInfo.Fbx, characterInfo);
+            string assetFolder;
+            string folder;            
+
+            if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
+            {
+                Texture2D displacementCavity = null;
+                Texture2D sssThickness = null;
+
+                if (!REBAKE_PACKED_TEXTURE_MAPS)
+                {
+                    displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
+                    sssThickness = GetTexture(sourceName, "BSSSThicknessSMPack", matJson, "Textures/NOTEX", true);
+                }                
+
+                Texture2D cavity = GetTexture(sourceName, "Cavitymap", matJson, "Custom Shader/Image/Cavity Map", true);
+                Texture2D displacement = GetTexture(sourceName, "Displacement", matJson, "Textures/Displacement", true);
+                Texture2D sss = GetTexture(sourceName, "SSSMap", matJson, "Custom Shader/Image/SSS Map", true);
+                Texture2D transmission = GetTexture(sourceName, "TransMap", matJson, "Custom Shader/Image/Transmission Map", true);
+                Texture2D specMask = GetTexture(sourceName, "SpecMask", matJson, "Custom Shader/Image/Specular Mask", true);
+
+                /*
+                if (!displacementCavity)
+                {                    
+                    Util.LogInfo("Baking Cavity Displacement Pack texture for " + sourceName);
+                    assetFolder = Util.GetAssetFolder(displacement, cavity);
+                    folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
+                    displacementCavity = baker.BakeChannelPackLinear(folder, null, displacement, null, cavity,
+                                                                        sourceName + "_BDisplacementCavityPack",
+                                                                        Importer.FLAG_FLOAT, 1f, 0.5f, 0f, 1f);
+                }
+                */
+
+                if (!sssThickness)
+                {
+                    if (sss || transmission || specMask)
+                    {
+                        Util.LogInfo("Baking SSS Thickness Specmask Pack texture for " + sourceName);
+                        assetFolder = Util.GetAssetFolder(sss, transmission);
+                        folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
+                        sssThickness = baker.BakeChannelPackLinear(folder, sss, transmission, specMask, null,
+                                                                         sourceName + "_BSSSThicknessSMPack",
+                                                                         0, 1f, 1f, 1f, 1f);
+                    }
+                }
+            }
+
+            if (materialType == MaterialType.Head)
+            {
+                Texture2D wrinkleSmoothness = null;
+                Texture2D wrinkleDisplacement = null;
+                Texture2D wrinkleFlow = null;
+
+                if (!REBAKE_PACKED_TEXTURE_MAPS)
+                {
+                    wrinkleSmoothness = GetTexture(sourceName, "BWrinkleSmoothnessPack", matJson, "Textures/NOTEX", true);
+                    wrinkleDisplacement = GetTexture(sourceName, "BWrinkleDisplacementPack", matJson, "Textures/NOTEX", true);
+                    wrinkleFlow = GetTexture(sourceName, "BWrinkleFlowPack", matJson, "Textures/NOTEX", true);
+                }
+
+                Texture2D roughness1 = GetTexture(sourceName, "Wrinkle_Roughness1", matJson, "Wrinkle/Textures/Roughness_1", true);
+                Texture2D roughness2 = GetTexture(sourceName, "Wrinkle_Roughness2", matJson, "Wrinkle/Textures/Roughness_2", true);
+                Texture2D roughness3 = GetTexture(sourceName, "Wrinkle_Roughness3", matJson, "Wrinkle/Textures/Roughness_3", true);
+                Texture2D displacement1 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 1", matJson, "Resource Textures/Wrinkle Dis 1", true);
+                Texture2D displacement2 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 2", matJson, "Resource Textures/Wrinkle Dis 2", true);
+                Texture2D displacement3 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 3", matJson, "Resource Textures/Wrinkle Dis 3", true);
+                Texture2D flow1 = GetTexture(sourceName, "Wrinkle_Flow1", matJson, "Wrinkle/Textures/Flow_1", true);
+                Texture2D flow2 = GetTexture(sourceName, "Wrinkle_Flow2", matJson, "Wrinkle/Textures/Flow_2", true);
+                Texture2D flow3 = GetTexture(sourceName, "Wrinkle_Flow3", matJson, "Wrinkle/Textures/Flow_3", true);
+
+                if (roughness1 || roughness2 || roughness3)
+                {
+                    Util.LogInfo("Baking Wrinkle Smoothness Pack texture for " + sourceName);
+                    assetFolder = Util.GetAssetFolder(roughness1, roughness2, roughness3);
+                    folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
+                    wrinkleSmoothness = baker.BakeChannelPackLinear(folder, roughness1, roughness2, roughness3, null,
+                                                                    sourceName + "_BWrinkleSmoothnessPack",
+                                                                    0, 0.5f, 0.5f, 0.5f, 1f);
+                }
+
+                if (displacement1 || displacement2 || displacement3)
+                {
+                    Util.LogInfo("Baking Wrinkle Displacement Pack texture for " + sourceName);
+                    assetFolder = Util.GetAssetFolder(displacement1, displacement2, displacement3);
+                    folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
+                    wrinkleDisplacement = baker.BakeChannelPackLinear(folder, displacement1, displacement2, displacement3, null,
+                                                                      sourceName + "_BWrinkleDisplacementPack",
+                                                                      Importer.FLAG_FLOAT,
+                                                                      0.5f, 0.5f, 0.5f, 1f);
+                }
+
+                if (flow1 || flow3 || flow3)
+                {
+                    Util.LogInfo("Baking Wrinkle Flow Pack texture for " + sourceName);
+                    assetFolder = Util.GetAssetFolder(flow1, flow2, flow3);
+                    folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
+                    wrinkleFlow = baker.BakeChannelPackLinear(folder, flow1, flow2, flow3, null,
+                                                              sourceName + "_BWrinkleFlowPack",
+                                                              0, 1f, 1f, 1f, 1f);
+                }
+            }
+        }
+
+        private void ConnectPackedTextures(string sourceName, Material mat, QuickJSON matJson, MaterialType materialType)
+        {
+            if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
+            {
+                //Texture2D displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
+                Texture2D sssThickness = GetTexture(sourceName, "BSSSThicknessSMPack", matJson, "Textures/NOTEX", true);
+                //if (displacementCavity) mat.SetTextureIf("_DisplacementCavityPack", displacementCavity);
+                if (sssThickness) mat.SetTextureIf("_SSSThicknessPack", sssThickness);
+            }
+
+            if (materialType == MaterialType.Head)
+            {                
+                Texture2D wrinkleSmoothness = GetTexture(sourceName, "BWrinkleSmoothnessPack", matJson, "Textures/NOTEX", true);
+                Texture2D wrinkleDisplacement = GetTexture(sourceName, "BWrinkleDisplacementPack", matJson, "Textures/NOTEX", true);
+                Texture2D wrinkleFlow = GetTexture(sourceName, "BWrinkleFlowPack", matJson, "Textures/NOTEX", true);
+                if (wrinkleSmoothness) mat.SetTextureIf("_WrinkleSmoothnessPack", wrinkleSmoothness);
+                if (wrinkleDisplacement) mat.SetTextureIf("_WrinkleDisplacmentPack", wrinkleDisplacement);
+                if (wrinkleFlow) mat.SetTextureIf("_WrinkleFlowPack", wrinkleFlow);
+            }
+
+            mat.SetFloatIf("BOOLEAN_USE_TEXTURE_PACKING", 1f);
+            mat.EnableKeyword("BOOLEAN_USE_TEXTURE_PACKING_ON");            
+        }
+
+        private void PrepPackedTextures(string sourceName, QuickJSON matJson, MaterialType materialType)
+        {
+            if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
+            {
+                // Displacement Cavity Pack  "_CavityMap" "_DisplacementMap" => "_DisplacementCavityPack"
+                //Texture2D cavity = GetTexture(sourceName, "Cavitymap", matJson, "Custom Shader/Image/Cavity Map", true);
+                //Texture2D displacement = GetTexture(sourceName, "Displacement", matJson, "Textures/Displacement", true);                
+                //if (!DoneTexture(cavity)) SetTextureImport(cavity, "", FLAG_FOR_BAKE | FLAG_FLOAT | FLAG_SINGLE_CHANNEL);
+                //if (!DoneTexture(displacement)) SetTextureImport(displacement, "", FLAG_FOR_BAKE | FLAG_FLOAT | FLAG_SINGLE_CHANNEL);
+
+                // Subsurface Thickness Pack  "_SSSMap" "_ThicknessMap" "_SpecularMask" => "_SSSThicknessPack"
+                Texture2D sss = GetTexture(sourceName, "SSSMap", matJson, "Custom Shader/Image/SSS Map", true);
+                Texture2D transmission = GetTexture(sourceName, "TransMap", matJson, "Custom Shader/Image/Transmission Map", true);
+                Texture2D specMask = GetTexture(sourceName, "SpecMask", matJson, "Custom Shader/Image/Specular Mask", true);
+                if (!DoneTexture(sss)) SetTextureImport(sss, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(transmission)) SetTextureImport(transmission, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(specMask)) SetTextureImport(specMask, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+            }
+            
+            if (materialType == MaterialType.Head)
+            {
+                // Wrinkle Smoothness Pack "_WrinkleRoughnessBlend1" => "_WrinkleSmoothnessPack"
+                Texture2D roughness1 = GetTexture(sourceName, "Wrinkle_Roughness1", matJson, "Wrinkle/Textures/Roughness_1", true);
+                Texture2D roughness2 = GetTexture(sourceName, "Wrinkle_Roughness2", matJson, "Wrinkle/Textures/Roughness_2", true);
+                Texture2D roughness3 = GetTexture(sourceName, "Wrinkle_Roughness3", matJson, "Wrinkle/Textures/Roughness_3", true);
+                if (!DoneTexture(roughness1)) SetTextureImport(roughness1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(roughness2)) SetTextureImport(roughness2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(roughness3)) SetTextureImport(roughness3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+
+                // Wrinkle Displacement Pack _WrinkleDisplacementMap1 => _WrinkleDisplacmentPack
+                Texture2D displacement1 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 1", matJson, "Resource Textures/Wrinkle Dis 1", true);
+                Texture2D displacement2 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 2", matJson, "Resource Textures/Wrinkle Dis 2", true);
+                Texture2D displacement3 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 3", matJson, "Resource Textures/Wrinkle Dis 3", true);
+                if (!DoneTexture(displacement1)) SetTextureImport(displacement1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(displacement2)) SetTextureImport(displacement2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(displacement3)) SetTextureImport(displacement3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+
+                // Wrinkle Flow Pack _WrinkleFlowMap1 => _WrinkleFlowPack
+                Texture2D flow1 = GetTexture(sourceName, "Wrinkle_Flow1", matJson, "Wrinkle/Textures/Flow_1", true);
+                Texture2D flow2 = GetTexture(sourceName, "Wrinkle_Flow2", matJson, "Wrinkle/Textures/Flow_2", true);
+                Texture2D flow3 = GetTexture(sourceName, "Wrinkle_Flow3", matJson, "Wrinkle/Textures/Flow_3", true);
+                if (!DoneTexture(flow1)) SetTextureImport(flow1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(flow2)) SetTextureImport(flow2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(flow3)) SetTextureImport(flow3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);                
+            }
         }
 
         private void ConnectDefaultMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -1531,16 +1755,17 @@ namespace Reallusion.Import
                     matJson, "Textures/HDRP");
             }
 
-            bool use_cavity = ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
-                matJson, "Custom Shader/Image/Cavity Map");
+            
+            bool use_cavity = GetTexture(sourceName, "CavityMap", 
+                                         matJson, "Custom Shader/Image/Cavity Map", true);
             if (use_cavity)
             {
                 mat.EnableKeyword("BOOLEAN_USE_CAVITY_ON");
                 mat.SetFloatIf("BOOLEAN_USE_CAVITY", 1f);
             }
 
-            bool use_displacement = ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
-                matJson, "Textures/Displacement");
+            bool use_displacement = GetTexture(sourceName, "Displacement",
+                                               matJson, "Textures/Displacement", true);
             if (use_displacement)
             {                                
                 mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
@@ -1552,14 +1777,23 @@ namespace Reallusion.Import
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
                 matJson, "Textures/AO");
 
-            ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
-                matJson, "Custom Shader/Image/SSS Map");            
+            ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
+                matJson, "Custom Shader/Image/Cavity Map");
 
-            ConnectTextureTo(sourceName, mat, "_ThicknessMap", "TransMap",
-                matJson, "Custom Shader/Image/Transmission Map");
+            ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
+                matJson, "Textures/Displacement");
 
-            ConnectTextureTo(sourceName, mat, "_SpecularMask", "SpecMask",
-                matJson, "Custom Shader/Image/Specular Mask");
+            if (!characterInfo.FeatureUseTexturePacking)
+            {                
+                ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
+                    matJson, "Custom Shader/Image/SSS Map");
+
+                ConnectTextureTo(sourceName, mat, "_ThicknessMap", "TransMap",
+                    matJson, "Custom Shader/Image/Transmission Map");
+
+                ConnectTextureTo(sourceName, mat, "_SpecularMask", "SpecMask",
+                    matJson, "Custom Shader/Image/Specular Mask");
+            }
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMap", "MicroN",
                 matJson, "Custom Shader/Image/MicroNormal", 
@@ -1618,32 +1852,35 @@ namespace Reallusion.Import
                         matJson, "Wrinkle/Textures/Normal_3",
                         FLAG_NORMAL);
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend1", "Wrinkle_Roughness1",
-                        matJson, "Wrinkle/Textures/Roughness_1");
+                    if (!characterInfo.FeatureUseTexturePacking)
+                    {
+                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend1", "Wrinkle_Roughness1",
+                            matJson, "Wrinkle/Textures/Roughness_1");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend2", "Wrinkle_Roughness2",
-                        matJson, "Wrinkle/Textures/Roughness_2");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend2", "Wrinkle_Roughness2",
+                            matJson, "Wrinkle/Textures/Roughness_2");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend3", "Wrinkle_Roughness3",
-                        matJson, "Wrinkle/Textures/Roughness_3");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend3", "Wrinkle_Roughness3",
+                            matJson, "Wrinkle/Textures/Roughness_3");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap1", "Wrinkle_Flow1",
-                        matJson, "Wrinkle/Textures/Flow_1");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap1", "Wrinkle_Flow1",
+                            matJson, "Wrinkle/Textures/Flow_1");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap2", "Wrinkle_Flow2",
-                        matJson, "Wrinkle/Textures/Flow_2");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap2", "Wrinkle_Flow2",
+                            matJson, "Wrinkle/Textures/Flow_2");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap3", "Wrinkle_Flow3",
-                        matJson, "Wrinkle/Textures/Flow_3");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap3", "Wrinkle_Flow3",
+                            matJson, "Wrinkle/Textures/Flow_3");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap1", "_ResourceMap_Wrinkle Dis 1",
-                        matJson, "Resource Textures/Wrinkle Dis 1");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap1", "ResourceMap_Wrinkle Dis 1",
+                            matJson, "Resource Textures/Wrinkle Dis 1");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap2", "_ResourceMap_Wrinkle Dis 2",
-                        matJson, "Resource Textures/Wrinkle Dis 2");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap2", "ResourceMap_Wrinkle Dis 2",
+                            matJson, "Resource Textures/Wrinkle Dis 2");
 
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap3", "_ResourceMap_Wrinkle Dis 3",
-                        matJson, "Resource Textures/Wrinkle Dis 3");
+                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap3", "ResourceMap_Wrinkle Dis 3",
+                            matJson, "Resource Textures/Wrinkle Dis 3");
+                    }
 
                     ApplyWrinkleMasks(mat);                    
                 }
@@ -1654,10 +1891,15 @@ namespace Reallusion.Import
             {
                 ConnectTextureTo(sourceName, mat, "_RGBAMask", "RGBAMask",
                     matJson, "Custom Shader/Image/RGBA Area Mask");
-            }
+            }            
 
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
+
+            if (characterInfo.FeatureUseTexturePacking)
+            {
+                ConnectPackedTextures(sourceName, mat, matJson, materialType);
+            }
 
             if (matJson != null)
             {
@@ -1707,7 +1949,8 @@ namespace Reallusion.Import
                 //mat.SetFloatIf("_Smoothness2", secondarySmoothness);
                 //mat.SetFloatIf("_SmoothnessMix", smoothnessMix);
                 // URP's lights affect the AMP SSS more than 3D or HDRP
-                mat.SetFloatIf("_SubsurfaceScale", matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
+                //mat.SetFloatIf("_SubsurfaceScale", matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
+                //mat.SetFloatIf("_SubsurfaceScale", 1.25f);
                 mat.SetFloatIf("_MicroSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Micro Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Unmasked Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedScatterScale", matJson.GetFloatValue("Custom Shader/Variable/Unmasked Scatter Scale"));
@@ -2034,7 +2277,8 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_ScleraBrightness", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/ScleraBrightness"), scleraBrightnessPower));
                 mat.SetFloatIf("_ScleraSaturation", 1f);
                 mat.SetFloatIf("_ScleraHue", 0.51f);
-                mat.SetFloatIf("_ScleraSmoothness", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Roughness"));
+                mat.SetFloatIf("_ScleraSmoothness", MAX_SMOOTHNESS - MAX_SMOOTHNESS * matJson.GetFloatValue("Custom Shader/Variable/Sclera Roughness"));
+                mat.SetFloatIf("_CorneaSmoothness", MAX_SMOOTHNESS);
                 mat.SetFloatIf("_ScleraScale", matJson.GetFloatValue("Custom Shader/Variable/Sclera UV Radius"));
                 mat.SetFloatIf("_ScleraNormalStrength", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Flatten Normal"));
                 mat.SetFloatIf("_ScleraNormalTiling", Mathf.Clamp(1f / matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 10f));
@@ -2313,7 +2557,13 @@ namespace Reallusion.Import
             MaterialType materialType, QuickJSON matJson)
         {
             if (matJson != null)
-            {                
+            {
+                float showBlurRange = matJson.GetFloatValue("Custom Shader/Variable/Display Blur Range");
+                if (showBlurRange > 0f)
+                {
+                    mat.SetFloatIf("BOOLEAN_SHOW_BLUR_RANGE", 1f);
+                    mat.EnableKeyword("BOOLEAN_SHOW_BLUR_RANGE_ON");
+                }
                 mat.SetColorIf("_ShadowColor", Util.sRGBToLinear(matJson.GetColorValue("Custom Shader/Variable/Shadow Color")));
                 mat.SetColorIf("_BlurColor", Util.sRGBToLinear(matJson.GetColorValue("Custom Shader/Variable/Blur Color")));
 
@@ -2342,7 +2592,6 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_BlurOuterMax", outerBlurRange.y);
                 mat.SetFloatIf("_BlurOuterMinContrast", matJson.GetFloatValue("Custom Shader/Variable/Outer Blur Edge Fadeout Contrast"));
                 mat.SetFloatIf("_BlurOuterMaxContrast", matJson.GetFloatValue("Custom Shader/Variable/Outer Blur Contrast"));
-
 
                 mat.SetFloatIf("_ShadowStrength", matJson.GetFloatValue("Custom Shader/Variable/Shadow Strength"));
 
@@ -2407,15 +2656,28 @@ namespace Reallusion.Import
         {
             if (matJson != null)
             {
-                mat.SetFloatIf("_Smoothness", MAX_SMOOTHNESS - (MAX_SMOOTHNESS * 0.5f * matJson.GetFloatValue("Custom Shader/Variable/_Roughness")));
+                mat.SetFloatIf("_Smoothness", MAX_SMOOTHNESS - (MAX_SMOOTHNESS * 0.33f * matJson.GetFloatValue("Custom Shader/Variable/_Roughness")));                
+                mat.SetFloatIf("_Blur", 0.033f);
+                mat.SetFloatIf("_Displace", matJson.GetFloatValue("Custom Shader/Variable/Depth Offset"));                
 
-                mat.SetFloatIf("_Displace", matJson.GetFloatValue("Custom Shader/Variable/Depth Offset"));
+                Vector2 detailTiling = new Vector2(
+                    matJson.GetFloatValue("Custom Shader/Variable/Detail U Tiling", 1.5f),
+                    matJson.GetFloatValue("Custom Shader/Variable/Detail V Tiling", 1.5f)
+                    );
+                mat.SetVectorIf("_DetailTiling", detailTiling);
+
+                mat.SetFloatIf("_DetailAmount", matJson.GetFloatValue("Custom Shader/Variable/Detail Amount"));
+                mat.SetFloatIf("_MicroNormalStrength", matJson.GetFloatValue("Custom Shader/Variable/Micro Normal Strength"));
+                mat.SetFloatIf("_MicroNormalScale", matJson.GetFloatValue("Custom Shader/Variable/Micro Normal Scale"));
+                mat.SetFloatIf("_EdgeFadeout", matJson.GetFloatValue("Custom Shader/Variable/Edge Fadeout"));
+                mat.SetFloatIf("_Opacity", matJson.GetFloatValue("Custom Shader/Variable/_Opacity"));
+
             }
 
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
-            mat.SetFloatIf("_DisplaceScale", 1f / modelScale);
+            mat.SetFloatIf("_DisplaceScale", 0.2f / modelScale);
         }
 
         private Texture2D GetCachedBakedMap(Material sharedMaterial, string shaderRef)
@@ -2569,120 +2831,14 @@ namespace Reallusion.Import
             return tex;
         }
 
-        private void SetTextureImport(Texture2D tex, string name, int flags = 0)
+        public void SetTextureImport(Texture2D tex, string name, int flags = 0)
         {
             if (!tex) return;
 
             // now fix the import settings for the texture.
             string path = AssetDatabase.GetAssetPath(tex);
             TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
-            importer.maxTextureSize = 8192;
-
-            // apply the sRGB and alpha settings for re-import.
-            importer.alphaSource = TextureImporterAlphaSource.FromInput;
-            importer.mipmapEnabled = true;
-            importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
-            if ((flags & FLAG_SRGB) > 0)
-            {
-                importer.sRGBTexture = true;
-                importer.alphaIsTransparency = true;                
-                importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;                
-                if ((flags & FLAG_HAIR) > 0)
-                {                    
-                    importer.mipMapsPreserveCoverage = true;
-                    importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR;                    
-                }
-                else if ((flags & FLAG_ALPHA_CLIP) > 0)
-                {
-                    importer.mipMapsPreserveCoverage = true;
-                    importer.alphaTestReferenceValue = 0.5f;
-                }
-                else
-                {
-                    importer.mipMapsPreserveCoverage = false;
-                }
-            }
-            else
-            {
-                importer.sRGBTexture = false;
-                importer.alphaIsTransparency = false;
-                importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
-                importer.mipMapBias = Importer.MIPMAP_BIAS;
-                importer.mipMapsPreserveCoverage = false;
-            }            
-
-            if ((flags & FLAG_SINGLE_CHANNEL) > 0)
-            {
-                if ((flags & FLAG_FLOAT) > 0)
-                {
-                    
-                }
-                else
-                {
-                    
-                }
-            }
-            else
-            {
-                if ((flags & FLAG_FLOAT) > 0)
-                {
-
-                }
-                else
-                {
-
-                }
-            }
-
-            if ((flags & FLAG_HAIR) > 0)
-            {
-                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;                
-            }
-            else
-            {
-                importer.mipMapBias = Importer.MIPMAP_BIAS;                
-            }
-
-            if ((flags & FLAG_HAIR_ID) > 0)
-            {
-                importer.mipMapBias = Importer.MIPMAP_BIAS_HAIR;
-                importer.mipmapEnabled = true;
-            }
-
-            // apply the texture type for re-import.
-            if ((flags & FLAG_NORMAL) > 0)
-            {
-                importer.textureType = TextureImporterType.NormalMap;
-                if (name.iEndsWith("Bump"))
-                {
-                    importer.convertToNormalmap = true;
-                    importer.heightmapScale = 0.025f;
-                    importer.normalmapFilter = TextureImporterNormalFilter.Standard;
-                }
-            }
-            else
-            {
-                importer.textureType = TextureImporterType.Default;
-            }
-
-            if ((flags & FLAG_FOR_BAKE) > 0)
-            {
-                // turn off texture compression and unlock max size to 4k, for the best possible quality bake
-                importer.textureCompression = TextureImporterCompression.Uncompressed;
-                importer.compressionQuality = 0;
-                importer.maxTextureSize = 8192;
-            }
-            else
-            {
-                importer.textureCompression = TextureImporterCompression.CompressedHQ;
-                importer.compressionQuality = 50;
-                importer.maxTextureSize = 8192;
-            }
-
-            if ((flags & FLAG_WRAP_CLAMP) > 0)
-            {
-                importer.wrapMode = TextureWrapMode.Clamp;
-            }
+            ComputeBakeTexture.SetTextureImport(importer, flags);
 
             // add the texure path to the re-import paths.
             if (AssetDatabase.WriteImportSettingsIfDirty(path))

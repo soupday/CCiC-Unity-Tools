@@ -213,6 +213,8 @@ namespace Reallusion.Import
         public bool FeatureUseTessellation => (ShaderFlags & ShaderFeatureFlags.Tessellation) > 0;
         public bool FeatureUseClothPhysics => (ShaderFlags & ShaderFeatureFlags.ClothPhysics) > 0;
         public bool FeatureUseHairPhysics => (ShaderFlags & ShaderFeatureFlags.HairPhysics) > 0;
+        public bool FeatureUseDisplacement => (ShaderFlags & ShaderFeatureFlags.Displacement) > 0;
+        public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;

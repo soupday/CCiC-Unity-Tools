@@ -207,7 +207,22 @@ namespace Reallusion.Import
             previewScene.ShowPreviewCharacter(prefab);
             
             return previewScene;
-        }        
+        }
+
+        public static PreviewScene OpenEmptyPreviewScene()
+        {            
+            if (!IsPreviewScene && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return default;
+
+            UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+            GameObject.Instantiate(Util.FindPreviewScenePrefab(), Vector3.zero, Quaternion.identity);
+
+            previewSceneHandle = scene;
+            previewScene = PreviewScene.FetchPreviewScene(scene);
+
+            previewScene.PostProcessingAndLighting();            
+
+            return previewScene;
+        }
 
         public static bool IsPreviewScene
         {

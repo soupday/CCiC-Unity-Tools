@@ -792,6 +792,8 @@ namespace Reallusion.Import
                 menu.ShowAsContext();
             }
 
+            GUILayout.BeginHorizontal();
+
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexSize.ToString())),
                 focusType: FocusType.Passive))
@@ -828,6 +830,8 @@ namespace Reallusion.Import
                 menu.ShowAsContext();
             }
 
+            GUILayout.EndHorizontal();
+
 
             EditorGUI.EndDisabledGroup();
 
@@ -835,6 +839,9 @@ namespace Reallusion.Import
 
             //if (contextCharacter.BasicMaterials) GUI.enabled = false;
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
+
+            GUILayout.BeginHorizontal();
+
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.QualEyes.ToString() + " Eyes"),
                 focusType: FocusType.Passive))
@@ -848,6 +855,7 @@ namespace Reallusion.Import
             }
 
             GUILayout.Space(1f);
+
             string hairType;
             switch (contextCharacter.QualHair)
             {
@@ -867,6 +875,8 @@ namespace Reallusion.Import
                     menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
                 menu.ShowAsContext();
             }
+
+            GUILayout.EndHorizontal();
 
             // /*
             bool showDebugEnumPopup = false;
@@ -1290,6 +1300,11 @@ namespace Reallusion.Import
 
             Importer.REBAKE_BLENDER_UNITY_MAPS = GUILayout.Toggle(Importer.REBAKE_BLENDER_UNITY_MAPS,
                 new GUIContent("Rebake Blender Unity Maps", "Always re-bake the blender to unity Diffuse+Alpha, HDRP Mask and Metallic+Gloss maps. " +
+                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
+            GUILayout.Space(ROW_SPACE);
+
+            Importer.REBAKE_PACKED_TEXTURE_MAPS = GUILayout.Toggle(Importer.REBAKE_PACKED_TEXTURE_MAPS,
+                new GUIContent("Rebake Packed Texture Maps", "Always re-bake the packed texture maps. " +
                 "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
             GUILayout.Space(ROW_SPACE);
 
@@ -1780,6 +1795,7 @@ namespace Reallusion.Import
             Importer.MIPMAP_BIAS_HAIR = -0.65f;
             Importer.RECONSTRUCT_FLOW_NORMALS = false;
             Importer.REBAKE_BLENDER_UNITY_MAPS = false;
+            Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;
             Importer.USE_SELF_COLLISION = false;
             Importer.USE_AMPLIFY_SHADER = true;
