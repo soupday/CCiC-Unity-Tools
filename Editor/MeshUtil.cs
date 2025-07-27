@@ -1114,6 +1114,9 @@ namespace Reallusion.Import
                 ais.SaveAndReimport();
                 */
             }
+
+            firstPass.SetFloatIf("_Displace", 2f / 1000f);
+            secondPass.SetFloatIf("_Displace", 1f / 1000f);
         }
 
         public struct TwoPassPair
@@ -1146,6 +1149,7 @@ namespace Reallusion.Import
 
             Renderer[] renderers = prefabInstance.GetComponentsInChildren<Renderer>();
 
+            // TODO this needs to the use the mat json to determine scalp/hair 
             foreach (Renderer r in renderers)
             {
                 bool hasHairMaterial = false;                
@@ -1162,7 +1166,7 @@ namespace Reallusion.Import
                         hasHairMaterial = true;
                         hairMeshCount++;
                     }
-                    else if (Util.NameContainsKeywords(m.name, "scalp", "base"))
+                    else if (Util.NameContainsKeywords(m.name, "scalp", "base", "clap"))
                     {
                         hasScalpMaterial = true;
                     }

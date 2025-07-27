@@ -668,6 +668,8 @@ namespace Reallusion.Import
         {            
             if (matJson != null)
             {
+                string defaultType = matJson?.GetStringValue("Material Type");
+                string customShader = matJson?.GetStringValue("Custom Shader/Shader Name", defaultType);                
                 bool hasOpacity = false;
                 bool blendOpacity = false;
                 if (Util.NameContainsKeywords(sourceName, "Transparency", "Alpha", "Opacity", "Lenses", "Lens", "Glass", "Glasses", "Blend"))
@@ -676,7 +678,7 @@ namespace Reallusion.Import
                     blendOpacity = true;
                 }
 
-                if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash"))
+                if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap"))
                 {
                     hasOpacity = true;
                     blendOpacity = true;
@@ -711,14 +713,14 @@ namespace Reallusion.Import
 
                 if (hasOpacity)
                 {
-                    if (Util.NameContainsKeywords(sourceName, "Eyelash"))
-                        return MaterialType.Eyelash;
-                    if (Util.NameContainsKeywords(sourceName, "Scalp", "Base"))
-                        return MaterialType.Scalp;
-                }
-
-                string customShader = matJson?.GetStringValue("Custom Shader/Shader Name");
-                string defaultType = matJson?.GetStringValue("Material Type");
+                    if (customShader == "Pbr" || customShader == "Tra")
+                    {
+                        if (Util.NameContainsKeywords(sourceName, "Eyelash", "Lash"))
+                            return MaterialType.Eyelash;
+                        if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Hair", "Clap"))
+                            return MaterialType.Scalp;
+                    }
+                }                
 
                 switch (customShader)
                 {

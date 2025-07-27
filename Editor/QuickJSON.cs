@@ -383,25 +383,25 @@ namespace Reallusion.Import
             return defaultValue;
         }
 
-        public string GetStringValue(string path)
+        public string GetStringValue(string path, string defaultValue="")
         {
             string[] paths = path.Split('/');
 
-            return GetStringValue(paths);
+            return GetStringValue(paths, defaultValue);
         }
 
-        public string GetStringValue(string[] paths)
+        public string GetStringValue(string[] paths, string defaultValue="")
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetStringValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetStringValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.String)
                     return mv.StringValue;
             }
 
-            return "";
+            return defaultValue;
         }
 
         public Color GetColorValue(string path)
