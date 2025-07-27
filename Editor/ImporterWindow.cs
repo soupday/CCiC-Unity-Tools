@@ -764,6 +764,7 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
 
             GUILayout.BeginVertical();
+
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (contextCharacter.Generation == BaseGeneration.Unknown)
             {
@@ -781,6 +782,7 @@ namespace Reallusion.Import
                 GUILayout.Space(1f);
             }
 
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.BasicMaterials ? "Basic Materials" : "High Quality Materials"),
                 focusType: FocusType.Passive))
@@ -794,6 +796,9 @@ namespace Reallusion.Import
 
             GUILayout.BeginHorizontal();
 
+            GUILayout.BeginVertical();
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexSize.ToString())),
                 focusType: FocusType.Passive))
@@ -811,7 +816,28 @@ namespace Reallusion.Import
                 }
                 menu.ShowAsContext();
             }
+            EditorGUI.EndDisabledGroup();
 
+            GUILayout.Space(1f);
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(contextCharacter.QualEyes.ToString() + " Eyes"),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Basic Eyes"), contextCharacter.BasicEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Basic);
+                menu.AddItem(new GUIContent("Parallax Eyes"), contextCharacter.ParallaxEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Parallax);
+                if (Pipeline.isHDRP)
+                    menu.AddItem(new GUIContent("Refractive (SSR) Eyes"), contextCharacter.RefractiveEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Refractive);
+                menu.ShowAsContext();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical();
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexCompress.ToString())),
                 focusType: FocusType.Passive))
@@ -829,33 +855,11 @@ namespace Reallusion.Import
                 }
                 menu.ShowAsContext();
             }
-
-            GUILayout.EndHorizontal();
-
-
             EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
 
-            //if (contextCharacter.BasicMaterials) GUI.enabled = false;
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
-
-            GUILayout.BeginHorizontal();
-
-            if (EditorGUILayout.DropdownButton(
-                content: new GUIContent(contextCharacter.QualEyes.ToString() + " Eyes"),
-                focusType: FocusType.Passive))
-            {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Basic Eyes"), contextCharacter.BasicEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Basic);
-                menu.AddItem(new GUIContent("Parallax Eyes"), contextCharacter.ParallaxEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Parallax);
-                if (Pipeline.isHDRP)
-                    menu.AddItem(new GUIContent("Refractive (SSR) Eyes"), contextCharacter.RefractiveEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Refractive);
-                menu.ShowAsContext();
-            }
-
-            GUILayout.Space(1f);
-
             string hairType;
             switch (contextCharacter.QualHair)
             {
@@ -875,6 +879,9 @@ namespace Reallusion.Import
                     menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
                 menu.ShowAsContext();
             }
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
 
