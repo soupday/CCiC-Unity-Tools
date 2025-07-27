@@ -1081,7 +1081,15 @@ namespace Reallusion.Import
         static void ImportItem(QueueItem item)
         {
             UnityLinkImporter Importer = new UnityLinkImporter(item);//, IMPORT_INTO_SCENE);
-            Importer.Import();
+            try
+            {
+                Importer.Import();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Import Failure");
+                Debug.LogWarning(e.ToString());
+            }
         }
         #endregion  Activity queue handling
 

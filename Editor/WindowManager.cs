@@ -209,9 +209,9 @@ namespace Reallusion.Import
             return previewScene;
         }
 
-        public static PreviewScene OpenEmptyPreviewScene()
-        {            
-            if (!IsPreviewScene && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return default;
+        public static void OpenEmptyPreviewScene()
+        {
+            if (!IsPreviewScene && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) ;// return default;
 
             UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
             GameObject.Instantiate(Util.FindPreviewScenePrefab(), Vector3.zero, Quaternion.identity);
@@ -221,7 +221,7 @@ namespace Reallusion.Import
 
             previewScene.PostProcessingAndLighting();            
 
-            return previewScene;
+            //return previewScene;
         }
 
         public static bool IsPreviewScene

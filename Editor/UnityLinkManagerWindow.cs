@@ -582,7 +582,8 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
             if (createSceneAfterGUI)
             {
-                EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
+                //EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
+                EditorApplication.delayCall += WindowManager.OpenEmptyPreviewScene;
                 createSceneAfterGUI = false;
             }
         }
@@ -924,9 +925,9 @@ namespace Reallusion.Import
                     EditorApplication.ExecuteMenuItem("File/New Scene");
                 }
                 GUILayout.Space(20f);
-                EditorGUI.BeginDisabledGroup(true);
+                EditorGUI.BeginDisabledGroup(false);
                 string exTip = "Create a new scene that mimics iClone & Character Creator's lighting setup";
-                GUILayout.Label(new GUIContent("Create example scene", exTip), GUILayout.Width(130f));
+                GUILayout.Label(new GUIContent("Create preview scene", exTip), GUILayout.Width(130f));
                 if (GUILayout.Button(new GUIContent(styles.newSceneTex, exTip), styles.minimalButton, GUILayout.Height(EditorGUIUtility.singleLineHeight), GUILayout.Width(EditorGUIUtility.singleLineHeight)))
                 {
                     createSceneAfterGUI = true;
