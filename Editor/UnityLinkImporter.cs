@@ -166,16 +166,16 @@ namespace Reallusion.Import
                     UnityLinkManager.SCENE_FOLDER = Path.Combine(UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), UnityLinkManager.SCENE_ASSETS, UnityLinkManager.SCENE_NAME);                    
                 }
 
-                UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");                
+                UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");                                               
+            }
 
-                if (string.IsNullOrEmpty(item.RemoteId))
-                {
-                    packageType = PackageType.DISK;
-                }
-                else
-                {
-                    packageType = PackageType.ZIP;
-                }
+            if (string.IsNullOrEmpty(item.RemoteId))
+            {
+                packageType = PackageType.DISK;
+            }
+            else
+            {
+                packageType = PackageType.ZIP;
             }
         }
 
