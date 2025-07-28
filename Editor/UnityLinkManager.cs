@@ -1079,10 +1079,10 @@ namespace Reallusion.Import
         }
                 
         static void ImportItem(QueueItem item)
-        {
-            UnityLinkImporter Importer = new UnityLinkImporter(item);//, IMPORT_INTO_SCENE);
+        {            
             try
             {
+                UnityLinkImporter Importer = new UnityLinkImporter(item);
                 Importer.Import();
             }
             catch (Exception e)

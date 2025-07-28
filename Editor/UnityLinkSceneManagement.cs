@@ -166,6 +166,7 @@ namespace Reallusion.Import
 
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
         {
+            //Debug.LogWarning("TryGetSceneTimeLine");
             director = null;
 
 #if UNITY_2023_OR_NEWER
@@ -213,6 +214,8 @@ namespace Reallusion.Import
 
         public static bool TryCreateTimeLine(out PlayableDirector director)
         {
+            //Debug.LogWarning("TryCreateTimeLine");
+
             DateTime now = DateTime.Now;
             string stamp = TimeStampString();
 
@@ -234,45 +237,15 @@ namespace Reallusion.Import
             return now.Day.ToString("00") + "." + now.Month.ToString("00") + "-" + now.Hour.ToString("00") + "." + now.Minute.ToString("00");
         }
 
-        public static void CreateExampleScene()
-        {
-            /*
-            if (EditorSceneManager.GetActiveScene().isDirty)
-            {
-                if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            }
-
-            if (EditorSceneManager.GetActiveScene().name.Equals(UnityLinkManager.TIMELINE_REFERENCE_STRING))
-            {
-                // dont create a new scene or prompt for a re-use/renew of scene
-                GameObject go = GetTimeLineObject();
-                Debug.Log("Found " + go.name);
-            }
-            else
-            {
-                Debug.Log("Making new scene.");
-                Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-
-                EditorSceneManager.SaveScene(scene, UnityLinkManager.UNITY_SCENE_PATH);
-                GetTimeLineObject();
-            }
-            */
-        }
-
-
-
         // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
-        // TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
-
-        public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string, bool) objectTuple)
+        public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string, AnimatedStatus) objectTuple)
         {
             LockStateTimeLineWindow(false);
-            //Debug.LogWarning("Instantiating " + objectTuple.Item2.name);
 
             GameObject sceneObject = null;
             if (PrefabUtility.GetPrefabAssetType(objectTuple.Item2) != PrefabAssetType.NotAPrefab)
             {
-                sceneObject = (objectTuple.Item4 ? PrefabUtility.InstantiatePrefab(objectTuple.Item2) as GameObject: objectTuple.Item2);
+                sceneObject = (objectTuple.Item4 ? PrefabUtility.InstantiatePrefab(objectTuple.Item2) as GameObject : objectTuple.Item2);
             }
             else
             {
@@ -283,7 +256,7 @@ namespace Reallusion.Import
             sceneObject.transform.position = Vector3.zero;
             sceneObject.transform.rotation = Quaternion.identity;
 
-            bool notAnimated = objectTuple.Item6;
+            AnimatedStatus animStatus = objectTuple.Item6;
 
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
@@ -293,9 +266,9 @@ namespace Reallusion.Import
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            if (!notAnimated)
+            if (objectTuple.Item1.HasFlag(TrackType.AnimationTrack)) // AnimationTrack permitted for this object
             {
-                if (objectTuple.Item1 == TrackType.AnimationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
+                if (animStatus.HasFlag(AnimatedStatus.Animation)) // Has detected animation data
                 {
                     AnimationTrack workingtrack = null;
 
@@ -350,90 +323,91 @@ namespace Reallusion.Import
                         clip.timeScale = 1f;
                         clip.duration = clip.duration / clip.timeScale;
                     }
-                    //Debug.LogWarning("SetGenericTimelineBinding " + objectTuple.Item2.name + " - " + clipToUse.name);
                     director.SetGenericBinding(workingtrack, sceneObject);
                 }
             }
 
-            if (objectTuple.Item1 == TrackType.ActivationTrack || objectTuple.Item1 == TrackType.AnimationAndActivationTracks)
+            if (objectTuple.Item1.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
             {
-                ActivationTrack workingtrack = null;
-
-                var tracks = timeline.GetOutputTracks();
-                foreach (TrackAsset track in tracks)
+                if (animStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
                 {
-                    if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
+                    ActivationTrack workingtrack = null;
+
+                    var tracks = timeline.GetOutputTracks();
+                    foreach (TrackAsset track in tracks)
                     {
-                        workingtrack = track as ActivationTrack;
-                        break;
+                        if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
+                        {
+                            workingtrack = track as ActivationTrack;
+                            break;
+                        }
                     }
-                }
 
-                if (workingtrack == null)
-                {
-                    workingtrack = timeline.CreateTrack<ActivationTrack>(objectTuple.Item2.name + "_ACTI_" + objectTuple.Item5);
-                }
-                else
-                {
+                    if (workingtrack == null)
+                    {
+                        workingtrack = timeline.CreateTrack<ActivationTrack>(objectTuple.Item2.name + "_ACTI_" + objectTuple.Item5);
+                    }
+                    else
+                    {
 #if UNITY_2020_1_OR_NEWER
-                    // purge bound clips
-                    var clips = workingtrack.GetClips();
-                    if (clips != null)
-                    {
-                        foreach (var c in clips)
+                        // purge bound clips
+                        var clips = workingtrack.GetClips();
+                        if (clips != null)
                         {
-                            workingtrack.DeleteClip(c);
+                            foreach (var c in clips)
+                            {
+                                workingtrack.DeleteClip(c);
+                            }
                         }
-                    }
 #endif
-                }
-
-                foreach (AnimationClip animClip in objectTuple.Item3)
-                {
-                    var bindings = AnimationUtility.GetCurveBindings(animClip);
-                    var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
-
-                    var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
-                    bool enabled = false;
-                    bool addClip = false;
-                    float start = 0f;
-                    float duration = 0f;
-                    int index = 0;
-                    foreach (Keyframe keyframe in curve.keys)
-                    {
-                        if (!enabled)
-                        {
-                            if (keyframe.value == 1)
-                            {
-                                enabled = true;
-                                start = keyframe.time;
-                            }
-                        }
-
-                        if (enabled)
-                        {
-                            if (keyframe.value == 0 || index == curve.keys.Length - 1)
-                            {
-                                enabled = false;
-                                duration = keyframe.time - start;
-                                addClip = true;
-                            }
-                        }
-
-                        if (addClip)
-                        {
-                            TimelineClip t = workingtrack.CreateDefaultClip();
-                            t.start = start;
-                            t.duration = duration;
-                            addClip = false;
-                        }
-                        index++;
                     }
-                }
 
-                director.SetGenericBinding(workingtrack, sceneObject);
+                    foreach (AnimationClip animClip in objectTuple.Item3)
+                    {
+                        var bindings = AnimationUtility.GetCurveBindings(animClip);
+                        var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
+
+                        var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
+                        bool enabled = false;
+                        bool addClip = false;
+                        float start = 0f;
+                        float duration = 0f;
+                        int index = 0;
+                        foreach (Keyframe keyframe in curve.keys)
+                        {
+                            if (!enabled)
+                            {
+                                if (keyframe.value == 1)
+                                {
+                                    enabled = true;
+                                    start = keyframe.time;
+                                }
+                            }
+
+                            if (enabled)
+                            {
+                                if (keyframe.value == 0 || index == curve.keys.Length - 1)
+                                {
+                                    enabled = false;
+                                    duration = keyframe.time - start;
+                                    addClip = true;
+                                }
+                            }
+
+                            if (addClip)
+                            {
+                                TimelineClip t = workingtrack.CreateDefaultClip();
+                                t.start = start;
+                                t.duration = duration;
+                                addClip = false;
+                            }
+                            index++;
+                        }
+                    }
+
+                    director.SetGenericBinding(workingtrack, sceneObject);
+                }                
             }
-
             TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
             ShowTimeLineWindow(director);
             MarkSceneAsDirty();
@@ -441,6 +415,7 @@ namespace Reallusion.Import
 
         public static void ShowTimeLineWindow(PlayableDirector director)
         {
+            //Debug.LogWarning("ShowTimeLineWindow");
 #if UNITY_2021_1_OR_NEWER
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
@@ -453,10 +428,11 @@ namespace Reallusion.Import
             }
             var timelineWindow = EditorWindow.GetWindow<TimelineEditorWindow>();
             timelineWindow.Show();
-            
+#else
+            EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
+#endif
             Selection.activeGameObject = director.gameObject;
             if (UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED) LockStateTimeLineWindow(true);
-#endif
         }
             
 
@@ -943,15 +919,25 @@ namespace Reallusion.Import
 #else
         public static void DoBuiltinThings() { }
 #endif
-#endregion Scene Dependencies
+        #endregion Scene Dependencies
 
         #region Enum
+
+        [Flags]
         public enum TrackType
         {
             AnimationTrack,
             ActivationTrack,
-            AnimationAndActivationTracks,
             AudioTrack
+        }
+
+        [Flags]
+        public enum AnimatedStatus
+        {
+            NotAnimated,
+            Animation,
+            Activation,
+
         }
         #endregion Enum
     }

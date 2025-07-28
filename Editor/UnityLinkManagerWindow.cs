@@ -520,7 +520,7 @@ namespace Reallusion.Import
 
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
-
+            
             GUILayout.BeginVertical();
             using (var scrollViewScope = new GUILayout.ScrollViewScope(globalScrollPos, GUILayout.ExpandWidth(true)))
             {
@@ -581,8 +581,7 @@ namespace Reallusion.Import
             }
             GUILayout.EndVertical();
             if (createSceneAfterGUI)
-            {
-                //EditorApplication.delayCall += UnityLinkSceneManagement.CreateExampleScene;
+            {                
                 EditorApplication.delayCall += WindowManager.OpenEmptyPreviewScene;
                 createSceneAfterGUI = false;
             }
@@ -1095,7 +1094,7 @@ namespace Reallusion.Import
             }
         }
 
-        private bool CreateTreeView()
+        public bool CreateTreeView()
         {
 #if UNITY_2023_OR_NEWER
             PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsSortMode.None);  

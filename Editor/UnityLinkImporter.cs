@@ -83,10 +83,10 @@ namespace Reallusion.Import
 
         // animated property flags
         // transform specific
-        public bool pos_delta = false, rot_delta = false, scale_delta = false;
+        bool pos_delta = false, rot_delta = false, scale_delta = false;
         
         // enabled specific - use in building an activation track
-        public bool active_delta = false;
+        bool active_delta = false;
 
         // light specific
 #if HDRP_17_0_0_OR_NEWER
@@ -99,7 +99,9 @@ namespace Reallusion.Import
         public const float BASE_INTENSITY_SCALE = 0.12f;
         public const float RANGE_SCALE = 0.01f;
 
-        public bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false, not_animated = false;
+        bool color_delta = false, mult_delta = false, range_delta = false, angle_delta = false, fall_delta = false, att_delta = false, dark_delta = false;
+
+        public UnityLinkSceneManagement.AnimatedStatus animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated;
 
         // camera specific
         public bool dof_delta = false;
@@ -110,6 +112,8 @@ namespace Reallusion.Import
         #region Import Preparation
         public UnityLinkImporter(UnityLinkManager.QueueItem item)
         {
+            animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated;
+
             QueueItem = item;
             opCode = QueueItem.OpCode;
             //importDestinationFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
@@ -250,9 +254,11 @@ namespace Reallusion.Import
                 fbxPath = RetrieveDiskAsset(zipFolder, name);
                 Directory.Delete(zipFolder, true);
             }
-            
-            EditorApplication.update -= WaitForFrames;
-            EditorApplication.update += WaitForFrames;
+
+            DoImport();
+
+            //EditorApplication.update -= WaitForFrames;
+            //EditorApplication.update += WaitForFrames;
         }
                 
         void WaitForFrames()
@@ -267,7 +273,7 @@ namespace Reallusion.Import
             DoImport();
         }
 
-        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, bool)> timelineKitList;
+        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)> timelineKitList;
 
         void DoImport()
         {
@@ -280,7 +286,7 @@ namespace Reallusion.Import
             }
             */
 
-            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, bool)>();
+            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)>();
 
             if (importMotion)
             {
@@ -311,6 +317,22 @@ namespace Reallusion.Import
                 //AddToSceneAndTimeLine(timelineKit);
                 //SelectTimeLineObjectAndShowWindow();
             }
+        }
+
+        void ResetDeltas()
+        {
+            pos_delta = false;
+            rot_delta = false;
+            scale_delta = false;
+            color_delta = false;
+            mult_delta = false;
+            range_delta = false;
+            angle_delta = false;
+            fall_delta = false;
+            att_delta = false;
+            dark_delta = false;
+            dof_delta = false;
+            fov_delta = false;
         }
         #endregion Import Preparation
 
@@ -477,8 +499,13 @@ namespace Reallusion.Import
             PrefabUtility.SavePrefabAsset(prefab);
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
+
             List<AnimationClip> animsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animsForTimeLine, true, linkId, IsNotAnimated(animsForTimeLine)));
+
+            // only animation tracks permitted for Props
+            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+
+            timelineKitList.Add((trackType, prefab, animsForTimeLine, true, linkId, GetAnimatedStatus(animsForTimeLine)));
         }
         #endregion Prop Import
 
@@ -512,8 +539,14 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
 
+            // Avatars are implicitly animated
+            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
             List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, animGuidsForTimeLine, true, linkId, false));
+
+            // only animation tracks permitted for Avatars
+            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+
+            timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
         #endregion Avatar Import
 
@@ -568,13 +601,13 @@ namespace Reallusion.Import
             {
                 case (RLX_ID_CAMERA):
                     {
-                        Debug.Log("Processing Camera");
+                        Debug.Log("Processing Camera " + folderPath);
                         MakeAnimatedCamera(folderPath, frameData, jsonString);
                         break;
                     }
                 case (RLX_ID_LIGHT):
                     {
-                        Debug.Log("Processing Light");
+                        Debug.Log("Processing Light " + folderPath);
                         MakeAnimatedLight(folderPath, frameData, jsonString);
                         break;
                     }
@@ -766,6 +799,7 @@ namespace Reallusion.Import
              *       --> Child GameObject (with <Camera> component)   | GetAnimatableBindings TARGET object                
             */
 
+            ResetDeltas();
             float threshold = 0.0001f;
 
             int dofActive  = frames.FindAll(x => x.DofEnable == true).Count();
@@ -795,7 +829,7 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.DofMinBlendDistance - frames[0].DofMinBlendDistance) > threshold) { dof_delta = true; }
 
                 if (Math.Abs(frame.FocalLength - frames[0].FocalLength) > threshold) { fov_delta = true; }
-                if (Math.Abs(frame.DofFocus - frames[0].DofFocus) > threshold) { fov_delta = true; }
+                if (Math.Abs(frame.FieldOfView - frames[0].FieldOfView) > threshold) { fov_delta = true; }
             }
             
             List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, dof_delta, fov_delta };
@@ -805,9 +839,13 @@ namespace Reallusion.Import
             if (changes.FindAll(x => x == true).Count() == 0)
             {
                 // if there are no changes then no anim is needed
-                not_animated = true;
+                animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated;
                 clip.name = "EMPTY";
                 return clip;
+            }
+            else
+            {
+                animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
             }
 
             EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
@@ -843,40 +881,6 @@ namespace Reallusion.Import
             var b_dofFTran = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofFarTransition"));
             var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofNearTransition"));
             var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofMinBlendDist"));
-
-            // original version - retain
-            /*
-            // Transform properties
-            // Rotation
-            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Position
-            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Scale
-            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // focal length + fov
-            var b_focalL = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFocalLength", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_fov = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFieldOfView", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // depth of field
-            var b_dofEnable = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofEnable", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofFocus = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFocus", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofRange = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofRange", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofFblur = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFarBlur", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofNblur = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofNearBlur", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofFTran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofFarTransition", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofNearTransition", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDofMinBlendDist", System.StringComparison.InvariantCultureIgnoreCase));
-            */
 
             // Make keyframe[] for each bindable property
 
@@ -1073,9 +1077,10 @@ namespace Reallusion.Import
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
 
-            timelineKitList.Add((UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId, not_animated));
-            //UnityLinkSceneManagement.CreateStagingSceneDependencies();
-            //return root;
+            // only animation tracks permitted for Cameras
+            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+
+            timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
         }
         #endregion Animated Camera
 
@@ -1217,21 +1222,23 @@ namespace Reallusion.Import
             */
 
             // check for changes across the timeline
+            //pos_delta = false;
+            //rot_delta = false;
+            //scale_delta = false;
 
+            ResetDeltas();
             float threshold = 0.0001f;
-
-            int active = frames.FindAll(x => x.Active == true).Count();
-            active_delta = !(active == 0 || active == frames.Count);
+            
             foreach (var frame in frames)
             {
                 if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
                 if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
                 if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
 
-                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; }
-                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; }
+                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; Debug.Log(frame.RotX - frames[0].RotX); }
+                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; Debug.Log(frame.RotY - frames[0].RotY); }
+                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; Debug.Log(frame.RotZ - frames[0].RotZ); }
+                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; Debug.Log(frame.RotW - frames[0].RotW); }
 
                 if (Math.Abs(frame.ScaleX - frames[0].ScaleX) > threshold) { scale_delta = true; }
                 if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
@@ -1255,16 +1262,23 @@ namespace Reallusion.Import
 
             if (changes.FindAll(x => x == true).Count() == 0)
             {
-                not_animated = true;                
+                animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated;
             }
-            
-            if (!active_delta && not_animated)
+            else
+            {
+                Debug.Log("changes.FindAll(x => x == true).Count()  " + changes.FindAll(x => x == true).Count() + " rot_delta " + rot_delta);
+                animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+            }
+
+            int active = frames.FindAll(x => x.Active == true).Count();
+            active_delta = !(active == 0 || active == frames.Count);
+            if (active_delta) animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Activation;
+
+            if (!animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.Animation) && !animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.Activation))
             {
                 // if there are no changes then no anim is needed                
                 clip.name = "EMPTY";
                 return clip;
-
-                // falls through to allow activation data to be written into an animation that is only used for a timeline activation track
             }
             
             EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
@@ -1303,41 +1317,7 @@ namespace Reallusion.Import
             var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyAttenuation"));
             var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDarkness"));
 
-            // original - retain
-            /*
-            // Transform properties
-            // Rotation
-            var b_rotX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.z", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_rotW = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalRotation.w", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Position
-            var b_posX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_posZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalPosition.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Scale
-            var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.x", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.y", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("LocalScale.z", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Proxy Enabled
-            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyActive", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Proxy Color
-            var b_colR = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_r", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colG = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_g", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_colB = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyColor_b", System.StringComparison.InvariantCultureIgnoreCase));
-
-            // Other Proxy Settings
-            var b_mult = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyMultiplier", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_range = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyRange", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_angle = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAngle", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_fall = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyFalloff", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyAttenuation", System.StringComparison.InvariantCultureIgnoreCase));
-            var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.Contains("ProxyDarkness", System.StringComparison.InvariantCultureIgnoreCase));
-            */
+            
             // Make keyframe[] for each bindable property
 
             // Transform properties
@@ -1552,9 +1532,11 @@ namespace Reallusion.Import
 
             List<AnimationClip> clips = new List<AnimationClip>();
             clips.Add(clip);
-                        
-            timelineKitList.Add((active_delta ? UnityLinkSceneManagement.TrackType.AnimationAndActivationTracks : UnityLinkSceneManagement.TrackType.AnimationTrack, prefab, clips, true, json.LinkId, not_animated));
-            //UnityLinkSceneManagement.CreateStagingSceneDependencies();
+
+            // both animation and activation tracks permitted for lights
+            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack | UnityLinkSceneManagement.TrackType.ActivationTrack;
+
+            timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
             return root;
         }
         #endregion Animated Light
@@ -1728,16 +1710,16 @@ namespace Reallusion.Import
         #endregion Keyframe Reduction
 
         #region Util
-        public bool IsNotAnimated(List<AnimationClip> clips)
+        public UnityLinkSceneManagement.AnimatedStatus GetAnimatedStatus(List<AnimationClip> clips)
         {
             bool cleanupRedundantAnimationCurves = true; // toggle for redundant curve removal - will allow Unity users to animate/change properties that would otherwise be held static by the anim clip
 
-            bool isNotAnimated = true; // if there are no changing animation data, we can avoid adding static props to the TimeLine
+            UnityLinkSceneManagement.AnimatedStatus animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated; // if there are no changing animation data, we can avoid adding static props to the TimeLine
             float threshold = 0.0001f;
 
             if (clips != null)
             {
-                if (clips.Count == 0) return true;
+                if (clips.Count == 0) return animatedStatus;
 
                 AnimationClip clipToUse = null;
                 // find suitable aniamtion clip (should be the first non T-Pose)
@@ -1769,7 +1751,7 @@ namespace Reallusion.Import
                     {
                         if (Math.Abs(key.value - keys[0].value) > threshold)
                         {
-                            isNotAnimated = false;
+                            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
                             animatedBindings.Add(binding);
                             bindingIsAnimated = true;
                             break;
@@ -1780,7 +1762,7 @@ namespace Reallusion.Import
                 }
 
                 // if we arent cleaning up the clip (or it isnt animated or theres nothing to do), then jump out now
-                if (!cleanupRedundantAnimationCurves || isNotAnimated || staticBindings.Count == 0) return isNotAnimated;
+                if (!cleanupRedundantAnimationCurves || !animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.Animation) || staticBindings.Count == 0) return animatedStatus;
 
                 if (animatedBindings.Count > 0)
                 {
@@ -1813,7 +1795,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            return isNotAnimated;
+            return animatedStatus;
         }
         #endregion
 

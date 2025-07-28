@@ -22,6 +22,7 @@ using UnityEditor.SceneManagement;
 using System;
 using System.Collections.Generic;
 using Scene = UnityEngine.SceneManagement.Scene;
+using UnityEngine.Playables;
 
 namespace Reallusion.Import
 {
@@ -467,6 +468,49 @@ namespace Reallusion.Import
             SceneView.lastActiveSceneView.Focus();
         }
 
+        public static List<(PlayableDirector, bool)> timeLineStates;
+
+        public static List<(PlayableDirector, bool)> RecordAndDisableTimelines()
+        {            
+            List<(PlayableDirector, bool)> states = new List<(PlayableDirector, bool)>();
+
+            PlayableDirector[] timelines = GameObject.FindObjectsOfType<PlayableDirector>();
+            if (timelines.Length > 0)
+            {
+                Debug.LogWarning("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");
+
+                foreach (PlayableDirector dir in timelines)
+                {
+                    (PlayableDirector, bool) item = (dir, dir.enabled);
+                    states.Add(item);
+                    if (dir.enabled) dir.enabled = false;
+                }
+            }
+            return states;
+        }
+
+        public static void ReenableTimelinesFromRecord(List<(PlayableDirector, bool)> record)
+        {
+            if (record != null)
+            {
+                if (record.Count > 0)
+                {
+                    Debug.LogWarning("Animation Preview Player: Re-enabling any previously active timeline objects.");
+
+                    foreach(var item in record)
+                    {
+                        try
+                        {
+                            item.Item1.enabled = item.Item2;
+                        }
+                        catch
+                        {
+                            // when scene is changed the PlayableDirector object(s) is/are destroyed
+                        }
+                    }
+                }
+            }
+        }
 
         public static void ShowAnimationPlayer()
         {
@@ -474,6 +518,8 @@ namespace Reallusion.Import
 
             if (scenePrefab)
             {
+                timeLineStates = RecordAndDisableTimelines();
+
                 AnimPlayerGUI.OpenPlayer(scenePrefab);
                 openedInPreviewScene = IsPreviewScene;
 
@@ -487,12 +533,17 @@ namespace Reallusion.Import
             }
             else
             {
-                Util.LogWarn("No compatible animated character!");
+                Util.LogWarn("Animation Preview Player: No compatible animated character can be automatically determined.");
+
+                // always show for user convenience.
+                Debug.LogWarning("Animation Preview Player: Please select the character in the scene that you wish to animate.");
             }
         }
 
         public static void HideAnimationPlayer(bool updateShowPlayer)
         {
+            ReenableTimelinesFromRecord(timeLineStates);
+
             if (AnimPlayerGUI.IsPlayerShown())
             {
                 AnimPlayerGUI.ResetFace();
