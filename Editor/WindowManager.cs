@@ -210,24 +210,6 @@ namespace Reallusion.Import
             return previewScene;
         }
 
-        public static void OpenEmptyPreviewScene()
-        {
-            if (!IsPreviewScene && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            {
-                // return default;
-            }
-
-            UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-            GameObject.Instantiate(Util.FindPreviewScenePrefab(), Vector3.zero, Quaternion.identity);
-
-            previewSceneHandle = scene;
-            previewScene = PreviewScene.FetchPreviewScene(scene);
-
-            previewScene.PostProcessingAndLighting();            
-
-            //return previewScene;
-        }
-
         public static bool IsPreviewScene
         {
             get { return (EditorSceneManager.GetActiveScene() == previewSceneHandle && previewScene.IsValidPreviewScene); }
@@ -474,7 +456,12 @@ namespace Reallusion.Import
         {            
             List<(PlayableDirector, bool)> states = new List<(PlayableDirector, bool)>();
 
+#if UNITY_2023_OR_NEWER
+            PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+#else
             PlayableDirector[] timelines = GameObject.FindObjectsOfType<PlayableDirector>();
+#endif
+
             if (timelines.Length > 0)
             {
                 Debug.LogWarning("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");

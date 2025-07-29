@@ -580,11 +580,37 @@ namespace Reallusion.Import
                 GUILayout.Space(PADDING);
             }
             GUILayout.EndVertical();
+            
             if (createSceneAfterGUI)
-            {                
-                EditorApplication.delayCall += WindowManager.OpenEmptyPreviewScene;
+            {
+                EditorApplication.delayCall += OpenEmptyPreviewScene;
                 createSceneAfterGUI = false;
             }
+        }
+
+        void ResetTreeviewOnSceneChange()
+        {
+            EditorSceneManager.activeSceneChangedInEditMode -= ResetTreeview;
+            EditorSceneManager.activeSceneChangedInEditMode += ResetTreeview;
+        }
+
+        void ResetTreeview(Scene fromScene, Scene toScene)
+        {
+            EditorSceneManager.activeSceneChangedInEditMode -= ResetTreeview;
+            CreateTreeView();
+        }
+
+        void OpenEmptyPreviewScene()
+        {
+            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+
+            UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
+            GameObject.Instantiate(Util.FindPreviewScenePrefab(), Vector3.zero, Quaternion.identity);
+
+            WindowManager.previewSceneHandle = scene;
+            WindowManager.previewScene = PreviewScene.FetchPreviewScene(scene);
+
+            WindowManager.previewScene.PostProcessingAndLighting();            
         }
 
         void ControlAreaGUI()
@@ -921,6 +947,7 @@ namespace Reallusion.Import
                 GUILayout.Label(new GUIContent("Create new scene", stdTip), GUILayout.Width(110f));
                 if (GUILayout.Button(new GUIContent(styles.newSceneTex, stdTip), styles.minimalButton, GUILayout.Height(EditorGUIUtility.singleLineHeight), GUILayout.Width(EditorGUIUtility.singleLineHeight)))
                 {
+                    ResetTreeviewOnSceneChange();
                     EditorApplication.ExecuteMenuItem("File/New Scene");
                 }
                 GUILayout.Space(20f);
@@ -929,6 +956,7 @@ namespace Reallusion.Import
                 GUILayout.Label(new GUIContent("Create preview scene", exTip), GUILayout.Width(130f));
                 if (GUILayout.Button(new GUIContent(styles.newSceneTex, exTip), styles.minimalButton, GUILayout.Height(EditorGUIUtility.singleLineHeight), GUILayout.Width(EditorGUIUtility.singleLineHeight)))
                 {
+                    ResetTreeviewOnSceneChange();
                     createSceneAfterGUI = true;
                 }
                 EditorGUI.EndDisabledGroup();
