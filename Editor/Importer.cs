@@ -16,17 +16,13 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Codice.Client.BaseCommands;
-using Codice.Client.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Ports;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Diagnostics;
-using UnityEngine.WSA;
 
 namespace Reallusion.Import
 {
@@ -1056,13 +1052,13 @@ namespace Reallusion.Import
             Texture2D roughness = GetTexture(sourceName, "Roughness", matJson, "Textures/Roughness", true);
             Texture2D occlusion = GetTexture(sourceName, "ao", matJson, "Textures/AO", true);
             Texture2D microNormalMask = GetTexture(sourceName, "MicroNMask", matJson, "Custom Shader/Image/MicroNormalMask", true);
-            if (!DoneTexture(diffuse)) SetTextureImport(diffuse, "", FLAG_FOR_BAKE + FLAG_SRGB);
+            if (!DoneTexture(diffuse)) SetTextureImport(diffuse, "", FLAG_FOR_BAKE + FLAG_SRGB, TexCategory.MediumDetail);
             // sometimes the opacity texture is the alpha channel of the diffuse...
-            if (opacity != diffuse && !DoneTexture(opacity)) SetTextureImport(opacity, "", FLAG_FOR_BAKE);
-            if (!DoneTexture(metallic)) SetTextureImport(metallic, "", FLAG_FOR_BAKE);
-            if (!DoneTexture(roughness)) SetTextureImport(roughness, "", FLAG_FOR_BAKE);
-            if (!DoneTexture(occlusion)) SetTextureImport(occlusion, "", FLAG_FOR_BAKE);
-            if (!DoneTexture(microNormalMask)) SetTextureImport(microNormalMask, "", FLAG_FOR_BAKE);
+            if (opacity != diffuse && !DoneTexture(opacity)) SetTextureImport(opacity, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+            if (!DoneTexture(metallic)) SetTextureImport(metallic, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+            if (!DoneTexture(roughness)) SetTextureImport(roughness, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+            if (!DoneTexture(occlusion)) SetTextureImport(occlusion, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
+            if (!DoneTexture(microNormalMask)) SetTextureImport(microNormalMask, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
         }
 
         private string GetPackedTextureFolder(GameObject obj, string sourceName, string folder)
@@ -1219,9 +1215,9 @@ namespace Reallusion.Import
                 Texture2D sss = GetTexture(sourceName, "SSSMap", matJson, "Custom Shader/Image/SSS Map", true);
                 Texture2D transmission = GetTexture(sourceName, "TransMap", matJson, "Custom Shader/Image/Transmission Map", true);
                 Texture2D specMask = GetTexture(sourceName, "SpecMask", matJson, "Custom Shader/Image/Specular Mask", true);
-                if (!DoneTexture(sss)) SetTextureImport(sss, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(transmission)) SetTextureImport(transmission, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(specMask)) SetTextureImport(specMask, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(sss)) SetTextureImport(sss, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
+                if (!DoneTexture(transmission)) SetTextureImport(transmission, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
+                if (!DoneTexture(specMask)) SetTextureImport(specMask, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
             }
             
             if (materialType == MaterialType.Head)
@@ -1230,25 +1226,25 @@ namespace Reallusion.Import
                 Texture2D roughness1 = GetTexture(sourceName, "Wrinkle_Roughness1", matJson, "Wrinkle/Textures/Roughness_1", true);
                 Texture2D roughness2 = GetTexture(sourceName, "Wrinkle_Roughness2", matJson, "Wrinkle/Textures/Roughness_2", true);
                 Texture2D roughness3 = GetTexture(sourceName, "Wrinkle_Roughness3", matJson, "Wrinkle/Textures/Roughness_3", true);
-                if (!DoneTexture(roughness1)) SetTextureImport(roughness1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(roughness2)) SetTextureImport(roughness2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(roughness3)) SetTextureImport(roughness3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(roughness1)) SetTextureImport(roughness1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.MediumDetail);
+                if (!DoneTexture(roughness2)) SetTextureImport(roughness2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.MediumDetail);
+                if (!DoneTexture(roughness3)) SetTextureImport(roughness3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.MediumDetail);
 
                 // Wrinkle Displacement Pack _WrinkleDisplacementMap1 => _WrinkleDisplacmentPack
                 Texture2D displacement1 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 1", matJson, "Resource Textures/Wrinkle Dis 1", true);
                 Texture2D displacement2 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 2", matJson, "Resource Textures/Wrinkle Dis 2", true);
                 Texture2D displacement3 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 3", matJson, "Resource Textures/Wrinkle Dis 3", true);
-                if (!DoneTexture(displacement1)) SetTextureImport(displacement1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(displacement2)) SetTextureImport(displacement2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(displacement3)) SetTextureImport(displacement3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
+                if (!DoneTexture(displacement1)) SetTextureImport(displacement1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.HighDetail);
+                if (!DoneTexture(displacement2)) SetTextureImport(displacement2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.HighDetail);
+                if (!DoneTexture(displacement3)) SetTextureImport(displacement3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.HighDetail);
 
                 // Wrinkle Flow Pack _WrinkleFlowMap1 => _WrinkleFlowPack
                 Texture2D flow1 = GetTexture(sourceName, "Wrinkle_Flow1", matJson, "Wrinkle/Textures/Flow_1", true);
                 Texture2D flow2 = GetTexture(sourceName, "Wrinkle_Flow2", matJson, "Wrinkle/Textures/Flow_2", true);
                 Texture2D flow3 = GetTexture(sourceName, "Wrinkle_Flow3", matJson, "Wrinkle/Textures/Flow_3", true);
-                if (!DoneTexture(flow1)) SetTextureImport(flow1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(flow2)) SetTextureImport(flow2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);
-                if (!DoneTexture(flow3)) SetTextureImport(flow3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL);                
+                if (!DoneTexture(flow1)) SetTextureImport(flow1, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
+                if (!DoneTexture(flow2)) SetTextureImport(flow2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
+                if (!DoneTexture(flow3)) SetTextureImport(flow3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.LowDetail);
             }
         }
 
@@ -1288,21 +1284,24 @@ namespace Reallusion.Import
             {
                 if (!ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Diffuse",
                     matJson, "Textures/Base Color",
-                    FLAG_SRGB))
+                    TexCategory.MediumDetail, FLAG_SRGB))
                 {
                     ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Opacity",
                         matJson, "Textures/Opacity",
-                        FLAG_SRGB);
+                        TexCategory.MediumDetail, FLAG_SRGB);
                 }
 
                 ConnectTextureTo(sourceName, mat, "_SpecularColorMap", "Specular",
-                    matJson, "Textures/Specular");                
+                    matJson, "Textures/Specular",
+                    TexCategory.MediumDetail);
 
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                    matJson, "Textures/HDRP");                
+                    matJson, "Textures/HDRP",
+                    TexCategory.MediumDetail);                
 
                 if (ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                     matJson, "Textures/Normal",
+                    TexCategory.HighDetail,
                     FLAG_NORMAL))
                 {
                     mat.EnableKeyword("_NORMALMAP");
@@ -1315,7 +1314,8 @@ namespace Reallusion.Import
                 }                
 
                 ConnectTextureTo(sourceName, mat, "_EmissiveColorMap", "Glow",
-                    matJson, "Textures/Glow");                
+                    matJson, "Textures/Glow",
+                    TexCategory.MediumDetail);                
 
                 if (matJson.GetBoolValue("Two Side"))
                 {
@@ -1329,10 +1329,12 @@ namespace Reallusion.Import
                 {
                     if (!ConnectTextureTo(sourceName, mat, "_BaseMap", "Diffuse",
                         matJson, "Textures/Base Color",
+                        TexCategory.MediumDetail,
                         FLAG_SRGB))
                     {
                         ConnectTextureTo(sourceName, mat, "_BaseMap", "Opacity",
                             matJson, "Textures/Opacity",
+                            TexCategory.MediumDetail,
                             FLAG_SRGB);
                     }
 
@@ -1345,31 +1347,38 @@ namespace Reallusion.Import
                 {
                     if (!ConnectTextureTo(sourceName, mat, "_MainTex", "Diffuse",
                         matJson, "Textures/Base Color",
+                        TexCategory.MediumDetail,
                         FLAG_SRGB))
                     {
                         ConnectTextureTo(sourceName, mat, "_MainTex", "Opacity",
                             matJson, "Textures/Opacity",
+                            TexCategory.MediumDetail,
                             FLAG_SRGB);
                     }
                 }
 
                 ConnectTextureTo(sourceName, mat, "_SpecGlossMap", "Specular",
-                        matJson, "Textures/Specular");
+                        matJson, "Textures/Specular",
+                        TexCategory.MediumDetail);
 
                 if (ConnectTextureTo(sourceName, mat, "_MetallicGlossMap", "MetallicAlpha",
-                        matJson, "Textures/MetallicAlpha"))
+                        matJson, "Textures/MetallicAlpha",
+                        TexCategory.MediumDetail))
                 {
                     mat.SetFloatIf("_Metallic", 1f);
                 }
 
                 ConnectTextureTo(sourceName, mat, "_OcclusionMap", "ao",
-                    matJson, "Textures/AO");
+                    matJson, "Textures/AO",
+                    TexCategory.MediumDetail);
 
                 ConnectTextureTo(sourceName, mat, "_BumpMap", "Normal",
-                    matJson, "Textures/Normal", FLAG_NORMAL);                
+                    matJson, "Textures/Normal",
+                    TexCategory.MediumDetail, FLAG_NORMAL);                
 
                 if (ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                    matJson, "Textures/Glow"))
+                    matJson, "Textures/Glow",
+                    TexCategory.MediumDetail))
                 {
                     mat.globalIlluminationFlags = mat.globalIlluminationFlags | MaterialGlobalIlluminationFlags.AnyEmissive;
                     mat.EnableKeyword("_EMISSION");
@@ -1473,7 +1482,8 @@ namespace Reallusion.Import
                 if (!sssTex)
                 {
                     ConnectTextureTo(sourceName, mat, "_SubsurfaceMaskMap", "SSSMap",
-                        matJson, "Custom Shader/Image/SSS Map");
+                        matJson, "Custom Shader/Image/SSS Map",
+                        TexCategory.LowDetail);
                 }
 
                 float microNormalTiling = 20f;
@@ -1567,15 +1577,18 @@ namespace Reallusion.Import
                     if (!thicknessTex)
                     {
                         ConnectTextureTo(sourceName, mat, "_ThicknessMap", "TransMap",
-                           matJson, "Custom Shader/Image/Transmission Map");
+                            matJson, "Custom Shader/Image/Transmission Map",
+                            TexCategory.LowDetail);
                     }                    
 
                     // 3D & URP use the micro normal mask and map directly
                     ConnectTextureTo(sourceName, mat, "_DetailMask", "MicroNMask",
-                        matJson, "Custom Shader/Image/MicroNormalMask");
+                        matJson, "Custom Shader/Image/MicroNormalMask",
+                        TexCategory.MediumDetail);
 
                     ConnectTextureTo(sourceName, mat, "_DetailNormalMap", "MicroN",
-                        matJson, "Custom Shader/Image/MicroNormal", FLAG_NORMAL);
+                        matJson, "Custom Shader/Image/MicroNormal",
+                        TexCategory.MediumDetail, FLAG_NORMAL);
 
                     mat.SetTextureScaleIf("_DetailNormalMap", new Vector2(microNormalTiling, microNormalTiling));
                     mat.SetTextureScaleIf("_DetailAlbedoMap", new Vector2(microNormalTiling, microNormalTiling));
@@ -1704,19 +1717,23 @@ namespace Reallusion.Import
 
             if (!ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Diffuse",
                     matJson, "Textures/Base Color",
+                    TexCategory.HighDetail,
                     FLAG_SRGB + FLAG_HAIR))
             {
                 ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Opacity",
                     matJson, "Textures/Opacity",
+                    TexCategory.HighDetail,
                     FLAG_SRGB + FLAG_HAIR);
             }
 
             ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                 matJson, "Textures/Normal",
+                TexCategory.HighDetail,
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_MaskMap", "ao",
-                matJson, "Textures/AO");
+                matJson, "Textures/AO",
+                TexCategory.MediumDetail);
 
             // reconstruct any missing packed texture maps from Blender source maps.
             if (RP == RenderPipeline.HDRP)
@@ -1740,10 +1757,12 @@ namespace Reallusion.Import
 
             ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
+                    TexCategory.HighDetail,
                     FLAG_SRGB);
 
             ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                 matJson, "Textures/Normal",
+                TexCategory.HighDetail,
                 FLAG_NORMAL);
 
             // try to use corrected HDRP mask mask
@@ -1754,134 +1773,166 @@ namespace Reallusion.Import
             else
             {
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                    matJson, "Textures/HDRP");
+                    matJson, "Textures/HDRP",
+                    TexCategory.MediumDetail);
             }
 
             
-            bool use_cavity = GetTexture(sourceName, "CavityMap", 
+            bool useCavity = GetTexture(sourceName, "CavityMap", 
                                          matJson, "Custom Shader/Image/Cavity Map", true);
-            if (use_cavity)
+            if (useCavity)
             {
                 mat.EnableKeyword("BOOLEAN_USE_CAVITY_ON");
                 mat.SetFloatIf("BOOLEAN_USE_CAVITY", 1f);
             }
 
-            bool use_displacement = GetTexture(sourceName, "Displacement",
+            bool useDisplacement = GetTexture(sourceName, "Displacement",
                                                matJson, "Textures/Displacement", true);
-            if (use_displacement)
+            if (useDisplacement)
             {                                
                 mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
             }
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
-                matJson, "Textures/MetallicAlpha");
+                matJson, "Textures/MetallicAlpha",
+                TexCategory.MediumDetail);
 
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
-                matJson, "Textures/AO");
+                matJson, "Textures/AO",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
-                matJson, "Custom Shader/Image/Cavity Map");
+                matJson, "Custom Shader/Image/Cavity Map",
+                TexCategory.MaxDetail);
 
             ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
-                matJson, "Textures/Displacement");
+                matJson, "Textures/Displacement",
+                TexCategory.MaxDetail);
 
             if (!characterInfo.FeatureUseTexturePacking)
             {                
                 ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
-                    matJson, "Custom Shader/Image/SSS Map");
+                    matJson, "Custom Shader/Image/SSS Map",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_ThicknessMap", "TransMap",
-                    matJson, "Custom Shader/Image/Transmission Map");
+                    matJson, "Custom Shader/Image/Transmission Map",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_SpecularMask", "SpecMask",
-                    matJson, "Custom Shader/Image/Specular Mask");
+                    matJson, "Custom Shader/Image/Specular Mask",
+                    TexCategory.LowDetail);
             }
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMap", "MicroN",
-                matJson, "Custom Shader/Image/MicroNormal", 
+                matJson, "Custom Shader/Image/MicroNormal",
+                TexCategory.MediumDetail, 
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMaskMap", "MicroNMask",
-                matJson, "Custom Shader/Image/MicroNormalMask");
+                matJson, "Custom Shader/Image/MicroNormalMask",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                matJson, "Textures/Glow");
+                matJson, "Textures/Glow",
+                TexCategory.MediumDetail);
 
             if (materialType == MaterialType.Head)
             {
                 ConnectTextureTo(sourceName, mat, "_ColorBlendMap", "BCBMap",
-                    matJson, "Custom Shader/Image/BaseColor Blend2");
+                    matJson, "Custom Shader/Image/BaseColor Blend2",
+                    TexCategory.HighDetail);
 
                 ConnectTextureTo(sourceName, mat, "_MNAOMap", "MNAOMask",
-                    matJson, "Custom Shader/Image/Mouth Cavity Mask and AO");
+                    matJson, "Custom Shader/Image/Mouth Cavity Mask and AO",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_RGBAMask", "NMUILMask",
-                    matJson, "Custom Shader/Image/Nose Mouth UpperInnerLid Mask");
+                    matJson, "Custom Shader/Image/Nose Mouth UpperInnerLid Mask",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_CFULCMask", "CFULCMask",
-                    matJson, "Custom Shader/Image/Cheek Fore UpperLip Chin Mask");
+                    matJson, "Custom Shader/Image/Cheek Fore UpperLip Chin Mask",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_EarNeckMask", "ENMask",
-                    matJson, "Custom Shader/Image/Ear Neck Mask");
+                    matJson, "Custom Shader/Image/Ear Neck Mask",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_NormalBlendMap", "NBMap",
                     matJson, "Custom Shader/Image/NormalMap Blend",
+                    TexCategory.HighDetail,
                     FLAG_NORMAL);
                  
                 if (characterInfo.FeatureUseWrinkleMaps && hasWrinkle)
                 {
                     ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend1", "Wrinkle_Diffuse1",
                         matJson, "Wrinkle/Textures/Diffuse_1",
+                        TexCategory.HighDetail,
                         FLAG_SRGB);
 
                     ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend2", "Wrinkle_Diffuse2",
                         matJson, "Wrinkle/Textures/Diffuse_2",
+                        TexCategory.HighDetail,
                         FLAG_SRGB);
 
                     ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend3", "Wrinkle_Diffuse3",
                         matJson, "Wrinkle/Textures/Diffuse_3",
+                        TexCategory.HighDetail,
                         FLAG_SRGB);
 
                     ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend1", "Wrinkle_Normal1",
                         matJson, "Wrinkle/Textures/Normal_1",
+                        TexCategory.HighDetail,
                         FLAG_NORMAL);
 
                     ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend2", "Wrinkle_Normal2",
                         matJson, "Wrinkle/Textures/Normal_2",
+                        TexCategory.HighDetail,
                         FLAG_NORMAL);
 
                     ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend3", "Wrinkle_Normal3",
                         matJson, "Wrinkle/Textures/Normal_3",
+                        TexCategory.HighDetail,
                         FLAG_NORMAL);
 
                     if (!characterInfo.FeatureUseTexturePacking)
                     {
                         ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend1", "Wrinkle_Roughness1",
-                            matJson, "Wrinkle/Textures/Roughness_1");
+                            matJson, "Wrinkle/Textures/Roughness_1",
+                            TexCategory.MediumDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend2", "Wrinkle_Roughness2",
-                            matJson, "Wrinkle/Textures/Roughness_2");
+                            matJson, "Wrinkle/Textures/Roughness_2",
+                            TexCategory.MediumDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend3", "Wrinkle_Roughness3",
-                            matJson, "Wrinkle/Textures/Roughness_3");
+                            matJson, "Wrinkle/Textures/Roughness_3",
+                            TexCategory.MediumDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap1", "Wrinkle_Flow1",
-                            matJson, "Wrinkle/Textures/Flow_1");
+                            matJson, "Wrinkle/Textures/Flow_1",
+                            TexCategory.LowDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap2", "Wrinkle_Flow2",
-                            matJson, "Wrinkle/Textures/Flow_2");
+                            matJson, "Wrinkle/Textures/Flow_2",
+                            TexCategory.LowDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap3", "Wrinkle_Flow3",
-                            matJson, "Wrinkle/Textures/Flow_3");
+                            matJson, "Wrinkle/Textures/Flow_3",
+                            TexCategory.LowDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap1", "ResourceMap_Wrinkle Dis 1",
-                            matJson, "Resource Textures/Wrinkle Dis 1");
+                            matJson, "Resource Textures/Wrinkle Dis 1",
+                            TexCategory.HighDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap2", "ResourceMap_Wrinkle Dis 2",
-                            matJson, "Resource Textures/Wrinkle Dis 2");
+                            matJson, "Resource Textures/Wrinkle Dis 2",
+                            TexCategory.HighDetail);
 
                         ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap3", "ResourceMap_Wrinkle Dis 3",
-                            matJson, "Resource Textures/Wrinkle Dis 3");
+                            matJson, "Resource Textures/Wrinkle Dis 3",
+                            TexCategory.HighDetail);
                     }
 
                     ApplyWrinkleMasks(mat);                    
@@ -1892,7 +1943,8 @@ namespace Reallusion.Import
             else
             {
                 ConnectTextureTo(sourceName, mat, "_RGBAMask", "RGBAMask",
-                    matJson, "Custom Shader/Image/RGBA Area Mask");
+                    matJson, "Custom Shader/Image/RGBA Area Mask",
+                    TexCategory.LowDetail);
             }            
 
             // reconstruct any missing packed texture maps from Blender source maps.
@@ -1946,6 +1998,7 @@ namespace Reallusion.Import
                 float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
                 mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
+                mat.SetFloatIf("_SecondarySmoothness", useCavity ? 0.5f : 0.25f);
                 //float secondarySmoothness = 0.85f * smoothnessMax;
                 //float smoothnessMix = Mathf.Clamp(0.15f * ((1f / Mathf.Pow(secondarySmoothness, 4f)) - 1f), 0.05f, 0.9f);
                 //mat.SetFloatIf("_Smoothness2", secondarySmoothness);
@@ -2016,34 +2069,43 @@ namespace Reallusion.Import
             MaterialType materialType, QuickJSON matJson)
         {
             ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
-                    matJson, "Textures/Base Color",
-                    FLAG_SRGB);
+                matJson, "Textures/Base Color",
+                TexCategory.LowDetail,
+                FLAG_SRGB);
 
             ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                 matJson, "Textures/Normal",
+                TexCategory.MediumDetail,
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                matJson, "Textures/HDRP");
+                matJson, "Textures/HDRP",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
-                matJson, "Textures/MetallicAlpha");
+                matJson, "Textures/MetallicAlpha",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
-                matJson, "Textures/AO");
+                matJson, "Textures/AO",
+                TexCategory.MinimalDetail);
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMap", "MicroN",
                 matJson, "Custom Shader/Image/MicroNormal",
+                TexCategory.MediumDetail,
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_GumsMaskMap", "GumsMask",
-                matJson, "Custom Shader/Image/Gums Mask");
+                matJson, "Custom Shader/Image/Gums Mask",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_GradientAOMap", "GradAO",
-                matJson, "Custom Shader/Image/Gradient AO");
+                matJson, "Custom Shader/Image/Gradient AO",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                matJson, "Textures/Glow");
+                matJson, "Textures/Glow",
+                TexCategory.LowDetail);
 
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
@@ -2090,31 +2152,39 @@ namespace Reallusion.Import
             MaterialType materialType, QuickJSON matJson)
         {
             ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
-                    matJson, "Textures/Base Color",
-                    FLAG_SRGB);
+                matJson, "Textures/Base Color",
+                TexCategory.LowDetail,
+                FLAG_SRGB);
 
             ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                 matJson, "Textures/Normal",
+                TexCategory.MediumDetail,
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                matJson, "Textures/HDRP");
+                matJson, "Textures/HDRP",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
-                matJson, "Textures/MetallicAlpha");
+                matJson, "Textures/MetallicAlpha",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
-                matJson, "Textures/AO");
+                matJson, "Textures/AO",
+                TexCategory.MinimalDetail);
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMap", "MicroN",
                 matJson, "Custom Shader/Image/MicroNormal",
+                TexCategory.MediumDetail,
                 FLAG_NORMAL);
 
             ConnectTextureTo(sourceName, mat, "_GradientAOMap", "GradAO",
-                matJson, "Custom Shader/Image/Gradient AO");
+                matJson, "Custom Shader/Image/Gradient AO",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                matJson, "Textures/Glow");
+                matJson, "Textures/Glow",
+                TexCategory.LowDetail);
 
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
@@ -2173,45 +2243,56 @@ namespace Reallusion.Import
             if (matJson != null) isLeftEye = matJson.GetFloatValue("Custom Shader/Variable/Is Left Eye") > 0f ? true : false;
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                matJson, "Textures/Glow");
+                matJson, "Textures/Glow",
+                TexCategory.MediumDetail);
 
             if (isCornea)
             {
                 ConnectTextureTo(sourceName, mat, "_ScleraDiffuseMap", "Sclera",
                 matJson, "Custom Shader/Image/Sclera",
+                TexCategory.MediumDetail,
                 FLAG_SRGB + FLAG_WRAP_CLAMP);
 
                 ConnectTextureTo(sourceName, mat, "_CorneaDiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
+                    TexCategory.MediumDetail,
                     FLAG_SRGB);
 
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                    matJson, "Textures/HDRP");
+                    matJson, "Textures/HDRP",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
-                    matJson, "Textures/MetallicAlpha");
+                    matJson, "Textures/MetallicAlpha",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
-                    matJson, "Textures/AO");
+                    matJson, "Textures/AO",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_ColorBlendMap", "BCBMap",
-                    matJson, "Custom Shader/Image/EyeBlendMap2");
+                    matJson, "Custom Shader/Image/EyeBlendMap2",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_ScleraNormalMap", "MicroN",
                     matJson, "Custom Shader/Image/Sclera Normal",
+                    TexCategory.LowDetail,
                     FLAG_NORMAL);
             }
             else
             {
                 ConnectTextureTo(sourceName, mat, "_CorneaDiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
+                    TexCategory.MediumDetail,
                     FLAG_SRGB);
 
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                    matJson, "Textures/HDRP");
+                    matJson, "Textures/HDRP",
+                    TexCategory.LowDetail);
 
                 ConnectTextureTo(sourceName, mat, "_ColorBlendMap", "BCBMap",
-                    matJson, "Custom Shader/Image/EyeBlendMap2");
+                    matJson, "Custom Shader/Image/EyeBlendMap2",
+                    TexCategory.LowDetail);
             }
 
             if (characterInfo.RefractiveEyes)
@@ -2293,24 +2374,30 @@ namespace Reallusion.Import
         {                        
             if (!ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
+                    TexCategory.HighDetail,
                     FLAG_SRGB + FLAG_HAIR))
             {
                 ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Opacity",
                     matJson, "Textures/Opacity",
+                    TexCategory.HighDetail,
                     FLAG_SRGB + FLAG_HAIR);
             }
 
             ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
-                matJson, "Textures/HDRP");
+                matJson, "Textures/HDRP",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_MetallicAlphaMap", "MetallicAlpha",
-                matJson, "Textures/MetallicAlpha");
+                matJson, "Textures/MetallicAlpha",
+                TexCategory.LowDetail);
 
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
-                matJson, "Textures/AO");
+                matJson, "Textures/AO",
+                TexCategory.LowDetail);
 
             if (!ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                 matJson, "Textures/Normal",
+                TexCategory.MediumDetail,
                 FLAG_NORMAL))
             {
                 if (RECONSTRUCT_FLOW_NORMALS)
@@ -2320,22 +2407,28 @@ namespace Reallusion.Import
             }    
 
             ConnectTextureTo(sourceName, mat, "_BlendMap", "blend_multiply",
-                matJson, "Textures/Blend");
+                matJson, "Textures/Blend",
+                TexCategory.HighDetail);
 
             ConnectTextureTo(sourceName, mat, "_FlowMap", "Hair Flow Map",
-                matJson, "Custom Shader/Image/Hair Flow Map");
+                matJson, "Custom Shader/Image/Hair Flow Map",
+                TexCategory.HighDetail);
 
             ConnectTextureTo(sourceName, mat, "_IDMap", "Hair ID Map",
-                matJson, "Custom Shader/Image/Hair ID Map", FLAG_HAIR_ID);
+                matJson, "Custom Shader/Image/Hair ID Map",
+                TexCategory.HighDetail, FLAG_HAIR_ID);
 
             ConnectTextureTo(sourceName, mat, "_RootMap", "Hair Root Map",
-                matJson, "Custom Shader/Image/Hair Root Map");
+                matJson, "Custom Shader/Image/Hair Root Map",
+                TexCategory.MediumDetail);
 
             ConnectTextureTo(sourceName, mat, "_SpecularMap", "HSpecMap",
-                matJson, "Custom Shader/Image/Hair Specular Mask Map");
+                matJson, "Custom Shader/Image/Hair Specular Mask Map",
+                TexCategory.MediumDetail);
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
-                matJson, "Textures/Glow");
+                matJson, "Textures/Glow",
+                TexCategory.MediumDetail);
 
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
@@ -2709,7 +2802,7 @@ namespace Reallusion.Import
             Texture2D tex = GetTextureFrom(jsonTexturePath, sourceName, suffix, out string name, true);
             // make sure to set the correct import settings for 
             // these textures before using them for baking...                        
-            if (!DoneTexture(tex)) SetTextureImport(tex, name, FLAG_FOR_BAKE + flags);
+            if (!DoneTexture(tex)) SetTextureImport(tex, name, FLAG_FOR_BAKE + flags, TexCategory.Default);
         }
 
         private void FixHDRPMap(Material sharedMat, string sourceName, QuickJSON jsonData, 
@@ -2722,11 +2815,11 @@ namespace Reallusion.Import
 
             Texture2D mask = GetTextureFrom(maskJsonTexturePath, sourceName, maskSuffix, out string maskName, true);
             Texture2D detail = GetTextureFrom(detailJsonTexturePath, sourceName, detailSuffix, out string detailName, true);
-            
+
             // make sure to set the correct import settings for 
             // these textures before using them for baking...                        
-            if (!DoneTexture(mask)) SetTextureImport(mask, maskName, FLAG_FOR_BAKE + flags);
-            if (!DoneTexture(detail)) SetTextureImport(detail, detailName, FLAG_FOR_BAKE + flags);
+            if (!DoneTexture(mask)) SetTextureImport(mask, maskName, FLAG_FOR_BAKE + flags, TexCategory.MediumDetail);
+            if (!DoneTexture(detail)) SetTextureImport(detail, detailName, FLAG_FOR_BAKE + flags, TexCategory.MediumDetail);
 
             ComputeBake baker = new ComputeBake(fbx, characterInfo);
             
@@ -2833,14 +2926,14 @@ namespace Reallusion.Import
             return tex;
         }
 
-        public void SetTextureImport(Texture2D tex, string name, int flags = 0)
+        public void SetTextureImport(Texture2D tex, string name, int flags = 0, TexCategory category = TexCategory.Default)
         {
             if (!tex) return;
 
             // now fix the import settings for the texture.
             string path = AssetDatabase.GetAssetPath(tex);
             TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
-            ComputeBakeTexture.SetTextureImport(importer, flags);
+            ComputeBakeTexture.SetTextureImport(importer, flags, category, characterInfo);
 
             // add the texure path to the re-import paths.
             if (AssetDatabase.WriteImportSettingsIfDirty(path))
@@ -3028,7 +3121,7 @@ namespace Reallusion.Import
         }
 
         private bool ConnectTextureTo(string materialName, Material mat, string shaderRef, string suffix, 
-                                      QuickJSON jsonData, string jsonPath, int flags = 0)
+                                      QuickJSON jsonData, string jsonPath, TexCategory category = TexCategory.Default, int flags = 0)
         {
             Texture2D tex = null;
 
@@ -3059,7 +3152,7 @@ namespace Reallusion.Import
 
                     Util.LogInfo("        Connecting texture: " + tex.name);
 
-                    if (!DoneTexture(tex)) SetTextureImport(tex, name, flags);
+                    if (!DoneTexture(tex)) SetTextureImport(tex, name, flags, category);
                 }
                 else
                 {

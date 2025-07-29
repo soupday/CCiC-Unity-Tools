@@ -28,9 +28,9 @@ namespace Reallusion.Import
         public enum ProcessingType { None, Basic, HighQuality }
         public enum EyeQuality { None, Basic, Parallax, Refractive }
         public enum HairQuality { None, Default, TwoPass, Coverage }
+        public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, MaxTextureSize }
+        public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality, MaxTextureQuality }
 
-        public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, UltraTextureSize }
-        public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality }
         public enum ShaderFeatureFlags 
         { 
             NoFeatures = 0, 
@@ -530,116 +530,100 @@ namespace Reallusion.Import
         }
 
         public QuickJSON GetMatJson(GameObject obj, string sourceName)
-        {
+        {            
             QuickJSON objectsData = ObjectsJsonData;
             QuickJSON matJson = null;
             string objName = obj.name;
             string jsonPath = "";
-            if (objectsData != null)
+            List<string> tryMaterialNames = new List<string>();
+            List<string> tryObjectNames = new List<string>();
+            tryMaterialNames.Add(sourceName);
+            
+            if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
             {
-                jsonPath = ObjectsMatJsonPath(objName, sourceName);
-                matJson = objectsData.GetObjectAtPath(jsonPath);
-                                
-                if (matJson == null)
-                {
-                    if (objName.iContains("_Extracted"))
-                    {
-                        objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
-
-                        jsonPath = ObjectsMatJsonPath(objName, sourceName);                        
-                        matJson = objectsData.GetObjectAtPath(jsonPath);
-                    }
-                }
-
-                if (matJson == null)
-                {
-                    // there is a bug where a space in name causes the name to be truncated on export from CC3/4
-                    if (objName.Contains(" "))
-                    {
-                        Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
-                        string[] split = objName.Split(' ');
-                        jsonPath = ObjectsMatJsonPath(split[0], sourceName);                        
-                        if (objectsData.PathExists(jsonPath))
-                        {
-                            matJson = objectsData.GetObjectAtPath(jsonPath);
-                            Util.LogWarn(" - Found matching object/material data for: " + split[0] + "/" + sourceName);
-                        }
-                    }
-                }                
-                    
-                if (matJson == null)
-                {
-                    // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
-                    // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
-                    // (seems to happen mostly on accessories)
-
-                    string realObjName = null;                    
-
-                    if (objectsData.PathExists(objName))
-                    {
-                        realObjName = objName;
-                    }
-
-                    if (realObjName == null)
-                    {
-                        // remove instalod suffix and attempt to find object name in json again
-                        if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
-                        {
-                            Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
-                            string specObjName = objName.Substring(0, objName.Length - 2);
-                            if (objectsData.PathExists(specObjName))
-                            {
-                                realObjName = specObjName;
-                            }                            
-                            else
-                            {
-                                // finally search for an object name in the mesh json whose name starts with the truncted source name
-                                realObjName = objectsData.FindKeyName(specObjName);                                
-                            }
-                        }
-                    }
-
-                    if (realObjName != null)
-                    {
-                        string realMatName = null;                        
-
-                        if (objectsData.PathExists(ObjectsMatJsonPath(realObjName, sourceName)))
-                        {
-                            realMatName = sourceName;
-                        }
-
-                        if (realMatName == null)
-                        {                            
-                            if (sourceName[sourceName.Length - 2] == '_' && char.IsDigit(sourceName[sourceName.Length - 1]))
-                            {
-                                Util.LogWarn("Material name " + sourceName + " may by suffixed by InstaLod exporter. Attempting to untangle...");
-                                string specMatName = sourceName.Substring(0, sourceName.Length - 2);
-                                if (objectsData.PathExists(ObjectsMatJsonPath(realObjName, specMatName)))
-                                {
-                                    realMatName = specMatName;
-                                }
-                                else
-                                {
-                                    // finally search for an object name in the mesh json whose name starts with the truncted source name
-                                    realMatName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(realObjName), specMatName);
-                                }
-                            }
-                        }
-
-                        if (realObjName != null && realMatName != null &&
-                            objectsData.PathExists(ObjectsMatJsonPath(realObjName, realMatName)))
-                        {
-                            matJson = objectsData.GetObjectAtPath(ObjectsMatJsonPath(realObjName, realMatName));
-                            if (matJson != null)
-                            {
-                                Util.LogWarn(" - Found matching object/material data for: " + realObjName + "/" + realMatName);
-                            }
-                        }
-                    }
-                }
-                
+                Util.LogWarn("Material name has a Unity duplication suffix, there may be more than one material with this name in the character.");
+                tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));
             }
-            if (matJson == null) Util.LogError("Unable to find json material data: " + jsonPath);
+
+            if (objName.iContains("_Extracted"))
+            {
+                objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            tryObjectNames.Add(objName);
+
+            // there is a bug where a space in name causes the name to be truncated on export from CC3/4
+            if (objName.Contains(" "))
+            {
+                Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
+                tryObjectNames.Add(objName.Split(' ')[0]);
+            }
+
+            // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
+            // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
+            // (seems to happen mostly on accessories)
+            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            {
+                Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));                
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realObjName = objectsData.FindKeyName(specObjName);
+            }
+
+            if (sourceName[sourceName.Length - 2] == '_' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            {
+                Util.LogWarn("Material name " + sourceName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realMatName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(realObjName), specMatName);
+            }
+            
+            // search for the material json directly from the possible object and material names
+            foreach (string objectName in tryObjectNames) 
+            { 
+                if (objectsData.PathExists(objectName))
+                {
+                    foreach (string materialName in tryMaterialNames)
+                    {                        
+                        jsonPath = ObjectsMatJsonPath(objectName, materialName);
+                        matJson = objectsData.GetObjectAtPath(jsonPath);
+                        if (matJson != null) return matJson;
+                    }
+                }
+            }
+
+            // finally search for an object and material names in the mesh json whose name starts with the truncted source names
+            foreach (string objectName in tryObjectNames)
+            {
+                string findObjectName = objectName;
+                if (!objectsData.PathExists(findObjectName))
+                    findObjectName = objectsData.FindKeyName(objectName);
+                if (!string.IsNullOrEmpty(findObjectName) && objectsData.PathExists(findObjectName))
+                {
+                    foreach (string materialName in tryMaterialNames)
+                    {
+                        jsonPath = ObjectsMatJsonPath(findObjectName, materialName);
+                        matJson = objectsData.GetObjectAtPath(jsonPath);
+                        if (matJson != null) return matJson;
+                    }
+
+                    foreach (string materialName in tryMaterialNames)
+                    {
+                        string realMaterialName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(findObjectName), materialName);
+                        if (!string.IsNullOrEmpty(realMaterialName))
+                        {
+                            jsonPath = ObjectsMatJsonPath(objectName, realMaterialName);
+                            matJson = objectsData.GetObjectAtPath(jsonPath);
+                            if (matJson != null) return matJson;
+                        }
+                    }
+                }
+            }
+
+            if (matJson == null)
+            {
+                Util.LogError("Unable to find json material data: " + jsonPath);
+            }
 
             return matJson;
         }

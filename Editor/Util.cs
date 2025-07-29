@@ -620,7 +620,7 @@ namespace Reallusion.Import
         }
 
         public static string GetSourceMaterialName(string fbxPath, Material sharedMaterial)
-        {
+        {            
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
             Dictionary<AssetImporter.SourceAssetIdentifier, Object> importerRemaps = importer.GetExternalObjectMap();
 
