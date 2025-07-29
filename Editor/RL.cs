@@ -671,9 +671,10 @@ namespace Reallusion.Import
 
         public static void DoMotionImport(CharacterInfo info, Avatar sourceAvatar, string motionFbxPath)
         {            
-            ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(motionFbxPath);            
-            HumanoidImportSettings(null, importer, info, null);
-            SetupAnimation(importer, info, true);            
+            ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(motionFbxPath);
+            GameObject fbx = AssetDatabase.LoadAssetAtPath<GameObject>(motionFbxPath);
+            HumanoidImportSettings(fbx, importer, info, null);
+            SetupAnimation(importer, info, true);
         }      
 
         public static void AddDefaultAnimatorController(CharacterInfo info, GameObject prefab)
