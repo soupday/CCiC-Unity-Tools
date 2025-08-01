@@ -105,7 +105,7 @@ namespace Reallusion.Import
             {
                 case PlayModeStateChange.ExitingEditMode:
                     {
-                        Debug.Log("ExitingEditMode");
+                        //Debug.Log("ExitingEditMode");
 
                         ReenableTimelinesFromRecord(); // ensure the states are reset before play mode - any changes in play mode are thrown after exiting play mode, so will revert to the state immediately prior to entering play mode
 
@@ -115,7 +115,6 @@ namespace Reallusion.Import
                             if (ImporterWindow.GeneralSettings != null)
                             {
                                 currentSettings = ImporterWindow.GeneralSettings;
-                                Debug.Log("showPlayer " + showPlayer);
 
                                 currentSettings.showPlayerAfterPlayMode = showPlayer;
                                 currentSettings.showRetargetAfterPlayMode = showRetarget;
@@ -542,9 +541,9 @@ namespace Reallusion.Import
                         Util.LogInfo("Animation Preview Player: Re-enabling any previously active timeline objects.");
                         foreach (var item in currentSettings.activeTimeLines)
                         {
-                            PlayableDirector dir = (PlayableDirector)item;
-                            if (dir != null)
+                            if (item != null)
                             {
+                                PlayableDirector dir = (PlayableDirector)item;
                                 dir.enabled = true;
                             }
                         }

@@ -694,7 +694,7 @@ namespace Reallusion.Import
 
         public void CheckGeneration()
         {
-            Debug.Log("CheckGeneration: " + name);
+            Util.LogInfo("CheckGeneration: " + name);
             BaseGeneration oldGen = generation;
             string gen = "";
 
