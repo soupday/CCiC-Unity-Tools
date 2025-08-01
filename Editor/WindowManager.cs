@@ -37,8 +37,8 @@ namespace Reallusion.Import
         public static bool showRetarget = false;
         public static bool batchProcess = false;
         private static bool eventsAdded = false;
-        private static bool showPlayerAfterPlayMode = false;
-        private static bool showRetargetAfterPlayMode = false;
+        //private static bool showPlayerAfterPlayMode = false;
+        //private static bool showRetargetAfterPlayMode = false;
 
         public delegate void OnTimer();
         public static OnTimer onTimer;
