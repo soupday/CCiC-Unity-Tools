@@ -105,23 +105,43 @@ namespace Reallusion.Import
             {
                 case PlayModeStateChange.ExitingEditMode:
                     {
+                        Debug.Log("ExitingEditMode");
+
+                        ReenableTimelinesFromRecord(); // ensure the states are reset before play mode - any changes in play mode are thrown after exiting play mode, so will revert to the state immediately prior to entering play mode
+
+                        RLSettingsObject currentSettings = null;
+                        if (ImporterWindow.Current != null)
+                        {
+                            if (ImporterWindow.GeneralSettings != null)
+                            {
+                                currentSettings = ImporterWindow.GeneralSettings;
+                                Debug.Log("showPlayer " + showPlayer);
+
+                                currentSettings.showPlayerAfterPlayMode = showPlayer;
+                                currentSettings.showRetargetAfterPlayMode = showRetarget;
+                            }
+                        }
                         break;
                     }
                 case PlayModeStateChange.EnteredPlayMode:
                     {
-                        showPlayerAfterPlayMode = showPlayer;
-                        showRetargetAfterPlayMode = showRetarget;
-                        showPlayer = false;
-                        showRetarget = false;
+                        //Debug.Log("EnteredPlayMode");
+
+                        //showPlayerAfterPlayMode = showPlayer;
+                        //showRetargetAfterPlayMode = showRetarget;
+                        //showPlayer = false;
+                        //showRetarget = false;
+                        
                         AnimPlayerGUI.ClosePlayer();
                         AnimRetargetGUI.CloseRetargeter();                        
-
+                        
                         if (Util.TryDeSerializeBoolFromEditorPrefs(out bool val, WindowManager.sceneFocus))
                         {
                             if (val)
                             {
                                 //GrabLastSceneFocus();                                
                                 Util.SerializeBoolToEditorPrefs(false, WindowManager.sceneFocus);
+                                
                                 ShowAnimationPlayer();                                
                                 if (Util.TryDeSerializeFloatFromEditorPrefs(out float timeCode, WindowManager.timeKey))
                                 {
@@ -156,18 +176,37 @@ namespace Reallusion.Import
                     }
                 case PlayModeStateChange.ExitingPlayMode:
                     {
+                        //Debug.Log("ExitingPlayMode");
+                        AnimPlayerGUI.ClosePlayer();
+                        AnimRetargetGUI.CloseRetargeter();
 
                         break;
                     }
                 case PlayModeStateChange.EnteredEditMode:
                     {
+                        //Debug.Log("EnteredEditMode");
+
                         if (ImporterWindow.Current != null)
                         {
                             UpdateManager.TryPerformUpdateChecks();
                         }
 
-                        showPlayer = showPlayerAfterPlayMode;
-                        showRetarget = showRetargetAfterPlayMode;
+                        RLSettingsObject currentSettings = null;
+                        if (ImporterWindow.Current != null)
+                        {
+                            if (ImporterWindow.GeneralSettings != null)
+                            {
+                                currentSettings = ImporterWindow.GeneralSettings;
+
+                                showPlayer = currentSettings.showPlayerAfterPlayMode;
+                                showRetarget = currentSettings.showRetargetAfterPlayMode;
+                            }
+                        }
+
+                        if (showPlayer) ShowAnimationPlayer();
+
+                        //showPlayer = showPlayerAfterPlayMode;
+                        //showRetarget = showRetargetAfterPlayMode;
 
                         break;
                     }
@@ -450,12 +489,8 @@ namespace Reallusion.Import
             SceneView.lastActiveSceneView.Focus();
         }
 
-        public static List<(PlayableDirector, bool)> timeLineStates;
-
-        public static List<(PlayableDirector, bool)> RecordAndDisableTimelines()
-        {            
-            List<(PlayableDirector, bool)> states = new List<(PlayableDirector, bool)>();
-
+        public static void RecordAndDisableTimelines()
+        { 
 #if UNITY_2023_OR_NEWER
             PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 #else
@@ -464,35 +499,54 @@ namespace Reallusion.Import
 
             if (timelines.Length > 0)
             {
-                Debug.LogWarning("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");
-
+                RLSettingsObject currentSettings = null;
+                if (ImporterWindow.Current != null)
+                {
+                    if (ImporterWindow.GeneralSettings != null)
+                    {
+                        currentSettings = ImporterWindow.GeneralSettings;
+                        if (currentSettings.activeTimeLines == null)
+                            currentSettings.activeTimeLines = new List<UnityEngine.Object>();
+                        else
+                            currentSettings.activeTimeLines.Clear();
+                    }
+                    else { return; }
+                }
+                else { return; }
+                
+                Util.LogInfo("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");
+                
                 foreach (PlayableDirector dir in timelines)
                 {
-                    (PlayableDirector, bool) item = (dir, dir.enabled);
-                    states.Add(item);
-                    if (dir.enabled) dir.enabled = false;
+                    if (dir.enabled)
+                    {
+                        currentSettings.activeTimeLines.Add(dir);
+                        dir.enabled = false;
+                    }
                 }
             }
-            return states;
         }
 
-        public static void ReenableTimelinesFromRecord(List<(PlayableDirector, bool)> record)
+        public static void ReenableTimelinesFromRecord()
         {
-            if (record != null)
+            RLSettingsObject currentSettings = null;
+            if (ImporterWindow.Current != null)
             {
-                if (record.Count > 0)
+                if (ImporterWindow.GeneralSettings != null)
                 {
-                    Debug.LogWarning("Animation Preview Player: Re-enabling any previously active timeline objects.");
-
-                    foreach(var item in record)
+                    currentSettings = ImporterWindow.GeneralSettings;
+                    if (currentSettings.activeTimeLines == null)
+                        return;
+                    else
                     {
-                        try
+                        Util.LogInfo("Animation Preview Player: Re-enabling any previously active timeline objects.");
+                        foreach (var item in currentSettings.activeTimeLines)
                         {
-                            item.Item1.enabled = item.Item2;
-                        }
-                        catch
-                        {
-                            // when scene is changed the PlayableDirector object(s) is/are destroyed
+                            PlayableDirector dir = (PlayableDirector)item;
+                            if (dir != null)
+                            {
+                                dir.enabled = true;
+                            }
                         }
                     }
                 }
@@ -503,9 +557,20 @@ namespace Reallusion.Import
         {
             GameObject scenePrefab = GetSelectedOrPreviewCharacter();
 
+            if (EditorApplication.isPlaying)
+            {
+                if (!scenePrefab)
+                {
+                    GameObject obj = Selection.activeGameObject;
+                    if (obj.GetComponent<Animator>() != null)
+                        scenePrefab = obj;
+                }
+            }
+
             if (scenePrefab)
             {
-                timeLineStates = RecordAndDisableTimelines();
+                // Debug.Log("ShowAnimationPlayer");
+                RecordAndDisableTimelines();
 
                 AnimPlayerGUI.OpenPlayer(scenePrefab);
                 openedInPreviewScene = IsPreviewScene;
@@ -529,7 +594,8 @@ namespace Reallusion.Import
 
         public static void HideAnimationPlayer(bool updateShowPlayer)
         {
-            ReenableTimelinesFromRecord(timeLineStates);
+            //Debug.Log("HideAnimationPlayer");
+            ReenableTimelinesFromRecord();
 
             if (AnimPlayerGUI.IsPlayerShown())
             {

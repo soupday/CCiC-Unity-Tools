@@ -58,5 +58,9 @@ namespace Reallusion.Import
         public string sceneReference;
         public string[] recentSceneRefs;
         public string lastSaveFolder;
+
+        public List<Object> activeTimeLines;
+        public bool showPlayerAfterPlayMode;
+        public bool showRetargetAfterPlayMode;
     }
 }

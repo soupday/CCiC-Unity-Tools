@@ -16,7 +16,6 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using GluonGui.WorkspaceWindow.Views.WorkspaceExplorer.Explorer;
 using Reallusion.Import;
 using System;
 using System.Collections.Generic;
