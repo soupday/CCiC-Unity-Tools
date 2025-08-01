@@ -304,6 +304,27 @@ namespace Reallusion.Import
             return GetObjectAtPath(paths);
         }
 
+        public MultiValue GetMultiValue(string path)
+        {
+            string[] paths = path.Split('/');
+
+            return GetMultiValue(paths);
+        }
+
+        public MultiValue GetMultiValue(string[] paths)
+        {
+            if (paths.Length > 0)
+            {
+                MultiValue mv = GetValue(paths[0]);
+                if (paths.Length > 1 && mv.Type == MultiType.Object)
+                    return mv.ObjectValue.GetMultiValue(paths.Skip(1).ToArray());
+                else if (mv.Type == MultiType.Bool)
+                    return mv;
+            }
+
+            return default;
+        }
+
         public QuickJSON GetObjectAtPath(string[] paths)
         {
             if (paths.Length > 0)
@@ -636,7 +657,7 @@ namespace Reallusion.Import
                 return Type == MultiType.Object ? 
                     (QuickJSON)objectValue : null; 
             } 
-        }
+        }        
 
         public MultiValue(string name)
         {
@@ -678,6 +699,38 @@ namespace Reallusion.Import
             Key = name;
             Type = MultiType.Object;
             objectValue = value;
+        }
+
+        public bool IsNullorEmpty()
+        {
+            switch (Type)
+            {
+                case MultiType.Object:
+                    return ObjectValue == null;                    
+                case MultiType.Bool:                    
+                case MultiType.Integer:                    
+                case MultiType.Float:                
+                    return false;
+                case MultiType.String:
+                    return string.IsNullOrEmpty(StringValue);
+            }
+            return false;
+        }
+
+        public bool HasValue()
+        {
+            switch (Type)
+            {
+                case MultiType.Object:
+                    return ObjectValue != null;
+                case MultiType.Bool:
+                case MultiType.Integer:
+                case MultiType.Float:
+                    return true;
+                case MultiType.String:
+                    return !string.IsNullOrEmpty(StringValue);
+            }
+            return false;
         }
     }
 

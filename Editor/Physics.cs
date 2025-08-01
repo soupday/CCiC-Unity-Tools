@@ -306,7 +306,7 @@ namespace Reallusion.Import
         private QuickJSON jsonData;
         private bool aPose;
         private CharacterInfo characterInfo;
-        private const int MAGICA_WEIGHT_SIZE = 128;
+        private const int MAGICA_WEIGHT_SIZE = 256;
 
         public Physics(CharacterInfo info, GameObject prefabInstance)
         {

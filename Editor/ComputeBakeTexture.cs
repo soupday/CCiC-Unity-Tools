@@ -174,9 +174,12 @@ namespace Reallusion.Import
             if (!string.IsNullOrEmpty(filePath))
             {
                 AssetDatabase.Refresh();
-
                 TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(filePath);
                 SetTextureImport(importer, flags);
+                if (AssetDatabase.WriteImportSettingsIfDirty(filePath))
+                {
+                    importer.SaveAndReimport();
+                }
             }
         }
 
@@ -371,7 +374,13 @@ namespace Reallusion.Import
             if ((flags & Importer.FLAG_WRAP_CLAMP) > 0)
             {
                 importer.wrapMode = TextureWrapMode.Clamp;
-            }            
+            }
+
+            if ((flags & Importer.FLAG_READ_WRITE) > 0)
+            {
+                importer.isReadable = true;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+            }
         }
 
 
@@ -391,9 +400,8 @@ namespace Reallusion.Import
             saveTexture.Apply();
             RenderTexture.active = old;
 
-            string filePath = WriteImageFile();
-            AssetDatabase.WriteImportSettingsIfDirty(filePath);
-            ApplyImportSettings(filePath);
+            string filePath = WriteImageFile();            
+            ApplyImportSettings(filePath);            
 
             Texture2D assetTex = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);
             return assetTex;

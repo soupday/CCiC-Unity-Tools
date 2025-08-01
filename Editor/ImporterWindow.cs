@@ -1285,14 +1285,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             GUILayout.Space(TITLE_SPACE);
 
-            if (Pipeline.isHDRP)
-            {
-                Importer.USE_DIGITAL_HUMAN_SHADER = GUILayout.Toggle(Importer.USE_DIGITAL_HUMAN_SHADER,
-                    new GUIContent("Use Dual Specular Shaders", "Use Dual Specular shaders where possible. Dual specular shaders use the stack lit master node which is forward only. " +
-                    "The dual specular shader setups are based principles used in the Heretic digital human shaders."));
-                GUILayout.Space(ROW_SPACE);
-            }
-            else
+            if (!Pipeline.isHDRP)
             {
                 Importer.USE_AMPLIFY_SHADER = GUILayout.Toggle(Importer.USE_AMPLIFY_SHADER,
                     new GUIContent("Use Amplify Shaders", "Use the more advanced Amplify shaders where possible. " +
@@ -1805,8 +1798,7 @@ namespace Reallusion.Import
             Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;
             Importer.USE_SELF_COLLISION = false;
-            Importer.USE_AMPLIFY_SHADER = true;
-            Importer.USE_DIGITAL_HUMAN_SHADER = false;
+            Importer.USE_AMPLIFY_SHADER = true;            
             Physics.PHYSICS_SHRINK_COLLIDER_RADIUS = 0.5f;
             Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD = 0.25f;
 

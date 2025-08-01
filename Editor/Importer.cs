@@ -120,22 +120,7 @@ namespace Reallusion.Import
             {
                 EditorPrefs.SetBool("RL_Importer_Use_Amplify_Shaders", value);
             }
-        }
-
-        public static bool USE_DIGITAL_HUMAN_SHADER
-        {
-            get
-            {
-                if (EditorPrefs.HasKey("RL_Importer_Use_Digital_Human_Shaders"))
-                    return EditorPrefs.GetBool("RL_Importer_Use_Digital_Human_Shaders");
-                return false;
-            }
-
-            set
-            {
-                EditorPrefs.SetBool("RL_Importer_Use_Digital_Human_Shaders", value);
-            }
-        }
+        }        
 
         public static bool ANIMPLAYER_ON_BY_DEFAULT
         {
@@ -471,7 +456,7 @@ namespace Reallusion.Import
                         Util.LogInfo("    Material name: " + sourceName + ", type:" + materialType.ToString());
 
                         // re-use or create the material.
-                        Material mat = CreateRemapMaterial(materialType, sharedMat, sourceName);
+                        Material mat = CreateRemapMaterial(materialType, sharedMat, sourceName, matJson);
 
                         // connect the textures.
                         if (mat) ProcessTextures(obj, sourceName, sharedMat, mat, materialType, matJson);
@@ -522,10 +507,14 @@ namespace Reallusion.Import
                         if (matJson != null)
                         {
                             if (blenderProject)
+                            {
                                 PrepBlenderTextures(sourceName, matJson);
+                            }
 
-                            if (characterInfo.FeatureUseTexturePacking)
+                            if (characterInfo.UsePackedTextures(materialType))
+                            {
                                 PrepPackedTextures(sourceName, matJson, materialType);
+                            }
 
                             if ((materialType == MaterialType.SSS || characterInfo.BasicMaterials) && Pipeline.isHDRP)
                             {
@@ -584,9 +573,11 @@ namespace Reallusion.Import
                         if (matJson != null)
                         {
                             if (blenderProject)
+                            {
                                 BakeBlenderTextures(sourceName, matJson);
+                            }
 
-                            if (characterInfo.FeatureUseTexturePacking)
+                            if (characterInfo.UsePackedTextures(materialType))
                             {
                                 BakePackedTextures(obj, sourceName, matJson, materialType);
                             }
@@ -787,15 +778,15 @@ namespace Reallusion.Import
             return Path.Combine(texFolder, obj.name, sourceName);
         }
 
-        private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, string sourceName)
+        private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, string sourceName, QuickJSON matJson)
         {            
             // get the template material.
             Material templateMaterial = Pipeline.GetTemplateMaterial(sourceName, materialType, 
                 characterInfo.BuildQuality, 
                 characterInfo, USE_AMPLIFY_SHADER, 
-                characterInfo.FeatureUseTessellation, 
+                characterInfo.UseTessellation(materialType, matJson), 
                 characterInfo.FeatureUseWrinkleMaps,
-                USE_DIGITAL_HUMAN_SHADER);
+                characterInfo.FeatureUseDualSpecularSkin);
 
             // get the appropriate shader to use            
             Shader shader;
@@ -1809,7 +1800,7 @@ namespace Reallusion.Import
                 matJson, "Textures/Displacement",
                 TexCategory.MaxDetail);
 
-            if (!characterInfo.FeatureUseTexturePacking)
+            if (!characterInfo.UsePackedTextures(materialType))
             {                
                 ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
                     matJson, "Custom Shader/Image/SSS Map",
@@ -1896,7 +1887,7 @@ namespace Reallusion.Import
                         TexCategory.HighDetail,
                         FLAG_NORMAL);
 
-                    if (!characterInfo.FeatureUseTexturePacking)
+                    if (!characterInfo.UsePackedTextures(materialType))
                     {
                         ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend1", "Wrinkle_Roughness1",
                             matJson, "Wrinkle/Textures/Roughness_1",
@@ -1950,7 +1941,7 @@ namespace Reallusion.Import
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
 
-            if (characterInfo.FeatureUseTexturePacking)
+            if (characterInfo.UsePackedTextures(materialType))
             {
                 ConnectPackedTextures(sourceName, mat, matJson, materialType);
             }
@@ -1986,7 +1977,7 @@ namespace Reallusion.Import
                     }
                 }
 
-                mat.SetFloatIf("_CavityStrength", matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f));
+                mat.SetFloatIf("_CavityStrength", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f), 0.5f));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
@@ -2460,6 +2451,10 @@ namespace Reallusion.Import
             if (matJson != null)
             {
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
+                mat.SetFloatIf("_AlphaStrength",
+                    matJson.GetFloatValue("Opacity") * 
+                    Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f
+                    ));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))

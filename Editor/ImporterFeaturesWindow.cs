@@ -161,6 +161,12 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
                 flagChanged = true;
 
+            if (Pipeline.isHDRP)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.DualSpecularSkin, "Dual Specular Skin", SECTION_INDENT))
+                    flagChanged = true;
+            }
+
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
                 flagChanged = true;
 

@@ -46,7 +46,8 @@ namespace Reallusion.Import
             MagicaClothHairPhysics = 512, // Magica Mesh Cloth for hair items
             SpringBonePhysics = 1024,  // group flag to allow selection between SpringBoneHair & MagicaBone
             Displacement = 2048,
-            TexturePacking = 4096
+            TexturePacking = 4096,
+            DualSpecularSkin = 8192,
         }
 
         public enum ExportType
@@ -89,7 +90,7 @@ namespace Reallusion.Import
         public string infoFilepath;
         public string jsonFilepath;
         public string name;
-        public string folder;                
+        public string folder;
           
         public bool isLOD = false;
         public bool bakeIsBaked = false;
@@ -215,6 +216,8 @@ namespace Reallusion.Import
         public bool FeatureUseHairPhysics => (ShaderFlags & ShaderFeatureFlags.HairPhysics) > 0;
         public bool FeatureUseDisplacement => (ShaderFlags & ShaderFeatureFlags.Displacement) > 0;
         public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
+        public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
+
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -691,6 +694,7 @@ namespace Reallusion.Import
 
         public void CheckGeneration()
         {
+            Debug.Log("CheckGeneration: " + name);
             BaseGeneration oldGen = generation;
             string gen = "";
 
@@ -718,6 +722,7 @@ namespace Reallusion.Import
 
         public void CheckGenerationQuick()
         {
+            Debug.Log("CheckGenerationQuick: " + name);
             BaseGeneration oldGen = generation;
             string gen = Util.GetJsonGenerationString(jsonFilepath);
             generation = RL.GetCharacterGeneration(Fbx, gen);
@@ -740,19 +745,36 @@ namespace Reallusion.Import
 
         public void InitSettings()
         {
+            Debug.Log("InitSettings: " + name);
+
             // if wrinkle map data present, enable wrinkle maps.
             if (HasWrinkleMaps())
             {
                 ShaderFlags |= ShaderFeatureFlags.WrinkleMaps;
             }
+
+            if (HasDisplacement())
+            {
+                ShaderFlags |= ShaderFeatureFlags.Displacement;
+            }            
         }
 
         public bool HasWrinkleMaps()
         {
-            return AnyJsonMaterialPathExists("Wrinkle/Textures");            
+            return AnyJsonMaterialPathExists("Wrinkle/Textures");
         }
 
-        public bool AnyJsonMaterialPathExists(string path)
+        public bool HasDisplacement()
+        {
+            return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
+        }
+
+        public bool HasWrinkleDisplacement()
+        {
+            return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);
+        }
+
+        public bool AnyJsonMaterialPathExists(string path, bool requireValue=false)
         {
             QuickJSON objectsJson = ObjectsJsonData;
 
@@ -771,7 +793,17 @@ namespace Reallusion.Import
                             if (mvMat.Type == MultiType.Object)
                             {
                                 QuickJSON matjson = mvMat.ObjectValue;
-                                if (matjson.PathExists(path)) return true;
+                                if (matjson.PathExists(path))
+                                {
+                                    if (requireValue)
+                                    {
+                                        return matjson.GetMultiValue(path).HasValue();
+                                    }
+                                    else
+                                    {
+                                        return true;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1066,5 +1098,24 @@ namespace Reallusion.Import
             }
             return false;
         }
+
+        public bool UsePackedTextures(MaterialType materialType)
+        {
+            return FeatureUseTexturePacking ||
+                   (FeatureUseDualSpecularSkin && (materialType == MaterialType.Skin ||
+                                                   materialType == MaterialType.Head));
+        }
+
+        public bool UseTessellation(MaterialType materialType, QuickJSON matJson)
+        {
+            bool hasDisplacement = false;
+            if (matJson.PathExists("Textures/Displacement/Texture Path") && 
+                !string.IsNullOrEmpty(matJson.GetStringValue("Textures/Displacement/Texture Path")))
+            {
+                hasDisplacement = true;
+            }
+            return FeatureUseTessellation || hasDisplacement;
+        }
+
     }
 }
