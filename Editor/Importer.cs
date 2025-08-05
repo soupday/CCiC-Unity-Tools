@@ -1311,7 +1311,17 @@ namespace Reallusion.Import
                 {                    
                     mat.SetFloatIf("_DoubleSidedEnable", 1f);
                     mat.EnableKeyword("_DOUBLESIDED_ON");                    
-                }                
+                }
+
+                bool useDisplacement = GetTexture(sourceName, "Displacement",
+                                              matJson, "Textures/Displacement", true);
+                if (useDisplacement)
+                {
+                    mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
+                    ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
+                        matJson, "Textures/Displacement",
+                        TexCategory.MaxDetail);
+                }
             }
             else
             {
