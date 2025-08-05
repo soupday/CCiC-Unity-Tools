@@ -606,12 +606,14 @@ namespace Reallusion.Import
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                 string name = Path.GetFileNameWithoutExtension(assetPath);
-                if (!previewScene && name.Equals("RL_PreviewScenePrefab", System.StringComparison.InvariantCultureIgnoreCase))
+                if (!previewScene && name.iEquals("RL_PreviewScenePrefab"))
                 {
+                    Debug.Log("RL " + assetPath);
                     previewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 }
-                else if (!localPreviewScene && name.Equals("RL_PreviewScenePrefab_Local", System.StringComparison.InvariantCultureIgnoreCase))
+                else if (!localPreviewScene && name.iEquals("RL_PreviewScenePrefab_Local"))
                 {
+                    Debug.Log("Local " + assetPath);
                     localPreviewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 }
             }

@@ -1110,18 +1110,18 @@ namespace Reallusion.Import
         {
             return FeatureUseTexturePacking ||
                    (FeatureUseDualSpecularSkin && (materialType == MaterialType.Skin ||
-                                                   materialType == MaterialType.Head));
+                                                   materialType == MaterialType.Head));            
         }
 
         public bool UseTessellation(MaterialType materialType, QuickJSON matJson)
         {
-            bool hasDisplacement = false;
+            bool useDisplacement = false;
             if (matJson.PathExists("Textures/Displacement/Texture Path") && 
                 !string.IsNullOrEmpty(matJson.GetStringValue("Textures/Displacement/Texture Path")))
             {
-                hasDisplacement = true;
+                useDisplacement = FeatureUseDisplacement;
             }
-            return FeatureUseTessellation || hasDisplacement;
+            return FeatureUseTessellation || useDisplacement;
         }
 
     }

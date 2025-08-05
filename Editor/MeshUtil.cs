@@ -1645,13 +1645,14 @@ namespace Reallusion.Import
             // if it has facial blend shapes...
             if (FacialProfileMapper.MeshHasFacialBlendShapes(obj))
             {
-                if (Util.HasMaterialKeywords(obj, "scalp"))
+                /*if (Util.HasMaterialKeywords(obj, "scalp"))
                 {
                     return false;
                 }
-                else if (Util.HasMaterialKeywords(obj, "base", "brow", "beard",
+                else */ 
+                if (Util.HasMaterialKeywords(obj, "base", "brow", "beard",
                                                   "mustache", "goatee", "stubble",
-                                                  "bushy", "sword"))
+                                                  "bushy", "sword", "eyebrow", "eyelash", "lash"))
                 {
                     return true;
                 }
