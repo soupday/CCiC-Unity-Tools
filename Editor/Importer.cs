@@ -1776,12 +1776,22 @@ namespace Reallusion.Import
                 TexCategory.LowDetail);
 
             bool useCavity = GetTexture(sourceName, "CavityMap",
-                                         matJson, "Custom Shader/Image/Cavity Map", true);
+                                        matJson, "Custom Shader/Image/Cavity Map", true);
             if (useCavity)
             {
                 mat.SetBooleanKeyword("BOOLEAN_USE_CAVITY", true);
                 ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
                     matJson, "Custom Shader/Image/Cavity Map",
+                    TexCategory.MaxDetail);
+            }
+
+            bool useDisplacement = GetTexture(sourceName, "Displacement",
+                                              matJson, "Textures/Displacement", true);
+            if (useDisplacement)
+            {
+                mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
+                ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
+                    matJson, "Textures/Displacement",
                     TexCategory.MaxDetail);
             }
 
