@@ -1270,6 +1270,9 @@ namespace Reallusion.Import
             // these default materials should *not* attach any textures:
             if (customShader == "RLEyeTearline" || customShader == "RLEyeOcclusion") return;
 
+            bool useDisplacement = GetTexture(sourceName, "Displacement",
+                                              matJson, "Textures/Displacement", true);
+
             if (RP == RenderPipeline.HDRP)
             {
                 if (!ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Diffuse",
@@ -1312,15 +1315,28 @@ namespace Reallusion.Import
                     mat.SetFloatIf("_DoubleSidedEnable", 1f);
                     mat.EnableKeyword("_DOUBLESIDED_ON");                    
                 }
-
-                bool useDisplacement = GetTexture(sourceName, "Displacement",
-                                              matJson, "Textures/Displacement", true);
+                
                 if (useDisplacement)
                 {
-                    mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
-                    ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
-                        matJson, "Textures/Displacement",
-                        TexCategory.MaxDetail);
+                    mat.EnableKeyword("_HEIGHTMAP");
+                    if (characterInfo.UseTessellation(materialType, matJson))
+                    {
+                        mat.EnableKeyword("_TESSELLATION_DISPLACEMENT");                        
+                        mat.SetFloatIf("_DisplacementMode", 3f);  // 3 - tessellation displacment
+                        ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
+                            matJson, "Textures/Displacement",
+                            TexCategory.MaxDetail);
+                    }
+                    else
+                    {
+                        mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)
+                        ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
+                            matJson, "Textures/Displacement",
+                            TexCategory.MaxDetail);                                                                     
+                    }
+                    mat.SetFloatIf("_HeightMapParametrization", 1f);  // 1 - amplitude                        
+                    mat.EnableKeyword("_VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE");
+                    mat.EnableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");
                 }
             }
             else
@@ -1442,6 +1458,25 @@ namespace Reallusion.Import
                         mat.SetFloatIf("_NormalScale", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                     else
                         mat.SetFloatIf("_BumpScale", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
+                }
+
+                // Displacement
+                if (useDisplacement)
+                {
+                    float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
+                    float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
+                    float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value");
+                    if (RP == RenderPipeline.HDRP)
+                    {
+                        // _HeightOffset ?
+                        mat.SetFloatIf("_HeightAmplitude", displacementStrength * tessellationMultiplier * 2f);
+                        mat.SetFloatIf("_HeightTessAmplitude", displacementStrength * tessellationMultiplier * 2f);
+                        mat.SetFloatIf("_HeightPoMAmplitude", displacementStrength * tessellationMultiplier * 2f);                        
+                        mat.SetFloatIf("_TessellationFactor", 8f);
+                        mat.SetFloatIf("_TessellationFactorTriangleSize", 8f);
+                        mat.SetFloatIf("_HeightCenter", displacementLevel);
+                        mat.SetFloatIf("_HeightTessCenter", displacementLevel);
+                    }
                 }
             }
 
@@ -1802,7 +1837,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
                 ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
                     matJson, "Textures/Displacement",
-                    TexCategory.MaxDetail);
+                    TexCategory.MaxDetail);                
             }
 
             if (!characterInfo.UsePackedTextures(materialType))
@@ -2010,8 +2045,10 @@ namespace Reallusion.Import
 
                 float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
                 float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
+                float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value");                
                 mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.02f);
                 mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * 0.005f);
+                mat.SetFloatIf("_DisplacementLevel", displacementLevel);
 
 
                 if (materialType == MaterialType.Head)
