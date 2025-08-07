@@ -225,26 +225,41 @@ namespace Reallusion.Import
 
             while (listening)
             {
-                // rate limit
-                if (stream.CanRead)
+                try
                 {
-                    if (!stream.DataAvailable)
+                    // rate limit
+                    if (stream.CanRead)
+                    {
+                        if (!stream.DataAvailable)
+                        {
+                            Thread.Sleep(100);
+                            continue;
+                        }
+                    }
+                    else
                     {
                         Thread.Sleep(100);
                         continue;
                     }
-                }
-                else
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
 
-                RecvData();
+                    RecvData();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.ToString());
+                }
             }
-            
-            stream.Close();
-            client.Close();
+
+            try
+            {
+                client.Close();
+                stream.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.ToString());
+            }
+
             clientThreadActive = false;
             if (ClientDisconnected != null) ClientDisconnected.Invoke(null, null);
         }
@@ -500,37 +515,43 @@ namespace Reallusion.Import
         {
             // send message using big-endian byte order (python server should expect big-endian order via "!II")
             // def recv ... op_code, size = struct.unpack("!II", header)
-
-            if (stream == null) return;
-
-            IEnumerable<byte> message = null;
-
-            Int32 code = (Int32)opCode;
-            byte[] opcode = Int32ToBigEndianBytes(code);
-            
-            byte[] data = new byte[0];
-            if (!string.IsNullOrEmpty(jsonString))
+            try
             {
-                data = Encoding.UTF8.GetBytes(jsonString);
-                byte[] size = Int32ToBigEndianBytes(data.Length);
-                message = opcode.Concat(size).Concat(data);
-            }
-            else
-            {
-                byte[] size = Int32ToBigEndianBytes(0);
-                message = opcode.Concat(size);
-            }
-            if (stream.CanWrite)
-            {
+                if (stream == null) return;
+
+                IEnumerable<byte> message = null;
+
+                Int32 code = (Int32)opCode;
+                byte[] opcode = Int32ToBigEndianBytes(code);
+
+                byte[] data = new byte[0];
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    data = Encoding.UTF8.GetBytes(jsonString);
+                    byte[] size = Int32ToBigEndianBytes(data.Length);
+                    message = opcode.Concat(size).Concat(data);
+                }
+                else
+                {
+                    byte[] size = Int32ToBigEndianBytes(0);
+                    message = opcode.Concat(size);
+                }
+                if (stream.CanWrite)
+                {
 #if UNITY_2021_1_OR_NEWER
-                stream.Write(message.ToArray());
+                    stream.Write(message.ToArray());
 #else
-                byte[] buffer = message.ToArray();
-                stream.Write(buffer, 0, buffer.Length);
+                    byte[] buffer = message.ToArray();
+                    stream.Write(buffer, 0, buffer.Length);
 #endif
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
             }
         }
-#endregion Server messaging
+        #endregion Server messaging
 
         #region Connection
         static void ServerDisconnect()
@@ -542,10 +563,17 @@ namespace Reallusion.Import
             listening = false;
             reconnect = false;
 
-            if (client.Connected && stream.CanWrite)
-            {                
-                stream.Close();
-                client.Close();
+            try
+            {
+                if (client.Connected && stream.CanWrite)
+                {
+                    stream.Close();
+                    client.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
             }
         }
 
@@ -570,11 +598,17 @@ namespace Reallusion.Import
             listening = false;
             reconnect = false;
 
-            if (stream != null)
-                if (stream.CanWrite) stream.Close();
-            if (client != null)
-                if (client.Connected) client.Close();
-                  
+            try
+            {
+                if (stream != null)
+                    if (stream.CanWrite) stream.Close();
+                if (client != null)
+                    if (client.Connected) client.Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
+            }
         }
 
         public static void CleanupBeforeAssemblyReload()
@@ -598,17 +632,25 @@ namespace Reallusion.Import
                 SetConnectedTimeStamp(true);
             }
 
-            if (client != null && stream != null)
+            try
             {
-                if (client.Connected && stream.CanWrite)
+                if (client != null && stream != null)
                 {
-                    Debug.Log("Disconnecting");
-                    reconnect = false;
-                    SendMessage(OpCodes.DISCONNECT);                    
-                    stream.Close();
-                    client.Close();
+                    if (client.Connected && stream.CanWrite)
+                    {
+                        Debug.Log("Disconnecting");
+                        reconnect = false;
+                        SendMessage(OpCodes.DISCONNECT);
+                        stream.Close();
+                        client.Close();
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
+            }
+
             listening = false;
             EditorApplication.update -= QueueDelegate;
             AssemblyReloadEvents.beforeAssemblyReload -= CleanupDelegate;
