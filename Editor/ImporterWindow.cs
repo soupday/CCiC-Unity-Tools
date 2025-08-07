@@ -515,7 +515,7 @@ namespace Reallusion.Import
             if (importerStyles == null) importerStyles = new Styles();
 
             RestoreData();
-            RestoreSelection();
+            //RestoreSelection();  // currently suppressed to avoid auto char selection due to CC5 char size
 
             if (tabStyles == null) tabStyles = new TabStyles();
             if (tabCont == null) tabCont = new TabContents();
@@ -534,7 +534,7 @@ namespace Reallusion.Import
             {
                 case 0:
                     {
-                        ImporterOnGUI();
+                        ImporterOnGUI(contentRect);
                         break;
 
                     }
@@ -549,15 +549,7 @@ namespace Reallusion.Import
                         break;
                     }
                 case 2:
-                    {
-                        /*
-                        if (EditorApplication.isPlaying) break;
-                        if (linkModule == null)
-                        {
-                            linkModule = ScriptableObject.CreateInstance<UnityLinkManagerWindow>();
-                        }
-                        linkModule.ShowGUI(contentRect);                        
-                        */
+                    {                        
                         break;
                     }
                 case 3:
@@ -569,40 +561,69 @@ namespace Reallusion.Import
             GUILayout.EndArea();
         }
 
-        private void ImporterOnGUI()
+        public enum RefreshMessage
         {
-            //if (importerStyles == null) importerStyles = new Styles();
+            NoneDetected,
+            NoneSelected
+        }
 
-            //RestoreData();
-            //RestoreSelection();
-                        
+        private void RefreshGUI(RefreshMessage message, Rect rect)
+        {
+            string title = string.Empty;
+            string msg = string.Empty;
+
+            switch (message)
+            {
+                case RefreshMessage.NoneDetected:
+                    {
+                        title = "No CC/iClone Characters detected!";
+                        msg = "Reload the character list, after adding or removing characters.";
+
+                        break;
+                    }
+                case RefreshMessage.NoneSelected:
+                    {
+                        title = "No Character selected.";
+                        msg = "Reload the character list, after adding or removing characters.";
+
+                        break;
+                    }
+            }
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+            GUILayout.BeginArea(rect);
+            GUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(title);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(20f);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent(iconActionRefresh, msg),
+                GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
+            {
+                EditorApplication.delayCall += RefreshCharacterList;
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void ImporterOnGUI(Rect contentRect)
+        {                        
             if (validCharacters == null || validCharacters.Count == 0)
             {
-                EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
-                GUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("No CC/iClone Characters detected!");
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                GUILayout.Space(20f);
-
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(iconActionRefresh, "Reload the character list, for after adding or removing characters."),
-                    GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
-                {
-                    EditorApplication.delayCall += RefreshCharacterList;
-                }
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                GUILayout.FlexibleSpace();
-                GUILayout.EndVertical();
-                EditorGUI.EndDisabledGroup();
+                RefreshGUI(RefreshMessage.NoneDetected, contentRect);
                 return;
             }            
 
@@ -611,7 +632,10 @@ namespace Reallusion.Import
             float innerHeight = height - TOP_PADDING;
             float optionHeight = OPTION_HEIGHT;
             //if (Pipeline.isHDRP12) optionHeight += 14f;
-            if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
+            if (contextCharacter != null)
+            {
+                if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
+            }
             optionHeight += 14f;
 
             if (width - ICON_AREA_WIDTH - ACTION_WIDTH < MIN_SETTING_WIDTH)
@@ -628,6 +652,8 @@ namespace Reallusion.Import
 
             Rect infoBlock = new Rect(dragBar.xMax, TOP_PADDING, width - ICON_AREA_WIDTH - ACTION_WIDTH, INFO_HEIGHT);
             CURRENT_INFO_WIDTH = infoBlock.width;
+
+            Rect refreshBlock = new Rect(dragBar.xMax, TOP_PADDING, width - dragBar.xMax, height);
 
             Rect optionBlock = new Rect(dragBar.xMax, infoBlock.yMax, infoBlock.width, optionHeight);
             Rect actionBlock = new Rect(dragBar.xMax + infoBlock.width, TOP_PADDING, ACTION_WIDTH, innerHeight);
@@ -651,19 +677,26 @@ namespace Reallusion.Import
             OnGUIDragBarArea(dragBar);
             EditorGUI.EndDisabledGroup();
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUIInfoArea(infoBlock);
+            if (contextCharacter != null)
+            {
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUIInfoArea(infoBlock);
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUIOptionArea(optionBlock);
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUIOptionArea(optionBlock);
 
-            if (windowMode == ImporterWindowMode.Settings)
-                OnGUISettingsArea(settingsBlock);
+                if (windowMode == ImporterWindowMode.Settings)
+                    OnGUISettingsArea(settingsBlock);
 
-            OnGUIActionArea(actionBlock);
+                OnGUIActionArea(actionBlock);
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUITreeViewArea(treeviewBlock);
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUITreeViewArea(treeviewBlock);
+            }
+            else
+            {
+                RefreshGUI(RefreshMessage.NoneSelected, refreshBlock);
+            }
 
             // functions to run after the GUI has finished...             
             if (previewCharacterAfterGUI)
@@ -2183,8 +2216,6 @@ namespace Reallusion.Import
             return texture;
         }
 
-
-
         public class Styles
         {
             public GUIStyle logStyle;
@@ -2494,16 +2525,16 @@ namespace Reallusion.Import
         public void HandleDrag(Rect rect, CharacterInfo data)
         {
             Event e = Event.current;
-            if (rect.Contains(e.mousePosition))
+            if (rect.Contains(e.mousePosition) && !dragging)
             {
                 EditorGUIUtility.AddCursorRect(rect, MouseCursor.MoveArrow);
             }
             
             if (e.isMouse)
             {
-                if (rect.Contains(e.mousePosition) && e.type == EventType.MouseDrag)
+                if (rect.Contains(e.mousePosition) && e.type == EventType.MouseDrag && !dragging)
                 {
-                    GameObject obj = data.GetDraggablePrefab();//AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(data.guid));
+                    GameObject obj = data.GetDraggablePrefab();
                     GUIUtility.hotControl = 0;
                     StartDrag(obj, data);
                     e.Use();
@@ -2525,7 +2556,6 @@ namespace Reallusion.Import
 
             DragAndDrop.StartDrag(DRAG_TITLE);
         }
-
 
         public void MonitorConnection()
         {
