@@ -766,6 +766,23 @@ namespace Reallusion.Import
             }            
         }
 
+        public void InitPhysics()
+        {
+            if (HasPhysics())
+            {
+                ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
+
+                if (Physics.MagicaCloth2IsAvailable())
+                {
+                    ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+                }
+                else
+                {
+                    ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
+                }
+            }
+        }
+
         public bool HasWrinkleMaps()
         {
             return AnyJsonMaterialPathExists("Wrinkle/Textures");
@@ -774,6 +791,12 @@ namespace Reallusion.Import
         public bool HasDisplacement()
         {
             return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
+        }
+
+        public bool HasPhysics()
+        {
+            string jsonPath = name + "/Object/" + name + "/Physics/Soft Physics";
+            return JsonData.PathExists(jsonPath);
         }
 
         public bool HasWrinkleDisplacement()

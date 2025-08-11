@@ -526,7 +526,14 @@ namespace Reallusion.Import
             charInfo.projectName = "iclone project name";
             //c.sceneid = add this later
 
-            charInfo.BuildQuality = MaterialQuality.High;
+            charInfo.CheckGeneration();
+            charInfo.InitPhysics();
+
+            if (charInfo.CanHaveHighQualityMaterials)
+                charInfo.BuildQuality = MaterialQuality.High;
+            else
+                charInfo.BuildQuality = MaterialQuality.Default;
+
             Importer import = new Importer(charInfo);
             import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
@@ -551,6 +558,8 @@ namespace Reallusion.Import
 
             timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
+
+
         #endregion Avatar Import
 
         #region Staging Import

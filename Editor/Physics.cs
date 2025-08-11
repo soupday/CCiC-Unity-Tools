@@ -426,7 +426,8 @@ namespace Reallusion.Import
             DYNAMIC_BONE_AVAILABLE = DynamicBoneIsAvailable();
 
             // edit within the character prefab
-            using (var editingScope = new PrefabUtility.EditPrefabContentsScope(AssetDatabase.GetAssetPath(ImporterWindow.Current.Character.PrefabAsset)))
+            //using (var editingScope = new PrefabUtility.EditPrefabContentsScope(AssetDatabase.GetAssetPath(ImporterWindow.Current.Character.PrefabAsset)))
+            using (var editingScope = new PrefabUtility.EditPrefabContentsScope(AssetDatabase.GetAssetPath(characterInfo.PrefabAsset)))
             {
                 var prefabRoot = editingScope.prefabContentsRoot;
                 PurgeAllPhysicsComponents(prefabRoot);
@@ -448,7 +449,7 @@ namespace Reallusion.Import
             MAGICA_CLOTH_AVAILABLE = MagicaCloth2IsAvailable();
             DYNAMIC_BONE_AVAILABLE = DynamicBoneIsAvailable();
 
-            string currentPrefabAssetPath = AssetDatabase.GetAssetPath(ImporterWindow.Current.Character.PrefabAsset);
+            string currentPrefabAssetPath = AssetDatabase.GetAssetPath(characterInfo.PrefabAsset);// ImporterWindow.Current.Character.PrefabAsset);
             GameObject prefabRoot = PrefabUtility.LoadPrefabContents(currentPrefabAssetPath);
             PurgeAllPhysicsComponents(prefabRoot);
 
@@ -1352,7 +1353,7 @@ namespace Reallusion.Import
         {
             // enum ClothProcess.ClothType MeshCloth = 0, BoneCloth = 1
 
-            CharacterInfo currentChar = ImporterWindow.Current.Character;
+            CharacterInfo currentChar = characterInfo;//ImporterWindow.Current.Character;
             string fbxPath = currentChar.path;
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
             if (importer != null)
@@ -1390,7 +1391,7 @@ namespace Reallusion.Import
         {
             // enum ClothProcess.ClothType MeshCloth = 0, BoneCloth = 1
 
-            CharacterInfo currentChar = ImporterWindow.Current.Character;
+            CharacterInfo currentChar = characterInfo;
             string fbxPath = currentChar.path;
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
             if (importer != null)
@@ -1695,14 +1696,15 @@ namespace Reallusion.Import
        
         public static bool CreateAbstractColliders(ColliderManager colliderManager, out List<ColliderManager.AbstractCapsuleCollider> abstractColliders)
         {
-            CharacterInfo current;
+            CharacterInfo current = null;
 
             if (ImporterWindow.Current != null)
             {
                 // current live info (used for shaderflags) allows for switching between native and magica and rebuilding physics
                 current = ImporterWindow.Current.Character;  
             }
-            else
+            
+            if (current == null)
             {
                 // contains shaderflags from last build - this is acceptable when this function is called from the collidermanager in the absence of an importer window
                 current = new CharacterInfo(colliderManager.characterGUID); 
@@ -2035,7 +2037,7 @@ namespace Reallusion.Import
 
             if (useCompute)
             {
-                CharacterInfo currentCharacter = ImporterWindow.Current.Character;
+                CharacterInfo currentCharacter = characterInfo;//ImporterWindow.Current.Character;
 
                 string[] folders = new string[] { "Assets", "Packages" };
                 Texture2D physXWeightMap = Util.FindTexture(folders, "physXWeightMapTest");
@@ -2140,7 +2142,7 @@ namespace Reallusion.Import
         private void ReorderComponentsOfPrefabInstance()
         {
 #if UNITY_2022_3_OR_NEWER
-            string currentPrefabAssetPath = AssetDatabase.GetAssetPath(ImporterWindow.Current.Character.PrefabAsset);
+            string currentPrefabAssetPath = AssetDatabase.GetAssetPath(characterInfo.PrefabAsset);// ImporterWindow.Current.Character.PrefabAsset);
             GameObject prefabRoot = PrefabUtility.LoadPrefabContents(currentPrefabAssetPath);
             //var components = prefabRoot.GetComponents<Component>();
             List<Component> components = new List<Component>();
