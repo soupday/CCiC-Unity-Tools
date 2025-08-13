@@ -2278,40 +2278,7 @@ namespace Reallusion.Import
             return reverse;
         }
         #endregion Architecture agnostic byte ordering
-
-        #region Asset import
-        static void ProcessImport()
-        {
-            /*
-            FileUtil.CopyFileOrDirectory("D:/Development/CC3/Unity Test Chars/TestB", "Assets/TestB");
-            AssetDatabase.Refresh();
-            string[] guids = AssetDatabase.FindAssets("t:Model", new string[] { "Assets/TestB" });
-            string guid = string.Empty;
-            foreach (string g in guids)
-            {
-                string assetPath = AssetDatabase.GUIDToAssetPath(g);
-                if (Util.IsCC3CharacterAtPath(assetPath))
-                {
-                    string name = Path.GetFileNameWithoutExtension(assetPath);
-                    Debug.Log("Valid CC character: " + name + " found.");
-                    guid = g;
-                    break;
-                }
-            }
-            ExtractFbx(guid);
-
-            return;
-            ImporterWindow.Current.RefreshCharacterList();
-            var character = ImporterWindow.ValidCharacters.Find(x => x.guid == guid);
-            Importer import = new Importer(character);
-            GameObject prefab = import.Import(true);
-            character.Write();
-            character.Release();
-            ExtractFbx(guid);
-            */
-        }
-        #endregion Asset import
-
+                
         #region FBX extraction
         public enum FbxTypes
         {

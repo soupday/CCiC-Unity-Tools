@@ -66,7 +66,7 @@ namespace Reallusion.Import
 
         private static readonly string windowTitle = "CC/iC Importer " + Pipeline.FULL_VERSION;
         private static CharacterInfo contextCharacter;
-        private static List<CharacterInfo> validCharacters;
+        public static List<CharacterInfo> validCharacters;
         private static List<CharacterInfo> validAvatars;
         private static List<CharacterInfo> validProps;
         private static bool showProps = true;

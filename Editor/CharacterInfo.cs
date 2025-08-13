@@ -20,6 +20,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Reallusion.Import
 {
@@ -367,10 +368,10 @@ namespace Reallusion.Import
             List<string> motionGuids = new List<string>();
             DirectoryInfo di = new DirectoryInfo(folder);
             string prefix = name + "_";
-            string suffix = "_Motion.fbx";
+            string suffix = "_Motion";
             foreach (FileInfo fi in di.GetFiles("*.fbx"))
             {
-                if (fi.Name.iStartsWith(prefix) && fi.Name.iEndsWith(suffix))
+                if (fi.Name.iStartsWith(prefix) && fi.Name.iContains(suffix))
                 {
                     string path = Path.Combine(folder, fi.Name);
                     string guid = AssetDatabase.AssetPathToGUID(path);
@@ -718,6 +719,7 @@ namespace Reallusion.Import
             if (oldGen == BaseGeneration.None)
             {
                 InitSettings();
+                InitPhysics();
             }
 
             if (generation != oldGen)

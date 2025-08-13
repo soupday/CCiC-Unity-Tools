@@ -54,6 +54,7 @@ namespace Reallusion.Import
                                           // associated assets would be in SAVE_FOLDER_PATH/SCENE_NAME/<asset files>
 
         string fbxPath = string.Empty;
+        CharacterInfo motionTargetChar = null;
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
@@ -204,6 +205,7 @@ namespace Reallusion.Import
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Motion.Path; }
                         name = QueueItem.Motion.Name;
                         importMotion = true;
+                        motionTargetChar = GetCharacterInfoFomLinkId(QueueItem.Motion.LinkId);
                         break;
                     }
                 case UnityLinkManager.OpCodes.CHARACTER:
@@ -278,14 +280,7 @@ namespace Reallusion.Import
         void DoImport()
         {
             AssetDatabase.Refresh();
-            /*
-            if (importIntoScene && !UnityLinkManager.timelineSceneCreated)
-            {
-                Debug.LogWarning("Creating new scene");
-                CreateSceneAndTimeline();
-            }
-            */
-
+            
             timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)>();
 
             if (importMotion)
@@ -306,6 +301,11 @@ namespace Reallusion.Import
             if (importStaging)
             {                
                 ImportStaging(fbxPath, QueueItem.Staging);
+            }
+
+            if (!importMotion)
+            {
+
             }
 
             if (importIntoScene)
@@ -337,6 +337,22 @@ namespace Reallusion.Import
         #endregion Import Preparation
 
         #region Asset Retrieval
+        public CharacterInfo GetCharacterInfoFomLinkId(string linkId)
+        {
+            if (ImporterWindow.Current != null)
+            {
+                ImporterWindow.Current.RefreshCharacterList();
+                CharacterInfo characterMatch = ImporterWindow.validCharacters.Find(x => x.linkId == linkId);
+                if (characterMatch != null)
+                {
+                    Debug.Log("Matched Asset Path = " + characterMatch.path);
+                    return characterMatch;
+                }
+            }
+            
+            return null;
+        }
+
         public string RetrieveDiskAsset(string assetFolder, string name)
         {
             string inProjectAssetPath = string.Empty;
@@ -451,9 +467,28 @@ namespace Reallusion.Import
                 if (exists)
                     continue;
                 else
-                {
                     return testFolder;
-                }
+            }
+            return string.Empty;
+        }
+
+        public string GetNonDuplicateFileName(string assetPath, bool isAssetPath)
+        {
+            string fullPath = isAssetPath ? assetPath.UnityAssetPathToFullPath() : assetPath;
+            string folderName = Path.GetDirectoryName(fullPath);
+            string fileName = Path.GetFileNameWithoutExtension(fullPath);
+            string extension = Path.GetExtension(fullPath);
+
+            for (int i = 0; i < 999; i++)
+            {
+                string suffix = (i > 0) ? ("." + i.ToString("D3")) : "";
+                string testFileName = fileName + suffix + extension; 
+                
+                string testFilePath = Path.Combine(folderName, testFileName);
+                if (File.Exists(testFilePath))
+                    continue;
+                else
+                    return testFilePath;
             }
             return string.Empty;
         }
@@ -469,6 +504,40 @@ namespace Reallusion.Import
             AssetDatabase.Refresh();
         }
         #endregion Asset Retrieval
+
+        #region Motion Import
+        public void ImportMotion(string fbxPath, string linkId)
+        {
+            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+
+            if (motionTargetChar != null && !string.IsNullOrEmpty(motionTargetChar.path))
+            {
+                string fullFbxPath = fbxPath.UnityAssetPathToFullPath();
+                string sourceFile = Path.GetFileName(fullFbxPath);
+                string sourceFolder = Path.GetDirectoryName(fullFbxPath);
+                string sourceFolderMeta = sourceFolder + ".meta";
+                string targetFolder = Path.GetDirectoryName(motionTargetChar.path);
+
+                string targetFile = Path.Combine(targetFolder, sourceFile);
+                string uniqueTargetFile = GetNonDuplicateFileName(targetFile, false);
+                Debug.Log("uniqueTargetFile " + uniqueTargetFile);
+
+                File.Move(fullFbxPath, uniqueTargetFile);
+                Directory.Delete(sourceFolder, true);
+                File.Delete(sourceFolderMeta);
+                AssetDatabase.Refresh();
+
+                RL.DoAnimationImport(motionTargetChar);
+                GameObject characterPrefab = Util.FindCharacterPrefabAsset(motionTargetChar.Fbx);
+
+                if (characterPrefab != null)
+                {
+                    //AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionTargetChar.path, characterPrefab, true);
+                    AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true);
+                }
+            }
+        }
+        #endregion
 
         #region Prop Import
         public void ImportProp(string fbxPath, string linkId)
@@ -527,7 +596,7 @@ namespace Reallusion.Import
             //c.sceneid = add this later
 
             charInfo.CheckGeneration();
-            charInfo.InitPhysics();
+            //charInfo.InitPhysics();
 
             if (charInfo.CanHaveHighQualityMaterials)
                 charInfo.BuildQuality = MaterialQuality.High;
@@ -558,8 +627,6 @@ namespace Reallusion.Import
 
             timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
-
-
         #endregion Avatar Import
 
         #region Staging Import
@@ -1811,147 +1878,5 @@ namespace Reallusion.Import
         }
         #endregion
 
-        #region Motion ... placeholder
-
-        public void ImportMotion(string fbxPath, string linkId)
-        {
-#if MOTION_ENABLED
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
-            importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
-
-            importer.animationType = ModelImporterAnimationType.Human;
-            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-
-            AssetDatabase.WriteImportSettingsIfDirty(importer.assetPath);
-            AssetDatabase.ImportAsset(importer.assetPath, ImportAssetOptions.ForceUpdate);
-
-            return;
-            // find linkId character in scene and use its avatar for:
-            //
-            // importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
-            // importer.sourceAvatar = avatar;
-            //
-            // update animator or timeline
-
-            if (importer.defaultClipAnimations.Length > 0)
-            {
-                if (importer.clipAnimations == null || importer.clipAnimations.Length == 0)
-                    importer.clipAnimations = importer.defaultClipAnimations;
-            }
-
-            ModelImporterClipAnimation[] animations = importer.clipAnimations;
-            if (animations == null) return;
-
-            bool changed = false;
-            bool forceUpdate = true;
-
-            foreach (ModelImporterClipAnimation anim in animations)
-            {
-                if (!anim.keepOriginalOrientation || !anim.keepOriginalPositionY || !anim.keepOriginalPositionXZ ||
-                    !anim.lockRootRotation || !anim.lockRootHeightY)
-                {
-                    anim.keepOriginalOrientation = true;
-                    anim.keepOriginalPositionY = true;
-                    anim.keepOriginalPositionXZ = true;
-                    anim.lockRootRotation = true;
-                    anim.lockRootHeightY = true;
-                    changed = true;
-                }
-
-                if (anim.name.iContains("idle") && !anim.lockRootPositionXZ)
-                {
-                    anim.lockRootPositionXZ = true;
-                    changed = true;
-                }
-
-                if (anim.name.iContains("_loop") && !anim.loopTime)
-                {
-                    anim.loopTime = true;
-                    changed = true;
-                }
-            }
-
-            if (changed)
-            {
-                importer.clipAnimations = animations;
-                if (forceUpdate)
-                {
-                    AssetDatabase.WriteImportSettingsIfDirty(importer.assetPath);
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.Refresh();
-                }
-            }
-#endif
-        }
-
-        public static void GenerateCharacterTargetedAnimations(string motionAssetPath,
-            GameObject targetCharacterModel, bool replaceIfExists)
-        {
-            AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
-
-            if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
-            if (!targetCharacterModel) return;
-
-            string firstPath = null;
-
-            if (clips.Length > 0)
-            {
-                int index = 0;
-                foreach (AnimationClip clip in clips)
-                {
-                    string assetPath = GenerateClipAssetPath(clip, motionAssetPath, AnimRetargetGUI.RETARGET_SOURCE_PREFIX, true);
-                    if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
-                    if (File.Exists(assetPath) && !replaceIfExists) continue;
-                    AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
-                    AnimRetargetGUI.RetargetBlendShapes(clip, workingClip, targetCharacterModel, false);
-                    AnimationClip asset = AnimRetargetGUI.WriteAnimationToAssetDatabase(workingClip, assetPath, false);
-                    index++;
-                }
-                /*
-                if (!string.IsNullOrEmpty(firstPath))
-                    AnimPlayerGUI.UpdateAnimatorClip(CharacterAnimator,
-                                                     AssetDatabase.LoadAssetAtPath<AnimationClip>(firstPath));
-                */
-            }
-        }
-        static string GenerateClipAssetPath(AnimationClip originalClip, string characterFbxPath, string prefix = "", bool overwrite = false)
-        {
-            if (!originalClip || string.IsNullOrEmpty(characterFbxPath)) return null;
-
-            string characterName = Path.GetFileNameWithoutExtension(characterFbxPath);
-            string fbxFolder = Path.GetDirectoryName(characterFbxPath);
-            string animFolder = Path.Combine(fbxFolder, AnimRetargetGUI.ANIM_FOLDER_NAME, characterName);
-            Util.EnsureAssetsFolderExists(animFolder);
-            string clipName = originalClip.name;
-            if (clipName.iStartsWith(characterName + "_"))
-                clipName = clipName.Remove(0, characterName.Length + 1);
-
-            if (string.IsNullOrEmpty(prefix))
-            {
-                string clipPath = AssetDatabase.GetAssetPath(originalClip);
-                string clipFile = Path.GetFileNameWithoutExtension(clipPath);
-                if (!clipPath.iEndsWith(".anim")) prefix = clipFile;
-            }
-
-            string animName = AnimRetargetGUI.NameAnimation(characterName, clipName, prefix);
-            string assetPath = Path.Combine(animFolder, animName + ".anim");
-
-            if (!overwrite)
-            {
-                if (!Util.AssetPathIsEmpty(assetPath))
-                {
-                    for (int i = 0; i < 999; i++)
-                    {
-                        string extension = string.Format("{0:000}", i);
-                        assetPath = Path.Combine(animFolder, animName + "_" + extension + ".anim");
-                        if (Util.AssetPathIsEmpty(assetPath)) break;
-                    }
-                }
-            }
-
-            return assetPath;
-
-        }
-        #endregion Motion...
     }
 }
