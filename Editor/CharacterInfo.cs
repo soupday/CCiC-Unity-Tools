@@ -802,29 +802,47 @@ namespace Reallusion.Import
 
                 if (isCloth)
                 {
-                    ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
+                    if (!ShaderFlags.HasFlag(ShaderFeatureFlags.ClothPhysics))
+                        ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
 
                     if (Physics.MagicaCloth2IsAvailable())
                     {
-                        ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaCloth))
+                            ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.UnityClothPhysics;
                     }
                     else
                     {
-                        ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaCloth))
+                            ShaderFlags ^= ShaderFeatureFlags.MagicaCloth;
+
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
                     }
                 }
 
                 if (isHair)
                 {
-                    ShaderFlags |= ShaderFeatureFlags.HairPhysics;
+                    if (!ShaderFlags.HasFlag(ShaderFeatureFlags.HairPhysics))
+                        ShaderFlags |= ShaderFeatureFlags.HairPhysics;
 
                     if (Physics.MagicaCloth2IsAvailable())
                     {
-                        ShaderFlags |= ShaderFeatureFlags.MagicaClothHairPhysics;
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaClothHairPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.MagicaClothHairPhysics;
+
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothHairPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.UnityClothHairPhysics;
                     }
                     else
                     {
-                        ShaderFlags |= ShaderFeatureFlags.UnityClothHairPhysics;
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaClothHairPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.MagicaClothHairPhysics;
+
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothHairPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.UnityClothHairPhysics;
                     }
                 }
             }
