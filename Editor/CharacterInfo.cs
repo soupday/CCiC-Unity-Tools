@@ -768,17 +768,64 @@ namespace Reallusion.Import
 
         public void InitPhysics()
         {
-            if (HasPhysics())
-            {
-                ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
+            string jsonPath = name + "/Object/" + name + "/Physics/Soft Physics";
+            bool hasPhysics = JsonData.PathExists(jsonPath);
 
-                if (Physics.MagicaCloth2IsAvailable())
+            if (hasPhysics)
+            {
+                bool isHair = false;
+                bool isCloth = false;
+
+                QuickJSON softPhysicsJson = PhysicsJsonData.GetObjectAtPath("Soft Physics/Meshes");
+                if (softPhysicsJson != null)
                 {
-                    ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+                    foreach (MultiValue meshJson in softPhysicsJson.values)
+                    {
+                        string meshName = meshJson.Key;
+                        QuickJSON physicsMeshJson = softPhysicsJson.GetObjectAtPath(meshName + "/Materials");
+                        if (physicsMeshJson != null)
+                        {
+                            foreach (MultiValue pmJson in physicsMeshJson.values)
+                            {
+                                string matName = pmJson.Key;
+                                QuickJSON objectMaterialJson = CharacterJsonData.GetObjectAtPath("Meshes/" + meshName + "/Materials/" + matName);
+                                if (objectMaterialJson != null &&
+                                    objectMaterialJson.PathExists("Custom Shader/Shader Name") &&
+                                    objectMaterialJson.GetStringValue("Custom Shader/Shader Name") == "RLHair")
+                                    isHair = true;
+                                else
+                                    isCloth = true;
+                            }
+                        }
+                    }
                 }
-                else
+
+                if (isCloth)
                 {
-                    ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
+                    ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
+
+                    if (Physics.MagicaCloth2IsAvailable())
+                    {
+                        ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+                    }
+                    else
+                    {
+                        ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
+                    }
+                }
+
+                if (isHair)
+                {
+                    ShaderFlags |= ShaderFeatureFlags.HairPhysics;
+
+                    if (Physics.MagicaCloth2IsAvailable())
+                    {
+                        ShaderFlags |= ShaderFeatureFlags.MagicaClothHairPhysics;
+                    }
+                    else
+                    {
+                        ShaderFlags |= ShaderFeatureFlags.UnityClothHairPhysics;
+                    }
                 }
             }
         }
@@ -792,13 +839,7 @@ namespace Reallusion.Import
         {
             return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
         }
-
-        public bool HasPhysics()
-        {
-            string jsonPath = name + "/Object/" + name + "/Physics/Soft Physics";
-            return JsonData.PathExists(jsonPath);
-        }
-
+        
         public bool HasWrinkleDisplacement()
         {
             return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);
