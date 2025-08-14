@@ -1524,7 +1524,11 @@ namespace Reallusion.Import
                 {
                     string assetPath = GenerateClipAssetPath(clip, motionAssetPath, RETARGET_SOURCE_PREFIX, true);
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
-                    if (File.Exists(assetPath) && !replaceIfExists) continue;
+                    if (File.Exists(assetPath) && !replaceIfExists)
+                    {
+                        Debug.Log("FAIL CASE");
+                        continue;
+                    }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
                     RetargetBlendShapes(clip, workingClip, targetCharacterModel, false);
                     AnimationClip asset = WriteAnimationToAssetDatabase(workingClip, assetPath, false);
@@ -1536,7 +1540,11 @@ namespace Reallusion.Import
                     AnimPlayerGUI.UpdateAnimatorClip(CharacterAnimator, 
                                                      AssetDatabase.LoadAssetAtPath<AnimationClip>(firstPath));
             }
-            return animationClips;
+            else
+            {
+                Debug.Log("FAIL CASE NO CLIPS");
+            }
+                return animationClips;
         }
 
         /// <summary>

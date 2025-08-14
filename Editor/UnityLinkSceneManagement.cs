@@ -242,22 +242,6 @@ namespace Reallusion.Import
         {
             LockStateTimeLineWindow(false);
 
-            GameObject sceneObject = null;
-            if (PrefabUtility.GetPrefabAssetType(objectTuple.Item2) != PrefabAssetType.NotAPrefab)
-            {
-                sceneObject = (objectTuple.Item4 ? PrefabUtility.InstantiatePrefab(objectTuple.Item2) as GameObject : objectTuple.Item2);
-            }
-            else
-            {
-                Debug.LogWarning("NOT A PREFAB");
-                sceneObject = objectTuple.Item4 ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
-            }
-
-            sceneObject.transform.position = Vector3.zero;
-            sceneObject.transform.rotation = Quaternion.identity;
-
-            AnimatedStatus animStatus = objectTuple.Item6;
-
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
                 Debug.LogWarning("Cannot add to timeline.");
@@ -266,7 +250,57 @@ namespace Reallusion.Import
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            if (objectTuple.Item1.HasFlag(TrackType.AnimationTrack)) // AnimationTrack permitted for this object
+            bool instantiateInScene = objectTuple.Item4;
+            string linkId = objectTuple.Item5;
+            AnimatedStatus animStatus = objectTuple.Item6;
+
+            // look for object with linkId in the scene and remove it if necessary
+            if (instantiateInScene) PurgeLinkedSceneObject(linkId);
+
+            GameObject sceneObject = null;
+
+            if (objectTuple.Item1.HasFlag(TrackType.AnimationTrackUpdate)) // updating the animation track - no instantiation needed - sceneObject should be the GameObject bound to the existing track for the linkid
+            {
+                AnimationTrack workingtrack = null;
+
+                var tracks = timeline.GetOutputTracks();
+                foreach (TrackAsset track in tracks)
+                {
+                    if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
+                    {
+                        workingtrack = track as AnimationTrack;
+                        break;
+                    }
+                }
+
+                if (workingtrack == null)
+                {
+                    // no track to update 
+                    return;
+                }
+                else
+                {
+                    // https://discussions.unity.com/t/noob-question-on-timeline-get-gameobject-reference-from-a-timeline-track/790521
+                    sceneObject = (GameObject)director.GetGenericBinding(workingtrack);                    
+                }
+            }
+            else
+            {
+                if (PrefabUtility.GetPrefabAssetType(objectTuple.Item2) != PrefabAssetType.NotAPrefab)
+                {
+                    sceneObject = (instantiateInScene ? PrefabUtility.InstantiatePrefab(objectTuple.Item2) as GameObject : objectTuple.Item2);
+                }
+                else
+                {
+                    Debug.LogWarning("NOT A PREFAB");
+                    sceneObject = instantiateInScene ? GameObject.Instantiate(objectTuple.Item2) : objectTuple.Item2;
+                }
+
+                sceneObject.transform.position = Vector3.zero;
+                sceneObject.transform.rotation = Quaternion.identity;
+            }
+
+            if (objectTuple.Item1.HasFlag(TrackType.AnimationTrack) || objectTuple.Item1.HasFlag(TrackType.AnimationTrackUpdate)) // AnimationTrack permitted for this object
             {
                 if (animStatus.HasFlag(AnimatedStatus.Animation)) // Has detected animation data
                 {
@@ -275,9 +309,10 @@ namespace Reallusion.Import
                     var tracks = timeline.GetOutputTracks();
                     foreach (TrackAsset track in tracks)
                     {
-                        if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(AnimationTrack)))
+                        if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
                         {
                             workingtrack = track as AnimationTrack;
+                            Debug.LogWarning("workingtrack matched");
                             break;
                         }
                     }
@@ -288,7 +323,10 @@ namespace Reallusion.Import
                     }
                     else
                     {
+                        //GameObject.DestroyImmediate(workingtrack);
+                        //workingtrack = timeline.CreateTrack<AnimationTrack>(objectTuple.Item2.name + "_ANIM_" + objectTuple.Item5);
 #if UNITY_2020_1_OR_NEWER
+                        
                         // purge bound clips
                         var clips = workingtrack.GetClips();
                         if (clips != null)
@@ -298,6 +336,7 @@ namespace Reallusion.Import
                                 workingtrack.DeleteClip(c);
                             }
                         }
+                        
 #endif
                     }
 
@@ -313,6 +352,7 @@ namespace Reallusion.Import
                         }
                         else
                         {
+                            Debug.LogWarning("clipToUse " + animClip.name);
                             clipToUse = animClip;
                         }
                     }
@@ -336,7 +376,7 @@ namespace Reallusion.Import
                     var tracks = timeline.GetOutputTracks();
                     foreach (TrackAsset track in tracks)
                     {
-                        if (track.name.Contains(objectTuple.Item5) && track.GetType().Equals(typeof(ActivationTrack)))
+                        if (track.name.Contains(linkId) && track.GetType().Equals(typeof(ActivationTrack)))
                         {
                             workingtrack = track as ActivationTrack;
                             break;
@@ -412,6 +452,28 @@ namespace Reallusion.Import
             ShowTimeLineWindow(director);
             MarkSceneAsDirty();
         }
+
+        public static void PurgeLinkedSceneObject(string linkId)
+        {
+            DataLinkActorData existing = null;
+
+#if UNITY_2023_OR_NEWER
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+#endif
+
+            if (linkedObjects != null && linkedObjects.Length > 0)
+            {
+                existing = linkedObjects.ToList().Find(x => x.linkId == linkId);
+            }
+
+            if (existing != null)
+            {
+                GameObject.DestroyImmediate(existing.gameObject);
+            }            
+        }
+
 
         public static void ShowTimeLineWindow(PlayableDirector director)
         {
@@ -927,6 +989,7 @@ namespace Reallusion.Import
         public enum TrackType
         {
             AnimationTrack,
+            AnimationTrackUpdate,
             ActivationTrack,
             AudioTrack
         }

@@ -52,9 +52,12 @@ namespace Reallusion.Import
         string SAVE_FOLDER_PATH = string.Empty;
         string SCENE_NAME = string.Empty; // new scene would be SAVE_FOLDER_PATH/SCENE_NAME.unity
                                           // associated assets would be in SAVE_FOLDER_PATH/SCENE_NAME/<asset files>
+        string LinkId = string.Empty;
 
         string fbxPath = string.Empty;
         CharacterInfo motionTargetChar = null;
+        string existingLinkedCharFolder = string.Empty;
+        string existingLinkedFbxPath = string.Empty;
         bool importMotion = false;
         bool importAvatar = false;
         bool importProp = false;
@@ -205,6 +208,7 @@ namespace Reallusion.Import
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Motion.Path; }
                         name = QueueItem.Motion.Name;
                         importMotion = true;
+                        LinkId = QueueItem.Motion.LinkId;
                         motionTargetChar = GetCharacterInfoFomLinkId(QueueItem.Motion.LinkId);
                         break;
                     }
@@ -213,12 +217,16 @@ namespace Reallusion.Import
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Character.Path; }
                         name = QueueItem.Character.Name;
                         importAvatar = true;
+                        LinkId = QueueItem.Character.LinkId;
+                        existingLinkedFbxPath = GetFbxPathFromLinkId(LinkId);
+                        existingLinkedCharFolder = GetAssetFolderFromLinkId(LinkId);
                         break;
                     }
                 case UnityLinkManager.OpCodes.PROP:
                     {
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Prop.Path; }
                         name = QueueItem.Prop.Name;
+                        LinkId = QueueItem.Prop.LinkId;
                         importProp = true;
                         break;
                     }
@@ -303,11 +311,6 @@ namespace Reallusion.Import
                 ImportStaging(fbxPath, QueueItem.Staging);
             }
 
-            if (!importMotion)
-            {
-
-            }
-
             if (importIntoScene)
             {
                 foreach (var item in timelineKitList)
@@ -342,15 +345,57 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
             {
                 ImporterWindow.Current.RefreshCharacterList();
-                CharacterInfo characterMatch = ImporterWindow.validCharacters.Find(x => x.linkId == linkId);
+
+                Debug.Log("ImporterWindow.validCharacters.Count " + ImporterWindow.validCharacters.Count);
+
+                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
                 if (characterMatch != null)
                 {
                     Debug.Log("Matched Asset Path = " + characterMatch.path);
                     return characterMatch;
                 }
-            }
-            
+            }            
             return null;
+        }
+
+        public string GetAssetFolderFromLinkId(string linkId)
+        {
+            if (ImporterWindow.Current != null)
+            {
+                ImporterWindow.Current.RefreshCharacterList();
+                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
+                if (characterMatch != null)
+                {
+                    Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
+                    string fbxPath = characterMatch.path;
+                    if (!string.IsNullOrEmpty(fbxPath))
+                    {
+                        return Path.GetDirectoryName(fbxPath);
+                    }
+                }
+            }
+            Debug.Log("No Matched Asset Path for linkId: " + linkId);
+            return string.Empty;
+        }
+
+        public string GetFbxPathFromLinkId(string linkId)
+        {
+            if (ImporterWindow.Current != null)
+            {
+                ImporterWindow.Current.RefreshCharacterList();
+                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
+                if (characterMatch != null)
+                {
+                    Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
+                    string fbxPath = characterMatch.path;
+                    if (!string.IsNullOrEmpty(fbxPath))
+                    {
+                        return fbxPath;
+                    }
+                }
+            }
+            Debug.Log("No Matched Asset Path for linkId: " + linkId);
+            return string.Empty;
         }
 
         public string RetrieveDiskAsset(string assetFolder, string name)
@@ -391,8 +436,48 @@ namespace Reallusion.Import
             try
             {
                 //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
-                FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
-                AssetDatabase.Refresh();
+                if (string.IsNullOrEmpty(existingLinkedCharFolder))
+                {
+                    Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                    FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
+
+                    AssetDatabase.Refresh();
+                }
+                else
+                {
+                    string targetFolder = existingLinkedCharFolder.UnityAssetPathToFullPath();
+                    Debug.LogWarning("Moving Folder " + assetFolder + " to existing linked folder " + targetFolder);
+
+
+                    string prevParentName = "Previous_Imports";
+                    string prevParentPath = Path.Combine(existingLinkedCharFolder, prevParentName);
+
+                    if (!AssetDatabase.IsValidFolder(prevParentPath))
+                        AssetDatabase.CreateFolder(existingLinkedCharFolder, prevParentName);
+
+                    string prev_fbx = Path.GetFileName(existingLinkedFbxPath);
+                    string prev_name = Path.GetFileNameWithoutExtension(existingLinkedFbxPath);
+
+                    string uniqueFolder = GetNonDuplicateFolderName(Path.Combine(prevParentPath, prev_name), true);
+                    Debug.LogWarning("uniqueFolder " + uniqueFolder);
+                    string prev_dest = Path.Combine(uniqueFolder, prev_fbx);
+
+                    if (!AssetDatabase.IsValidFolder(uniqueFolder))
+                        AssetDatabase.CreateFolder(prevParentPath, Path.GetFileName(uniqueFolder));
+
+                    AssetDatabase.MoveAsset(existingLinkedFbxPath, prev_dest);
+
+                    AssetDatabase.StartAssetEditing();
+                    CopyDirectory(assetFolder, targetFolder, true);
+                    AssetDatabase.StopAssetEditing();
+
+                    AssetDatabase.Refresh();
+
+                    AssetImporter importer = AssetImporter.GetAtPath(existingLinkedFbxPath);
+                    importer.SaveAndReimport();
+
+                    destinationFolder = existingLinkedCharFolder;
+                }        
                 assetImportDestinationPath = destinationFolder;
             }
             catch (Exception ex)
@@ -400,7 +485,6 @@ namespace Reallusion.Import
                 Debug.LogWarning("Cannot copy asset to AssetDatabase! " + ex.Message); return string.Empty;
             }
             
-
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
             {
                 // return the containing folder in the unity project 
@@ -418,7 +502,7 @@ namespace Reallusion.Import
                         if (Util.IsCC3CharacterAtPath(projectAssetPath))
                         {
                             string charName = Path.GetFileNameWithoutExtension(projectAssetPath);
-                            //Debug.Log("Valid CC character: " + charName + " found.");
+                            Debug.Log("Valid CC character: " + charName + " found.");
                             inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                             break;
                         }
@@ -446,8 +530,56 @@ namespace Reallusion.Import
                 }
             }
 
-            //Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
+            Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
             return inProjectAssetPath;
+        }
+
+        public void MoveDirectory(string source, string target)
+        {
+            var sourcePath = source.TrimEnd('\\', ' ');
+            var targetPath = target.TrimEnd('\\', ' ');
+            var files = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
+                                 .GroupBy(s => Path.GetDirectoryName(s));
+            foreach (var folder in files)
+            {
+                var targetFolder = folder.Key.Replace(sourcePath, targetPath);
+                Directory.CreateDirectory(targetFolder);
+                foreach (var file in folder)
+                {
+                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
+                    if (File.Exists(targetFile)) File.Delete(targetFile);
+                    File.Move(file, targetFile);
+                }
+            }
+            Directory.Delete(source, true);
+        }
+
+        private void CopyDirectory(string sourcePath, string destinationPath, bool overwrite)
+        {
+            DirectoryInfo dSource = new DirectoryInfo(sourcePath);
+            DirectoryInfo dDestination = new DirectoryInfo(destinationPath);
+
+            if (!dDestination.Exists)
+            {
+                dDestination.Create();
+            }
+
+            foreach (FileInfo f in dSource.GetFiles())
+            {
+                try
+                {
+                    f.CopyTo(Path.Combine(dDestination.FullName, f.Name), overwrite);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error copying file {f.FullName}: {ex.Message}"); // Log the error
+                }
+            }
+
+            foreach (DirectoryInfo dir in dSource.GetDirectories())
+            {
+                CopyDirectory(dir.FullName, Path.Combine(dDestination.FullName, dir.Name), overwrite);
+            }
         }
 
         public string GetUniqueImportAssetFolder(string name)
@@ -530,11 +662,28 @@ namespace Reallusion.Import
                 RL.DoAnimationImport(motionTargetChar);
                 GameObject characterPrefab = Util.FindCharacterPrefabAsset(motionTargetChar.Fbx);
 
+                List<AnimationClip> clipListForTimeLine = new List<AnimationClip>();
+
                 if (characterPrefab != null)
                 {
                     //AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionTargetChar.path, characterPrefab, true);
-                    AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true);
+                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true);
+
+                    // Motions are implicitly animated
+                    animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+
+                    // only animation track update permitted for Motion
+                    UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrackUpdate;
+                    timelineKitList.Add((trackType, null, clipListForTimeLine, false, linkId, animatedStatus));
                 }
+                else
+                {
+                    Debug.Log("Cannot generate animation clips for avatar.");
+                }
+            }
+            else
+            {
+                Debug.Log("No suitable target can be found for motion.");
             }
         }
         #endregion
@@ -618,13 +767,14 @@ namespace Reallusion.Import
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
 
-            // Avatars are implicitly animated
-            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
-            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-
             // only animation tracks permitted for Avatars
             UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
 
+            // Avatars are implicitly animated
+            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;           
+                        
+            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
+            Debug.Log("animGuidsForTimeLine " + animGuidsForTimeLine.Count);
             timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
         #endregion Avatar Import
