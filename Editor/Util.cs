@@ -633,11 +633,18 @@ namespace Reallusion.Import
 
             string sourceName = sharedMaterial.name;
 
+            // remove 1st pass, 2nd pass suffix from hair materials
             if (sourceName.iContains("_1st_Pass"))
                 sourceName = sourceName.Substring(0, sourceName.IndexOf("_1st_Pass", System.StringComparison.InvariantCultureIgnoreCase));
 
             if (sourceName.iContains("_2nd_Pass"))
                 sourceName = sourceName.Substring(0, sourceName.IndexOf("_2nd_Pass", System.StringComparison.InvariantCultureIgnoreCase));
+
+            // remove Unity duplication Suffix
+            //if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            //{
+            //    sourceName = sourceName.Substring(0, sourceName.Length - 2);
+            //}
 
             return sourceName;
         }

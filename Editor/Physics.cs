@@ -301,6 +301,7 @@ namespace Reallusion.Import
 
         private string characterName;
         private string fbxFolder;
+        private string fbxPath;
         private string characterGUID;
         private List<string> textureFolders;
         private QuickJSON jsonData;
@@ -318,11 +319,11 @@ namespace Reallusion.Import
             //magicaClothMeshes = new List<GameObject>();
             clothMeshes = new List<ColliderManager.EnableStatusGameObject>();
             magicaClothMeshes = new List<ColliderManager.EnableStatusGameObject>();
-            modelScale = 0.01f;
-            fbxFolder = info.folder;
+            modelScale = 0.01f;            
             characterGUID = info.guid;
             characterName = info.name;
             fbxFolder = info.folder;
+            fbxPath = info.path;
             jsonData = info.JsonData;
             addClothPhysics = (info.ShaderFlags & CharacterInfo.ShaderFeatureFlags.ClothPhysics) > 0;
             addUnityClothPhysics = (info.ShaderFlags & CharacterInfo.ShaderFeatureFlags.UnityClothPhysics) > 0;
@@ -970,7 +971,7 @@ namespace Reallusion.Import
                 Material mat = renderer.sharedMaterials[i];
 
                 if (!mat) continue;
-                string sourceName = mat.name;
+                string sourceName = Util.GetSourceMaterialName(fbxPath, mat);
                 if (sourceName.iContains("_2nd_Pass")) continue;
                 if (sourceName.iContains("_1st_Pass"))
                 {
@@ -1045,20 +1046,20 @@ namespace Reallusion.Import
                 foreach (Transform t in transforms)
                 {
                     GameObject obj = t.gameObject;
+                    string meshName = obj.name;
+                    if (meshName.iContains("_Extracted"))
+                    {
+                        meshName = meshName.Remove(meshName.IndexOf("_Extracted"));
+                    }
+
                     foreach (SoftPhysicsData data in softPhysics)
                     {
-                        string meshName = obj.name;
-                        if (meshName.iContains("_Extracted"))
+                        if (meshName == data.meshName)
                         {
-                            meshName = meshName.Remove(meshName.IndexOf("_Extracted"));
-                        }
-
-                        if (!data.isHair && addMagicaClothPhysics)
-                        {
-                            if (CanAddMagicaCloth(obj, meshName))
+                            if (!data.isHair && addMagicaClothPhysics)
                             {
-                                if (meshName == data.meshName)
-                                {
+                                if (CanAddMagicaCloth(obj, meshName))
+                                {                                
                                     obj.AddComponent<PrefabNavigation>();
                                     var cloth = AddMagicaClothInstance(0, obj); // typeValue 0 == create magic mesh cloth 
                                     SetComponentEnabled(cloth, data.activate);
@@ -1069,15 +1070,11 @@ namespace Reallusion.Import
                                     //magicaClothMeshes.Add(obj);
                                     magicaClothMeshes.Add(new EnableStatusGameObject(obj, GetMagicaComponentEnableStatus(obj)));
                                 }
-                            }
-                        }
-
-                        if (data.isHair && addMagicaClothHairPhysics)
-                        {
-                            if (CanAddMagicaCloth(obj, meshName))
+                            }                        
+                            else if (data.isHair && addMagicaClothHairPhysics)
                             {
-                                if (meshName == data.meshName)
-                                {
+                                if (CanAddMagicaCloth(obj, meshName))
+                                {                                
                                     obj.AddComponent<PrefabNavigation>();
                                     var cloth = AddMagicaClothInstance(0, obj);
                                     SetComponentEnabled(cloth, data.activate);
@@ -1117,7 +1114,7 @@ namespace Reallusion.Import
                 Material mat = renderer.sharedMaterials[i];
 
                 if (!mat) continue;
-                string sourceName = mat.name;
+                string sourceName = Util.GetSourceMaterialName(fbxPath, mat);
                 if (sourceName.iContains("_2nd_Pass")) continue;
                 if (sourceName.iContains("_1st_Pass"))
                 {

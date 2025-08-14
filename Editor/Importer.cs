@@ -778,7 +778,8 @@ namespace Reallusion.Import
             return Path.Combine(texFolder, obj.name, sourceName);
         }
 
-        private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, string sourceName, QuickJSON matJson)
+        private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, 
+                                             string sourceName, QuickJSON matJson)
         {            
             // get the template material.
             Material templateMaterial = Pipeline.GetTemplateMaterial(sourceName, materialType, 
@@ -802,22 +803,29 @@ namespace Reallusion.Import
                 return null;
             }
 
-            Material remapMaterial = sharedMaterial;            
+            Material remapMaterial = sharedMaterial;
+            bool reuseExistingMaterial = true;
 
             // if the material is missing or it is embedded in the fbx, create a new unique material:
             if (!remapMaterial || AssetDatabase.GetAssetPath(remapMaterial) == fbxPath)
             {
-                // create the remapped material and save it as an asset.
-                string matPath = AssetDatabase.GenerateUniqueAssetPath(
-                        Path.Combine(materialsFolder, sourceName + ".mat")
-                    );
+                string materialAssetPath = Path.Combine(materialsFolder, sourceName + ".mat");
 
-                remapMaterial = new Material(shader);
+                if (reuseExistingMaterial && AssetDatabase.AssetPathExists(materialAssetPath))
+                { 
+                    remapMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialAssetPath);
+                    Util.LogInfo("    Using Existing material: " + remapMaterial.name);
+                }
+                else
+                {
+                    // create the remapped material and save it as an asset.
+                    string matPath = AssetDatabase.GenerateUniqueAssetPath(materialAssetPath);
+                    remapMaterial = new Material(shader);
 
-                // save the material to the asset database.
-                AssetDatabase.CreateAsset(remapMaterial, matPath);
-
-                Util.LogInfo("    Created new material: " + remapMaterial.name);
+                    // save the material to the asset database.
+                    AssetDatabase.CreateAsset(remapMaterial, matPath);
+                    Util.LogInfo("    Created new material: " + remapMaterial.name);
+                }
 
                 // add the new remapped material to the importer remaps.
                 importer.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), sourceName), remapMaterial);
