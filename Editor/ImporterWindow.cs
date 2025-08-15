@@ -2120,7 +2120,7 @@ namespace Reallusion.Import
 
                 GUILayout.BeginVertical(); // vertical container for label
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(name, importerStyles.nameTextStyle);
+                GUILayout.Label(name, info.isLinked ? importerStyles.nameTextLinkedStyle : importerStyles.nameTextStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndVertical(); // vertical container for label
 
@@ -2240,6 +2240,7 @@ namespace Reallusion.Import
             public GUIStyle iconStyle;
             public GUIStyle dragBarStyle;
             public GUIStyle nameTextStyle;
+            public GUIStyle nameTextLinkedStyle;
             public GUIStyle fakeButton;
             public GUIStyle fakeButtonContext;
             public Texture2D dragTex, contextTex;
@@ -2299,6 +2300,12 @@ namespace Reallusion.Import
                 nameTextStyle.wordWrap = false;
                 nameTextStyle.fontStyle = FontStyle.Normal;
                 nameTextStyle.normal.textColor = Color.white;
+
+                nameTextLinkedStyle = new GUIStyle();
+                nameTextLinkedStyle.alignment = TextAnchor.MiddleLeft;
+                nameTextLinkedStyle.wordWrap = false;
+                nameTextLinkedStyle.fontStyle = FontStyle.Normal;
+                nameTextLinkedStyle.normal.textColor = Color.cyan;
 
                 fakeButton = new GUIStyle();
                 //fakeButton.normal.background = nonContextTex;
