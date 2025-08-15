@@ -983,7 +983,7 @@ namespace Reallusion.Import
                     {
                         next.Processed = true;
                         //Debug.Log(next.Character.ToString());
-                        ImportItem(next);                        
+                        ImportItem(next);
                         break;
                     }
                 case OpCodes.CHARACTER_UPDATE:

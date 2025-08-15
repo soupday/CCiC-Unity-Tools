@@ -24,6 +24,7 @@ using UnityEngine.SceneManagement;
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.HighDefinition;
 using UnityEditor.Rendering;
+using System.Linq.Expressions;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
 using UnityEditor.Rendering;
@@ -253,7 +254,17 @@ namespace Reallusion.Import
                 string zipPath = Path.Combine(UnityLinkManager.EXPORTPATH, QueueItem.RemoteId + ".zip");
                 string zipFolder = Path.Combine(UnityLinkManager.EXPORTPATH, QueueItem.RemoteId);
 #if UNITY_2021_1_OR_NEWER
-                ZipFile.ExtractToDirectory(zipPath, zipFolder);
+                try
+                {
+                    ZipFile.ExtractToDirectory(zipPath, zipFolder);
+                }
+                catch (Exception e) 
+                {
+                    Debug.LogError("Error extracting remote zip to directory:\n" + 
+                                    zipPath + "\n" + 
+                                    zipFolder + "\n" + 
+                                    e.Message);
+                }
 #else
                 //System.IO.Compression.FileSystem.ZipFile.ExtractToDirectory(zipPath, zipFolder);
                 // either use nuget < PackageReference Include = "System.IO.Compression.ZipFile" Version = "4.3.0" />
