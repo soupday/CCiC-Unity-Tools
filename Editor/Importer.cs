@@ -405,12 +405,23 @@ namespace Reallusion.Import
             }
 
             characterInfo.animationRetargeted = animationRetargeted;
-
+            
             // save final prefab instance and remove from scene
             GameObject prefabAsset = RL.SaveAndRemovePrefabInstance(prefabInstance, prefabAssetPath);
 
             if (!batchMode) Selection.activeObject = prefabAsset;
-            else Selection.activeObject = null;            
+            else Selection.activeObject = null;
+
+            if (characterInfo.isLinked)
+            {
+                // add DataLinkActorData
+                var data = prefabAsset.AddComponent<DataLinkActorData>();
+                data.linkId = characterInfo.linkId;
+                data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefabAsset)).ToString();
+                data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
+                data.createdTimeStamp = DateTime.Now.Ticks;
+                PrefabUtility.SavePrefabAsset(prefabAsset);
+            }
 
             return prefabAsset;
         }        

@@ -62,6 +62,8 @@ namespace Reallusion.Import
         }
 
         public string linkId = string.Empty;
+        public bool isLinked { get {  return linkId != string.Empty; } }
+
         public string projectName = string.Empty;
         public ExportType exportType = ExportType.NONE;
 

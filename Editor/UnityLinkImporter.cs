@@ -718,8 +718,9 @@ namespace Reallusion.Import
             import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
             c.Write();
-            
-            // add link id
+
+            /*
+            // add link id - now in the model importer
             var data = prefab.AddComponent<DataLinkActorData>();
             data.linkId = linkId;
             data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
@@ -727,7 +728,7 @@ namespace Reallusion.Import
             data.createdTimeStamp = DateTime.Now.Ticks;           
                         
             PrefabUtility.SavePrefabAsset(prefab);
-
+            */
 
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
@@ -768,13 +769,16 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             charInfo.Write();
 
-            // add link id
+            /*
+            // add link id - now in the model importer
             var data = prefab.AddComponent<DataLinkActorData>();
             data.linkId = linkId;
             data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
             data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
             data.createdTimeStamp = DateTime.Now.Ticks;
             PrefabUtility.SavePrefabAsset(prefab);
+            */
+
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
 

@@ -179,19 +179,19 @@ namespace Reallusion.Import
                 var valids = directors.ToList().FindAll(y => y.playableAsset != null);
                 if (valids.Count > 0)
                 {
-                    List<DataLinkActorData> actorDatas = new List<DataLinkActorData>();
+                    List<DataLinkActorData> actorData = new List<DataLinkActorData>();
                     foreach (var pd  in valids)
                     {
                         var data = pd.gameObject.GetComponent<DataLinkActorData>();
                         if (data != null)
                         {
-                            actorDatas.Add(data);
+                            actorData.Add(data);
                         }
                     }
-                    if (actorDatas.Count > 0)
+                    if (actorData.Count > 0)
                     {
-                        actorDatas.OrderByDescending(x => x.createdTimeStamp).ToList();
-                        director = actorDatas[0].gameObject.GetComponent<PlayableDirector>();
+                        actorData.OrderByDescending(x => x.createdTimeStamp).ToList();
+                        director = actorData[0].gameObject.GetComponent<PlayableDirector>();
                         return true;
                     }
                 }

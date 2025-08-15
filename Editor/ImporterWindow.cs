@@ -118,17 +118,16 @@ namespace Reallusion.Import
         private bool repaintDelegated = false;
 
         private Styles importerStyles;
-        //GUIStyle dragBarStyle;
-        //GUIStyle nameTextStyle;
-        //GUIStyle fakeButton;
-        //GUIStyle fakeButtonContext;
-
-        //private GUIStyle logStyle, mainStyle, buttonStyle, labelStyle, boldStyle, iconStyle;
+        
         private Texture2D iconUnprocessed;
         private Texture2D iconBasic;
+        private Texture2D iconLinkedBasic;
         private Texture2D iconHQ;
+        private Texture2D iconLinkedHQ;
         private Texture2D iconBaked;
+        private Texture2D iconLinkedBaked;
         private Texture2D iconMixed;
+        private Texture2D iconLinkedMixed;
         private Texture2D iconActionBake;
         private Texture2D iconActionBakeOn;
         private Texture2D iconActionBakeHair;
@@ -295,9 +294,13 @@ namespace Reallusion.Import
             string[] folders = new string[] { "Assets", "Packages" };
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
             iconBasic = Util.FindTexture(folders, "RLIcon_BasicChar");
+            iconLinkedBasic = Util.FindTexture(folders, "RLIcon_Linked_BasicChar");
             iconHQ = Util.FindTexture(folders, "RLIcon_HQChar");
+            iconLinkedHQ = Util.FindTexture(folders, "RLIcon_Linked_HQChar");
             iconBaked = Util.FindTexture(folders, "RLIcon_BakedChar");
+            iconLinkedBaked = Util.FindTexture(folders, "RLIcon_Linked_BakedChar");
             iconMixed = Util.FindTexture(folders, "RLIcon_MixedChar");
+            iconLinkedMixed = Util.FindTexture(folders, "RLIcon_Linked_MixedChar");
             iconActionBake = Util.FindTexture(folders, "RLIcon_ActionBake");
             iconActionBakeOn = Util.FindTexture(folders, "RLIcon_ActionBake_Sel");
             iconActionBakeHair = Util.FindTexture(folders, "RLIcon_ActionBakeHair");
@@ -778,6 +781,16 @@ namespace Reallusion.Import
             GUILayout.Label(importType, importerStyles.boldStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
+            if (!string.IsNullOrEmpty(contextCharacter.linkId))
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Link ID: ", importerStyles.boldStyle);
+                GUILayout.Label(contextCharacter.linkId, importerStyles.linkStyle);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
 
             GUILayout.FlexibleSpace();
 
@@ -1988,16 +2001,16 @@ namespace Reallusion.Import
                     iconTexture = iconProp;
                 }
                 else
-                {
+                {   
                     if (info.bakeIsBaked)
                     {
-                        if (info.BuiltBasicMaterials) iconTexture = iconMixed;
-                        else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                        if (info.BuiltBasicMaterials) iconTexture = info.isLinked ? iconLinkedMixed : iconMixed;
+                        else if (info.BuiltHQMaterials) iconTexture = info.isLinked ? iconLinkedBaked : iconBaked;
                     }
                     else
                     {
-                        if (info.BuiltBasicMaterials) iconTexture = iconBasic;
-                        else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                        if (info.BuiltBasicMaterials) iconTexture = info.isLinked ? iconLinkedBasic : iconBasic;
+                        else if (info.BuiltHQMaterials) iconTexture = info.isLinked ? iconLinkedHQ : iconHQ;
                     }
                 }
 
@@ -2223,6 +2236,7 @@ namespace Reallusion.Import
             public GUIStyle buttonStyle;
             public GUIStyle labelStyle;
             public GUIStyle boldStyle;
+            public GUIStyle linkStyle;
             public GUIStyle iconStyle;
             public GUIStyle dragBarStyle;
             public GUIStyle nameTextStyle;
@@ -2253,6 +2267,12 @@ namespace Reallusion.Import
                 boldStyle.wordWrap = false;
                 boldStyle.fontStyle = FontStyle.Bold;
                 boldStyle.normal.textColor = Color.white;
+
+                linkStyle = new GUIStyle();
+                linkStyle.alignment = TextAnchor.UpperLeft;
+                linkStyle.wordWrap = false;
+                linkStyle.fontStyle = FontStyle.Bold;
+                linkStyle.normal.textColor = new Color(0.82f, 1.0f, 0.48f);
 
                 labelStyle = new GUIStyle();
                 labelStyle.alignment = TextAnchor.UpperLeft;
