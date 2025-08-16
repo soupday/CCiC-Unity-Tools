@@ -268,6 +268,19 @@ namespace Reallusion.Import
                 return false;
         }
 
+        const string variantLimit = "UnityEditor.ShaderGraph.VariantLimit";
+
+        public static void SetShaderVariantLimit()
+        {
+            if (EditorPrefs.HasKey(variantLimit))
+            {
+                if(EditorPrefs.GetInt(variantLimit, 128) < 256)
+                {
+                    EditorPrefs.SetInt(variantLimit, 256);
+                }
+            }
+        }
+
         public enum PackageType
         {
             Shader,

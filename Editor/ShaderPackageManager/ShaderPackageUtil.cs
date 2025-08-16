@@ -1104,7 +1104,9 @@ namespace Reallusion.Import
             //AssetDatabase.onImportPackageItemsCompleted += OnImportPackageItemsCompleted;
 #else
 
-#endif            
+#endif      
+            UpdateManager.SetShaderVariantLimit();
+
             if (ImporterWindow.GeneralSettings != null)
             {
                 ImporterWindow.GeneralSettings.performPostInstallationCheck = true;
