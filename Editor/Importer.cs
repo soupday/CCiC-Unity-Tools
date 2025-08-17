@@ -822,7 +822,12 @@ namespace Reallusion.Import
             {
                 string materialAssetPath = Path.Combine(materialsFolder, sourceName + ".mat");
 
-                if (reuseExistingMaterial && AssetDatabase.AssetPathExists(materialAssetPath))
+#if UNITY_2023_1_OR_NEWER
+                bool assetPathExists = AssetDatabase.AssetPathExists(materialAssetPath);
+#else
+                bool assetPathExists = File.Exists(materialAssetPath.UnityAssetPathToFullPath());
+#endif
+                if (reuseExistingMaterial && assetPathExists)//AssetDatabase.AssetPathExists(materialAssetPath))
                 { 
                     remapMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialAssetPath);
                     Util.LogInfo("    Using Existing material: " + remapMaterial.name);

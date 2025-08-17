@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
@@ -269,15 +272,65 @@ namespace Reallusion.Import
         }
 
         const string variantLimit = "UnityEditor.ShaderGraph.VariantLimit";
+        const string ShaderGraphProjectSettings = "ProjectSettings/ShaderGraphSettings.asset";
+        const int shaderVariantLimit = 2048;
 
         public static void SetShaderVariantLimit()
         {
             if (EditorPrefs.HasKey(variantLimit))
             {
-                if(EditorPrefs.GetInt(variantLimit, 128) < 256)
+                if(EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit)
                 {
-                    EditorPrefs.SetInt(variantLimit, 256);
+                    EditorPrefs.SetInt(variantLimit, shaderVariantLimit);
                 }
+            }
+
+            try
+            {
+                
+
+                //Debug.Log("AssetDatabase.AssetPathExists " + AssetDatabase.AssetPathExists(ShaderGraphProjectSettings));
+                UnityEngine.Object[] settings = InternalEditorUtility.LoadSerializedFileAndForget(ShaderGraphProjectSettings);
+                //UnityEditor.AssetDatabase.LoadAllAssetsAtPath(ShaderGraphProjectSettings);
+
+                if (settings.Length > 0) {
+
+                    //foreach(var data in settings)
+                    //{
+                    var data = settings[0];
+                    Debug.Log(data.ToString() + " " + data.GetType());
+                    SerializedObject set = new SerializedObject(data);
+                    SerializedProperty lim = set.FindProperty("shaderVariantLimit");
+                    if (lim.intValue < shaderVariantLimit)
+                        lim.intValue = shaderVariantLimit;
+                    set.ApplyModifiedProperties();
+                    Debug.Log("SerializedProperty " + lim.intValue);
+                    set.Update();
+                    var array = new Object[] { data };
+                    InternalEditorUtility.SaveToSerializedFileAndForget(array, ShaderGraphProjectSettings, true);
+                    EditorApplication.ExecuteMenuItem("File/Save Project");
+                    /*
+                    SerializedObject shaderGraphSettings = new SerializedObject(settings[0]);
+
+                    SerializedProperty m_shaderVariantLimit = shaderGraphSettings.FindProperty("shaderVariantLimit");
+                    if (m_shaderVariantLimit.intValue < shaderVariantLimit)
+                    {
+                        m_shaderVariantLimit.intValue = shaderVariantLimit;
+                        shaderGraphSettings.ApplyModifiedProperties();
+
+                        
+
+                        InternalEditorUtility.SaveToSerializedFileAndForget(settings, ShaderGraphProjectSettings, true);
+                    }*/
+                }
+                else
+                {
+                    Debug.Log(ShaderGraphProjectSettings + " not found.");                    
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);   
             }
         }
 
