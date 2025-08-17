@@ -308,7 +308,10 @@ namespace Reallusion.Import
                     set.Update();
                     var array = new Object[] { data };
                     InternalEditorUtility.SaveToSerializedFileAndForget(array, ShaderGraphProjectSettings, true);
-                    EditorApplication.ExecuteMenuItem("File/Save Project");
+                    SettingsService.NotifySettingsProviderChanged();//.NotifySettingsProviderChanges();
+                    SettingsService.RepaintAllSettingsWindow(); 
+                    SettingsService.OpenProjectSettings("Project/Shader Graph");
+                    
                     /*
                     SerializedObject shaderGraphSettings = new SerializedObject(settings[0]);
 
