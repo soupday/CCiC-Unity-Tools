@@ -1105,7 +1105,7 @@ namespace Reallusion.Import
 #else
 
 #endif      
-            UpdateManager.SetShaderVariantLimit();
+            //UpdateManager.SetShaderVariantLimit();
 
             if (ImporterWindow.GeneralSettings != null)
             {

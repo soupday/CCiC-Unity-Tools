@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -271,6 +272,13 @@ namespace Reallusion.Import
                 return false;
         }
 
+        [MenuItem("Reallusion/Misc Tools/Set Shader Variant Limit", priority = 180)]
+        private static void DoSetShaderVariantLimit()
+        {
+            SetShaderVariantLimit();
+            //Pipeline.AddDiffusionProfilesHDRP();
+        }
+
         const string variantLimit = "UnityEditor.ShaderGraph.VariantLimit";
         const string ShaderGraphProjectSettings = "ProjectSettings/ShaderGraphSettings.asset";
         const int shaderVariantLimit = 2048;
@@ -287,48 +295,75 @@ namespace Reallusion.Import
 
             try
             {
-                
+                Debug.Log("Before InternalEditorUtility.LoadSerializedFileAndForget");
 
-                //Debug.Log("AssetDatabase.AssetPathExists " + AssetDatabase.AssetPathExists(ShaderGraphProjectSettings));
-                UnityEngine.Object[] settings = InternalEditorUtility.LoadSerializedFileAndForget(ShaderGraphProjectSettings);
-                //UnityEditor.AssetDatabase.LoadAllAssetsAtPath(ShaderGraphProjectSettings);
+                UnityEngine.Object[] settingsData = InternalEditorUtility.LoadSerializedFileAndForget(ShaderGraphProjectSettings);
 
-                if (settings.Length > 0) {
+                Type settingsType = Physics.GetTypeInAssemblies("UnityEditor.ShaderGraph.ShaderGraphProjectSettings");
+                if (settingsType != null)
+                {
+                    Debug.Log("UnityEditor.ShaderGraph.ShaderGraphProjectSettings Type found");
 
-                    //foreach(var data in settings)
-                    //{
-                    var data = settings[0];
-                    Debug.Log(data.ToString() + " " + data.GetType());
-                    SerializedObject set = new SerializedObject(data);
-                    SerializedProperty lim = set.FindProperty("shaderVariantLimit");
-                    if (lim.intValue < shaderVariantLimit)
-                        lim.intValue = shaderVariantLimit;
-                    set.ApplyModifiedProperties();
-                    Debug.Log("SerializedProperty " + lim.intValue);
-                    set.Update();
-                    var array = new Object[] { data };
-                    InternalEditorUtility.SaveToSerializedFileAndForget(array, ShaderGraphProjectSettings, true);
-                    SettingsService.NotifySettingsProviderChanged();//.NotifySettingsProviderChanges();
-                    SettingsService.RepaintAllSettingsWindow(); 
-                    SettingsService.OpenProjectSettings("Project/Shader Graph");
-                    
+                    var singleton = Object.FindObjectsByType(settingsType, FindObjectsSortMode.None);
+
+                    FieldInfo fi = settingsType.GetType().GetField("m_SerializedObject", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if (fi != null) Debug.Log("FieldInfo found");
+                    else Debug.Log("FieldInfo not found");
+
                     /*
-                    SerializedObject shaderGraphSettings = new SerializedObject(settings[0]);
+                    MethodInfo update = singleton[0].GetType().GetMethod("Update",
+                                    BindingFlags.Public | BindingFlags.Instance,
+                                    null,
+                                    CallingConventions.Any,
+                                    new Type[] { },
+                                    null);
 
-                    SerializedProperty m_shaderVariantLimit = shaderGraphSettings.FindProperty("shaderVariantLimit");
-                    if (m_shaderVariantLimit.intValue < shaderVariantLimit)
+                    if (update != null)
                     {
+                        Debug.Log("Update MethodInfo found");
+                        update.Invoke(singleton[0], null);
+                    }
+                    else
+                    {
+                        Debug.Log("Update MethodInfo NOT found");
+                    }
+                    */
+                }
+
+                Debug.Log("After InternalEditorUtility.LoadSerializedFileAndForget");
+
+                if (settingsData.Length > 0)
+                {
+                    Debug.Log(ShaderGraphProjectSettings + " found.");
+
+                    SerializedObject shaderGraphSettings = new SerializedObject(settingsData[0]);
+                    SerializedProperty m_shaderVariantLimit = shaderGraphSettings.FindProperty("shaderVariantLimit");
+
+                    Debug.Log("m_shaderVariantLimit.intValue 0 " + m_shaderVariantLimit.intValue);
+
+                    if (m_shaderVariantLimit.intValue < shaderVariantLimit)
                         m_shaderVariantLimit.intValue = shaderVariantLimit;
-                        shaderGraphSettings.ApplyModifiedProperties();
 
-                        
+                    Debug.Log("m_shaderVariantLimit.intValue 1 " + m_shaderVariantLimit.intValue);
 
-                        InternalEditorUtility.SaveToSerializedFileAndForget(settings, ShaderGraphProjectSettings, true);
-                    }*/
+                    shaderGraphSettings.ApplyModifiedProperties();
+
+                    Debug.Log("m_shaderVariantLimit.intValue 2 " + m_shaderVariantLimit.intValue);
+
+                    shaderGraphSettings.Update();
+
+                    var array = new Object[] { settingsData[0] };
+                    InternalEditorUtility.SaveToSerializedFileAndForget(settingsData, ShaderGraphProjectSettings, true);
+
+                    SettingsService.NotifySettingsProviderChanged();
+                    SettingsService.RepaintAllSettingsWindow();
+
+                    Debug.Log("m_shaderVariantLimit.intValue 3 " + m_shaderVariantLimit.intValue);
                 }
                 else
                 {
-                    Debug.Log(ShaderGraphProjectSettings + " not found.");                    
+                    Debug.Log(ShaderGraphProjectSettings + " not found.");
                 }
             }
             catch (Exception e)

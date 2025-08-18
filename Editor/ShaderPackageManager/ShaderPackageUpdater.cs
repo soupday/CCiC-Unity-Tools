@@ -302,6 +302,10 @@ namespace Reallusion.Import
 
             GUILayout.Space(SECTION_SPACER);
 
+            ShaderGraphGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
             InstalledShaderFoldoutGUI();
 
             GUILayout.Space(SECTION_SPACER);
@@ -619,6 +623,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // current target build platform
         }
 
+
         private void CurrentBuildDetailsGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // current target build platform details
@@ -664,7 +669,125 @@ namespace Reallusion.Import
 
             GUILayout.EndVertical(); // current target build platform details
         }
-                
+
+
+        bool shaderGraphFoldout = false;
+        private void ShaderGraphGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // current target build platform
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            if (currentTarget != EditorUserBuildSettings.activeBuildTarget) UpdateGUI();
+
+            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent("Shader Graph Settings", ""), true, guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+            
+            if (shaderGraphFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                ShaderGraphSettingsGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical(); // current target build platform
+        }
+
+        private void ShaderGraphSettingsGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // current target build platform details
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.BeginVertical();
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Shader Variant Limit", guiStyles.ActiveLabel);
+
+            GUILayout.Label("should be at least", guiStyles.InactiveLabel);
+
+            GUILayout.Label("2048", guiStyles.ActiveLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label("You must manually set this in both project settings and preferences.", guiStyles.InactiveLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndVertical();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginVertical();
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Open Project Settings"))
+            {
+                SettingsService.OpenProjectSettings("Project/Shader Graph");
+            }
+
+            GUILayout.Space(12f);
+
+            if (GUILayout.Button("Open Preferences"))
+            {
+                SettingsService.OpenUserPreferences("Preferences/Shader Graph");
+            }
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndVertical();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (UpdateManager.platformRestriction != ShaderPackageUtil.PlatformRestriction.None)
+            {
+                GUILayout.Space(VERT_INDENT);
+
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.Label(GetPlatformRestrictionText(), guiStyles.WrappedInfoLabelColor);
+
+                GUILayout.FlexibleSpace();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical(); // current target build platform details
+        }
+
         private string GetShaderLabel()
         {
             string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
