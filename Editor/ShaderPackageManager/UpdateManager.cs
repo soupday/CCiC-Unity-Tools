@@ -275,7 +275,7 @@ namespace Reallusion.Import
         [MenuItem("Reallusion/Misc Tools/Set Shader Variant Limit", priority = 180)]
         private static void DoSetShaderVariantLimit()
         {
-            SetShaderVariantLimit();
+            Debug.Log(IsShaderVariantLimitTooLow());
             //Pipeline.AddDiffusionProfilesHDRP();
         }
 
@@ -283,8 +283,43 @@ namespace Reallusion.Import
         const string ShaderGraphProjectSettings = "ProjectSettings/ShaderGraphSettings.asset";
         const int shaderVariantLimit = 2048;
 
-        public static void SetShaderVariantLimit()
+        public static bool IsShaderVariantLimitTooLow() // true if its too low
         {
+            string fullassetPath = ShaderGraphProjectSettings.UnityAssetPathToFullPath();
+
+            if (File.Exists(fullassetPath))
+            {
+                using (StreamReader sr = new StreamReader(fullassetPath))
+                {
+                    string line;
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if (line.iContains("shaderVariantLimit:"))
+                        {
+                            string[] strings = line.Split(':');
+                            if (int.TryParse(strings[1].Trim(), out int settingsValue))
+                            {
+                                if (settingsValue < shaderVariantLimit) return true;
+                            }
+                            else
+                            {
+                                Debug.Log("Cannot parse ShaderGraphProjectSettings");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (EditorPrefs.HasKey(variantLimit))
+            {
+                if (EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit) return true;                
+            }
+
+            return false;
+
+
+
             if (EditorPrefs.HasKey(variantLimit))
             {
                 if(EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit)
@@ -476,9 +511,11 @@ namespace Reallusion.Import
 
                 bool optional = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional;
 
+                bool shaderGraphActionRequired = IsShaderVariantLimitTooLow();
+
                 bool pipelineActionRequired = incompatible;
 
-                bool shaderActionRequired = force || (optional && sos) || incompatible;                
+                bool shaderActionRequired = force || (optional && sos) || incompatible || shaderGraphActionRequired;                
                 
                 //if (critical) Debug.LogWarning("Critical package updates are required.");
                 //else if (optional) Debug.LogWarning("An optional shader package is available.");
@@ -521,6 +558,7 @@ namespace Reallusion.Import
                         ShaderPackageUpdater.Instance.pipeLineActionRequired = pipelineActionRequired;
                         ShaderPackageUpdater.Instance.shaderActionRequired = shaderActionRequired;
                         ShaderPackageUpdater.Instance.softwareActionRequired = swUpdateAvailable;
+                        ShaderPackageUpdater.Instance.shaderGraphActionRequired = shaderGraphActionRequired;
                     }
                 }
             }

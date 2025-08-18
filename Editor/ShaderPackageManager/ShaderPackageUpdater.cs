@@ -266,6 +266,7 @@ namespace Reallusion.Import
         public bool softwareActionRequired = false;
         bool currentSoftwareVersionFoldout = false;
         public bool pipeLineActionRequired = false;
+        public bool shaderGraphActionRequired = false;
         bool allInstPipeFoldout = false;
         public bool instShaderFoldout = false;
         public bool instRuntimeFoldout = false;
@@ -682,9 +683,14 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            if (currentTarget != EditorUserBuildSettings.activeBuildTarget) UpdateGUI();
+            bool error = shaderGraphActionRequired;
+            if (error)
+            {
+                shaderGraphFoldout = true;
+            }
 
-            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent("Shader Graph Settings", ""), true, guiStyles.FoldoutTitleLabel);
+            string foldoutLabel = "Shader Graph Settings";
+            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see shortcuts to the project settings and preferences for Shader Graph - with more complex shaders it is important to have a Shader Variant limit of 2048.  This has to be done manually (it can be sticky to set - move focus away from the int field to update the value)."), true, error ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel);
 
             GUILayout.FlexibleSpace();
 
