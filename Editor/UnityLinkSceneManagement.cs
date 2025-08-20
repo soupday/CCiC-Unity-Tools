@@ -14,6 +14,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Timeline;
 
 using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
+
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.HighDefinition;
 #elif URP_10_5_0_OR_NEWER
@@ -667,6 +669,54 @@ namespace Reallusion.Import
                 dof.highQualityFiltering = true;
             }
             // other overrides
+
+            // diffusion profiles
+#if HDRP_14_0_0_OR_NEWER
+            // prior to HDRP13 not possible via script (leave as HDRP14 define)
+            // https://discussions.unity.com/t/modify-diffusion-profile-settings-from-scripting/859377/2
+
+            string[] profiles = new string[] { "RL_Skin_Profile", "RL_Teeth_Profile", "RL_Eye_Profile", "RL_SSS_Profile" };
+
+            if (!global.sharedProfile.TryGet<DiffusionProfileList>(out DiffusionProfileList dpl))
+            {
+                dpl = VolumeProfileFactory.CreateVolumeComponent<DiffusionProfileList>(
+                    profile: global.sharedProfile,
+                    overrides: true,
+                    saveAsset: true);
+            }
+
+            bool addDiffProfiles = false;
+            if (dpl != null)
+            {
+                if (dpl.diffusionProfiles.value != null)
+                {                    
+                    if (dpl.diffusionProfiles.value.Length == 0)
+                    {
+                        addDiffProfiles = true;
+                    }
+                }
+                else
+                {
+                    addDiffProfiles = true;
+                }
+            }
+
+            if (addDiffProfiles)
+            {
+                List<DiffusionProfileSettings> dpsList = new List<DiffusionProfileSettings>();
+
+                foreach (string profile in profiles)
+                {
+                    Object asset = Util.FindAsset(profile);
+                    if (asset.GetType() == typeof(DiffusionProfileSettings))
+                    {
+                        DiffusionProfileSettings dpAsset = (DiffusionProfileSettings)asset;
+                        dpsList.Add(dpAsset);
+                    }
+                }
+                dpl.diffusionProfiles.value = dpsList.ToArray();
+            }
+#endif
 
             AssetDatabase.SaveAssetIfDirty(sharedProfile);
             // https://discussions.unity.com/t/resource-tutorial-urp-hdrp-volumemananger-not-initialized-in-frame-1/1558540

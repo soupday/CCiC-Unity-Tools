@@ -154,7 +154,11 @@ namespace Reallusion.Import
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
         // is not closed. If the attribute is omitted then the state is still serialized/deserialized.
+#if UNITY_6000_2_OR_NEWER
+        [SerializeField] TreeViewState<int> treeViewState;
+#else
         [SerializeField] TreeViewState treeViewState;
+#endif
 
         //The TreeView is not serializable, so it should be reconstructed from the tree data.
         CharacterTreeView characterTreeView;
@@ -501,7 +505,11 @@ namespace Reallusion.Import
                 // that survived assembly reloading)
                 if (treeViewState == null)
                 {
+#if UNITY_6000_2_OR_NEWER
+                    treeViewState = new TreeViewState<int>();
+#else
                     treeViewState = new TreeViewState();
+#endif
                 }
                 characterTreeView = new CharacterTreeView(treeViewState, contextCharacter.Fbx);
 

@@ -9,8 +9,14 @@ using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using Object = UnityEngine.Object;
 
-namespace Reallusion.Import {
+namespace Reallusion.Import
+{
+#if UNITY_6000_2_OR_NEWER 
+    // 'TreeViewItem' is obsolete: 'TreeViewItem is now deprecated. You can likely now use TreeViewItem<int> instead and not think more about it. But if you were using that identifier to store InstanceID data, you should instead opt to upgrade your TreeViews to use TreeViewItem<InstanceID> to get the proper typing.'
+    public class TimeLineTreeView : TreeView<int>
+#else
     public class TimeLineTreeView : TreeView
+#endif
     {
         /*
          * Root                                                     depth = -1  
@@ -27,7 +33,11 @@ namespace Reallusion.Import {
         PlayableDirector[] playableDirectors;
         bool timeLinesFound = false;
 
+#if UNITY_6000_2_OR_NEWER
+        public TimeLineTreeView(TreeViewState<int> treeViewState, PlayableDirector[] objs) : base(treeViewState)
+#else
         public TimeLineTreeView(TreeViewState treeViewState, PlayableDirector[] objs) : base(treeViewState)
+#endif
         {
             //Force Treeview to reload its data (will force BuildRoot and BuildRows to be called)
             playableDirectors = objs;
@@ -35,15 +45,23 @@ namespace Reallusion.Import {
             Reload();
         }
 
+#if UNITY_6000_2_OR_NEWER
+        protected override TreeViewItem<int> BuildRoot()
+#else
         protected override TreeViewItem BuildRoot()
+#endif
         {
             //indicies
             int mDepth = -1;//root level
             int mId = 0;
 
+#if UNITY_6000_2_OR_NEWER
+            var root = new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = "Root" };
+            var allItems = new List<TreeViewItem<int>>();
+#else
             var root = new TreeViewItem { id = mId++, depth = mDepth, displayName = "Root" };                     
             var allItems = new List<TreeViewItem>();
-
+#endif
             tracked = new List<TrackItemStatus>();
 
             if (!timeLinesFound)
@@ -51,7 +69,12 @@ namespace Reallusion.Import {
                 mDepth = 0;
                 string none = "No timeline objects found - Plase create one [below].";
                 tracked.Add(new TrackItemStatus(mId, mDepth, false, false, null, none));
+
+#if UNITY_6000_2_OR_NEWER
+                allItems.Add(new TreeViewItem<int> { id = mId, depth = mDepth, displayName = none, icon = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml").image });
+#else
                 allItems.Add(new TreeViewItem { id = mId, depth = mDepth, displayName = none, icon = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml").image });
+#endif
                 SetupParentsAndChildrenFromDepths(root, allItems);
                 return root;
             }
@@ -68,14 +91,21 @@ namespace Reallusion.Import {
                 {
                     string missing = obj.name + " - has no TimeLine Asset";
                     tracked.Add(new TrackItemStatus(mId, mDepth, false, false, obj, missing));
+#if UNITY_6000_2_OR_NEWER
+                    allItems.Add(new TreeViewItem<int> { id = mId, depth = mDepth, displayName = missing, icon = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml").image });
+#else
                     allItems.Add(new TreeViewItem { id = mId, depth = mDepth, displayName = missing, icon = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml").image });
+#endif
                 }
                 else
                 {
                     PlayableAsset playableAsset = obj.playableAsset;
                     tracked.Add(new TrackItemStatus(mId, mDepth, false, true, obj, playableAsset.name)); // track selected status wrt object
+#if UNITY_6000_2_OR_NEWER
+                    allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = playableAsset.name, icon = (Texture2D)EditorGUIUtility.IconContent("TimelineAsset Icon").image });
+#else
                     allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = playableAsset.name, icon = (Texture2D)EditorGUIUtility.IconContent("TimelineAsset Icon").image });
-
+#endif
                     TimelineAsset timeline = playableAsset as TimelineAsset;
                     var tracks = timeline.GetOutputTracks();
 
@@ -148,8 +178,11 @@ namespace Reallusion.Import {
                             //if (hasBound) Debug.LogWarning("PlayableTrack " + bound.GetType().ToString());
                         }
                         tracked.Add(new TrackItemStatus(mId, mDepth, false, false, hasBound ? bound : obj, displayName));
+#if UNITY_6000_2_OR_NEWER
+                        allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = displayName, icon = (Texture2D)icon });
+#else
                         allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = displayName, icon = (Texture2D)icon });
-
+#endif
                     }
                 }
             }

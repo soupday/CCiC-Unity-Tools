@@ -813,8 +813,11 @@ namespace Reallusion.Import
 
             GUILayout.EndHorizontal();
         }
-
+#if UNITY_6000_2_OR_NEWER
+        TreeViewState<int> treeViewState;
+#else
         TreeViewState treeViewState;
+#endif
         TimeLineTreeView timeLineTreeViewState;
         bool havetreeView = false;
         float TIMELINE_BOX_W = 348f;
@@ -1125,11 +1128,16 @@ namespace Reallusion.Import
         public bool CreateTreeView()
         {
 #if UNITY_2023_OR_NEWER
-            PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsSortMode.None);  
+            PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsSortMode.None);
 #else
             PlayableDirector[] playableDirectors = GameObject.FindObjectsOfType<PlayableDirector>();
 #endif
+
+#if UNITY_6000_2_OR_NEWER
+            treeViewState = new TreeViewState<int>();
+#else
             treeViewState = new TreeViewState();
+#endif
             timeLineTreeViewState = new TimeLineTreeView(treeViewState, playableDirectors);
             return true;
         }

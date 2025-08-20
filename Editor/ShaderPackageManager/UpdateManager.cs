@@ -272,13 +272,6 @@ namespace Reallusion.Import
                 return false;
         }
 
-        [MenuItem("Reallusion/Misc Tools/Set Shader Variant Limit", priority = 180)]
-        private static void DoSetShaderVariantLimit()
-        {
-            Debug.Log(IsShaderVariantLimitTooLow());
-            //Pipeline.AddDiffusionProfilesHDRP();
-        }
-
         const string variantLimit = "UnityEditor.ShaderGraph.VariantLimit";
         const string ShaderGraphProjectSettings = "ProjectSettings/ShaderGraphSettings.asset";
         const int shaderVariantLimit = 2048;
@@ -287,6 +280,10 @@ namespace Reallusion.Import
         {
             string fullassetPath = ShaderGraphProjectSettings.UnityAssetPathToFullPath();
 
+            int inAssetVariantLimit = 0;
+#if UNITY_6000_2_OR_NEWER
+            int inAssetOverrideLimit = 0;
+#endif
             if (File.Exists(fullassetPath))
             {
                 using (StreamReader sr = new StreamReader(fullassetPath))
@@ -295,34 +292,54 @@ namespace Reallusion.Import
 
                     while ((line = sr.ReadLine()) != null)
                     {
-                        if (line.iContains("shaderVariantLimit:"))
+                        string trimmedLine = line.Trim();
+                        if (trimmedLine.StartsWith("shaderVariantLimit:"))
                         {
-                            string[] strings = line.Split(':');
-                            if (int.TryParse(strings[1].Trim(), out int settingsValue))
-                            {
-                                if (settingsValue < shaderVariantLimit) return true;
-                            }
-                            else
+                            string[] strings = trimmedLine.Split(':');
+                            if (!int.TryParse(strings[1].Trim(), out inAssetVariantLimit))
                             {
                                 Debug.Log("Cannot parse ShaderGraphProjectSettings");
                             }
                         }
+#if UNITY_6000_2_OR_NEWER
+                        if (trimmedLine.StartsWith("overrideShaderVariantLimit:"))
+                        {
+                            string[] strings = trimmedLine.Split(':');
+                            if (!int.TryParse(strings[1].Trim(), out inAssetOverrideLimit))
+                            {
+                                Debug.Log("Cannot parse ShaderGraphProjectSettings");
+                            }
+                        }
+#endif
                     }
                 }
             }
 
+#if UNITY_6000_2_OR_NEWER
+            if (inAssetOverrideLimit > 0 && inAssetVariantLimit < shaderVariantLimit) return true;            
+#else
+            if (inAssetVariantLimit < shaderVariantLimit) return true;
+#endif
+
             if (EditorPrefs.HasKey(variantLimit))
             {
-                if (EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit) return true;                
+                if (EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit) return true;
             }
 
             return false;
+        }
 
+        //[MenuItem("Reallusion/Misc Tools/Set Shader Variant Limit", priority = 180)]
+        private static void DoSetShaderVariantLimit()
+        {
+            SetShaderVariantLimit();
+        }
 
-
+        public static void SetShaderVariantLimit()
+        {
             if (EditorPrefs.HasKey(variantLimit))
             {
-                if(EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit)
+                if (EditorPrefs.GetInt(variantLimit, 128) < shaderVariantLimit)
                 {
                     EditorPrefs.SetInt(variantLimit, shaderVariantLimit);
                 }
@@ -330,62 +347,17 @@ namespace Reallusion.Import
 
             try
             {
-                Debug.Log("Before InternalEditorUtility.LoadSerializedFileAndForget");
-
                 UnityEngine.Object[] settingsData = InternalEditorUtility.LoadSerializedFileAndForget(ShaderGraphProjectSettings);
-
-                Type settingsType = Physics.GetTypeInAssemblies("UnityEditor.ShaderGraph.ShaderGraphProjectSettings");
-                if (settingsType != null)
-                {
-                    Debug.Log("UnityEditor.ShaderGraph.ShaderGraphProjectSettings Type found");
-
-                    var singleton = Object.FindObjectsByType(settingsType, FindObjectsSortMode.None);
-
-                    FieldInfo fi = settingsType.GetType().GetField("m_SerializedObject", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    if (fi != null) Debug.Log("FieldInfo found");
-                    else Debug.Log("FieldInfo not found");
-
-                    /*
-                    MethodInfo update = singleton[0].GetType().GetMethod("Update",
-                                    BindingFlags.Public | BindingFlags.Instance,
-                                    null,
-                                    CallingConventions.Any,
-                                    new Type[] { },
-                                    null);
-
-                    if (update != null)
-                    {
-                        Debug.Log("Update MethodInfo found");
-                        update.Invoke(singleton[0], null);
-                    }
-                    else
-                    {
-                        Debug.Log("Update MethodInfo NOT found");
-                    }
-                    */
-                }
-
-                Debug.Log("After InternalEditorUtility.LoadSerializedFileAndForget");
 
                 if (settingsData.Length > 0)
                 {
-                    Debug.Log(ShaderGraphProjectSettings + " found.");
-
                     SerializedObject shaderGraphSettings = new SerializedObject(settingsData[0]);
                     SerializedProperty m_shaderVariantLimit = shaderGraphSettings.FindProperty("shaderVariantLimit");
-
-                    Debug.Log("m_shaderVariantLimit.intValue 0 " + m_shaderVariantLimit.intValue);
 
                     if (m_shaderVariantLimit.intValue < shaderVariantLimit)
                         m_shaderVariantLimit.intValue = shaderVariantLimit;
 
-                    Debug.Log("m_shaderVariantLimit.intValue 1 " + m_shaderVariantLimit.intValue);
-
                     shaderGraphSettings.ApplyModifiedProperties();
-
-                    Debug.Log("m_shaderVariantLimit.intValue 2 " + m_shaderVariantLimit.intValue);
-
                     shaderGraphSettings.Update();
 
                     var array = new Object[] { settingsData[0] };
@@ -393,8 +365,6 @@ namespace Reallusion.Import
 
                     SettingsService.NotifySettingsProviderChanged();
                     SettingsService.RepaintAllSettingsWindow();
-
-                    Debug.Log("m_shaderVariantLimit.intValue 3 " + m_shaderVariantLimit.intValue);
                 }
                 else
                 {
@@ -403,7 +373,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.Log(e);   
+                Debug.Log(e);
             }
         }
 

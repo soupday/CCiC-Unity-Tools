@@ -1022,8 +1022,8 @@ namespace Reallusion.Import
                 SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
                 SetupCamera(jsonCameraObject, root, clip);
             }
-
-            UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
+            if (UnityLinkManager.IMPORT_INTO_SCENE)
+                UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
         }
 
         public void SetInitialCameraTransform(Transform camTransform, UnityLinkManager.JsonCameraData jsonCamObject)
@@ -1343,7 +1343,8 @@ namespace Reallusion.Import
 
             if (jsonLightObject == null) { Debug.LogWarning("MakeAnimatedLight: Could not deserialize embedded json"); return; }
 
-            UnityLinkSceneManagement.CreateStagingSceneDependencies(false);
+            if (UnityLinkManager.IMPORT_INTO_SCENE)
+                UnityLinkSceneManagement.CreateStagingSceneDependencies(false);
 
             // read all frames into a list
             List<UnityLinkManager.DeserializedLightFrames> frames = new List<UnityLinkManager.DeserializedLightFrames>();
@@ -1479,10 +1480,10 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
                 if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
 
-                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; Debug.Log(frame.RotX - frames[0].RotX); }
-                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; Debug.Log(frame.RotY - frames[0].RotY); }
-                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; Debug.Log(frame.RotZ - frames[0].RotZ); }
-                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; Debug.Log(frame.RotW - frames[0].RotW); }
+                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; } //Debug.Log(frame.RotX - frames[0].RotX); } // 
+                if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; } //Debug.Log(frame.RotY - frames[0].RotY); }
+                if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; } //Debug.Log(frame.RotZ - frames[0].RotZ); }
+                if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; } //Debug.Log(frame.RotW - frames[0].RotW); }
 
                 if (Math.Abs(frame.ScaleX - frames[0].ScaleX) > threshold) { scale_delta = true; }
                 if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
