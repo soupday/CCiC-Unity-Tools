@@ -30,89 +30,7 @@ namespace Reallusion.Import
 {
     public class UnityLinkSceneManagement
     {
-        #region depracated
-        /*
-        public static GameObject GetTimeLineObject() // find a timeline object corresponding to the current scene ref, one or make a new one.
-        {
-            PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
-
-            if (directors.Length > 0)
-            {
-                foreach (var director in directors)
-                {
-                    if (director.playableAsset != null)
-                    {
-                        Debug.Log(AssetDatabase.GetAssetPath(director.playableAsset));
-                        if (AssetDatabase.GetAssetPath(director.playableAsset).Equals(UnityLinkManager.TIMELINE_ASSET_PATH))
-                        {
-                            Debug.Log("Found existing timeline object.");
-                            return director.gameObject;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log("Making new timeline object.");
-                GameObject timelineObject = new GameObject("RL_TimeLine_Object");
-                PlayableDirector playableDirector = timelineObject.AddComponent<PlayableDirector>();
-
-                TimelineAsset timelineAsset = ScriptableObject.CreateInstance<TimelineAsset>();
-                CheckUnityPath(UnityLinkManager.UNITY_FOLDER_PATH);
-                AssetDatabase.CreateAsset(timelineAsset, UnityLinkManager.TIMELINE_ASSET_PATH);
-                playableDirector.playableAsset = timelineAsset;
-                return timelineObject;
-            }
-            return null;
-        }
-
-
-        void CreateSceneAndTimeline()
-        {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-
-            UnityLinkManager.timelineObject = new GameObject("RL_TimeLine_Object");
-            PlayableDirector director = UnityLinkManager.timelineObject.AddComponent<PlayableDirector>();
-
-            // PlayableGraph graph = PlayableGraph.Create(); // ...
-
-            TimelineAsset timeline = ScriptableObject.CreateInstance<TimelineAsset>();
-            AssetDatabase.CreateAsset(timeline, "Assets/Timeline.playable");
-            director.playableAsset = timeline;
-
-
-            UnityLinkManager.timelineSceneCreated = true;
-        }
-
-
-        TimelineEditorWindow timelineEditorWindow = null;
-
-        void SelectTimeLineObjectAndShowWindow()
-        {
-            Selection.activeObject = UnityLinkManager.timelineObject;
-
-            if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
-            {
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-            else
-            {
-                EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
-                timelineEditorWindow = EditorWindow.GetWindow(typeof(TimelineEditorWindow)) as TimelineEditorWindow;
-                timelineEditorWindow.locked = false;
-                Selection.activeObject = UnityLinkManager.timelineObject;
-                timelineEditorWindow.Repaint();
-                timelineEditorWindow.locked = true;
-            }
-        }
-        */
-        #endregion depracated
-
-        #region Scene and Timeline
+#region Timeline Asset
         // initiated from ui
         public static PlayableDirector CreateTimelineAsset()
         {
@@ -238,10 +156,457 @@ namespace Reallusion.Import
             DateTime now = DateTime.Now;
             return now.Day.ToString("00") + "." + now.Month.ToString("00") + "-" + now.Hour.ToString("00") + "." + now.Minute.ToString("00");
         }
+#endregion
 
+#region Add to Scene and Timeline
         // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
+        // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+        public static void AddToSceneAndTimeLine((TrackType, bool, GameObject, bool, List<AnimationClip>, AnimatedStatus, string) objectTuple)
+        {
+            TrackType trackType = objectTuple.Item1;
+            bool importIntoScene = objectTuple.Item2;
+            GameObject sourceGameObject = objectTuple.Item3;
+            bool addToTimeline = objectTuple.Item4;
+            List<AnimationClip> animClipList = objectTuple.Item5;
+            AnimatedStatus animatedStatus = objectTuple.Item6;
+            string linkId = objectTuple.Item7;            
+
+            GameObject sceneObject = null;
+
+            if (importIntoScene)
+            {
+                sceneObject = AddToScene(sourceGameObject, linkId);
+            }
+
+            if (addToTimeline)
+            {
+                AddToTimeline(trackType, sceneObject, animClipList, animatedStatus, linkId);
+            }
+        }
+
+        public static GameObject AddToScene(GameObject sourceGameObject, string linkId)
+        {
+            GameObject sceneObject = null;
+
+            // look for object with linkId in the scene and remove it if necessary
+            PurgeLinkedSceneObject(linkId);
+
+            if (PrefabUtility.GetPrefabAssetType(sourceGameObject) != PrefabAssetType.NotAPrefab)
+            {
+                sceneObject = PrefabUtility.InstantiatePrefab(sourceGameObject) as GameObject;
+            }
+            else
+            {
+                Debug.LogWarning("NOT A PREFAB");
+                sceneObject = GameObject.Instantiate(sourceGameObject);
+            }
+
+            sceneObject.transform.position = Vector3.zero;
+            sceneObject.transform.rotation = Quaternion.identity;
+
+            return sceneObject;
+        }
+
+        public static void AddToTimeline(TrackType trackType, GameObject sceneObject, List<AnimationClip> animClipList, AnimatedStatus animatedStatus, string linkId)
+        {
+            // unlock the timeline window 
+            LockStateTimeLineWindow(false);
+
+            if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
+            {
+                Debug.LogWarning("Cannot add to timeline.");
+                return;
+            }
+            PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
+
+            if (trackType.HasFlag(TrackType.AnimationTrackUpdate)) // updating the animation track - no input sceneObject needed - sceneObject should be the GameObject bound to the existing track for the linkid
+            {
+                if(!TryGetBoundSceneObjectByLinkId(director, linkId, out sceneObject))
+                {
+                    return;
+                }
+
+                /*
+                Debug.LogWarning("TrackType.AnimationTrackUpdate");
+                AnimationTrack workingtrack = null;
+
+                var tracks = timeline.GetOutputTracks();
+                foreach (TrackAsset track in tracks)
+                {
+                    if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
+                    {
+                        workingtrack = track as AnimationTrack;
+                        break;
+                    }
+                }
+
+                if (workingtrack == null)
+                {
+                    // no track to update 
+                    return;
+                }
+                else
+                {
+                    // https://discussions.unity.com/t/noob-question-on-timeline-get-gameobject-reference-from-a-timeline-track/790521
+                    sceneObject = (GameObject)director.GetGenericBinding(workingtrack);
+                }
+                */
+            }
+
+            if (trackType.HasFlag(TrackType.AnimationTrack) || trackType.HasFlag(TrackType.AnimationTrackUpdate)) // AnimationTrack permitted for this object
+            {
+                Debug.LogWarning("TrackType.AnimationTrack | TrackType.AnimationTrackUpdate");
+                if (animatedStatus.HasFlag(AnimatedStatus.Animation)) // Has detected animation data
+                {
+                    AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
+
+                    /*
+                    Debug.LogWarning("AnimatedStatus.Animation");
+                    AnimationTrack workingtrack = null;
+
+                    var tracks = timeline.GetOutputTracks();
+                    foreach (TrackAsset track in tracks)
+                    {
+                        if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
+                        {
+                            workingtrack = track as AnimationTrack;
+                            Debug.LogWarning("workingtrack matched");
+                            break;
+                        }
+                    }
+
+                    if (workingtrack == null)
+                    {
+                        workingtrack = timeline.CreateTrack<AnimationTrack>(sceneObject.name + "_ANIM_" + linkId);
+                    }
+                    else
+                    {
+#if UNITY_2020_1_OR_NEWER
+
+                        // purge bound clips
+                        var clips = workingtrack.GetClips();
+                        if (clips != null)
+                        {
+                            foreach (var c in clips)
+                            {
+                                workingtrack.DeleteClip(c);
+                            }
+                        }
+#endif
+                    }
+
+                    AnimationClip clipToUse = null;
+                    // find suitable aniamtion clip (should be the first non T-Pose)
+                    foreach (AnimationClip animClip in animClipList)
+                    {
+                        if (animClip == null) continue;
+
+                        if (animClip.name.iContains("T-Pose"))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            //Debug.LogWarning("clipToUse " + animClip.name);
+                            clipToUse = animClip;
+                        }
+                    }
+                    if (clipToUse != null)
+                    {
+                        TimelineClip clip = workingtrack.CreateClip(clipToUse);
+                        clip.start = 0f;
+                        clip.timeScale = 1f;
+                        clip.duration = clip.duration / clip.timeScale;
+                    }
+                    director.SetGenericBinding(workingtrack, sceneObject);
+                    */
+                }
+            }
+            
+            if (trackType.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
+            {
+                Debug.LogWarning("TrackType.ActivationTrack");
+                if (animatedStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
+                {
+                    AddActivationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
+
+                    /*
+                    Debug.LogWarning("AnimatedStatus.Activation");
+                    ActivationTrack workingtrack = null;
+
+                    var tracks = timeline.GetOutputTracks();
+                    foreach (TrackAsset track in tracks)
+                    {
+                        if (track.name.Contains(linkId) && track.GetType().Equals(typeof(ActivationTrack)))
+                        {
+                            workingtrack = track as ActivationTrack;
+                            break;
+                        }
+                    }
+
+                    if (workingtrack == null)
+                    {
+                        workingtrack = timeline.CreateTrack<ActivationTrack>(sceneObject.name + "_ACTI_" + linkId);
+                    }
+                    else
+                    {
+#if UNITY_2020_1_OR_NEWER
+                        // purge bound clips
+                        var clips = workingtrack.GetClips();
+                        if (clips != null)
+                        {
+                            foreach (var c in clips)
+                            {
+                                workingtrack.DeleteClip(c);
+                            }
+                        }
+#endif
+                    }
+
+                    foreach (AnimationClip animClip in animClipList)
+                    {
+                        var bindings = AnimationUtility.GetCurveBindings(animClip);
+                        var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
+
+                        var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
+                        bool enabled = false;
+                        bool addClip = false;
+                        float start = 0f;
+                        float duration = 0f;
+                        int index = 0;
+                        foreach (Keyframe keyframe in curve.keys)
+                        {
+                            if (!enabled)
+                            {
+                                if (keyframe.value == 1)
+                                {
+                                    enabled = true;
+                                    start = keyframe.time;
+                                }
+                            }
+
+                            if (enabled)
+                            {
+                                if (keyframe.value == 0 || index == curve.keys.Length - 1)
+                                {
+                                    enabled = false;
+                                    duration = keyframe.time - start;
+                                    addClip = true;
+                                }
+                            }
+
+                            if (addClip)
+                            {
+                                TimelineClip t = workingtrack.CreateDefaultClip();
+                                t.start = start;
+                                t.duration = duration;
+                                addClip = false;
+                            }
+                            index++;
+                        }
+                    }
+
+                    director.SetGenericBinding(workingtrack, sceneObject);
+                    */
+                }
+            }
+
+            if (!trackType.HasFlag(TrackType.NoTrack))
+            {
+                TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+                ShowTimeLineWindow(director);
+                MarkSceneAsDirty();
+            }
+        }
+
+        public static bool TryGetBoundSceneObjectByLinkId(PlayableDirector director, string linkId, out GameObject sceneObject)
+        {
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+            sceneObject = null;
+
+            Debug.LogWarning("TrackType.AnimationTrackUpdate");
+            AnimationTrack workingtrack = null;
+
+            var tracks = timeline.GetOutputTracks();
+            foreach (TrackAsset track in tracks)
+            {
+                if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
+                {
+                    workingtrack = track as AnimationTrack;
+                    break;
+                }
+            }
+
+            if (workingtrack == null)
+            {
+                // no track to update 
+                return false;
+            }
+            else
+            {
+                // https://discussions.unity.com/t/noob-question-on-timeline-get-gameobject-reference-from-a-timeline-track/790521
+                sceneObject = (GameObject)director.GetGenericBinding(workingtrack);
+                return true;
+            }
+        }
+
+        public static void AddAnimationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
+        {
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+
+            Debug.LogWarning("AnimatedStatus.Animation");
+            AnimationTrack workingtrack = null;
+
+            var tracks = timeline.GetOutputTracks();
+            foreach (TrackAsset track in tracks)
+            {
+                if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
+                {
+                    workingtrack = track as AnimationTrack;
+                    Debug.LogWarning("workingtrack matched");
+                    break;
+                }
+            }
+
+            if (workingtrack == null)
+            {
+                workingtrack = timeline.CreateTrack<AnimationTrack>(sceneObject.name + "_ANIM_" + linkId);
+            }
+            else
+            {
+#if UNITY_2020_1_OR_NEWER
+
+                // purge bound clips
+                var clips = workingtrack.GetClips();
+                if (clips != null)
+                {
+                    foreach (var c in clips)
+                    {
+                        workingtrack.DeleteClip(c);
+                    }
+                }
+#endif
+            }
+
+            AnimationClip clipToUse = null;
+            // find suitable aniamtion clip (should be the first non T-Pose)
+            foreach (AnimationClip animClip in animClipList)
+            {
+                if (animClip == null) continue;
+
+                if (animClip.name.iContains("T-Pose"))
+                {
+                    continue;
+                }
+                else
+                {
+                    Debug.LogWarning("clipToUse " + animClip.name);
+                    clipToUse = animClip;
+                }
+            }
+            if (clipToUse != null)
+            {
+                TimelineClip clip = workingtrack.CreateClip(clipToUse);
+                clip.start = 0f;
+                clip.timeScale = 1f;
+                clip.duration = clip.duration / clip.timeScale;
+            }
+            director.SetGenericBinding(workingtrack, sceneObject);
+        }
+
+        public static void AddActivationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
+        {
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+
+            Debug.LogWarning("AnimatedStatus.Activation");
+            ActivationTrack workingtrack = null;
+
+            var tracks = timeline.GetOutputTracks();
+            foreach (TrackAsset track in tracks)
+            {
+                if (track.name.Contains(linkId) && track.GetType().Equals(typeof(ActivationTrack)))
+                {
+                    workingtrack = track as ActivationTrack;
+                    break;
+                }
+            }
+
+            if (workingtrack == null)
+            {
+                workingtrack = timeline.CreateTrack<ActivationTrack>(sceneObject.name + "_ACTI_" + linkId);
+            }
+            else
+            {
+#if UNITY_2020_1_OR_NEWER
+                // purge bound clips
+                var clips = workingtrack.GetClips();
+                if (clips != null)
+                {
+                    foreach (var c in clips)
+                    {
+                        workingtrack.DeleteClip(c);
+                    }
+                }
+#endif
+            }
+
+            foreach (AnimationClip animClip in animClipList)
+            {
+                var bindings = AnimationUtility.GetCurveBindings(animClip);
+                var b_enabled = bindings.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
+
+                var curve = AnimationUtility.GetEditorCurve(animClip, b_enabled);
+                bool enabled = false;
+                bool addClip = false;
+                float start = 0f;
+                float duration = 0f;
+                int index = 0;
+                foreach (Keyframe keyframe in curve.keys)
+                {
+                    if (!enabled)
+                    {
+                        if (keyframe.value == 1)
+                        {
+                            enabled = true;
+                            start = keyframe.time;
+                        }
+                    }
+
+                    if (enabled)
+                    {
+                        if (keyframe.value == 0 || index == curve.keys.Length - 1)
+                        {
+                            enabled = false;
+                            duration = keyframe.time - start;
+                            addClip = true;
+                        }
+                    }
+
+                    if (addClip)
+                    {
+                        TimelineClip t = workingtrack.CreateDefaultClip();
+                        t.start = start;
+                        t.duration = duration;
+                        addClip = false;
+                    }
+                    index++;
+                }
+            }
+            director.SetGenericBinding(workingtrack, sceneObject);
+        }
+
         public static void AddToSceneAndTimeLine((TrackType, GameObject, List<AnimationClip>, bool, string, AnimatedStatus) objectTuple)
         {
+            TrackType trackType = objectTuple.Item1;
+            GameObject sourceGameObject = objectTuple.Item2;
+            List < AnimationClip > animClipList = objectTuple.Item3;
+            bool instantiateInScene = objectTuple.Item4;
+            string linkId = objectTuple.Item5;
+            AnimatedStatus animStatus = objectTuple.Item6;
+
+            GameObject sceneObject = null;
+
+
             LockStateTimeLineWindow(false);
 
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
@@ -252,14 +617,12 @@ namespace Reallusion.Import
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            bool instantiateInScene = objectTuple.Item4;
-            string linkId = objectTuple.Item5;
-            AnimatedStatus animStatus = objectTuple.Item6;
+            
 
             // look for object with linkId in the scene and remove it if necessary
             if (instantiateInScene) PurgeLinkedSceneObject(linkId);
 
-            GameObject sceneObject = null;
+            
 
             if (objectTuple.Item1.HasFlag(TrackType.AnimationTrackUpdate)) // updating the animation track - no instantiation needed - sceneObject should be the GameObject bound to the existing track for the linkid
             {
@@ -450,9 +813,13 @@ namespace Reallusion.Import
                     director.SetGenericBinding(workingtrack, sceneObject);
                 }                
             }
-            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
-            ShowTimeLineWindow(director);
-            MarkSceneAsDirty();
+
+            if (!objectTuple.Item1.HasFlag(TrackType.NoTrack))
+            {
+                TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+                ShowTimeLineWindow(director);
+                MarkSceneAsDirty();
+            }
         }
 
         public static void PurgeLinkedSceneObject(string linkId)
@@ -516,9 +883,9 @@ namespace Reallusion.Import
             EditorSceneManager.MarkSceneDirty(scene);
         }
 
-#endregion Scene and Timeline
+#endregion Add To Scene and Timeline
 
-        #region Scene Dependencies 
+#region Scene Dependencies 
         public static void CreateStagingSceneDependencies(bool dofEnabled)
         {
 #if HDRP_10_5_0_OR_NEWER
@@ -1033,11 +1400,13 @@ namespace Reallusion.Import
 #endif
         #endregion Scene Dependencies
 
-        #region Enum
+#region Enum
 
         [Flags]
         public enum TrackType
         {
+            None,
+            NoTrack,
             AnimationTrack,
             AnimationTrackUpdate,
             ActivationTrack,
@@ -1052,6 +1421,6 @@ namespace Reallusion.Import
             Activation,
 
         }
-        #endregion Enum
+#endregion Enum
     }
 }

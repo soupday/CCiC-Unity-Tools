@@ -293,14 +293,18 @@ namespace Reallusion.Import
             
             DoImport();
         }
+        // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+        List<(UnityLinkSceneManagement.TrackType, bool, GameObject, bool, List<AnimationClip>, UnityLinkSceneManagement.AnimatedStatus, string)> timelineKitList;
 
-        List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)> timelineKitList;
+        //List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)> timelineKitList;
 
         void DoImport()
         {
             AssetDatabase.Refresh();
-            
-            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)>();
+
+            timelineKitList = new List<(UnityLinkSceneManagement.TrackType, bool, GameObject, bool, List<AnimationClip>, UnityLinkSceneManagement.AnimatedStatus, string)>();
+
+            //timelineKitList = new List<(UnityLinkSceneManagement.TrackType, GameObject, List<AnimationClip>, bool, string, UnityLinkSceneManagement.AnimatedStatus)>();
 
             if (importMotion)
             {
@@ -328,8 +332,6 @@ namespace Reallusion.Import
                 {
                     UnityLinkSceneManagement.AddToSceneAndTimeLine(item);
                 }
-                //AddToSceneAndTimeLine(timelineKit);
-                //SelectTimeLineObjectAndShowWindow();
             }
         }
 
@@ -541,7 +543,7 @@ namespace Reallusion.Import
                 }
             }
 
-            Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
+            //Debug.Log("RetrieveDiskAsset: inProjectAssetPath" + inProjectAssetPath);
             return inProjectAssetPath;
         }
 
@@ -684,8 +686,20 @@ namespace Reallusion.Import
                     animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
 
                     // only animation track update permitted for Motion
-                    UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrackUpdate;
-                    timelineKitList.Add((trackType, null, clipListForTimeLine, false, linkId, animatedStatus));
+                    UnityLinkSceneManagement.TrackType trackType = 0;
+                    if (addToTimeLine)
+                    {
+                        trackType |= UnityLinkSceneManagement.TrackType.AnimationTrackUpdate;
+                    }
+                    else
+                    {
+                        trackType |= UnityLinkSceneManagement.TrackType.NoTrack;
+                    }
+
+                    // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+                    timelineKitList.Add((trackType, false ,null, addToTimeLine, clipListForTimeLine, animatedStatus, linkId));
+
+                    //timelineKitList.Add((trackType, null, clipListForTimeLine, false, linkId, animatedStatus));
                 }
                 else
                 {
@@ -719,26 +733,18 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             c.Write();
 
-            /*
-            // add link id - now in the model importer
-            var data = prefab.AddComponent<DataLinkActorData>();
-            data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
-            data.createdTimeStamp = DateTime.Now.Ticks;           
-                        
-            PrefabUtility.SavePrefabAsset(prefab);
-            */
-
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
 
             List<AnimationClip> animsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
 
             // only animation tracks permitted for Props
-            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+            UnityLinkSceneManagement.TrackType trackType = addToTimeLine ? UnityLinkSceneManagement.TrackType.AnimationTrack : UnityLinkSceneManagement.TrackType.NoTrack;
 
-            timelineKitList.Add((trackType, prefab, animsForTimeLine, true, linkId, GetAnimatedStatus(animsForTimeLine)));
+            // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+            timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, animsForTimeLine, GetAnimatedStatus(animsForTimeLine), linkId));
+
+            //timelineKitList.Add((trackType, prefab, animsForTimeLine, true, linkId, GetAnimatedStatus(animsForTimeLine)));
         }
         #endregion Prop Import
 
@@ -769,28 +775,20 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             charInfo.Write();
 
-            /*
-            // add link id - now in the model importer
-            var data = prefab.AddComponent<DataLinkActorData>();
-            data.linkId = linkId;
-            data.prefabGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)).ToString();
-            data.fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath).ToString();
-            data.createdTimeStamp = DateTime.Now.Ticks;
-            PrefabUtility.SavePrefabAsset(prefab);
-            */
-
             if (ImporterWindow.Current != null)
                 ImporterWindow.Current.RefreshCharacterList();
 
             // only animation tracks permitted for Avatars
-            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+            UnityLinkSceneManagement.TrackType trackType = addToTimeLine ? UnityLinkSceneManagement.TrackType.AnimationTrack : UnityLinkSceneManagement.TrackType.NoTrack;
 
             // Avatars are implicitly animated
-            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;           
-                        
-            List<AnimationClip> animGuidsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
-            Debug.Log("animGuidsForTimeLine " + animGuidsForTimeLine.Count);
-            timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
+            animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+            List<AnimationClip> animGuidsForTimeLine = import.clipListForTimeLine;
+
+            // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+            timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, animGuidsForTimeLine, animatedStatus, linkId));
+
+            //timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
         #endregion Avatar Import
 
@@ -1022,7 +1020,8 @@ namespace Reallusion.Import
                 SaveStagingAnimationClip(jsonCameraObject.LinkId, jsonCameraObject.Name, clip);
                 SetupCamera(jsonCameraObject, root, clip);
             }
-            if (UnityLinkManager.IMPORT_INTO_SCENE)
+
+            if (importIntoScene)
                 UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
         }
 
@@ -1322,9 +1321,21 @@ namespace Reallusion.Import
             clips.Add(clip);
 
             // only animation tracks permitted for Cameras
-            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack;
+            UnityLinkSceneManagement.TrackType trackType = 0;
 
-            timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
+            if (addToTimeLine)
+            {
+                trackType |= UnityLinkSceneManagement.TrackType.AnimationTrack;
+            }
+            else
+            {
+                trackType |= UnityLinkSceneManagement.TrackType.NoTrack;
+            }
+
+            // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+            timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
+
+            // timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
         }
         #endregion Animated Camera
 
@@ -1343,7 +1354,7 @@ namespace Reallusion.Import
 
             if (jsonLightObject == null) { Debug.LogWarning("MakeAnimatedLight: Could not deserialize embedded json"); return; }
 
-            if (UnityLinkManager.IMPORT_INTO_SCENE)
+            if (importIntoScene)
                 UnityLinkSceneManagement.CreateStagingSceneDependencies(false);
 
             // read all frames into a list
@@ -1511,7 +1522,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.Log("changes.FindAll(x => x == true).Count()  " + changes.FindAll(x => x == true).Count() + " rot_delta " + rot_delta);
+                //Debug.Log("changes.FindAll(x => x == true).Count()  " + changes.FindAll(x => x == true).Count() + " rot_delta " + rot_delta);
                 animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
             }
 
@@ -1719,7 +1730,7 @@ namespace Reallusion.Import
 
             float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
             clip.frameRate = frameRate;
-            Debug.Log("Make Light Animation - Calculated Frame Rate = " + frameRate);
+            //Debug.Log("Make Light Animation - Calculated Frame Rate = " + frameRate);
             return clip;
         }
 
@@ -1779,9 +1790,23 @@ namespace Reallusion.Import
             clips.Add(clip);
 
             // both animation and activation tracks permitted for lights
-            UnityLinkSceneManagement.TrackType trackType = UnityLinkSceneManagement.TrackType.AnimationTrack | UnityLinkSceneManagement.TrackType.ActivationTrack;
+            UnityLinkSceneManagement.TrackType trackType = 0;
 
-            timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
+            if (addToTimeLine)
+            {
+                trackType |= UnityLinkSceneManagement.TrackType.AnimationTrack;
+                trackType |= UnityLinkSceneManagement.TrackType.ActivationTrack;
+            }
+            else
+            {
+                trackType |= UnityLinkSceneManagement.TrackType.NoTrack;
+            }
+                        
+            // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
+            timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
+
+            //timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
+
             return root;
         }
         #endregion Animated Light
