@@ -38,6 +38,7 @@ namespace Reallusion.Import
 {
     public class UnityLinkImporter
     {
+        #region Vars
         int waitForFramesBeforeStartingImport = 10;
 
         ModelImporter importer;
@@ -113,6 +114,7 @@ namespace Reallusion.Import
         public bool fov_delta = false;
 
         PackageType packageType = PackageType.NONE;
+        #endregion
 
         #region Import Preparation
         public UnityLinkImporter(UnityLinkManager.QueueItem item)
@@ -414,28 +416,19 @@ namespace Reallusion.Import
         public string RetrieveDiskAsset(string assetFolder, string name)
         {
             string inProjectAssetPath = string.Empty;
-
-            //string assetFolder = Path.GetDirectoryName(assetPath);
-            string assetFolderName = name; // Path.GetFileName(assetFolder);
+            string assetFolderName = name;
             //Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
             
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
 
-            // case where the IMPORT_DESTINATION_FOLDER is still null without user setting it
-            /*
-            string validatedDestFolder = string.Empty;
-            if (string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER))            
-                validatedDestFolder = UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER;            
-            else            
-                validatedDestFolder = UnityLinkManager.IMPORT_DESTINATION_FOLDER;
-            */
             string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
 
             string proposedDestinationFolder = Path.Combine(validatedDestFolder.FullPathToUnityAssetPath(), assetFolderName);
+
             //Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
 
-            string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);//string.Empty;
+            string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);
             //Debug.LogWarning("RetrieveDiskAsset - destinationFolder " + destinationFolder);
 
             if (string.IsNullOrEmpty(destinationFolder))
@@ -679,7 +672,6 @@ namespace Reallusion.Import
 
                 if (characterPrefab != null)
                 {
-                    //AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionTargetChar.path, characterPrefab, true);
                     clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true);
 
                     // Motions are implicitly animated
@@ -698,8 +690,6 @@ namespace Reallusion.Import
 
                     // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
                     timelineKitList.Add((trackType, false ,null, addToTimeLine, clipListForTimeLine, animatedStatus, linkId));
-
-                    //timelineKitList.Add((trackType, null, clipListForTimeLine, false, linkId, animatedStatus));
                 }
                 else
                 {
@@ -718,8 +708,7 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            //Debug.Log("Creating new characterinfo with guid " + guid);
-            //Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+            
             CharacterInfo c = new CharacterInfo(guid);
 
             c.linkId = linkId;
@@ -743,8 +732,6 @@ namespace Reallusion.Import
 
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, animsForTimeLine, GetAnimatedStatus(animsForTimeLine), linkId));
-
-            //timelineKitList.Add((trackType, prefab, animsForTimeLine, true, linkId, GetAnimatedStatus(animsForTimeLine)));
         }
         #endregion Prop Import
 
@@ -753,8 +740,7 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            //Debug.Log("Creating new characterinfo with guid " + guid);
-            //Debug.Log("Guid path " + AssetDatabase.AssetPathToGUID(fbxPath));
+
             CharacterInfo charInfo = new CharacterInfo(guid);
 
             charInfo.linkId = linkId;
@@ -787,8 +773,6 @@ namespace Reallusion.Import
 
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, animGuidsForTimeLine, animatedStatus, linkId));
-
-            //timelineKitList.Add((trackType, prefab, animGuidsForTimeLine, true, linkId, animatedStatus));
         }
         #endregion Avatar Import
 
@@ -1334,8 +1318,6 @@ namespace Reallusion.Import
 
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
-
-            // timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
         }
         #endregion Animated Camera
 
@@ -1804,8 +1786,6 @@ namespace Reallusion.Import
                         
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
-
-            //timelineKitList.Add((trackType, prefab, clips, true, json.LinkId, animatedStatus));
 
             return root;
         }
