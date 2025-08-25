@@ -1138,13 +1138,13 @@ namespace Reallusion.Import
 
             if (materialType == MaterialType.Head)
             {
-                Texture2D wrinkleSmoothness = null;
+                Texture2D wrinkleRoughness = null;
                 Texture2D wrinkleDisplacement = null;
                 Texture2D wrinkleFlow = null;
 
                 if (!REBAKE_PACKED_TEXTURE_MAPS)
                 {
-                    wrinkleSmoothness = GetTexture(sourceName, "BWrinkleSmoothnessPack", matJson, "Textures/NOTEX", true);
+                    wrinkleRoughness = GetTexture(sourceName, "BWrinkleRoughnessPack", matJson, "Textures/NOTEX", true);
                     wrinkleDisplacement = GetTexture(sourceName, "BWrinkleDisplacementPack", matJson, "Textures/NOTEX", true);
                     wrinkleFlow = GetTexture(sourceName, "BWrinkleFlowPack", matJson, "Textures/NOTEX", true);
                 }
@@ -1161,11 +1161,11 @@ namespace Reallusion.Import
 
                 if (roughness1 || roughness2 || roughness3)
                 {
-                    Util.LogInfo("Baking Wrinkle Smoothness Pack texture for " + sourceName);
+                    Util.LogInfo("Baking Wrinkle Roughness Pack texture for " + sourceName);
                     assetFolder = Util.GetAssetFolder(roughness1, roughness2, roughness3);
                     folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
-                    wrinkleSmoothness = baker.BakeChannelPackLinear(folder, roughness1, roughness2, roughness3, null,
-                                                                    sourceName + "_BWrinkleSmoothnessPack",
+                    wrinkleRoughness = baker.BakeChannelPackLinear(folder, roughness1, roughness2, roughness3, null,
+                                                                    sourceName + "_BWrinkleRoughnessPack",
                                                                     0, 0.5f, 0.5f, 0.5f, 1f);
                 }
 
@@ -1204,10 +1204,10 @@ namespace Reallusion.Import
 
             if (materialType == MaterialType.Head)
             {                
-                Texture2D wrinkleSmoothness = GetTexture(sourceName, "BWrinkleSmoothnessPack", matJson, "Textures/NOTEX", true);
+                Texture2D wrinkleRoughness = GetTexture(sourceName, "BWrinkleRoughnessPack", matJson, "Textures/NOTEX", true);
                 Texture2D wrinkleDisplacement = GetTexture(sourceName, "BWrinkleDisplacementPack", matJson, "Textures/NOTEX", true);
                 Texture2D wrinkleFlow = GetTexture(sourceName, "BWrinkleFlowPack", matJson, "Textures/NOTEX", true);
-                if (wrinkleSmoothness) mat.SetTextureIf("_WrinkleSmoothnessPack", wrinkleSmoothness);
+                if (wrinkleRoughness) mat.SetTextureIf("_WrinkleRoughnessPack", wrinkleRoughness);
                 if (wrinkleDisplacement) mat.SetTextureIf("_WrinkleDisplacmentPack", wrinkleDisplacement);
                 if (wrinkleFlow) mat.SetTextureIf("_WrinkleFlowPack", wrinkleFlow);
             }
@@ -1236,7 +1236,7 @@ namespace Reallusion.Import
             
             if (materialType == MaterialType.Head)
             {
-                // Wrinkle Smoothness Pack "_WrinkleRoughnessBlend1" => "_WrinkleSmoothnessPack"
+                // Wrinkle Smoothness Pack "_WrinkleRoughnessBlend1" => "_WrinkleRoughnessPack"
                 Texture2D roughness1 = GetTexture(sourceName, "Wrinkle_Roughness1", matJson, "Wrinkle/Textures/Roughness_1", true);
                 Texture2D roughness2 = GetTexture(sourceName, "Wrinkle_Roughness2", matJson, "Wrinkle/Textures/Roughness_2", true);
                 Texture2D roughness3 = GetTexture(sourceName, "Wrinkle_Roughness3", matJson, "Wrinkle/Textures/Roughness_3", true);
