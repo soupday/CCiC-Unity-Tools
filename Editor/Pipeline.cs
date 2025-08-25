@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Diagnostics;
+using ICSharpCode.NRefactory.Ast;
+
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -152,6 +154,8 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_OPAQUE = "";
         public const string MATERIAL_BAKED_SSS = "";
         // variants (that differ from the defaults above)
+        public const string MATERIAL_BAKED_SKIN_CUSTOM = "RL_Template_Baked_SkinCustom_HDRP";
+        public const string MATERIAL_BAKED_HEAD_CUSTOM = "RL_Template_Baked_HeadCustom_HDRP";
         public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL_Template_Baked_CorneaBasicCustom_HDRP";                
         public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL_Template_Baked_CorneaParallaxCustom_HDRP";
         public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_HDRP";        
@@ -788,6 +792,11 @@ namespace Reallusion.Import
                         if (materialType == MaterialType.Head)                        
                             return MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM;
                     }
+                                        
+                    if (materialType == MaterialType.Head)
+                        return MATERIAL_BAKED_HEAD_CUSTOM;
+                    else if (materialType == MaterialType.Skin)
+                        return MATERIAL_BAKED_SKIN_CUSTOM;                    
                 }                
             }
 
