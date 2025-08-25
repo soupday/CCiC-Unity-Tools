@@ -70,7 +70,7 @@
 #define UPACK(comp) (min(1.0, max(0.0, (comp + 1.0) * 0.5)))
 #define INVERTED_SCALE(val, fac) (1.0 - ((1.0 - val) * fac))
 #define INVERTED_POWER_SCALE(val, power, fac) (1.0 - ((1.0 - pow(val, power)) * fac))
-#define RADIAL(uv) (length(uv - float2(0.5, 0.5)))
+#define RADIAL(uv) (length(uv - 0.5))
 #define HSV(c, h, s, v) (Saturation_float3(Hue_float3(c, h), s) * v)
 #define SV(c, s, v) (Saturation_float3(c, s) * v)
 #define TEX2D(tex) Texture2D<float4>tex; SamplerState sampler##tex
@@ -172,7 +172,7 @@ float isUpperTeeth;
 
 TEX2D(ScleraDiffuse);
 TEX2D(CorneaDiffuse);
-float irisScale, irisHue, irisSaturation, irisBrightness;
+float irisHue, irisSaturation, irisBrightness;
 float scleraScale, scleraHue, scleraSaturation, scleraBrightness;
 float pupilScale;
 float irisRadius, limbusWidth;
@@ -180,7 +180,6 @@ float limbusDarkRadius, limbusDarkWidth;
 float shadowRadius, shadowHardness;
 float limbusShading, limbusContrast;
 float4 cornerShadowColor, limbusColor, irisColor, irisCloudyColor;
-float depthRadius;
 float corneaSmoothness, scleraSmoothness, irisSmoothness;
 float scleraSubsurfaceScale, irisSubsurfaceScale;
 float parallaxRadius;
@@ -1227,9 +1226,9 @@ void RLTongueThickness(uint3 id : SV_DispatchThreadID)
 //
 float EyeLimbusMask(float radial)
 {
-    float irisScale = irisRadius * scleraScale * 6.25;
-    float inner = limbusDarkRadius * irisScale;
-    float outer = limbusDarkWidth * irisScale + inner;
+    float s = irisRadius * scleraScale * 6.25;
+    float inner = limbusDarkRadius * s;
+    float outer = (limbusDarkWidth * s) + inner;
     return smoothstep(inner, outer, radial);
 }
 
@@ -1254,7 +1253,7 @@ float IrisDepthMask(float radial)
 {   
     float irisScale = irisRadius * scleraScale * 6.25;
     float a = irisScale * 0.128;
-    return saturate(Remap_float(radial, a, 0, 0.0, 1.0));
+    return saturate(Remap_float(radial, a, 0.0, 0.0, 1.0));
 }
 
 float EyeParallaxDepthMap(float radial)
@@ -1294,8 +1293,7 @@ void RLCorneaDiffuse(uint3 id : SV_DispatchThreadID)
     float shadowMask = EyeShadowMask(radial);
     float irisMask = EyeIrisMask(radial);
     color = BlendMultiply_float4(color, sRGBToLinear(cornerShadowColor), shadowMask);
-
-    color = BlendMultiply_float4(color, colorBlend, colorBlendStrength);
+    color = BlendMultiply_float4(color, colorBlend, colorBlendStrength);    
     color.a = irisMask;
     
     Result[id.xy] = LinearTosRGB(color);
@@ -1305,6 +1303,7 @@ void RLCorneaDiffuse(uint3 id : SV_DispatchThreadID)
 void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
+    float radial = RADIAL(uv);
     float irisScale = irisRadius * scleraScale * 6.25;
     float2 touv = TilingOffset(uv, irisScale, float2(0.5, 0.5));
 
@@ -1312,16 +1311,17 @@ void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
     float3 hsv = HSV(color, irisHue, irisSaturation, irisBrightness);
     color = float4(hsv, 1.0);
     float4 colorBlend = SAMPLE(ColorBlend, uv);
+       
     
-    float radial = RADIAL(uv);
-    float limbusMask = EyeLimbusMask(radial);
+    float limbusMask = EyeLimbusMask(radial);    
     float shadingMask = EyeShadingMask(radial);
-    color = color + (sRGBToLinear(irisCloudyColor) * 0.5);    
-    color = lerp(color, color * sRGBToLinear(limbusColor), limbusMask);
-    color *= shadingMask;
+    color = color + (sRGBToLinear(irisCloudyColor) * 0.5);   
+    //color = lerp(color, color * sRGBToLinear(limbusColor), limbusMask);
+    //color *= shadingMask;
 
-    color = BlendMultiply_float4(color, colorBlend, colorBlendStrength);
-    color.a = 1.0;
+    color = BlendMultiply_float4(color, colorBlend, colorBlendStrength);    
+    color.a = 1;
+    
 
     Result[id.xy] = LinearTosRGB(color);
 }
@@ -1388,13 +1388,15 @@ void RLCorneaDetailMask(uint3 id : SV_DispatchThreadID)
     float4 mask = SAMPLE(Mask, uv);
 
     float radial = RADIAL(uv);
-    float irisMask = EyeIrisMask(radial);
+    
+    float limbusMask = EyeLimbusMask(radial);
+    float shadingMask = EyeShadingMask(radial);
+    float limbusShadingMask = saturate(1 - ((1 - limbusMask) * shadingMask));
     float depthMask = IrisDepthMask(radial);
+    float parallaxBlendMask = pow(depthMask, 0.25);    
     float parallaxDepthMap = EyeParallaxDepthMap(radial);
-    float parallaxBlendMask = pow(depthMask, 0.25);
-    float blendMask = EyeBlendMask(radial);
-    float detailMask = irisMask;    
-    float4 packed = float4(blendMask, depthMask, parallaxBlendMask, parallaxDepthMap);
+    
+    float4 packed = float4(limbusShadingMask, depthMask, parallaxBlendMask, parallaxDepthMap);
 
     Result[id.xy] = packed;
 }

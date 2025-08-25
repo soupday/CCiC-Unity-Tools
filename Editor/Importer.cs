@@ -3060,8 +3060,7 @@ namespace Reallusion.Import
             var wm = obj.AddComponent(WrinkleManagerType);
             
             Physics.SetTypeField(WrinkleManagerType, wm, "headMaterial", mat);
-            Physics.SetTypeField(WrinkleManagerType, wm, "skinnedMeshRenderer", smr);
-            Physics.SetTypeField(WrinkleManagerType, wm, "skinnedMeshRenderer", smr);
+            Physics.SetTypeField(WrinkleManagerType, wm, "skinnedMeshRenderer", smr);            
             FacialProfile profile = FacialProfileMapper.GetMeshFacialProfile(obj);
             int wrinkleProfile = profile.expressionProfile == ExpressionProfile.MH ? 2 : 1;
             Physics.SetTypeField(WrinkleManagerType, wm, "profile", wrinkleProfile);
@@ -3084,6 +3083,19 @@ namespace Reallusion.Import
                 Dictionary<string, object> props = (Dictionary<string, object>)BuildWrinklePropsReflection(matJson);
                 //Debug.Log(props);
                 buildConfig.Invoke(wm, new object[] { props, overallWeight });
+            }
+        }
+
+        public static void UpdateWrinkleManager(GameObject obj, Material mat)
+        {
+            Type WrinkleManagerType = Physics.GetTypeInAssemblies("Reallusion.Runtime.WrinkleManager");
+            if (WrinkleManagerType != null)
+            {
+                var wm = obj.GetComponent(WrinkleManagerType);
+                if (wm != null)
+                {
+                    Physics.SetTypeField(WrinkleManagerType, wm, "headMaterial", mat);
+                }
             }
         }
 
