@@ -150,6 +150,9 @@ namespace Reallusion.Import
         private Texture2D iconCamera;
         private Texture2D iconBuildMaterials;
         private Texture2D iconProp;
+        private Texture2D iconLinkedProp;
+        private Texture2D iconPropG;
+        private Texture2D iconLinkedPropG;
 
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
@@ -327,6 +330,9 @@ namespace Reallusion.Import
             iconCamera = Util.FindTexture(folders, "RLIcon_Camera");
             iconBuildMaterials = Util.FindTexture(folders, "RLIcon_ActionBuildMaterials");
             iconProp = Util.FindTexture(folders, "RLIcon-Prop_W");
+            iconLinkedProp = Util.FindTexture(folders, "RLIcon_Linked_Prop_W");
+            iconPropG = Util.FindTexture(folders, "RLIcon-Prop_G");
+            iconLinkedPropG = Util.FindTexture(folders, "RLIcon_Linked_Prop_G");
 
             Current = this;
 
@@ -2006,7 +2012,7 @@ namespace Reallusion.Import
 
                 if (info.exportType == CharacterInfo.ExportType.PROP)
                 {
-                    iconTexture = iconProp;
+                    iconTexture = info.isLinked ? iconLinkedProp : iconProp;
                 }
                 else
                 {   

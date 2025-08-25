@@ -399,7 +399,7 @@ namespace Reallusion.Import
                 CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
                 if (characterMatch != null)
                 {
-                    Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
+                    Debug.Log("Existing character found at: " + characterMatch.path + "for linkId: " + linkId);
                     string fbxPath = characterMatch.path;
                     if (!string.IsNullOrEmpty(fbxPath))
                     {
@@ -407,7 +407,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            Debug.Log("No Matched Asset Path for linkId: " + linkId);
+            //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
 
@@ -419,7 +419,7 @@ namespace Reallusion.Import
                 CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
                 if (characterMatch != null)
                 {
-                    Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
+                    //Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
                     string fbxPath = characterMatch.path;
                     if (!string.IsNullOrEmpty(fbxPath))
                     {
@@ -427,7 +427,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            Debug.Log("No Matched Asset Path for linkId: " + linkId);
+            //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
 
@@ -462,7 +462,7 @@ namespace Reallusion.Import
                 //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
-                    Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                    //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                     FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
 
                     AssetDatabase.Refresh();

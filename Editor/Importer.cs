@@ -381,7 +381,7 @@ namespace Reallusion.Import
             int animationRetargeted = characterInfo.DualMaterialHair ? 2 : 1;
             bool replace = true;// characterInfo.animationRetargeted != animationRetargeted;
             if (replace) Util.LogInfo("Retargeting all imported animations.");
-            Debug.Log("fbxPath" + fbxPath);
+            //Debug.Log("fbxPath" + fbxPath);
             clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);
             // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
 
