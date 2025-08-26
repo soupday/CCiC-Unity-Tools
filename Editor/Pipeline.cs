@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Diagnostics;
-using ICSharpCode.NRefactory.Ast;
 
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering;
@@ -912,35 +911,38 @@ namespace Reallusion.Import
             string shaderName = shader.name;
             bool tessellationUpgrade = false;
 
-            string customTessellationShaderName = shaderName + "_Tessellation";           
-            Shader customShader = Shader.Find(customTessellationShaderName);
-            if (customShader)
+            if (useTessellation)
             {
-                Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + customTessellationShaderName);
-                mat.shader = customShader;
-                tessellationUpgrade = true;
-            }
+                string customTessellationShaderName = shaderName + "_Tessellation";
+                Shader customShader = Shader.Find(customTessellationShaderName);
+                if (customShader)
+                {
+                    Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + customTessellationShaderName);
+                    mat.shader = customShader;
+                    tessellationUpgrade = true;
+                }
 
-            string defaultTessallationShaderName = shaderName + "Tessellation";
-            Shader defaultShader = Shader.Find(defaultTessallationShaderName);
-            if (defaultShader)
-            {
-                Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + defaultTessallationShaderName);
-                mat.shader = defaultShader;
-                tessellationUpgrade = true;
-            }
+                string defaultTessallationShaderName = shaderName + "Tessellation";
+                Shader defaultShader = Shader.Find(defaultTessallationShaderName);
+                if (defaultShader)
+                {
+                    Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + defaultTessallationShaderName);
+                    mat.shader = defaultShader;
+                    tessellationUpgrade = true;
+                }
 
-            if (tessellationUpgrade)
-            {
-                // default materials
-                mat.SetFloatIf("_TessellationFactor", 8f);
-                mat.SetFloatIf("_TessellationFactorTriangleSize", 25f);
-                mat.SetFloatIf("_TessellationShapeFactor", 0.75f);
-                mat.SetFloatIf("_TessellationBackFaceCullEpsilon", -0.25f);
-                mat.SetFloatIf("_TessellationMode", 1f); // phong
-                mat.EnableKeyword("_TESSELLATION_PHONG");
-                // HDRP custom
-                // URP/AMP custom
+                if (tessellationUpgrade)
+                {
+                    // default materials
+                    mat.SetFloatIf("_TessellationFactor", 8f);
+                    mat.SetFloatIf("_TessellationFactorTriangleSize", 25f);
+                    mat.SetFloatIf("_TessellationShapeFactor", 0.75f);
+                    mat.SetFloatIf("_TessellationBackFaceCullEpsilon", -0.25f);
+                    mat.SetFloatIf("_TessellationMode", 1f); // phong
+                    mat.EnableKeyword("_TESSELLATION_PHONG");
+                    // HDRP custom
+                    // URP/AMP custom
+                }
             }
 
             return tessellationUpgrade;

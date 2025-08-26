@@ -1236,6 +1236,7 @@ float EyeIrisMask(float radial)
 {
     float outer = irisRadius * scleraScale;
     float inner = outer - (limbusWidth * scleraScale);
+    return pow(saturate(Remap_float(radial, inner, outer, 0.0, 1.0)), limbusContrast);
     return pow(smoothstep(inner, outer, radial), limbusContrast);
 }
 
