@@ -357,6 +357,7 @@ namespace Reallusion.Import
 
         void ResetDeltas()
         {
+            animatedStatus = 0;
             pos_delta = false;
             rot_delta = false;
             scale_delta = false;
