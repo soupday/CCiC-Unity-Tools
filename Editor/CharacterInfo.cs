@@ -756,7 +756,7 @@ namespace Reallusion.Import
 
         public void InitSettings()
         {
-            Debug.Log("InitSettings: " + name);
+            //Debug.Log("InitSettings: " + name);
 
             // if wrinkle map data present, enable wrinkle maps.
             if (HasWrinkleMaps())

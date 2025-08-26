@@ -247,7 +247,7 @@ namespace Reallusion.Import
 
             if (trackType.HasFlag(TrackType.AnimationTrack) || trackType.HasFlag(TrackType.AnimationTrackUpdate)) // AnimationTrack permitted for this object
             {
-                Debug.LogWarning("TrackType.AnimationTrack | TrackType.AnimationTrackUpdate");
+                //Debug.LogWarning("TrackType.AnimationTrack | TrackType.AnimationTrackUpdate");
                 if (animatedStatus.HasFlag(AnimatedStatus.Animation)) // Has detected animation data
                 {
                     AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
@@ -256,7 +256,7 @@ namespace Reallusion.Import
             
             if (trackType.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
             {
-                Debug.LogWarning("TrackType.ActivationTrack");
+                //Debug.LogWarning("TrackType.ActivationTrack");
                 if (animatedStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
                 {
                     AddActivationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
@@ -276,7 +276,7 @@ namespace Reallusion.Import
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
             sceneObject = null;
 
-            Debug.LogWarning("TrackType.AnimationTrackUpdate");
+            //Debug.LogWarning("TrackType.AnimationTrackUpdate");
             AnimationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();
@@ -306,7 +306,7 @@ namespace Reallusion.Import
         {
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            Debug.LogWarning("AnimatedStatus.Animation");
+            //Debug.LogWarning("AnimatedStatus.Animation");
             AnimationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();
@@ -352,7 +352,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("clipToUse " + animClip.name);
+                    //Debug.LogWarning("clipToUse " + animClip.name);
                     clipToUse = animClip;
                 }
             }
@@ -370,7 +370,7 @@ namespace Reallusion.Import
         {
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
 
-            Debug.LogWarning("AnimatedStatus.Activation");
+            //Debug.LogWarning("AnimatedStatus.Activation");
             ActivationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();
