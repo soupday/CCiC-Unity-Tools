@@ -1816,8 +1816,8 @@ namespace Reallusion.Import
                 
         public class DeserializedCameraFrames
         {
-            /* 85 bytes
-            frame_bytes = struct.pack("!IIfffffffffff?fffffff",
+            /* 86 bytes
+            frame_bytes = struct.pack("!IIfffffffffff?fffffff?",
                                 time,
                                 frame,
                                 camera_data["loc"][0],
@@ -1839,7 +1839,8 @@ namespace Reallusion.Import
                                 camera_data["dof_far_transition"],
                                 camera_data["dof_near_transition"],
                                 camera_data["dof_min_blend_distance"], 
-                                camera_data["fov"]) # Blur Edge Sampling Scale
+                                camera_data["fov"]), # Blur Edge Sampling Scale,
+                                camera_data["active"])
             */
 
             public int time { get; set; }
@@ -1868,9 +1869,9 @@ namespace Reallusion.Import
             public float DofNearTransition {  get; set; }
             public float DofMinBlendDistance {  get; set; }
             public float FieldOfView {  get; set; }
+            public bool IsActive { get; set; }
 
-
-            public const int FRAME_BYTE_COUNT = 85;
+            public const int FRAME_BYTE_COUNT = 86;
             public DeserializedCameraFrames(byte[] data)
             {
                 time = GetCurrentEndianWord(ExtractBytes(data, 0, 4), SourceEndian.BigEndian);
@@ -1895,6 +1896,7 @@ namespace Reallusion.Import
                 DofNearTransition = GetCurrentEndianFloat(ExtractBytes(data, 73, 4), SourceEndian.BigEndian);
                 DofMinBlendDistance = GetCurrentEndianFloat(ExtractBytes(data, 77, 4), SourceEndian.BigEndian);
                 FieldOfView = GetCurrentEndianFloat(ExtractBytes(data, 81, 4), SourceEndian.BigEndian);
+                IsActive = ByteToBool(ExtractBytes(data, 85, 1));
             }
 
             public float GetSeconds()

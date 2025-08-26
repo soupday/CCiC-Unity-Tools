@@ -369,6 +369,7 @@ namespace Reallusion.Import
             dark_delta = false;
             dof_delta = false;
             fov_delta = false;
+            active_delta = false;
         }
         #endregion Import Preparation
 
@@ -1049,6 +1050,10 @@ namespace Reallusion.Import
 
             int dofActive  = frames.FindAll(x => x.DofEnable == true).Count();
             dof_delta = !(dofActive == 0 || dofActive == frames.Count);
+            int camEnabled = frames.FindAll(x => x.IsActive == true).Count();
+            active_delta = !(camEnabled == 0 || camEnabled == frames.Count());
+            if (active_delta) animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Activation;
+
             foreach (var frame in frames)
             {
                 if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
@@ -1127,6 +1132,9 @@ namespace Reallusion.Import
             var b_dofFNran = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofNearTransition"));
             var b_dofMinDist = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDofMinBlendDist"));
 
+            // Proxy Enabled
+            var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
+
             // Make keyframe[] for each bindable property
 
             // Transform properties
@@ -1159,6 +1167,9 @@ namespace Reallusion.Import
             Keyframe[] f_dofFTran = new Keyframe[frames.Count];
             Keyframe[] f_dofFNran = new Keyframe[frames.Count];
             Keyframe[] f_dofMinDist = new Keyframe[frames.Count];
+
+            // Enabled
+            Keyframe[] f_enabled = new Keyframe[frames.Count];
 
             // Populate keyframe arrays
             for (int i = 0; i < frames.Count; i++)
@@ -1193,6 +1204,9 @@ namespace Reallusion.Import
                 f_dofFTran[i] = new Keyframe(frames[i].Time, frames[i].DofFarTransition);
                 f_dofFNran[i] = new Keyframe(frames[i].Time, frames[i].DofNearTransition);
                 f_dofMinDist[i] = new Keyframe(frames[i].Time, frames[i].DofMinBlendDistance);
+
+                // Enabled
+                f_enabled[i] = new Keyframe(frames[i].Time, frames[i].IsActive == true ? 1f : 0f);
             }
 
             // bind all keyframes to the appropriate curve
@@ -1262,6 +1276,14 @@ namespace Reallusion.Import
                 AnimationUtility.SetEditorCurve(clip, b_dofMinDist, c_dofMinDist);
             }
 
+            // Enabled
+            if (active_delta)
+            {
+                AnimationCurve c_enabled = new AnimationCurve(f_enabled);
+                AnimationUtility.SetEditorCurve(clip, b_enabled, c_enabled);
+            }
+
+
             float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
             clip.frameRate = frameRate;
             Debug.Log("Make Camera Animation - Calculated Frame Rate = " + frameRate);
@@ -1328,6 +1350,7 @@ namespace Reallusion.Import
             if (addToTimeLine)
             {
                 trackType |= UnityLinkSceneManagement.TrackType.AnimationTrack;
+                trackType |= UnityLinkSceneManagement.TrackType.ActivationTrack;
             }
             else
             {
