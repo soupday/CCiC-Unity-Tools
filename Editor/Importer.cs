@@ -791,12 +791,13 @@ namespace Reallusion.Import
 
         private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, 
                                              string sourceName, QuickJSON matJson)
-        {            
+        {
+            bool useTessellation = characterInfo.UseTessellation(materialType, matJson);
             // get the template material.
             Material templateMaterial = Pipeline.GetTemplateMaterial(sourceName, materialType, 
                 characterInfo.BuildQuality, 
                 characterInfo, USE_AMPLIFY_SHADER, 
-                characterInfo.UseTessellation(materialType, matJson), 
+                useTessellation, 
                 characterInfo.FeatureUseWrinkleMaps,
                 characterInfo.FeatureUseDualSpecularSkin);
 
@@ -805,7 +806,7 @@ namespace Reallusion.Import
             if (templateMaterial && templateMaterial.shader != null)
                 shader = templateMaterial.shader;
             else
-                shader = Pipeline.GetDefaultShader();
+                shader = Pipeline.GetDefaultShader();            
 
             // check that shader exists.
             if (!shader)
@@ -830,7 +831,7 @@ namespace Reallusion.Import
                 if (reuseExistingMaterial && assetPathExists)//AssetDatabase.AssetPathExists(materialAssetPath))
                 { 
                     remapMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialAssetPath);
-                    Util.LogInfo("    Using Existing material: " + remapMaterial.name);
+                    Util.LogInfo("    Using Existing material: " + remapMaterial.name);                    
                 }
                 else
                 {
@@ -847,20 +848,18 @@ namespace Reallusion.Import
                 importer.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), sourceName), remapMaterial);
             }
 
+            // if the material shader doesn't match, update the shader.            
+            if (remapMaterial.shader != shader)
+                remapMaterial.shader = shader;
+
             // copy the template material properties to the remapped material.
             if (templateMaterial)
             {
                 Util.LogInfo("    Using template material: " + templateMaterial.name);
-                if (templateMaterial.shader && templateMaterial.shader != remapMaterial.shader)
-                    remapMaterial.shader = templateMaterial.shader;
                 remapMaterial.CopyPropertiesFromMaterial(templateMaterial);
             }
-            else
-            {
-                // if the material shader doesn't match, update the shader.            
-                if (remapMaterial.shader != shader)
-                    remapMaterial.shader = shader;
-            }
+
+            Pipeline.UpgradeShader(remapMaterial, useTessellation);            
 
             // add the path of the remapped material for later re-import.
             string remapPath = AssetDatabase.GetAssetPath(remapMaterial);
@@ -1814,6 +1813,30 @@ namespace Reallusion.Import
             bool hasWrinkle = false;
             if (matJson != null) hasWrinkle = matJson.PathExists("Wrinkle");
 
+            Dictionary<float, string> ENUM_DISPLACEMENT_MODE = new Dictionary<float, string>()
+            {
+                { 0f, "ENUM_DISPLACEMENT_MODE_NONE" },
+                { 1f, "ENUM_DISPLACEMENT_MODE_BUMP" },
+                { 2f, "ENUM_DISPLACEMENT_MODE_DISPLACEMENT" },
+                { 3f, "ENUM_DISPLACEMENT_MODE_DISPLACEMENT_BUMP" },
+            };
+
+            Dictionary<float, string> ENUM_WRINKLE_MODE = new Dictionary<float, string>()
+            {
+                { 0f, "ENUM_WRINKLE_MODE_NONE" },
+                { 1f, "ENUM_WRINKLE_MODE_WRINKLE" },
+                { 2f, "ENUM_WRINKLE_MODE_WRINKLE_DISPLACEMENT" }
+            };
+
+            bool useCavity = GetTexture(sourceName, "CavityMap",
+                                        matJson, "Custom Shader/Image/Cavity Map", true);
+
+            bool useDisplacement = GetTexture(sourceName, "Displacement",
+                                              matJson, "Textures/Displacement", true);
+
+            mat.SetEnumKeyword("ENUM_WRINKLE_MODE", hasWrinkle ? 1f : 0f, ENUM_WRINKLE_MODE);
+            mat.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", useDisplacement ? 2f : 0f, ENUM_DISPLACEMENT_MODE);
+
             ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
                     TexCategory.HighDetail,
@@ -1842,30 +1865,25 @@ namespace Reallusion.Import
 
             ConnectTextureTo(sourceName, mat, "_AOMap", "ao",
                 matJson, "Textures/AO",
-                TexCategory.LowDetail);
+                TexCategory.LowDetail);            
 
-            bool useCavity = GetTexture(sourceName, "CavityMap",
-                                        matJson, "Custom Shader/Image/Cavity Map", true);
+            mat.SetBooleanKeyword("BOOLEAN_USE_CAVITY", useCavity);
             if (useCavity)
-            {
-                mat.SetBooleanKeyword("BOOLEAN_USE_CAVITY", true);
+            {                
                 ConnectTextureTo(sourceName, mat, "_CavityMap", "Cavitymap",
                     matJson, "Custom Shader/Image/Cavity Map",
                     TexCategory.MaxDetail);
-            }
-
-            bool useDisplacement = GetTexture(sourceName, "Displacement",
-                                              matJson, "Textures/Displacement", true);
+            }            
+            
             if (useDisplacement)
             {
-                mat.SetFloatIf("ENUM_DISPLACEMENT_MODE", 3f);
                 ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
                     matJson, "Textures/Displacement",
                     TexCategory.MaxDetail);                
             }
 
             if (!characterInfo.UsePackedTextures(materialType))
-            {                
+            {
                 ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
                     matJson, "Custom Shader/Image/SSS Map",
                     TexCategory.LowDetail);

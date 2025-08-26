@@ -54,123 +54,123 @@ namespace Reallusion.Import
         public const string SHADER_DEFAULT = "HDRP/Lit";
         public const string SHADER_DEFAULT_HAIR = "HDRP/Hair";
         //
-        public const string SHADER_HQ_SKIN = "RL_SkinShader_Variants_HDRP";
-        public const string SHADER_HQ_HEAD = "RL_SkinShader_Variants_HDRP";
-        public const string SHADER_HQ_CORNEA = "RL_CorneaShaderBasic_HDRP";
-        public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_HDRP"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_HDRP";
-        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_HDRP";
-        public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_HDRP";
-        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_HDRP";
-        public const string SHADER_HQ_HAIR = "RL_HairShader_Variants_HDRP";
+        public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_HDRP";
+        public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_HDRP";
+        public const string SHADER_HQ_CORNEA = "RL5_CorneaShaderParallax_HDRP";
+        public const string SHADER_HQ_EYE = "RL5_EyeShaderBasic_Dummy_HDRP"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_EYE_OCCLUSION = "RL5_EyeOcclusionShader_HDRP";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL5_EyeOcclusionPlusShader_HDRP";
+        public const string SHADER_HQ_TEARLINE = "RL5_TearlineShader_HDRP";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL5_TearlinePlusShader_HDRP";
+        public const string SHADER_HQ_HAIR = "RL5_HairShader_Variants_HDRP";
         public const string SHADER_HQ_SCALPBASE = "HDRP/Lit";
         public const string SHADER_HQ_EYELASH = "HDRP/Lit";
-        public const string SHADER_HQ_TEETH = "RL_TeethShader_HDRP";
-        public const string SHADER_HQ_TONGUE = "RL_TongueShader_HDRP";
+        public const string SHADER_HQ_TEETH = "RL5_TeethShader_HDRP";
+        public const string SHADER_HQ_TONGUE = "RL5_TongueShader_HDRP";
         public const string SHADER_HQ_ALPHACLIP = "HDRP/Lit";
         public const string SHADER_HQ_ALPHABLEND = "HDRP/Lit";
         public const string SHADER_HQ_OPAQUE = "HDRP/Lit";
         public const string SHADER_HQ_SSS = "HDRP/Lit";
         // eye types
-        public const string SHADER_HQ_CORNEA_PARALLAX = "RL_CorneaShaderParallax_HDRP";
-        public const string SHADER_HQ_EYE_PARALLAX = "RL_EyeShaderParallax_Dummy_HDRP"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL_EyeShaderRefractive_Variants_HDRP";
-        public const string SHADER_HQ_EYE_REFRACTIVE = "RL_EyeShaderRefractive_Variants_HDRP";
+        public const string SHADER_HQ_CORNEA_PARALLAX = "RL5_CorneaShaderParallax_HDRP";
+        public const string SHADER_HQ_EYE_PARALLAX = "RL5_EyeShaderParallax_Dummy_HDRP"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_HDRP";
+        public const string SHADER_HQ_EYE_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_HDRP";
         // 2 pass
-        public const string SHADER_HQ_HAIR_1ST_PASS = "RL_HairShaderMultiPass_Variants_HDRP";
-        public const string SHADER_HQ_HAIR_2ND_PASS = "RL_HairShaderMultiPass_Variants_HDRP";
-        public const string SHADER_HQ_HAIR_COVERAGE = "RL_HairShader_Variants_HDRP";
+        public const string SHADER_HQ_HAIR_1ST_PASS = "RL5_HairShaderMultiPass_Variants_HDRP";
+        public const string SHADER_HQ_HAIR_2ND_PASS = "RL5_HairShaderMultiPass_Variants_HDRP";
+        public const string SHADER_HQ_HAIR_COVERAGE = "RL5_HairShader_Variants_HDRP";
 
         // HQ Materials
         //
-        public const string MATERIAL_HQ_SKIN = "RL_Template_HQ_Skin_HDRP";
-        public const string MATERIAL_HQ_HEAD = "RL_Template_HQ_Head_HDRP";        
-        public const string MATERIAL_HQ_CORNEA = "RL_Template_HQ_CorneaBasic_HDRP";
-        public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_HDRP";        
-        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_HDRP";
-        public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_HDRP";
-        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_HDRP";
-        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_HDRP";
-        public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_HDRP";
-        public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_HDRP";
-        public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_HDRP";
-        public const string MATERIAL_HQ_TEETH = "RL_Template_HQ_Teeth_HDRP";
-        public const string MATERIAL_HQ_TONGUE = "RL_Template_HQ_Tongue_HDRP";
-        public const string MATERIAL_HQ_ALPHACLIP = "RL_Template_Default_AlphaClip_HDRP";
-        public const string MATERIAL_HQ_ALPHABLEND = "RL_Template_Default_AlphaBlend_HDRP";
-        public const string MATERIAL_HQ_OPAQUE = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_HQ_SSS = "RL_Template_Default_SSS_HDRP";
+        public const string MATERIAL_HQ_SKIN = "RL5_Template_HQ_Skin_HDRP";
+        public const string MATERIAL_HQ_HEAD = "RL5_Template_HQ_Head_HDRP";        
+        public const string MATERIAL_HQ_CORNEA = "RL5_Template_HQ_CorneaBasic_HDRP";
+        public const string MATERIAL_HQ_EYE = "RL5_Template_HQ_EyeBasic_Dummy_HDRP";        
+        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL5_Template_HQ_EyeOcclusion_HDRP";
+        public const string MATERIAL_HQ_TEARLINE = "RL5_Template_HQ_Tearline_HDRP";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL5_Template_HQ_EyeOcclusionPlus_HDRP";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL5_Template_HQ_TearlinePlus_HDRP";
+        public const string MATERIAL_HQ_HAIR = "RL5_Template_HQ_Hair_HDRP";
+        public const string MATERIAL_HQ_SCALPBASE = "RL5_Template_Default_ScalpBase_HDRP";
+        public const string MATERIAL_HQ_EYELASH = "RL5_Template_Default_Eyelash_HDRP";
+        public const string MATERIAL_HQ_TEETH = "RL5_Template_HQ_Teeth_HDRP";
+        public const string MATERIAL_HQ_TONGUE = "RL5_Template_HQ_Tongue_HDRP";
+        public const string MATERIAL_HQ_ALPHACLIP = "RL5_Template_Default_AlphaClip_HDRP";
+        public const string MATERIAL_HQ_ALPHABLEND = "RL5_Template_Default_AlphaBlend_HDRP";
+        public const string MATERIAL_HQ_OPAQUE = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_HQ_SSS = "RL5_Template_Default_SSS_HDRP";
         // variants
-        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL_Template_HQ_CorneaParallax_HDRP";
-        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL_Template_HQ_CorneaRefractive_HDRP";
-        public const string MATERIAL_HQ_EYE_PARALLAX = "RL_Template_HQ_EyeParallax_Dummy_HDRP";
-        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL_Template_HQ_EyeRefractive_HDRP";
+        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL5_Template_HQ_CorneaParallax_HDRP";
+        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL5_Template_HQ_CorneaRefractive_HDRP";
+        public const string MATERIAL_HQ_EYE_PARALLAX = "RL5_Template_HQ_EyeParallax_Dummy_HDRP";
+        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL5_Template_HQ_EyeRefractive_HDRP";
         // 2 pass
-        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL_Template_HQ_Hair_1st_Pass_HDRP";
-        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL_Template_HQ_Hair_2nd_Pass_HDRP";
-        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL_Template_HQ_Hair_HDRP";
+        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL5_Template_HQ_Hair_1st_Pass_HDRP";
+        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL5_Template_HQ_Hair_2nd_Pass_HDRP";
+        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL5_Template_HQ_Hair_HDRP";
         // wrinkle map
-        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL_Template_HQ_HeadWrinkle_HDRP";
+        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL5_Template_HQ_HeadWrinkle_HDRP";
 
         // Default Materials
         //
-        public const string MATERIAL_DEFAULT_SKIN = "RL_Template_Default_Skin_HDRP";
-        public const string MATERIAL_DEFAULT_HEAD = "RL_Template_Default_Skin_HDRP";
-        public const string MATERIAL_DEFAULT_CORNEA = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_DEFAULT_EYE = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL_Template_Default_EyeOcclusion_HDRP";
-        public const string MATERIAL_DEFAULT_TEARLINE = "RL_Template_Default_Tearline_HDRP";
-        public const string MATERIAL_DEFAULT_HAIR = "RL_Template_Default_Hair_HDRP";
-        public const string MATERIAL_DEFAULT_SCALPBASE = "RL_Template_Default_ScalpBase_HDRP";
-        public const string MATERIAL_DEFAULT_EYELASH = "RL_Template_Default_Eyelash_HDRP";        
-        public const string MATERIAL_DEFAULT_TEETH = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_DEFAULT_TONGUE = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL_Template_Default_AlphaClip_HDRP";
-        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL_Template_Default_AlphaBlend_HDRP";
-        public const string MATERIAL_DEFAULT_OPAQUE = "RL_Template_Default_Opaque_HDRP";
-        public const string MATERIAL_DEFAULT_SSS = "RL_Template_Default_SSS_HDRP";
+        public const string MATERIAL_DEFAULT_SKIN = "RL5_Template_Default_Skin_HDRP";
+        public const string MATERIAL_DEFAULT_HEAD = "RL5_Template_Default_Skin_HDRP";
+        public const string MATERIAL_DEFAULT_CORNEA = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_DEFAULT_EYE = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL5_Template_Default_EyeOcclusion_HDRP";
+        public const string MATERIAL_DEFAULT_TEARLINE = "RL5_Template_Default_Tearline_HDRP";
+        public const string MATERIAL_DEFAULT_HAIR = "RL5_Template_Default_Hair_HDRP";
+        public const string MATERIAL_DEFAULT_SCALPBASE = "RL5_Template_Default_ScalpBase_HDRP";
+        public const string MATERIAL_DEFAULT_EYELASH = "RL5_Template_Default_Eyelash_HDRP";        
+        public const string MATERIAL_DEFAULT_TEETH = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_DEFAULT_TONGUE = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL5_Template_Default_AlphaClip_HDRP";
+        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL5_Template_Default_AlphaBlend_HDRP";
+        public const string MATERIAL_DEFAULT_OPAQUE = "RL5_Template_Default_Opaque_HDRP";
+        public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_HDRP";
         // for gamebase single material or actor core...
-        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL_Template_Default_SingleMaterial_HDRP";
+        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_HDRP";
 
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
         //       Only "Custom" materials have custom shaders, or have special settings like refraction.
         //
-        public const string MATERIAL_BAKED_SKIN = "RL_Template_Baked_Skin_HDRP";
-        public const string MATERIAL_BAKED_HEAD = "RL_Template_Baked_Skin_HDRP";
-        public const string MATERIAL_BAKED_CORNEA = "RL_Template_Baked_CorneaBasic_HDRP";
-        public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_HDRP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_HDRP";
+        public const string MATERIAL_BAKED_SKIN = "RL5_Template_Baked_Skin_HDRP";
+        public const string MATERIAL_BAKED_HEAD = "RL5_Template_Baked_Skin_HDRP";
+        public const string MATERIAL_BAKED_CORNEA = "RL5_Template_Baked_CorneaBasic_HDRP";
+        public const string MATERIAL_BAKED_EYE = "RL5_Template_Baked_EyeBasic_Dummy_HDRP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL5_Template_Baked_EyeOcclusion_HDRP";
         public const string MATERIAL_BAKED_TEARLINE = "";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_HDRP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL5_Template_Baked_EyeOcclusionPlus_HDRP";
         public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
-        public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_HDRP";
+        public const string MATERIAL_BAKED_HAIR = "RL5_Template_Baked_Hair_HDRP";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
-        public const string MATERIAL_BAKED_TEETH = "RL_Template_Baked_Skin_HDRP";
-        public const string MATERIAL_BAKED_TONGUE = "RL_Template_Baked_Skin_HDRP";
+        public const string MATERIAL_BAKED_TEETH = "RL5_Template_Baked_Skin_HDRP";
+        public const string MATERIAL_BAKED_TONGUE = "RL5_Template_Baked_Skin_HDRP";
         public const string MATERIAL_BAKED_ALPHACLIP = "";
         public const string MATERIAL_BAKED_ALPHABLEND = "";
         public const string MATERIAL_BAKED_OPAQUE = "";
         public const string MATERIAL_BAKED_SSS = "";
         // variants (that differ from the defaults above)
-        public const string MATERIAL_BAKED_SKIN_CUSTOM = "RL_Template_Baked_SkinCustom_HDRP";
-        public const string MATERIAL_BAKED_HEAD_CUSTOM = "RL_Template_Baked_HeadCustom_HDRP";
-        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL_Template_Baked_CorneaBasicCustom_HDRP";                
-        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL_Template_Baked_CorneaParallaxCustom_HDRP";
-        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_HDRP";        
-        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_HDRP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_HDRP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_HDRP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_HDRP";
-        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCustom_HDRP";
+        public const string MATERIAL_BAKED_SKIN_CUSTOM = "RL5_Template_Baked_SkinCustom_HDRP";
+        public const string MATERIAL_BAKED_HEAD_CUSTOM = "RL5_Template_Baked_HeadCustom_HDRP";
+        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL5_Template_Baked_CorneaBasicCustom_HDRP";                
+        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL5_Template_Baked_CorneaParallaxCustom_HDRP";
+        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL5_Template_Baked_CorneaRefractiveCustom_HDRP";        
+        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL5_Template_Baked_EyeRefractiveCustom_HDRP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL5_Template_Baked_EyeOcclusionCustom_HDRP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_HDRP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_HDRP";
+        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCustom_HDRP";
         // 2 pass        
-        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL_Template_Baked_Hair_1st_Pass_HDRP";
-        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL_Template_Baked_Hair_2nd_Pass_HDRP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL_Template_Baked_HairCustom_1st_Pass_HDRP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL_Template_Baked_HairCustom_2nd_Pass_HDRP";        
+        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_HDRP";
+        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_HDRP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_HDRP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL5_Template_Baked_HairCustom_2nd_Pass_HDRP";        
         // wrinkle map
-        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL_Template_Baked_HeadWrinkleCustom_HDRP";
+        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL5_Template_Baked_HeadWrinkleCustom_HDRP";
 #elif URP_10_5_0_OR_NEWER
         // version
         public const string FULL_VERSION = "URP " + VERSION;
@@ -179,123 +179,123 @@ namespace Reallusion.Import
         public const string SHADER_DEFAULT = "Universal Render Pipeline/Lit";
         public const string SHADER_DEFAULT_HAIR = "Universal Render Pipeline/Hair"; // n/a
         //
-        public const string SHADER_HQ_SKIN = "RL_SkinShader_Variants_URP";
-        public const string SHADER_HQ_HEAD = "RL_SkinShader_Variants_URP";
-        public const string SHADER_HQ_CORNEA = "RL_CorneaShaderBasic_URP";
-        public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_URP"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_URP";
-        public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_URP";
-        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_URP";
-        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_URP";
-        public const string SHADER_HQ_HAIR = "RL_HairShader_Variants_URP";
+        public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_URP";
+        public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_URP";
+        public const string SHADER_HQ_CORNEA = "RL5_CorneaShaderBasic_URP";
+        public const string SHADER_HQ_EYE = "RL5_EyeShaderBasic_Dummy_URP"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_EYE_OCCLUSION = "RL5_EyeOcclusionShader_URP";
+        public const string SHADER_HQ_TEARLINE = "RL5_TearlineShader_URP";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL5_EyeOcclusionPlusShader_URP";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL5_TearlinePlusShader_URP";
+        public const string SHADER_HQ_HAIR = "RL5_HairShader_Variants_URP";
         public const string SHADER_HQ_SCALPBASE = "Universal Render Pipeline/Lit";
         public const string SHADER_HQ_EYELASH = "Universal Render Pipeline/Lit";
-        public const string SHADER_HQ_TEETH = "RL_TeethShader_URP";
-        public const string SHADER_HQ_TONGUE = "RL_TongueShader_URP";
+        public const string SHADER_HQ_TEETH = "RL5_TeethShader_URP";
+        public const string SHADER_HQ_TONGUE = "RL5_TongueShader_URP";
         public const string SHADER_HQ_ALPHACLIP = "Universal Render Pipeline/Lit";
         public const string SHADER_HQ_ALPHABLEND = "Universal Render Pipeline/Lit";
         public const string SHADER_HQ_OPAQUE = "Universal Render Pipeline/Lit";
         public const string SHADER_HQ_SSS = "LitSSS";
         // eye types
-        public const string SHADER_HQ_CORNEA_PARALLAX = "RL_CorneaShaderParallax_URP";
-        public const string SHADER_HQ_EYE_PARALLAX = "RL_EyeShaderParallax_Dummy_URP"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL_EyeShaderRefractive_Variants_Dummy_URP";
-        public const string SHADER_HQ_EYE_REFRACTIVE = "RL_EyeShaderRefractive_Variants_Dummy_URP";
+        public const string SHADER_HQ_CORNEA_PARALLAX = "RL5_CorneaShaderParallax_URP";
+        public const string SHADER_HQ_EYE_PARALLAX = "RL5_EyeShaderParallax_Dummy_URP"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_Dummy_URP";
+        public const string SHADER_HQ_EYE_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_Dummy_URP";
         // 2 pass
-        public const string SHADER_HQ_HAIR_1ST_PASS = "RL_HairShader_1st_Pass_Variants_URP";
-        public const string SHADER_HQ_HAIR_2ND_PASS = "RL_HairShader_2nd_Pass_Variants_URP";
-        public const string SHADER_HQ_HAIR_COVERAGE = "RL_HairShader_Coverage_URP";
+        public const string SHADER_HQ_HAIR_1ST_PASS = "RL5_HairShader_1st_Pass_Variants_URP";
+        public const string SHADER_HQ_HAIR_2ND_PASS = "RL5_HairShader_2nd_Pass_Variants_URP";
+        public const string SHADER_HQ_HAIR_COVERAGE = "RL5_HairShader_Coverage_URP";
 
         // HQ Materials
         //
-        public const string MATERIAL_HQ_SKIN = "RL_Template_HQ_Skin_URP";
-        public const string MATERIAL_HQ_HEAD = "RL_Template_HQ_Head_URP";
-        public const string MATERIAL_HQ_CORNEA = "RL_Template_HQ_CorneaBasic_URP";
-        public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_URP";
-        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_URP";
-        public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_URP";
-        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_URP";
-        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_URP";
-        public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_URP";
-        public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_URP";
-        public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_URP";
-        public const string MATERIAL_HQ_TEETH = "RL_Template_HQ_Teeth_URP";
-        public const string MATERIAL_HQ_TONGUE = "RL_Template_HQ_Tongue_URP";
-        public const string MATERIAL_HQ_ALPHACLIP = "RL_Template_Default_AlphaClip_URP";
-        public const string MATERIAL_HQ_ALPHABLEND = "RL_Template_Default_AlphaBlend_URP";
-        public const string MATERIAL_HQ_OPAQUE = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_HQ_SSS = "RL_Template_Default_SSS_URP";
+        public const string MATERIAL_HQ_SKIN = "RL5_Template_HQ_Skin_URP";
+        public const string MATERIAL_HQ_HEAD = "RL5_Template_HQ_Head_URP";
+        public const string MATERIAL_HQ_CORNEA = "RL5_Template_HQ_CorneaBasic_URP";
+        public const string MATERIAL_HQ_EYE = "RL5_Template_HQ_EyeBasic_Dummy_URP";
+        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL5_Template_HQ_EyeOcclusion_URP";
+        public const string MATERIAL_HQ_TEARLINE = "RL5_Template_HQ_Tearline_URP";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL5_Template_HQ_EyeOcclusionPlus_URP";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL5_Template_HQ_TearlinePlus_URP";
+        public const string MATERIAL_HQ_HAIR = "RL5_Template_HQ_Hair_URP";
+        public const string MATERIAL_HQ_SCALPBASE = "RL5_Template_Default_ScalpBase_URP";
+        public const string MATERIAL_HQ_EYELASH = "RL5_Template_Default_Eyelash_URP";
+        public const string MATERIAL_HQ_TEETH = "RL5_Template_HQ_Teeth_URP";
+        public const string MATERIAL_HQ_TONGUE = "RL5_Template_HQ_Tongue_URP";
+        public const string MATERIAL_HQ_ALPHACLIP = "RL5_Template_Default_AlphaClip_URP";
+        public const string MATERIAL_HQ_ALPHABLEND = "RL5_Template_Default_AlphaBlend_URP";
+        public const string MATERIAL_HQ_OPAQUE = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_HQ_SSS = "RL5_Template_Default_SSS_URP";
         // variants
-        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL_Template_HQ_CorneaParallax_URP";
-        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL_Template_HQ_CorneaRefractive_Dummy_URP";
-        public const string MATERIAL_HQ_EYE_PARALLAX = "RL_Template_HQ_EyeParallax_Dummy_URP";
-        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL_Template_HQ_EyeRefractive_Dummy_URP";
+        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL5_Template_HQ_CorneaParallax_URP";
+        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL5_Template_HQ_CorneaRefractive_Dummy_URP";
+        public const string MATERIAL_HQ_EYE_PARALLAX = "RL5_Template_HQ_EyeParallax_Dummy_URP";
+        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL5_Template_HQ_EyeRefractive_Dummy_URP";
         // 2 pass
-        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL_Template_HQ_Hair_1st_Pass_URP";
-        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL_Template_HQ_Hair_2nd_Pass_URP";
-        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL_Template_HQ_Hair_Coverage_URP";
+        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL5_Template_HQ_Hair_1st_Pass_URP";
+        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL5_Template_HQ_Hair_2nd_Pass_URP";
+        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL5_Template_HQ_Hair_Coverage_URP";
         // wrinkle map
-        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL_Template_HQ_HeadWrinkle_URP";
+        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL5_Template_HQ_HeadWrinkle_URP";
 
         // Default Materials
         //
-        public const string MATERIAL_DEFAULT_SKIN = "RL_Template_Default_Skin_URP";
-        public const string MATERIAL_DEFAULT_HEAD = "RL_Template_Default_Skin_URP";
-        public const string MATERIAL_DEFAULT_CORNEA = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_DEFAULT_EYE = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL_Template_Default_EyeOcclusion_URP";
-        public const string MATERIAL_DEFAULT_TEARLINE = "RL_Template_Default_Tearline_URP";
-        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL_Template_Default_EyeOcclusionPlus_URP";
-        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL_Template_Default_TearlinePlus_URP";
-        public const string MATERIAL_DEFAULT_HAIR = "RL_Template_Default_Hair_URP";
-        public const string MATERIAL_DEFAULT_SCALPBASE = "RL_Template_Default_ScalpBase_URP";
-        public const string MATERIAL_DEFAULT_EYELASH = "RL_Template_Default_Eyelash_URP";
-        public const string MATERIAL_DEFAULT_TEETH = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_DEFAULT_TONGUE = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL_Template_Default_AlphaClip_URP";
-        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL_Template_Default_AlphaBlend_URP";
-        public const string MATERIAL_DEFAULT_OPAQUE = "RL_Template_Default_Opaque_URP";
-        public const string MATERIAL_DEFAULT_SSS = "RL_Template_Default_SSS_URP";
+        public const string MATERIAL_DEFAULT_SKIN = "RL5_Template_Default_Skin_URP";
+        public const string MATERIAL_DEFAULT_HEAD = "RL5_Template_Default_Skin_URP";
+        public const string MATERIAL_DEFAULT_CORNEA = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_DEFAULT_EYE = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL5_Template_Default_EyeOcclusion_URP";
+        public const string MATERIAL_DEFAULT_TEARLINE = "RL5_Template_Default_Tearline_URP";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL5_Template_Default_EyeOcclusionPlus_URP";
+        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL5_Template_Default_TearlinePlus_URP";
+        public const string MATERIAL_DEFAULT_HAIR = "RL5_Template_Default_Hair_URP";
+        public const string MATERIAL_DEFAULT_SCALPBASE = "RL5_Template_Default_ScalpBase_URP";
+        public const string MATERIAL_DEFAULT_EYELASH = "RL5_Template_Default_Eyelash_URP";
+        public const string MATERIAL_DEFAULT_TEETH = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_DEFAULT_TONGUE = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL5_Template_Default_AlphaClip_URP";
+        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL5_Template_Default_AlphaBlend_URP";
+        public const string MATERIAL_DEFAULT_OPAQUE = "RL5_Template_Default_Opaque_URP";
+        public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_URP";
         // for gamebase single material or actor core...
-        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL_Template_Default_SingleMaterial_URP";
+        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_URP";
 
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
         //       Only "Custom" materials have custom shaders, or have special settings like refraction.
         //
-        public const string MATERIAL_BAKED_SKIN = "RL_Template_Baked_Skin_URP";
-        public const string MATERIAL_BAKED_HEAD = "RL_Template_Baked_Skin_URP";
-        public const string MATERIAL_BAKED_CORNEA = "RL_Template_Baked_CorneaBasic_URP";
-        public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_URP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_URP";
+        public const string MATERIAL_BAKED_SKIN = "RL5_Template_Baked_Skin_URP";
+        public const string MATERIAL_BAKED_HEAD = "RL5_Template_Baked_Skin_URP";
+        public const string MATERIAL_BAKED_CORNEA = "RL5_Template_Baked_CorneaBasic_URP";
+        public const string MATERIAL_BAKED_EYE = "RL5_Template_Baked_EyeBasic_Dummy_URP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL5_Template_Baked_EyeOcclusion_URP";
         public const string MATERIAL_BAKED_TEARLINE = "";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_URP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL5_Template_Baked_EyeOcclusionPlus_URP";
         public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
-        public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_URP";
+        public const string MATERIAL_BAKED_HAIR = "RL5_Template_Baked_Hair_URP";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
-        public const string MATERIAL_BAKED_TEETH = "RL_Template_Baked_Skin_URP";
-        public const string MATERIAL_BAKED_TONGUE = "RL_Template_Baked_Skin_URP";
+        public const string MATERIAL_BAKED_TEETH = "RL5_Template_Baked_Skin_URP";
+        public const string MATERIAL_BAKED_TONGUE = "RL5_Template_Baked_Skin_URP";
         public const string MATERIAL_BAKED_ALPHACLIP = "";
         public const string MATERIAL_BAKED_ALPHABLEND = "";
         public const string MATERIAL_BAKED_OPAQUE = "";
-        public const string MATERIAL_BAKED_SSS = "RL_Template_Baked_SSS_URP";
+        public const string MATERIAL_BAKED_SSS = "RL5_Template_Baked_SSS_URP";
         // variants (that differ from the defaults above)
-        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL_Template_Baked_CorneaBasicCustom_URP";
-        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL_Template_Baked_CorneaParallaxCustom_URP";
-        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_Dummy_URP";
-        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_Dummy_URP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_URP";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_URP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_URP";
-        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCoverageCustom_URP";
+        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL5_Template_Baked_CorneaBasicCustom_URP";
+        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL5_Template_Baked_CorneaParallaxCustom_URP";
+        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL5_Template_Baked_CorneaRefractiveCustom_Dummy_URP";
+        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL5_Template_Baked_EyeRefractiveCustom_Dummy_URP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL5_Template_Baked_EyeOcclusionCustom_URP";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_URP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_URP";
+        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCoverageCustom_URP";
         // 2 pass        
-        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL_Template_Baked_Hair_1st_Pass_URP";
-        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL_Template_Baked_Hair_2nd_Pass_URP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL_Template_Baked_HairCustom_1st_Pass_URP";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL_Template_Baked_HairCustom_2nd_Pass_URP";
+        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_URP";
+        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_URP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_URP";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL5_Template_Baked_HairCustom_2nd_Pass_URP";
         // wrinkle map
-        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL_Template_Baked_HeadWrinkleCustom_URP";
+        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL5_Template_Baked_HeadWrinkleCustom_URP";
 #else
         // version
         public const string FULL_VERSION = "3D " + VERSION;
@@ -304,123 +304,123 @@ namespace Reallusion.Import
         public const string SHADER_DEFAULT = "Standard";
         public const string SHADER_DEFAULT_HAIR = "Standard";
         //
-        public const string SHADER_HQ_SKIN = "RL_SkinShader_Variants_3D";
-        public const string SHADER_HQ_HEAD = "RL_SkinShader_Variants_3D";
-        public const string SHADER_HQ_CORNEA = "RL_CorneaShaderBasic_3D";
-        public const string SHADER_HQ_EYE = "RL_EyeShaderBasic_Dummy_3D"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_EYE_OCCLUSION = "RL_EyeOcclusionShader_3D";
-        public const string SHADER_HQ_TEARLINE = "RL_TearlineShader_3D";
-        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL_EyeOcclusionPlusShader_3D";
-        public const string SHADER_HQ_TEARLINE_PLUS = "RL_TearlinePlusShader_3D";
-        public const string SHADER_HQ_HAIR = "RL_HairShader_Clipped_3D";
+        public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_3D";
+        public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_3D";
+        public const string SHADER_HQ_CORNEA = "RL5_CorneaShaderBasic_3D";
+        public const string SHADER_HQ_EYE = "RL5_EyeShaderBasic_Dummy_3D"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_EYE_OCCLUSION = "RL5_EyeOcclusionShader_3D";
+        public const string SHADER_HQ_TEARLINE = "RL5_TearlineShader_3D";
+        public const string SHADER_HQ_EYE_OCCLUSION_PLUS = "RL5_EyeOcclusionPlusShader_3D";
+        public const string SHADER_HQ_TEARLINE_PLUS = "RL5_TearlinePlusShader_3D";
+        public const string SHADER_HQ_HAIR = "RL5_HairShader_Clipped_3D";
         public const string SHADER_HQ_SCALPBASE = "Standard";
         public const string SHADER_HQ_EYELASH = "Standard";
-        public const string SHADER_HQ_TEETH = "RL_TeethShader_3D";
-        public const string SHADER_HQ_TONGUE = "RL_TongueShader_3D";
+        public const string SHADER_HQ_TEETH = "RL5_TeethShader_3D";
+        public const string SHADER_HQ_TONGUE = "RL5_TongueShader_3D";
         public const string SHADER_HQ_ALPHACLIP = "Standard";
         public const string SHADER_HQ_ALPHABLEND = "Standard";
         public const string SHADER_HQ_OPAQUE = "Standard";
         public const string SHADER_HQ_SSS = "LitSSS";
         // eye types
-        public const string SHADER_HQ_CORNEA_PARALLAX = "RL_CorneaShaderParallax_3D";
-        public const string SHADER_HQ_EYE_PARALLAX = "RL_EyeShaderParallax_Dummy_3D"; // Dummy shader (unlit no textures)
-        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL_EyeShaderRefractive_Variants_Dummy_3D";
-        public const string SHADER_HQ_EYE_REFRACTIVE = "RL_EyeShaderRefractive_Variants_Dummy_3D";
+        public const string SHADER_HQ_CORNEA_PARALLAX = "RL5_CorneaShaderParallax_3D";
+        public const string SHADER_HQ_EYE_PARALLAX = "RL5_EyeShaderParallax_Dummy_3D"; // Dummy shader (unlit no textures)
+        public const string SHADER_HQ_CORNEA_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_Dummy_3D";
+        public const string SHADER_HQ_EYE_REFRACTIVE = "RL5_EyeShaderRefractive_Variants_Dummy_3D";
         // 2 pass
-        public const string SHADER_HQ_HAIR_1ST_PASS = "RL_HairShader_1st_Pass_Variants_3D";
-        public const string SHADER_HQ_HAIR_2ND_PASS = "RL_HairShader_2nd_Pass_Variants_3D";
-        public const string SHADER_HQ_HAIR_COVERAGE = "RL_HairShader_Coverage_3D";
+        public const string SHADER_HQ_HAIR_1ST_PASS = "RL5_HairShader_1st_Pass_Variants_3D";
+        public const string SHADER_HQ_HAIR_2ND_PASS = "RL5_HairShader_2nd_Pass_Variants_3D";
+        public const string SHADER_HQ_HAIR_COVERAGE = "RL5_HairShader_Coverage_3D";
 
         // HQ Materials
         //
-        public const string MATERIAL_HQ_SKIN = "RL_Template_HQ_Skin_3D";
-        public const string MATERIAL_HQ_HEAD = "RL_Template_HQ_Head_3D";
-        public const string MATERIAL_HQ_CORNEA = "RL_Template_HQ_CorneaBasic_3D";
-        public const string MATERIAL_HQ_EYE = "RL_Template_HQ_EyeBasic_Dummy_3D";
-        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL_Template_HQ_EyeOcclusion_3D";
-        public const string MATERIAL_HQ_TEARLINE = "RL_Template_HQ_Tearline_3D";
-        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL_Template_HQ_EyeOcclusionPlus_3D";
-        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL_Template_HQ_TearlinePlus_3D";
-        public const string MATERIAL_HQ_HAIR = "RL_Template_HQ_Hair_3D";
-        public const string MATERIAL_HQ_SCALPBASE = "RL_Template_Default_ScalpBase_3D";
-        public const string MATERIAL_HQ_EYELASH = "RL_Template_Default_Eyelash_3D";
-        public const string MATERIAL_HQ_TEETH = "RL_Template_HQ_Teeth_3D";
-        public const string MATERIAL_HQ_TONGUE = "RL_Template_HQ_Tongue_3D";
-        public const string MATERIAL_HQ_ALPHACLIP = "RL_Template_Default_AlphaClip_3D";
-        public const string MATERIAL_HQ_ALPHABLEND = "RL_Template_Default_AlphaBlend_3D";
-        public const string MATERIAL_HQ_OPAQUE = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_HQ_SSS = "RL_Template_Default_SSS_3D";
+        public const string MATERIAL_HQ_SKIN = "RL5_Template_HQ_Skin_3D";
+        public const string MATERIAL_HQ_HEAD = "RL5_Template_HQ_Head_3D";
+        public const string MATERIAL_HQ_CORNEA = "RL5_Template_HQ_CorneaBasic_3D";
+        public const string MATERIAL_HQ_EYE = "RL5_Template_HQ_EyeBasic_Dummy_3D";
+        public const string MATERIAL_HQ_EYE_OCCLUSION = "RL5_Template_HQ_EyeOcclusion_3D";
+        public const string MATERIAL_HQ_TEARLINE = "RL5_Template_HQ_Tearline_3D";
+        public const string MATERIAL_HQ_EYE_OCCLUSION_PLUS = "RL5_Template_HQ_EyeOcclusionPlus_3D";
+        public const string MATERIAL_HQ_TEARLINE_PLUS = "RL5_Template_HQ_TearlinePlus_3D";
+        public const string MATERIAL_HQ_HAIR = "RL5_Template_HQ_Hair_3D";
+        public const string MATERIAL_HQ_SCALPBASE = "RL5_Template_Default_ScalpBase_3D";
+        public const string MATERIAL_HQ_EYELASH = "RL5_Template_Default_Eyelash_3D";
+        public const string MATERIAL_HQ_TEETH = "RL5_Template_HQ_Teeth_3D";
+        public const string MATERIAL_HQ_TONGUE = "RL5_Template_HQ_Tongue_3D";
+        public const string MATERIAL_HQ_ALPHACLIP = "RL5_Template_Default_AlphaClip_3D";
+        public const string MATERIAL_HQ_ALPHABLEND = "RL5_Template_Default_AlphaBlend_3D";
+        public const string MATERIAL_HQ_OPAQUE = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_HQ_SSS = "RL5_Template_Default_SSS_3D";
         // variants
-        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL_Template_HQ_CorneaParallax_3D";
-        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL_Template_HQ_CorneaRefractive_Dummy_3D";
-        public const string MATERIAL_HQ_EYE_PARALLAX = "RL_Template_HQ_EyeParallax_Dummy_3D";
-        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL_Template_HQ_EyeRefractive_Dummy_3D";
+        public const string MATERIAL_HQ_CORNEA_PARALLAX = "RL5_Template_HQ_CorneaParallax_3D";
+        public const string MATERIAL_HQ_CORNEA_REFRACTIVE = "RL5_Template_HQ_CorneaRefractive_Dummy_3D";
+        public const string MATERIAL_HQ_EYE_PARALLAX = "RL5_Template_HQ_EyeParallax_Dummy_3D";
+        public const string MATERIAL_HQ_EYE_REFRACTIVE = "RL5_Template_HQ_EyeRefractive_Dummy_3D";
         // 2 pass
-        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL_Template_HQ_Hair_1st_Pass_3D";
-        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL_Template_HQ_Hair_2nd_Pass_3D";
-        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL_Template_HQ_Hair_Coverage_3D";
+        public const string MATERIAL_HQ_HAIR_1ST_PASS = "RL5_Template_HQ_Hair_1st_Pass_3D";
+        public const string MATERIAL_HQ_HAIR_2ND_PASS = "RL5_Template_HQ_Hair_2nd_Pass_3D";
+        public const string MATERIAL_HQ_HAIR_COVERAGE = "RL5_Template_HQ_Hair_Coverage_3D";
         // wrinkle map
-        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL_Template_HQ_HeadWrinkle_3D";
+        public const string MATERIAL_HQ_HEAD_WRINKLE = "RL5_Template_HQ_HeadWrinkle_3D";
 
         // Default Materials
         //
-        public const string MATERIAL_DEFAULT_SKIN = "RL_Template_Default_Skin_3D";
-        public const string MATERIAL_DEFAULT_HEAD = "RL_Template_Default_Skin_3D";
-        public const string MATERIAL_DEFAULT_CORNEA = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_DEFAULT_EYE = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL_Template_Default_EyeOcclusion_3D";
-        public const string MATERIAL_DEFAULT_TEARLINE = "RL_Template_Default_Tearline_3D";
-        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL_Template_Default_EyeOcclusionPlus_3D";
-        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL_Template_Default_TearlinePlus_3D";
-        public const string MATERIAL_DEFAULT_HAIR = "RL_Template_Default_Hair_3D";
-        public const string MATERIAL_DEFAULT_SCALPBASE = "RL_Template_Default_ScalpBase_3D";
-        public const string MATERIAL_DEFAULT_EYELASH = "RL_Template_Default_Eyelash_3D";
-        public const string MATERIAL_DEFAULT_TEETH = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_DEFAULT_TONGUE = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL_Template_Default_AlphaClip_3D";
-        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL_Template_Default_AlphaBlend_3D";
-        public const string MATERIAL_DEFAULT_OPAQUE = "RL_Template_Default_Opaque_3D";
-        public const string MATERIAL_DEFAULT_SSS = "RL_Template_Default_SSS_3D";
+        public const string MATERIAL_DEFAULT_SKIN = "RL5_Template_Default_Skin_3D";
+        public const string MATERIAL_DEFAULT_HEAD = "RL5_Template_Default_Skin_3D";
+        public const string MATERIAL_DEFAULT_CORNEA = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_DEFAULT_EYE = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION = "RL5_Template_Default_EyeOcclusion_3D";
+        public const string MATERIAL_DEFAULT_TEARLINE = "RL5_Template_Default_Tearline_3D";
+        public const string MATERIAL_DEFAULT_EYE_OCCLUSION_PLUS = "RL5_Template_Default_EyeOcclusionPlus_3D";
+        public const string MATERIAL_DEFAULT_TEARLINE_PLUS = "RL5_Template_Default_TearlinePlus_3D";
+        public const string MATERIAL_DEFAULT_HAIR = "RL5_Template_Default_Hair_3D";
+        public const string MATERIAL_DEFAULT_SCALPBASE = "RL5_Template_Default_ScalpBase_3D";
+        public const string MATERIAL_DEFAULT_EYELASH = "RL5_Template_Default_Eyelash_3D";
+        public const string MATERIAL_DEFAULT_TEETH = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_DEFAULT_TONGUE = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_DEFAULT_ALPHACLIP = "RL5_Template_Default_AlphaClip_3D";
+        public const string MATERIAL_DEFAULT_ALPHABLEND = "RL5_Template_Default_AlphaBlend_3D";
+        public const string MATERIAL_DEFAULT_OPAQUE = "RL5_Template_Default_Opaque_3D";
+        public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_3D";
         // for gamebase single material or actor core...
-        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL_Template_Default_SingleMaterial_3D";
+        public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_3D";
         
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
         //       Only "Custom" materials have custom shaders, or have special settings like refraction.
         //
-        public const string MATERIAL_BAKED_SKIN = "RL_Template_Baked_Skin_3D";
-        public const string MATERIAL_BAKED_HEAD = "RL_Template_Baked_Skin_3D";
-        public const string MATERIAL_BAKED_CORNEA = "RL_Template_Baked_CorneaBasic_3D";
-        public const string MATERIAL_BAKED_EYE = "RL_Template_Baked_EyeBasic_Dummy_3D";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL_Template_Baked_EyeOcclusion_3D";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL_Template_Baked_EyeOcclusionPlus_3D";
+        public const string MATERIAL_BAKED_SKIN = "RL5_Template_Baked_Skin_3D";
+        public const string MATERIAL_BAKED_HEAD = "RL5_Template_Baked_Skin_3D";
+        public const string MATERIAL_BAKED_CORNEA = "RL5_Template_Baked_CorneaBasic_3D";
+        public const string MATERIAL_BAKED_EYE = "RL5_Template_Baked_EyeBasic_Dummy_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION = "RL5_Template_Baked_EyeOcclusion_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS = "RL5_Template_Baked_EyeOcclusionPlus_3D";
         public const string MATERIAL_BAKED_TEARLINE = "";
         public const string MATERIAL_BAKED_TEARLINE_PLUS = "";
-        public const string MATERIAL_BAKED_HAIR = "RL_Template_Baked_Hair_3D";
+        public const string MATERIAL_BAKED_HAIR = "RL5_Template_Baked_Hair_3D";
         public const string MATERIAL_BAKED_SCALPBASE = "";
         public const string MATERIAL_BAKED_EYELASH = "";
-        public const string MATERIAL_BAKED_TEETH = "RL_Template_Baked_Skin_3D";
-        public const string MATERIAL_BAKED_TONGUE = "RL_Template_Baked_Skin_3D";
+        public const string MATERIAL_BAKED_TEETH = "RL5_Template_Baked_Skin_3D";
+        public const string MATERIAL_BAKED_TONGUE = "RL5_Template_Baked_Skin_3D";
         public const string MATERIAL_BAKED_ALPHACLIP = "";
         public const string MATERIAL_BAKED_ALPHABLEND = "";
         public const string MATERIAL_BAKED_OPAQUE = "";
         public const string MATERIAL_BAKED_SSS = "";
         // variants (that differ from the defaults above)
-        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL_Template_Baked_CorneaBasicCustom_3D";
-        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL_Template_Baked_CorneaParallaxCustom_3D";
-        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL_Template_Baked_CorneaRefractiveCustom_Dummy_3D";
-        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL_Template_Baked_EyeRefractiveCustom_Dummy_3D";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL_Template_Baked_EyeOcclusionCustom_3D";
-        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL_Template_Baked_EyeOcclusionPlusCustom_3D";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL_Template_Baked_HairCustom_3D";
-        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL_Template_Baked_HairCoverageCustom_3D";
+        public const string MATERIAL_BAKED_CORNEA_CUSTOM = "RL5_Template_Baked_CorneaBasicCustom_3D";
+        public const string MATERIAL_BAKED_CORNEA_PARALLAX_CUSTOM = "RL5_Template_Baked_CorneaParallaxCustom_3D";
+        public const string MATERIAL_BAKED_CORNEA_REFRACTIVE_CUSTOM = "RL5_Template_Baked_CorneaRefractiveCustom_Dummy_3D";
+        public const string MATERIAL_BAKED_EYE_REFRACTIVE_CUSTOM = "RL5_Template_Baked_EyeRefractiveCustom_Dummy_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_CUSTOM = "RL5_Template_Baked_EyeOcclusionCustom_3D";
+        public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_3D";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_3D";
+        public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCoverageCustom_3D";
         // 2 pass        
-        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL_Template_Baked_Hair_1st_Pass_3D";
-        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL_Template_Baked_Hair_2nd_Pass_3D";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL_Template_Baked_HairCustom_1st_Pass_3D";
-        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL_Template_Baked_HairCustom_2nd_Pass_3D";
+        public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_3D";
+        public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_3D";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_3D";
+        public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL5_Template_Baked_HairCustom_2nd_Pass_3D";
         // wrinkle map
-        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL_Template_Baked_HeadWrinkleCustom_3D";       
+        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL5_Template_Baked_HeadWrinkleCustom_3D";       
 #endif
 
         private static Dictionary<MaterialType, string> DICT_SHADERS = new Dictionary<MaterialType, string>
@@ -886,6 +886,7 @@ namespace Reallusion.Import
                 }
             }
 
+            /*
             if (useTessellation)
             {                
                 customTemplateName = templateName + "_T";
@@ -895,7 +896,7 @@ namespace Reallusion.Import
                     templateName = customTemplateName;
                     customTemplate = foundTemplate;                    
                 }
-            }
+            }*/
 
             if (customTemplate) return customTemplate;
 
@@ -903,6 +904,46 @@ namespace Reallusion.Import
             if (template) return template;
 
             return GetDefaultMaterial(quality);
+        }
+
+        public static bool UpgradeShader(Material mat, bool useTessellation)
+        {
+            Shader shader = mat.shader;
+            string shaderName = shader.name;
+            bool tessellationUpgrade = false;
+
+            string customTessellationShaderName = shaderName + "_Tessellation";           
+            Shader customShader = Shader.Find(customTessellationShaderName);
+            if (customShader)
+            {
+                Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + customTessellationShaderName);
+                mat.shader = customShader;
+                tessellationUpgrade = true;
+            }
+
+            string defaultTessallationShaderName = shaderName + "Tessellation";
+            Shader defaultShader = Shader.Find(defaultTessallationShaderName);
+            if (defaultShader)
+            {
+                Util.LogInfo("Upgrading Shader: " + shaderName + " to Tessellation Shader: " + defaultTessallationShaderName);
+                mat.shader = defaultShader;
+                tessellationUpgrade = true;
+            }
+
+            if (tessellationUpgrade)
+            {
+                // default materials
+                mat.SetFloatIf("_TessellationFactor", 8f);
+                mat.SetFloatIf("_TessellationFactorTriangleSize", 25f);
+                mat.SetFloatIf("_TessellationShapeFactor", 0.75f);
+                mat.SetFloatIf("_TessellationBackFaceCullEpsilon", -0.25f);
+                mat.SetFloatIf("_TessellationMode", 1f); // phong
+                mat.EnableKeyword("_TESSELLATION_PHONG");
+                // HDRP custom
+                // URP/AMP custom
+            }
+
+            return tessellationUpgrade;
         }
 
         public static bool IsShaderFor(string shaderName, params MaterialType[] materialType)

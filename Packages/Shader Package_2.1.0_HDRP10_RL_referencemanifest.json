@@ -53,488 +53,314 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaBasicCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaBasicCustom_HDRP.mat",
       "GUID": "bf5a3ded0fdb48d429da0d52bd32b8fa",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaBasic_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaBasic_HDRP.mat",
       "GUID": "5a42b63860fcf9947b6f25e1afed3719",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaParallaxCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaParallaxCustom_HDRP.mat",
       "GUID": "ad3326ce9b9438345a8c70bccf2d44cb",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaRefractiveCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaRefractiveCustom_HDRP.mat",
       "GUID": "b0da49a073cbc9f41b9c49a27cd6bb07",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeBasic_Dummy_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeBasic_Dummy_HDRP.mat",
       "GUID": "3183d7c1a22cea747b6bdef64de8180c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeOcclusionCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeOcclusionCustom_HDRP.mat",
       "GUID": "ba6221acb287b3a4fbf256347c2ee8e3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeOcclusion_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeOcclusion_HDRP.mat",
       "GUID": "8305f8ccfe8d6474f9a9e3f89c23d698",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeRefractiveCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeRefractiveCustom_HDRP.mat",
       "GUID": "733f86c64c556e743bfc91a87b6accf3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_1st_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_1st_Pass_HDRP.mat",
       "GUID": "8183fd2d0c567c04597914d8f6a2d389",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_2nd_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_2nd_Pass_HDRP.mat",
       "GUID": "7e0484eba413dc24082625334c931726",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_HDRP.mat",
       "GUID": "3ecfb8073e2c15a49b5025d911e45c13",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_1st_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_1st_Pass_HDRP.mat",
       "GUID": "e9d71863edf7e1247a8dc98417953a37",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_2nd_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_2nd_Pass_HDRP.mat",
       "GUID": "0f5e7b131bcfe3940a5c0e4f11008866",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_HDRP.mat",
       "GUID": "7fba60151a33b334fbe462045cd18642",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HeadCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadCustom_HDRP.mat",
       "GUID": "3318fce1d2b7271488c42dba1b7beaf1",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HeadWrinkleCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadWrinkleCustom_HDRP.mat",
       "GUID": "1a31950db6fd64e4a95df37b06ec28d7",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HeadWrinkleCustom_HDRP_DH.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadWrinkleCustom_HDRP_DH.mat",
       "GUID": "f4b1659f79a1ea1448ed2ea060b6e197",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_SkinCustom_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_SkinCustom_HDRP.mat",
       "GUID": "c7c23918950a85245ad7a569bc2a86de",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_SkinCustom_HDRP_DH.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_SkinCustom_HDRP_DH.mat",
       "GUID": "1ee8763a7f475ec4cb1d809cb209409f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Skin_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Skin_HDRP.mat",
       "GUID": "424c74b137643eb478329bedaeb23667",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_AlphaBlend_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_AlphaBlend_HDRP.mat",
       "GUID": "db4dc5ed02cf1b04f9c1353a3f67e675",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_AlphaClip_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_AlphaClip_HDRP.mat",
       "GUID": "34df85f08227cd54a995db4deacd20ee",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Eyelash_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Eyelash_HDRP.mat",
       "GUID": "c2359010df41e3b47a525f4fb0f49216",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_EyeOcclusion_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_EyeOcclusion_HDRP.mat",
       "GUID": "34cc189d81c7e2b41a4f7f3a8151e8c9",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Hair_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Hair_HDRP.mat",
       "GUID": "7ee90b27915bf684986f68bfcf389c51",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Opaque_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Opaque_HDRP.mat",
       "GUID": "c023915403d2db94c9a6daaae3b539aa",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_ScalpBase_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_ScalpBase_HDRP.mat",
       "GUID": "dea828f0231a67542b87328430b396be",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_SingleMaterial_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_SingleMaterial_HDRP.mat",
       "GUID": "0f4e301138141e241b80abdc85990760",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Skin_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Skin_HDRP.mat",
       "GUID": "36128c2591570644a8079e6e7048efdf",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_SSS_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_SSS_HDRP.mat",
       "GUID": "60690dbf282db584f90980560e2f6847",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Tearline_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Tearline_HDRP.mat",
       "GUID": "8030603ee283b4543be5ca7705d5b4e8",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaBasic_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaBasic_HDRP.mat",
       "GUID": "27fa3f4fbbe011843870a7ca7b5b2004",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaParallax_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaParallax_HDRP.mat",
       "GUID": "843eb35c8a8792841aa40fd6f5933a7a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaRefractive_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaRefractive_HDRP.mat",
       "GUID": "bfb04cadcad425647a5f65b9a5eef682",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeBasic_Dummy_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeBasic_Dummy_HDRP.mat",
       "GUID": "83b66b921ec41654aa693e3ffc5d65f0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeOcclusionPlus_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeOcclusionPlus_HDRP.mat",
       "GUID": "c6e43ac276585b440b6bac2f5d625910",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeOcclusion_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeOcclusion_HDRP.mat",
       "GUID": "45766e0f2064d974b9eee5879b85906f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeParallax_Dummy_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeParallax_Dummy_HDRP.mat",
       "GUID": "77fd424dedc3ae24eb6b9a4f2014674d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeRefractive_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeRefractive_HDRP.mat",
       "GUID": "fb66d80eb1901e141bf51833949108ca",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_1st_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_1st_Pass_HDRP.mat",
       "GUID": "7701ab52c302b134ab094404fee45119",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_2nd_Pass_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_2nd_Pass_HDRP.mat",
       "GUID": "030e7ba7342d82946829d240a8420e3a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_HDRP.mat",
       "GUID": "86f9d8a19e1a9604ab5188c4049400e5",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_HeadWrinkle_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_HeadWrinkle_HDRP.mat",
       "GUID": "ee062a756a05b9f428ed78c7b1d3b4d1",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_HeadWrinkle_HDRP_DH.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_HeadWrinkle_HDRP_DH.mat",
       "GUID": "ae49ea26ba3177043957143a3459766d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Head_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Head_HDRP.mat",
       "GUID": "98b51244fe155f74a89cc2734d83853e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Head_HDRP_DH.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Head_HDRP_DH.mat",
       "GUID": "2cfef06c0a0cf2f42945d40b9fa2e007",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Skin_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Skin_HDRP.mat",
       "GUID": "5fa47099bf7fb534fbc8996a3525c82f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Skin_HDRP_DH.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Skin_HDRP_DH.mat",
       "GUID": "f793ff5dda1ee444689249a52b8b0d48",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_TearlinePlus_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_TearlinePlus_HDRP.mat",
       "GUID": "dc825edaf57bd0648b77b5fd404d5168",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Tearline_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Tearline_HDRP.mat",
       "GUID": "ce9a0ddb2296b1f408a2b2e71eebeac1",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Teeth_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Teeth_HDRP.mat",
       "GUID": "bf2c2c56978b6da41826aba0690d6a97",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Tongue_HDRP.mat",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Tongue_HDRP.mat",
       "GUID": "ff83f4946d449ab4e8b55c7ede9f3a77",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_CorneaParallaxCustom_HDRP_T.mat",
-      "GUID": "8a875fa17b832a84e8dd268295c4724d",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_CorneaRefractiveCustom_HDRP_T.mat",
-      "GUID": "cd9ffd8dc1c26e64d9e3e3b966ba0378",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_EyeOcclusion_HDRP_T.mat",
-      "GUID": "2137b165656c9e84eac23a7dd4db775e",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_1st_Pass_HDRP_T.mat",
-      "GUID": "4c2c82eb07aecd442ab98d5c0f98a947",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_2nd_Pass_HDRP_T.mat",
-      "GUID": "11e53aeb8c7cd5d40bb47346ae778130",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_HDRP_T.mat",
-      "GUID": "02e953db3f187fa4e9f7b4936e9b7037",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HeadWrinkleCustom_HDRP_T.mat",
-      "GUID": "150f4295f20c127489fb575e5fc77b4b",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_Skin_HDRP_T.mat",
-      "GUID": "4df58baafaf942a4cb42128f5b8e62b9",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_AlphaBlend_HDRP_T.mat",
-      "GUID": "b2018ab2da997b942b037042427719ec",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_AlphaClip_HDRP_T.mat",
-      "GUID": "7c3535e4c80ed294b96801c5a49f05d0",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Eyelash_HDRP_T.mat",
-      "GUID": "0a43f26a370dc93408ccd931d4c7617d",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Opaque_HDRP_T.mat",
-      "GUID": "2b76e812080e6e9478ed16d2bd5813ef",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_ScalpBase_HDRP_T.mat",
-      "GUID": "f1d36fa24f546e545b9b92c5422257e9",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_SingleMaterial_HDRP_T.mat",
-      "GUID": "d46850ced0062984b97226e3db5a83e8",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Skin_HDRP_T.mat",
-      "GUID": "d17e465fe97436041aae73a3ff516d7d",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_SSS_HDRP_T.mat",
-      "GUID": "2a858b6508c3e67409415c3cc41255a4",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_CorneaParallax_HDRP_T.mat",
-      "GUID": "ce35cbc600c694846aa46e5ffbf46844",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_CorneaRefractive_HDRP_T.mat",
-      "GUID": "bb2a2b99550d6e0468344f81951a6567",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_1st_Pass_HDRP_T.mat",
-      "GUID": "52caab13d5d5f0e4ba2de99c883dce1c",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_2nd_Pass_HDRP_T.mat",
-      "GUID": "bb3d678b1eb590b42b70d86a5865597c",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_HDRP_T.mat",
-      "GUID": "5c3b01d33f7c58547b7be645e3c97d6b",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_HeadWrinkle_HDRP_DH_T.mat",
-      "GUID": "33d32dd35b662644fbfae96c48152897",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_HeadWrinkle_HDRP_T.mat",
-      "GUID": "b018b9e3e584aeb4ea9e2536bbcf8302",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Head_HDRP_DH_T.mat",
-      "GUID": "9466324a23296364facb6acbe2f0d2f1",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Head_HDRP_T.mat",
-      "GUID": "3a672a0e6b2a4c444a936f40a2b754cd",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Skin_HDRP_DH_T.mat",
-      "GUID": "55a1373323552be4a9ad1e96c65e6d57",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Skin_HDRP_T.mat",
-      "GUID": "32edb5732b70a9a489321a059753bfd0",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Teeth_HDRP_T.mat",
-      "GUID": "71bbe3e24d33aa34cbb5866639a7d5e8",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Tongue_HDRP_T.mat",
-      "GUID": "d4c029487fe2cfd4c96945c233fe4e22",
       "InstalledGUID": "",
       "Validated": false
     },
@@ -743,278 +569,254 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_CorneaShaderBasic_Baked_HDRP.shadergraph",
-      "GUID": "c1ebe84cd1b59cc4fb98a8e03ae3f7d1",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_CorneaShaderParallax_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_CorneaShaderParallax_Baked_HDRP.shadergraph",
       "GUID": "d80f43cce7721c44980ea5de18cb1a4f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_EyeOcclusionShader_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_EyeOcclusionShader_Baked_HDRP.shadergraph",
       "GUID": "19cfa70b21a0ca649855cd3bc8896d63",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_EyeShaderRefractive_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_EyeShaderRefractive_Baked_HDRP.shadergraph",
       "GUID": "1f94846e709e483448feea617906bc23",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HairShaderMultiPass_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_HairShaderMultiPass_Baked_HDRP.shadergraph",
       "GUID": "34039396b8fa97342b7bb1b05267a5d3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HairShader_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_HairShader_Baked_HDRP.shadergraph",
       "GUID": "a081e115c7c82634aa606dafdcb27d08",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HeadShaderWrinkle_DEPR_Baked_HDRP.shadergraph",
-      "GUID": "3ee3b6fd4bf488749b8933893a198397",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_SkinShader_Baked_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_SkinShader_Baked_HDRP.shadergraph",
       "GUID": "008fda8d7e8ffc7428c74e2ceab77076",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_SkinShader_Baked_HDRP_DH.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_SkinShader_Baked_HDRP_DH.shadergraph",
       "GUID": "db6fa27be74919e41b8769fa0e71e75d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_CorneaShaderBasic_HDRP.shadergraph",
-      "GUID": "2a0e87ae64c033f4fac6433968710650",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_EyeShaderBasic_Dummy_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL5_EyeShaderBasic_Dummy_HDRP.shadergraph",
       "GUID": "24d3e0bdec61420469539fa1aa61c98b",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_EyeShaderParallax_Dummy_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL5_EyeShaderParallax_Dummy_HDRP.shadergraph",
       "GUID": "133e3b4e4032f0e45a5483e280d767e8",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_CorneaShaderParallax_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_CorneaShaderParallax_HDRP.shadergraph",
       "GUID": "6045d5f26aa2fbf47ac082d04ff0caf2",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeOcclusionPlusShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeOcclusionPlusShader_HDRP.shadergraph",
       "GUID": "e8e2399bf8988454599a5150fd7795e0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeOcclusionShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeOcclusionShader_HDRP.shadergraph",
       "GUID": "e11e1541751f73a4bbdc03b071617a93",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeShaderRefractive_Variants_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeShaderRefractive_Variants_HDRP.shadergraph",
       "GUID": "48cccd4fafd06264c9dcce2137ba5738",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_HairShaderMultiPass_Variants_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_HairShaderMultiPass_Variants_HDRP.shadergraph",
       "GUID": "913a13959a6beae4b9d21bcd34541c26",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_HairShader_Variants_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_HairShader_Variants_HDRP.shadergraph",
       "GUID": "1b1fb9190f9a21344931aa2df1b6a845",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_SkinShader_Variants_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_SkinShader_Variants_HDRP.shadergraph",
       "GUID": "e4b1192022fa52046868c000971f662c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_SkinShader_Variants_HDRP_DH.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_SkinShader_Variants_HDRP_DH.shadergraph",
       "GUID": "02e0e95620457f6439b82dabbb80c05b",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TearlinePlusShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TearlinePlusShader_HDRP.shadergraph",
       "GUID": "c386e8ed4da7dff4da8050b2185d7d6c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TearlineShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TearlineShader_HDRP.shadergraph",
       "GUID": "5acd4540882388b44adfb140c6c6290b",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TeethShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TeethShader_HDRP.shadergraph",
       "GUID": "bade89290ffb11a468a4957d7cfbb4bd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TongueShader_HDRP.shadergraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TongueShader_HDRP.shadergraph",
       "GUID": "9cea8e6ce656ff148a2ec8e1550340ce",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_Hair_IDBlend.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_Hair_IDBlend.shadersubgraph",
       "GUID": "bde8ceb926def2e4eb1b7c8cc5ca837a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_Hair_RootBlend.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_Hair_RootBlend.shadersubgraph",
       "GUID": "7e332a8c36226cd43a71eddf58c5dbb2",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_Hair_VertexColorBlend.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_Hair_VertexColorBlend.shadersubgraph",
       "GUID": "deb5adbd3a758b848aeaafef037de569",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_WrinkleMaskBlend.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_WrinkleMaskBlend.shadersubgraph",
       "GUID": "27136356b7dbacc488c6d93117e810f9",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_WrinkleMaskBlend_Vertex.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_WrinkleMaskBlend_Vertex.shadersubgraph",
       "GUID": "7123d118fcb080046b4a5e001c03b73d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_WrinkleSystem.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_WrinkleSystem.shadersubgraph",
       "GUID": "eb5a7673e0bf6f341ad6a60f3d98ae7e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL_Function_WrinkleSystem_Vertex.shadersubgraph",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Subgraph/RL5_Function_WrinkleSystem_Vertex.shadersubgraph",
       "GUID": "48a863a9afcdc704cbcc43e66f589054",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_CorneaShaderBasic_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "fc09f4c7b2d0a204bb1e5961322bcabe",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "22dddd10cd695104c8c16f9492e9873e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "7935e80451b69f0419cf61b1ad52a736",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_EyeShaderRefractive_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "935dd3dc1a58bd64c83d176d9ef43813",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_EyeShaderRefractive_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "31182917a44ff464ebddc2e40c119eba",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "85a7e4e3a56b378499ce38ffeb9bf543",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "1d02e0dd3fd71bd409f40a782f322394",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_HairShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "01948f2dfef1b0b4ea151910fa6657cd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HairShader_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "a3c9ad516f103934fbed433b9b48b6f4",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_SkinShader_Baked_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "df0c2d1ce71b8c445a8103ab6e5a49bd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HeadShaderWrinkle_DEPR_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "adf209e93ea7abc48b9e5517e58f6c8d",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_SkinShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "852d438a5b269ea4ba8904b26ca0bb04",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_SkinShader_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "2f7d903a72ecf6548903beb9befa13e3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
+      "GUID": "f28d0fbcdd2a5b743a41089ef9d51361",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
-      "GUID": "4bddaf4ee5135794fb0884ce0fa3997f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_EyeShaderRefractive_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "1386d695c0ac4d44b980f413357c97eb",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_EyeShaderRefractive_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "c27fcc77861c7194eb9563ca7cb77d08",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "6f2c44ccacdb8b341a4648467408358b",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "59adc6954f9abbf4b8c16a770e746925",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_HairShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "8b03ca342e1bbcc4ab9cf0bbdfe75806",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_HairShader_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "c0256c0c7451fb149a1321b58446f275",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "01dbd3450c74aa84594585874887ce30",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
-      "GUID": "cd95d1e9048a3a94a819e3d5f0d985e3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_SkinShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "4a1b0c0dd817af648a637c75e44e3e98",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_SkinShader_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "b95ae4633e90900488df70fccd9bce6f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_TeethShader_HDRP_Tessellation.shadergraph",
+      "GUID": "70ad80b018da3984d90f78a1641e2ddb",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_TeethShader_HDRP_Tessellation.shadergraph",
-      "GUID": "6f43a3b233175e04d923f0927167b222",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_TongueShader_HDRP_Tessellation.shadergraph",
-      "GUID": "a78ef18f64241ab44baa313c0c3b1d6b",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_TongueShader_HDRP_Tessellation.shadergraph",
+      "GUID": "69548665c7ec72a4eb3e33ddafde9750",
       "InstalledGUID": "",
       "Validated": false
     },

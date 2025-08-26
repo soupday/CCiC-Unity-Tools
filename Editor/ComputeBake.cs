@@ -708,8 +708,9 @@ namespace Reallusion.Import
             string sourceName, Material templateMaterial)
         {
             Material bakedMaterial = Util.FindMaterial(sourceName, new string[] { materialsFolder });            
-            Shader shader = Pipeline.GetDefaultShader();
-            
+            Shader shader = templateMaterial ? templateMaterial.shader : Pipeline.GetDefaultShader();
+            bool useTessellation = sourceMaterial.shader.name.EndsWith("Tessellation");
+
             if (!bakedMaterial)
             {
                 // create the remapped material and save it as an asset.
@@ -723,21 +724,17 @@ namespace Reallusion.Import
                 AssetDatabase.CreateAsset(bakedMaterial, matPath);
             }
 
+            // if the material shader doesn't match, update the shader.            
+            if (bakedMaterial.shader != shader)
+                bakedMaterial.shader = shader;
+
             // copy the template material properties to the remapped material.
             if (templateMaterial)
             {
-                if (templateMaterial.shader && templateMaterial.shader != bakedMaterial.shader)
-                    bakedMaterial.shader = templateMaterial.shader;
                 bakedMaterial.CopyPropertiesFromMaterial(templateMaterial);
             }
-            else
-            {
-                // if the material shader doesn't match, update the shader.            
-                if (bakedMaterial.shader != shader)
-                    bakedMaterial.shader = shader;
-            }
 
-            bool useTessellation = bakedMaterial.shader.name.EndsWith("Tessellation");
+            Pipeline.UpgradeShader(bakedMaterial, useTessellation);
 
             // apply the textures...
             if (IS_HDRP)
@@ -926,10 +923,26 @@ namespace Reallusion.Import
             float displacementMode = mat.GetFloatIf("ENUM_DISPLACEMENT_MODE");
             float wrinkleMode = mat.GetFloatIf("ENUM_WRINKLE_MODE");
 
+            Dictionary<float, string> ENUM_DISPLACEMENT_MODE = new Dictionary<float, string>()
+            {
+                { 0f, "ENUM_DISPLACEMENT_MODE_NONE" },
+                { 1f, "ENUM_DISPLACEMENT_MODE_BUMP" },
+                { 2f, "ENUM_DISPLACEMENT_MODE_DISPLACEMENT" },
+                { 3f, "ENUM_DISPLACEMENT_MODE_DISPLACEMENT_BUMP" },
+            };
+
+            Dictionary<float, string> ENUM_WRINKLE_MODE = new Dictionary<float, string>()
+            {
+                { 0f, "ENUM_WRINKLE_MODE_NONE" },
+                { 1f, "ENUM_WRINKLE_MODE_WRINKLE" },
+                { 2f, "ENUM_WRINKLE_MODE_WRINKLE_DISPLACEMENT" }                
+            };
+
             bool useAmplify = characterInfo.BakeCustomShaders && mat.shader.name.iContains("/Amplify/");
-            bool useTessellation = characterInfo.BuiltFeatureTessellation;
+            bool useTessellation = mat.shader.name.iEndsWith("Tessellation");
             bool useWrinkleMaps = characterInfo.BakeCustomShaders && characterInfo.BuiltFeatureWrinkleMaps;
-            bool useDigitalHuman = characterInfo.BakeCustomShaders && mat.shader.name.iEndsWith("_DH");
+            bool useDigitalHuman = characterInfo.BakeCustomShaders && (mat.shader.name.iEndsWith("_DH")
+                                                                    || mat.shader.name.iEndsWith("_DH_Tessellation"));
 
             if (!IS_HDRP && !useAmplify) sssNormalSoften = 0f;
             if (!useBlending)
@@ -1162,8 +1175,8 @@ namespace Reallusion.Import
             result.SetFloatIf("_BumpStrength", bumpStrength);
             result.SetFloatIf("_WrinkleDisplacementStrength", wrinkleDisplacementStrength);
             result.SetBooleanKeyword("BOOLEAN_USE_CAVITY", useCavity);
-            result.SetFloatIf("ENUM_DISPLACEMENT_MODE", displacementMode);
-            result.SetFloatIf("ENUM_WRINKLE_MODE", wrinkleMode);
+            result.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", displacementMode, ENUM_DISPLACEMENT_MODE);
+            result.SetEnumKeyword("ENUM_WRINKLE_MODE", wrinkleMode, ENUM_WRINKLE_MODE);            
 
             CopyAMPSubsurface(mat, result);
 

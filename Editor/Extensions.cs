@@ -212,6 +212,18 @@ namespace Reallusion.Import
                 mat.SetFloatIf(shaderRef, 0f);
             }
         }
+        
+        public static void SetEnumKeyword(this Material mat, string shaderRef, float value, Dictionary<float, string> enumSet)
+        {
+            mat.SetFloatIf(shaderRef, value);
+            foreach(KeyValuePair<float, string> kvp in enumSet)
+            {
+                if (kvp.Key == value)
+                    mat.EnableKeyword(kvp.Value);
+                else
+                    mat.DisableKeyword(kvp.Value);
+            }
+        }
 
         public static bool GetBooleanKeyword(this Material mat, string shaderRef)
         {
