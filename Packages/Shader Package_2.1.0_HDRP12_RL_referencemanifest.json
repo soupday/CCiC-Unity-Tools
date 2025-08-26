@@ -23,3750 +23,6 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/COMMIT_EDITMSG",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/config",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/description",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/FETCH_HEAD",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/HEAD",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/index",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/packed-refs",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/applypatch-msg.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/commit-msg.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/fsmonitor-watchman.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/post-update.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-applypatch.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-commit.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-merge-commit.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-push.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-rebase.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/pre-receive.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/prepare-commit-msg.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/push-to-checkout.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/sendemail-validate.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/hooks/update.sample",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/info/exclude",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/HEAD",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/heads/HDRP10",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/heads/HDRP12",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/remotes/origin/HDRP12",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/remotes/origin/HDRP14",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/remotes/origin/HDRP171",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/remotes/origin/HEAD",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/logs/refs/remotes/origin/main",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/00/b87e0eac6a55f4a0bc2d246f09945e77052fc0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/01/2b1bc2316dc2c18aa139147f0ffc4f0e809379",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/01/5b86dc52f8596836bae09427bc472da25fc8fe",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/01/9fbe5e3d1cf78b7cdc2fdd768ee10530ba5a02",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/01/deace2372251a86c112bee310c9f13e5319f38",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/02/e2a8c076573a64fe3f88ca4f32eb0facfc5ef8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/03/0eee22348f676faee4176ec0d76feb1531da8c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/03/ae5c9933e32c2bf1a65795d1fd09e325b35c44",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/03/eabd2f435e6f359d56fbb3bab28b57b385ca01",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/04/2d3b2067a5592fcdb3a3308e8bfe67cddf0791",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/04/4a880e2c1def44e09ef1fddc2b6df20c065181",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/04/ccdd4aef3f5cf087fb926fe1d19a137fa76d63",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/04/ffff1d1018c4d7a61b928ca2802e5aefdcc15d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/05/621d30bdca7c84ad2ca06bb17835702d7dcd4c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/05/c253fc69444718046404aeba73bc9717f0ec47",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/06/3f0ac527cf07366505e8987fb5a424645b8832",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/07/15cbe7f3803ca1e8da572a6760ccc9e21e3632",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/07/2f4c443f33949780afcfa5f20a200f6765f426",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/07/5c2f16a3d70873b80d4f9a5b856b89775fdae6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/08/00fb7b0bd907c71da051efaa1451de0ccd94bc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/08/8b5cb36625ccba1b74b1441716936b566bd6d4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/08/9822776ca0b8587cbed0afbdfe6aa84d470c06",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/08/eacca7bb45bbd29b4af927c5aef0278750a5d5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/08/f4b6ec7721076d7d7f626899aa4d210f6e10eb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/09/2a9261d7e24eccd049289d4710049430af9925",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/09/475ac007455a3ba99da49b7fc898a508843bd8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/09/64314ad7065c4f9c9600a295d9f768b4975b26",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/09/cc8c75184366315c029e122add01cecc6fd26f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/09/d7b1f273952f7568a9962fe4009d7e38406005",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0a/0b59bdb540e6335730c67ec104bf790b244902",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0a/74e6d5856233205c1b4e6006edcb7731533756",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0a/828c81a6cd93853a0d34498fc9830657737b58",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0a/930eae345f29ca11ac88c394d0f35818d37026",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0a/ac397967fd04cda87763f04306b711108a3781",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0b/5b9d0aec7a924e17794e05a903061d8fa9a0e4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0c/8d3f3d6096597cbfaeaee6c24241fdd75b1133",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0c/c43a60ae35287ac243ba40190fe8b59b751a1d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0c/f15a6301561a96b7ec7e56f1360e6f5e279fbb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0d/30efb0bf58a691d09975fb15e91a59c07e2bf0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0d/6055184f87f3c92f069591bda695d82e3de78f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0e/6998a43ea7052ad231b40654dce649b5e51537",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0f/9ada2510009b1f17e3f40c676eb914f2229423",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0f/9e3fa695722d55b5f74ad0a4a12c20f21b9605",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0f/ad2418611fa6071ccb208e6502229d0eaef705",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/0f/d2d526932ba1364cbe485a9e81ffdec2cd2155",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/10/f6f4b2b7f6993bb994acfae07d9d7d00602d49",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/11/2c2811c3aebc131896b5716225ce9e80985981",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/11/84a2faeac8b7db37b12d33622d71c33b89e200",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/11/955be21a5676bb98a4899ffb00ebe171df45eb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/12/209035c631682c2c99732d0f1a266fc6dd6e75",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/12/21c5486f734037b8e8c8bafa48e54b53ae6c4d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/12/a3b6c0c215f057744a1dc35e5ba6fdbe56efac",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/12/b8dd5afe927e428609c49ec9432d8013c72b37",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/13/1332cc5fd349e232f3c59137fdfced5adeb356",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/14/5c77fd48c090a35028145eb5bc7f9581138a31",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/15/2f96ff35ac3d47efd3e2eb2ecb9dd99c58a5b3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/15/5ee010c2995dd7abaf51eff984e9d0df78c1af",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/15/b28ffbf04374ce0f5b303567a6be467700e6c6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/16/cd82c83b38e5522e7bb239c1b7ea546cf44740",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/16/d4bf9ee25b3c0ccebdf77575b5017d888b970c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/18/ca4bbd30f2a9dea18fe415372acbc2768f17c3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/18/f33cbd5f11fdf06a91f8ecba8c82bb6c6f6d94",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1a/c22792cdc1c293dc5748a5e80331247d6410e7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/1d25720504bafcb6f5ddc57bb11a8916dbb974",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/264e23696714051502a2a82ef872dd667d8ae4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/58a72688b6a2c5fe5626f0c6dbe22a33433c75",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/a15c10787bf0ad7207033bf8fe8eec59db8eaf",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/a2d5e61795a34f6ed4abc5b7013c39974445ce",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/b73ca1d0523fce04de1b0f4b389941d3eb925b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1c/bb165aec84810d4377470d6ecd39fdae27d38a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1d/9d1fec6bb4d6d18c763079b565256b42ce42a1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1e/73317e0ffd07c21b59480d6876fafbb5371194",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1e/98c25d15d8557d890037610cc47e30ff3094bf",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1e/b6d50df62b494b61049093a22f5dfacc64256e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1e/f30ea4ee078919b3e88c56c41495beadb8feb4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1f/232fa7437b41262bbc5d52aad77a80786363af",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1f/5a29fcec786717eca67e3438b9055cf11609bc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/1f/bed7337744d996941960c2504827ed23370760",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/20/e9a823d35929d705282fffb8719b490c6cd993",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/21/82bad256042ed83ccaa357db7d094ba909a3cd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/22/af6fd25b4cde9ceaffd4caf1ec0975e0b20396",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/22/cb6b82eb8e620b427eed3f2a1603425df356d4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/23/02ce87679a55fa2dfd7cd030abd5fc71fead39",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/23/4ba231e5d2bc0d3cbf0777d65dd64bfbbe493f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/23/5803ead950aad43ae5746ea3ad2af8e88c54c6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/23/d1931285a3afe9ea3ad5c71e70f48a1484dcab",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/24/1d0881c80f7018a1f07777ea9155add65bd39d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/24/424c257f4741a9ecd13366a727cfb4303e67ef",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/26/d18ffad61dbe2c28cae43a41b35c347aec5170",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/27/130f1ef2a755340ec27ff92b2327a649e46ddd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/27/4e427fe02dc506b5950d47b2ea22c1b9054ab3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/27/4ee8ca5e9bbe89f2422757c1053273553dcb15",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/27/97cc78e80765deca5ec49f22276040044c33c8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/27/e7e8391e866c866f678db2a4820e4bc246809c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/28/81ade63e3fb1fc1c8b499ee813228bfbef212d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/28/ca919ed4c8c924c12f470e133c5aaf1d1f30c8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/29/91c7f4cb495da17572f8a0ff2e75156ba84b88",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/29/d2f5ef832c74c62b037938fa31600284533d56",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/29/e28dc94f57660a3233820e9e3645b839fded74",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2a/165841418b8fdb0df1175793989edc90e02677",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2a/4e562cda779d728118b33fb1323db8d1a146ae",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2a/521a18039924ea41876fca5930bd1a5901c91f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2b/02542465e4d77aff9002acf5ec0aa89ebebb0c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2c/53c7fe99f44331359c6c6ca71470e5ae82fd1f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2c/9556dbbac6d7182d9672b51ebffe70e452fcfa",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2c/a0e0fd6a47cfe7dcf7243f17b9889d5ec078ce",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2e/00bd369e1e0dfb3607f3924664c72f9fe93dcf",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2e/192435805be0ba38cb9ae002412e59a30c2d8b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2e/321a4d28519c319c108802e11095073628946c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/2e/402aba68d97e3ecbca32fa9bfb5b217249367f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/30/6f2d7dffcabb1b0b18afccd2a0021f7fa93fa7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/30/a584f92f3f9bf18749fa3b7ec9679cd5cfb59b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/31/b1b13f3525300cfce58c41e0ef35fa6cc2b4ac",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/33/39a25110ec14df2af4be6b446c1811cbb04682",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/33/5b500020a1f4e9adf37980aada4dc26bddbc79",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/33/9f3001d3ce09bdbea5ccbe31f634323f6bb2cf",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/33/a072d088f302ca5577f15442eda5d40a0f761b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/34/625765210c070421eff893f92b1a022e21ee1c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/34/733d25e1e6a2d59e66e11a7f803e7003a91615",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/34/8b299bbc2b28e97bca11ff67a13415781d14a8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/34/ac72c2f2dc513b2934b6f12bbb3ade11777517",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/34/dad26f682b08057b44dc8a083d4b3b72fa8933",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/35/1cf71f377f1e39ecb1d633694f1a328fc935f6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/35/28f1a2ecc53491c18b4aad25f79df30c9d2a42",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/35/44c152c62016de3576392d67030f0e9178838c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/35/8d3c2045612b10ffeacaa5289c73211465baa5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/35/efcb6b12943029a8039991688c0a79460c26ce",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/36/00d0b91cdba4ac1c0f8638e7b35a7172ba57e6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/36/04ebb9cfd93058237196bdf16913f75ce2092b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/36/3aec149181e9deb923be7415f69238fe014fc0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/36/94cc2d31b39268964cb1320138792915597358",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/37/594caccc88652e6ad7a7d8d75eb343e3b43ab7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/37/8b0f9a10842ed4305628955bfcaa1d596d3f38",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/37/fd704e064f15d4f07811789af143f5858f49a7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/38/09df88727b566f5d29a5f4a283bfcd315dfd9d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/38/467283c462d36d50ef4fd682d5d238031a1a60",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/38/e26241d9e145632e2f50fb81c1d8da28f14141",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/39/39281aedc0287af4b0ea9cc132ac653685d685",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/39/5f0d99bd736399565643f596b32914d34a51f4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3a/0c761b0739f41f5a51dd87f9bb14d87efeac48",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3a/3018370a087297490cd80eb2b2a0dbb8fd3812",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3b/9c3ea982d43afad40dfec39300f8cd6ee9cf95",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3b/db1a6d372657429b6621f850b2e401de8ba305",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3c/b17ba1531ffed0baeb222ff8ad914eee47a558",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3c/bdae8ab92b09fd3c2cc62643645f0db71ba47a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3d/4c55d80a504678b8faec3342dc1cd657fa4f12",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3d/ff6f5b4ad93ddeca391fe5fb87608e87a89e30",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3e/8daf7556df960761171382ce7dfdaff4b09072",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3f/82f9275a732a4b8e8463697b55bc6cd0d83419",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3f/9014c1b4300a71bf1bad73400f3f11d4d52f76",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/3f/fbf30da8c6b7b5475e1bfcde388aee89a6ee31",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/40/de1dcff9ba6180067c2a9fed126ed0e75e1147",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/41/109689395421c8055c0d6620e18787528a838c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/41/64579e5894db9782323a67159e8f663ba92379",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/41/6f7b563d072d473e82bf777069261f1b3f9281",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/41/8ad5d72ef00c4a445f7f591d2f25806b81a01e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/42/485fc5f370ebc7b4a957ae5e57041bb075127d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/42/ce6b2abc3dba726fe9e151f25923f5a32789db",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/43/be7e38429bc1e9a61b34cdbc386e940f414f3e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/44/018e1047aa6cf644571e7547954504debcb700",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/44/1b1c75de749a697b5e3f047ca1c4f2b35a4096",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/44/4e3764f7a595dcfeecf6bb5ffab0b20af2b688",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/44/888bd7a3257764464af6886c810d11d04f8d83",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/44/94d75d478c4966f164987dcc91c0e5a610a956",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/45/2ca6dca8ce600a0901ca0233b6cad2ac090182",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/45/487eae5e4af1d78aa2d69c829b0002f14351ea",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/45/50746c0f2e885ddaa20808bd79f100fc920954",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/45/8717302b7cd64756320d0783a429f6ca090326",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/46/8f1426c7ef133fe8f8750218a594fb722fa186",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/46/9c31ca8f7e155ab9a7b74057940659f83ce980",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/46/daf6c22662f5ba61136a0e9591c30173b48bfc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/46/eba29597064c81dfbc4a1263ecf37414c8cb72",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/47/91a441ff4fcfa3de3cfa80258c043e16d497c4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/48/08e106b8c22fcc2a514accaa58e102445e48c9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/48/7267fa2e53faa31bd776834ad1a4dcd0a5b45d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/49/9cdb8d4799a8a7a184260959d72b8d2945e90a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/49/cf4030fb6f17c72b25ad512f8367424bf350db",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/49/d7c7938b3ca73c2150063685f5540d306a8b8b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4a/bfee8df90bf401e452925955bd7b7b8a3cd2e2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4b/2bdd3171ad363e1c75914509efd38ed757b8d3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4c/5a5fda7112be514bd8ded435c575ec1c06932c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4c/7f734430b8a14e777c1ddb5f55502037ae2513",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4c/a328e1516143315fc0f186801b3e85dc33625a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4d/ae794a5a6eee56bf86b16a0ec35488a64ddbe2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4e/01fcb7e434ad88d946027c0a535314ce68d475",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4e/4ce77c626e2568ab67cdf3f33620b2203bd352",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4e/7c24bd1c56b7ac6cb930c06dff52242057947d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/4e/9d8e086b3153ae42c15e41db6ac6e064c7bf76",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/50/a7566cd0f1c3e9a614550f54da4a5a1db6998c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/50/c0f45c0014a3d39a3dff312461034f23739e20",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/51/9c648c39876e4493a395d8f680da4fd24e735e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/52/8ab22527544a1d5c1e74f1865b20af833c651f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/53/c5d61ebeeeed6f7249ec46027c2aeb6d1808a2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/53/d1b35ccae680a1df18ae4443a376e09fe24452",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/54/b5249c2457885b7f88f0a34a40fe3c394018f1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/54/bc0b80834f67a2f813ea7eb08e6c397d1cbe34",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/55/67949b2a9191c76f78c931dd0c64381a3644a8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/55/ec98c8f155dbe838bee286416b27e0a5b2d602",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/56/449b4e4b197918c6b58ffbbe61ddb8e172a1f6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/56/c121230e43f810494e5dcaab10b082a2e4d200",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/56/d60c9c06082a8e5ef378eef7c5ae3f23751d4f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/56/ff19821af062ee20915860aaaf39eb501b083d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/57/7f0fcbf2b9d8b16c7d6681228d05d9544ac8a3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/58/0cc82c294ce575388d0487e3a8910b757ed6d1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/58/690acb8e765cb4a70764c563af0f5d79082310",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/58/71ebec9e3a756cd8771624dda0a70b39751d6f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/58/e18eb77da6fb91caf777e787733543729bdd73",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/59/7786e71ce76a8ef9e24cb81c88335112360e20",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/1e2a271e04e926de2107fb98fb9aa6ec14f37e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/9121265cd273461650ef4eac6de3954dc97e93",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/9cc0cf52473920bc4bfe7776938ec7ceb937a1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/a937b53e9dd250175b076ac3e007efa6b8ff3c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/ac80bf7618ca598e780ae91acfe2695eaa039d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5a/c2ea9b0baba996a67feaef96074b90ad5ebc0f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5b/5ef642db6de2ea6ca4d2394d1e283106c0bf63",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5b/726e4151ea65f690353d45243e6f9c9bde1685",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5b/8e56a0f241c032da297df2c18c460ac320d2af",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5b/a8fe7cce8d2018416f226b1f213bddf4fe57c1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5d/bc74783a28d5ff7103c2862ec7b4bcaf464890",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5e/22663ab296b1bc2158a8a9dd9b7da89b92429e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/5f/01e3d9301d4085165b139af10988784af946c9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/61/3af11d0e476ad5a78aec3b97395e35c983eaa1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/62/692b14515927e78e72423c56f232946aa37865",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/63/1947239712b392267afc45bf71d71f8f1425c6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/63/c61cae36f3a0bb7c257aba0e742ca01c4e6477",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/63/de05376be98596cb1c5145a7feabb13e2eb9cb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/64/934f0e9478db9448e866cc32a16d8b55f23c6b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/64/9c1da8726e38e27cfcb4a0725713c7af0fb598",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/64/b830a7be8ecb7240ac600cde8f366e62557e91",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/64/f40bc4a0e4d155601a40503f9394a4b166b98d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/65/09446e2162e0de4c193a1ef59a8662dc0765b4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/65/b157a230f46c33d168bb61a3468573a96a0f94",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/65/b916f1fc48e97f0e107bcbb03e1552ada2df6b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/66/3d821a6c7ab94e1a2649d986514a73de5e5e00",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/66/f7c9507cc6c0efadf2e0f2c52c0717be33331b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/67/0f5e5c6f6a02f7dda859a7e9e268391496701a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/67/98ffcb1b87980eba9f8e4e1d97688a04157a10",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/68/7621768b7eaf74a086745f15c76d40d62d6c76",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/68/e903748ebf95b596a8ac63191e840beab4e9e2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/69/5207ca96499ee80f6e80b33df53a8facf5c89b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6a/75324ab04ebe29cedd4c9d2c12a5e51130e476",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6a/7be1a248553dbea2a1f613751bb9065ec4ae5d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6a/83c482e7de033c0b8f78b9c1e83a5a66b8c468",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6a/911a3e4d7edaaddcd7e5daf18826683e6bb533",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6a/9b75bfc6edef3a69f259ec70b11a692d970456",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6b/38b7fe528a81ef592965a2de88c7f2bc2c1b71",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6b/7849027ec2eb7c7ba536453763b5e5a456d058",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/87b48acafd1e245a66564f8990b69a35935b9e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/920a08e8e4b5f7bb1cf8bb60bd4248c1df0679",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/ac5074e8f4a104dd82d041dad6f3bf959be72b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/b0c60aa7465722c5bbed1ad7f3ac584e559244",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/c794fd10e08dde5f4d485b11763780fe06a320",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6c/ce77e59376b62693661f020e62bf71f21eb403",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6d/96011df7c51f9c0aa18d3616cb384e31919987",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6d/f7a7f28c3bf01e5e8bfbfde9423ab1e1a04d54",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6e/124f0b278fa53aee1b07a45007483c6a38a33e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6e/1cc0d8b503fcd569982cc0b6cbd5c0efc9d7a5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6e/39d99bd400063bec1ed73cc8a38e783dcd9fb0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6e/ae5e31f501c10a418bdd083b9d93952f484f74",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6e/ea965a45c5e669a63b1bf65c19af893c309f30",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/6f/a205a9927a76c020f1ad546c271612cb83d646",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/70/e89c27c1c926533ffe83dc3bfeefa11916ba07",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/72/a9af2ea23e7ca6d1bf63b566ee4113edea9cb2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/73/4621aa021362a006ba4e349416b84b9b93c7b3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/73/b3ddc8ffc32aee9510a039015dcf0114bed210",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/74/0eece4bfe36e06230df2086bef933a6f15b6c4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/75/0c112db30f4c6486430ea313521434e9dee8d8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/75/3e02e73428d46a5f5ca8bba0465b001f8062d2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/75/7331b651e4860cec5ad55ab0c7ecf01531ab1e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/75/8b9f19e20496b4c7fc8320eecb82789224ebc2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/76/029fd47bee72c9b0b52f1cc74f18739b249339",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/76/215205d872751a514d9023ec23957b483fa328",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/76/ed6c1ea2c12f1eefbca05bb168d1edb29b54a9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/77/56365475adee8edb62458e433c272bc527282d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/78/20fa249493541d32df47eb4d297d747c928b33",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/78/b7912ee1841457a2ac5b9995a87eac08180c3d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/78/d028b030bfc3d7a0ca33ea36c4361db64350bc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/78/d4c0c85b4303664749fa4e524f754dfe34ff61",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/79/3fbc6f21f3d456e6adb54bc6c3f118cd871c17",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/79/4bc1b54472acf5a0044bef593845d9f5319376",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/79/dbdc7fe5d254d1767c435814e30c7536746ecc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/3bff1ca024f1092e6adebcdc0ac6a6481792e8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/5c159b1145a2de9374544a2beb7869937cc116",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/685ef3f91c8216275d7186d30fdb34184245a8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/78ca7904f3f6b3d7e3ba37098faac9f691e0ed",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/dcf1a413a84cf9d594af94a56e888b06185af5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7a/fed7fe71342b757a2df5516580028ece10ff11",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7c/06451a54163bd3b67ff3738198451891b73733",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7c/5e81b259e26fc4e1dee22387826793be58b38d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7c/6c69bc7f39c78a235ac9d86993d2fe67a509e6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7c/7f9c9837e5ead2f97da0abd2704dacd7f5df04",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7d/4232ed4f17188a83a12e955cc0cbda91ddb27b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7e/1afdb40bbf76e03ad6ece75b316f514a44d1f1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/7e/5bd90046435bdf4fdbce462672257acdf69ed7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/81/5b3cfee7d22b2f098a6be3a4fe237c9e405b76",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/81/c528fd004c271b64cb97cd5efcfa894c9e44a3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/81/ee4dcf3c4ace6fc9f602de268e3b09d03cbfb5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/82/290493513bbd0f8f4d5984a1a4f60933c92241",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/82/a7aa27570da016d9684ba83374e77eddefe170",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/82/d7ddd7fbea10d80dc94321778e44f81d8a62e6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/83/1de3b4237743f31c7e91316f1763f9a7062880",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/83/4cc85aa140263c4781c3e8c434440efecab554",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/83/7ef06907d0cf3fc78eab480670e9e513e30261",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/83/8ec2f1ca204c5794566f51c68f5d5b7c133949",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/84/7a1251aecfa65965ded31302db1f8e969e1387",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/84/882320a87c2415b4ed38a47c393ed801f2515a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/84/8f76061be117384b1d94e7bfdc839e5f0f07b0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/84/e53a19d4b33a357da1e34d9aec3e57c9a3aa34",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/85/45e3aa869a64129f7f46df3da5300d6c3da8b5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/86/4e62f8e26094de3b8d618a67f227cd21526738",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/87/8e6b4caab93afe46f40252c125930e220da68c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/87/f084269645cbeba4395a61e61a5d2d830daf55",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/88/40d77d17387f37811d6e944f81ac8b902850de",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/88/7d1a8e5be05a4d7fddb8ff85c34e497b3a4fe0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/88/9904895c94809112cf102146f4682c080c0da4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/88/b8131727b2b90d5a66500ff260d52065b3fc3b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/89/969973b935384659a73b042900c8df8980a92c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8a/5f62453f86364d831c9a1be7d22cf31f14089a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8a/f436ef98e4b926fd307efc5770a788141c0243",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/3216e5583530dff906a71450ebb0ed65c31988",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/3c5f53df392561215eb56066df016f32ccc352",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/4bd36cbab2ead567083ffbe521493332991686",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/66e78b8bda25326c02adfe5b4da42a1c6a8c33",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/6aa23a3e4d9d9bb91fc6314269374c0e400dbb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8b/d689f80a7e74366ac60c07d56aabfc0e20f98a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8c/0b49890f51bae9bb7b39958565af62b666f91a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8c/f050fca653b653df8d09522bf7cd562c38ef49",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8e/4a80849688077029212d2c9c5a08fae78cd611",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8e/96943db55255a4cd2065681f1ddc72c380c1e6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8f/0badc0e5666121cd8dcc8b97b2d2402f1c5fcd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8f/234f953316bcd8d25d6c1811cffa74e2546666",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8f/7ec23d3efaf91ca891ee53c96a3253c66fafea",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/8f/adeac8c03d1fea1c70cf61677154bd0f186390",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/90/797270fcf988bc06243425ca78f67f5cda8dc1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/91/aaac4b034738dd1fbd0b947a312b25651b0efe",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/92/a0c282f58b751242408f3740369d4ce5594654",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/92/b762c4d1f2d8c243b5309d22090589d7616c4e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/93/88e4102c1552115df386ea56dd3971dbd770f0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/94/52842032c3a46d8fad4a991a5061c2856902cd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/94/ac65f937988c9ddc1211411cf189618c8a3523",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/94/d107abf254452397159d922c440c99ae2afa35",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/504d96ccf90cc3a423ea5335c0e867c0f5d346",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/7123570a4b53bd82972ad739447bf18d059915",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/81a2c233382851b29a4bba09cfe90194474ed4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/abdaeb7bf5ff443255e70ca133280527623796",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/c091bbf99230b9ea8557b421ad0316a5b0dd0f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/95/c9c6d6c7af5172b329ec5a321fd24e324ba39c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/96/7011733733a19eb622a89a87595c7bf3e9f1ba",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/96/74c7b2b4dde0f5796d0bf1cebf83b9408db08d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/97/7a794980ba7057498c3fe75f8944b65feb2a26",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9a/0b7b15572650305ad41639e22170a2b3442920",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9a/25878e29989a324b0ba80da443ea629f0fbbe1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9a/dd598a98566376463e12cacf0998dd5cffd4f6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9b/5d3c8799cfc2f057e9e420a2805cc98b736eb0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9b/c2115af36f93839a99289bddfd2486acd5948f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9c/5ae6ce9df5eb2a9ae235c06b99ced4c1a02958",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9d/0fbd6ccbf6b5c2e0d835a79cc72bc0f2379d7b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9d/1aa65bda9b152f5edc7a145243e3d8df6d5db9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9e/754ed5599c52153956163ac3d9410ab3a42c9e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9f/13e5f2ff3e7028e3e36f8e03be6e67aa00a1ec",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9f/1fd50bf9fba879d0067c5d0cd48be99b14ceb0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9f/6c530eb8ede46d1dc4435ad1817e99bf497946",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/9f/a4a3e7f6d9e02b243f8732fcf5262648ff4546",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a0/29a5c83dac3b91624acdecce25eb257fbae116",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a0/3c247aed9a780e84b6a7d8091564fe6e2d5e89",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a0/f58645fdb82c4216c0255b8933eb173e5ba1a4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a1/ea44843a9dcff3d1ed205f31d772755731542e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a2/5ad380b71421833f1479edea8b5fe302caa5e9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a2/e5e7e60fed03856375f813af34c08df27393a0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a3/5614442716a058ad22a3bb30bed07909507348",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a3/78df8a3702c3dbee3f51809a40e4b3009b84a9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a3/ba1c2ba268a25326eaeae5f6e54312c7bec175",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a4/afddfbd015c52a0fdd4972d545c9044f7c4d42",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a4/e9dd0401b0a1bae3ce6d225d2ac0c0ef74b0a0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a5/b75b5307e1fa7246496719581ba3fc12eb0490",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a6/2146c69eed7051a72c0f916fa53357a484b287",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a6/60b4ab804dc67913165b62cae75337a1436c6b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a6/6d2ac989a3993b2c9f0707874659168caa7065",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a6/ff4e6d9d7265ee90eec610e4550f3a73d847d3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a7/91723dab917016f0616a95c4bf098e16c8bc62",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/a8/e7d668bc1aac7762cf09b7915165ea3d61cd08",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/aa/78e9009995ab2d742cc3162e4114f62371be0b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/aa/a419dd8587b43e2209bb1653a523f846994dc0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ab/78061b08708f0abf45b66946baa556a164fb03",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ab/a77b092691f4af02b89d9c0317224ad12c61e5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/058150a61b565f7736bb3e78d91c7977534522",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/175f195bb74fa6b184e5aa072f28f4d4659b56",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/45eb55a182239cec32991f3e53f1d25c2e3ef3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/94a506bb4874459b9c594c3db927b1506809ad",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/a5fab61d8d12f97702497f2d2cce403de0aba6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ac/e5be4808fee001705abd4b8c097136c01b4257",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ad/1ac3e9e148361968349eef1f0da74bf63e401f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ad/f06fc95fe0dad3d415dec02c84b49fee381d18",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ad/f5c5315b9e649240d5bf9a2b46a0382df45552",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ae/1bcb20656b5d708b757b1986788a535b621e5e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ae/4757d2ae9f5e73b16879c514dd83641284dc90",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ae/4c6c739501536c3490ec6542a1dcd0b21f26dd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/af/465facea01b165d82609d238fbe70a59f851da",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/af/abf3b4a854f391adf7684cf6a159f5013b5cce",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/af/bc5c9ffeb28c76384240a5599a4974a142fe39",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/af/e6e4741154ebbaff0f6702174e4571c9fdf0c0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b0/009178438d4741392051850fb93f8a1dead400",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b0/32ca16baf526f1b9a80561c17a539f0a41eb02",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b1/82bc6860d715780ba13804018fca01e90dfc78",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b2/73739b6b8f1b98a5362c6f554e1fe2e735a2f7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b2/8c43a8cfd0e6f93f6b5ab0a550fc292a7b1cd8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b2/9331d238505ceaf023df5856d2a326d509d54d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b3/28c4e4e9313d814f5bf96ffdc53cb68e411810",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b3/8fda06458646dfb8cda9caa8408900afe6198b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b3/a807a8168331a86ce3ba03e671c89636dfd2df",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b4/ace80875b91b4a2926f3c486df44c058532001",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b4/ad45becba11631b75c416b8fea9f9dfb1594a3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b5/33cc57abdb065f7bf4cae9999127c36ce163cb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/01196763b281d9d488fcf79bebd0cd9f71fab1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/203a1301d2980d10a4db7b5eb7f630ec298bff",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/458756b20393064ee962e5ac9519b287b665a5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/51984daa9864a2fdd82faf3b548566907f062b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/b7f18a3164316665e9dec41326879759eb56fc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b6/db6d11487c299bc4cb1b0f012e63539314590e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b7/0937bc7da6fd09182db60b8d98a1e655063319",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b7/99e43bb324a4dcf330bd97e0d1001b806a3399",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b7/dca3d891174800e6eb8f5a1f2f2a015f7266ff",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b8/64970cb78cf92a87c871418fe65466e8c897f9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b8/7cfc8c1f6277e85786a0d6389f81406676ad10",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/b9/c429556659faeddd55d1bbfa4d2c8109a0c11c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ba/443c2edf24435b5e0fcd74df027277458b682b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bb/eef1d4e0ac027ad3567ed4f2cab6c7ad76a659",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/3be42db03749babe109dde04118112ece0d3a0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/68f7792306a5442f79f21193e0effc157fcdc0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/736b3d1e0910c7be342190bb0198f2eca3a2e0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/9f579e907442e86dd719bd14fb65563ecf6214",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/a17615d105de62802d6c7c4c511d42bfc8396f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bc/c99628db0dd879b05c0d77bfd272ca709aef1e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/be/e0b7d8cac9dcda8188166f53bbab1857d4e244",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/be/ef89a3a25688c757d83d404c52c60f73cb6b3e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bf/4a7a58d8b9e2b6060e788cad3b5a98104f27ee",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bf/7cd4e0a64736a3a0124dd2506925716d121bb2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/bf/ca1b6988129f5491e5bfc7a2b421e36e262248",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c0/9dcaecc65663d1fdb08218a01a6097554985e7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c1/899150aa366f69a4486559095ac3a99226eb0c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c1/cdaa1443c24efd3059c29af66b4252b47c10c2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c2/8e0a5379e72a51f51362fc9c8293c363c758fe",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c3/20877d805502ea2c9936c6673c1b2ac9ae7e75",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c4/6155b6460ced29b5c4b984eaad7162bf22ba5e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c4/6c4440ceff92869d81768e125425144fe8124a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c4/8aac608d16dcc808e5a9f2b028eb29c06b7741",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c5/329f29573902db0a6f7acd460c4d27a95f457f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c5/829733d8412bcb57af0ef0aea2e73bc3a163e7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c5/f2b4557b057c60b3523c113171474e7b0cb7af",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c6/48d5e79f57a9ef69724b2da6a1392f7489ef70",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c6/e7386d4631d474e589e8878834dd9a95d59f76",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c7/7b5b647c9cc8c07c62b9d11918713699f192a4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c8/448ee5e290d4506bef4828022ebd9ca4313ef2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c8/93341a5d1b1ea64df1b9d69016d0b51ca61787",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c8/adf4f52c4c000d474da9e96a0adef9e3034e7d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c8/ccff98e002781430c801ae6b756ad336837c59",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/c8/ed280859a9b62618c5f2ef7433e6835173ecf0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ca/413083aa4434554b0570f8acfdd02da2325931",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ca/b4fb4561e542cafdbbd623b6b69931bf10d7b4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cc/030bac10fabfd9739763f47ddca676534d60de",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cc/567c46f9073f6c6c75ab0b8076b3c92c9e2e71",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cc/91e7c8a2e1a00fce1b4f109f2f6078203b361f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cc/a6d750caf9c569d806d59fb8e90356e0a71319",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cd/28bb8d3ee007db9e6b120645934f1b1423f8b3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cd/b94edea4f8c46c847001de0a96d9fcdb7ec026",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cd/c106b3706261336251513c7a4f7ed13df0b7e5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ce/157004031cc361e5d4ab8152844b385ca47940",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ce/6829703b7407ae662d7afdcd0803588606018b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ce/d75486aa003b3fe6ea3d1f20d8b02ef52cf600",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ce/fc6482e0b9cb560da2b39231c1c4d799322c39",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cf/2429e3f7b5647d086f461aeb82906ed9c6c11c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/cf/922d7f0b56c69dc0bd1182dfb26f2eff7e650f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d0/07e0afa59b660a9c787fc789b0395cda94a8e6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d0/b4f7888ee37e9c5dafbdc068b7f25e692c38f7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d1/0a9614235f0ccec073893c327efd532fd74b23",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d1/c45ce8e3d5568547d29a374257c0dde49dd099",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d2/3bee5596ffcb9f658d9ef049561f62a1c41b9a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d2/93c99285fa50cc904ad9f02c84819f351bb1bc",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d2/b084b4e5643728f8b68482f6151f80de3228b9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d3/5ddf11a0914808c73ef5dd6a2a0587478d8d69",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d3/8d14866e3af874174b0b81c1b44617f15d4f96",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d4/21ed98be351b3a38cce014030b1bee77e36c8c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d5/75ae9bc8a32fe77c00105d91212f86e998589a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d5/9e9d508dea6e2475f0d784a3bf8ede811f5945",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d5/ec3c6108204fe1fadde6882c519cc002467ea0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d6/204caa1dc75dffe44a6e7dac537d5d883acd21",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d6/ef1ae8c5050b9571304da7a767472b87c3388e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d7/021dbf4610b5b8f1ac8f86fc2c8e00bb120175",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d7/3ee0cb6fdaf6d8ef5fbf049dab48e83be3464b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d7/f8fcdda5e27cec41c1c7893cff5766b8f270b2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d8/8e98dcb5308671513a7d1e1e4bcf30be760ba7",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d8/ecf4dbcbc65c5a71cd8e51d1ef20eb207695a8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d9/3801c893e5312d6775d58183ff313726c029f8",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d9/5e24a9ef2cc8a4c7a8133f9a34404006cedded",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/d9/a1361ed857de4e82b0039db3daeef480fc7211",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/da/c872f0c1fe18788a26593c8a259e9196f92248",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/db/98f4c66d026c8072d2cb7d1dd596bb12308f29",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/db/9b5720f352120da930b67feff9a1e3ef29561a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/dd/398cef00552705cfca7df59cf8a878660d8998",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/dd/55d10e71ad8eaf4098689e566334f3517a7328",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/dd/5d9addf23995cec85a3d1c2d6c4b948f0f12f9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/de/5ccf4790c240ff70430694a28291c9331d5b0d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/de/df139e502b7401be4520ed9674b69f707d8129",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/df/b0c21ab1f1f8a493aa4413b2332ad2037dfb65",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e0/11aa90b22894306fccf84984f5839fb17e7fbd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e0/98e4f52103469e76edbec3d1f1cecdf9053d71",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e0/e537e7f522e8f817ef4dcf8c0df70f7543a22b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e1/04e423d3d8b4edaa86d3b98e46f0f1d4c52a80",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e1/4e1325fc2bb0766c13ab8fc4b150462d9ea00d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e1/9cea29a45990c91f0fde9c6f6c30b1785f4d0a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e2/271907d18337251862f30439526a9a8094e49f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e2/53a6b9e4299b2b6010334aa41e40f1730f4428",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e3/41139d51c2f424ed662e6e91b1282e8547b2df",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e3/5c4c7eec0d93eff67de7180acbe2948025fa4a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e3/922f05a9564d38a4525fdfe900a653b808e926",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e4/2738a356685728a3a4fc3555a6f92433edbb1c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e4/481fbbeb954f17b720dcabd1e9e391253c4410",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e4/9530c6c3bc05f2c0e379e3cbf613a57e86e887",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e5/01ca6b2867820cf879cf81fe182e9ac328e6c9",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e5/585a070eb2c803e3b2d656bf34a1e6e86289a3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e5/8a8e1c439dfca7a146649bf4f96571793f5cdb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e5/a5b6bb66836cb3a40e26bf041556a502f2044e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e6/9d97da7eb14cfb378fb6238d39b8525d2451be",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e6/e4d0b266d62ef2eaf503e61154a43c56a62d07",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e7/658669aa0477a2d8f4878b15fe865ae10d9a26",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e7/7eccab27033197c8033a5b5b9cfb7c5c8a3cc1",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e7/8a89c91fb12c5b829a1b20b080328623e7f763",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e7/d80ea44becfe2eb97859ac045bc34ec8231315",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e8/a713781026b9d2d646009b38d19ea5de2ffb21",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e8/cccba7bd08ee08a546343485c324c700f1ccbb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e9/0cfe7b21d09e930fbdf4460b72e588d70e1065",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e9/5e3db0077c16fafbf024be365338ca741e113b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/e9/c406064f0a6a440da9b3bc2bb500b3da7eebe2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ea/7a4a37c118f24c6f51e087bbb3536781554d5a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ea/b63ae1c4c9e73584da7443598e9ecf32a12b93",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ea/bfc81046f74fd6ca156762544d26619ff4fc8b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ec/1955c3626ea043f0b177f288348cf60dc7d3ef",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ec/2950677ad1df9446c77fc605b9e06b804fb151",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ed/66ab51002028a0c63bd6f4d88a7849bf080bab",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ed/c5e3c1b79e739e8282e3109a6ca269d8d20be4",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ee/15398dcab67111445bbc72efc52a11f742fb4d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ee/8451f7c15a5ef2b239006806ef0f799871eca0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ef/0a3953f1fbb78b3ea38940a9e3f55452973c0b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/ef/59e1eecb9c30a8446e356a1d7f571b0936cd3c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f0/503a28bf7de8d73ec5e24310031e640f289a58",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f0/d600d38937a726d25ee8d06a10661f9d3f85fd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f1/5c7c2a70767459180026822713c620fc5e0c1f",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f1/5f57fbb258944c58ddae96db2256fea3132fe6",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f1/7f8f1e357039b845e41c2ae4ef0aa9085c069a",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/0ff01e057cb937937dcdfd4c720fce4ad74e17",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/2b1b133410ec69987acffeeeef32150e4a25d0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/44f1935190d06e694589aa95e567423814a4b2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/782f44ba547db5ba736981e3d6e298361ff26c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/a8e6a5a4bf0a70aaf8ee2c8b4741eeb0453e72",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/baa10c993f6c898beeada778810c2174eed488",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f2/e9f2db78fae35789f0cd061eef9e140763369c",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f3/356b215725f4fc4d2b3df357389d71b7179a9b",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f3/a80dbfd500a80b06afa9c0950ccab92591b514",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f3/bed0fdfa40ea4b5d1ae1795d50268ad1fd437d",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f3/f0a684e6fe81978a2cadcd5cde1b26a7aa57a3",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f4/b9e8f69cc43cc17fc976b01f1d561a9ca84ba2",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f5/a702ce7afa09199064ea05431325e924c123e0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f6/19bc32afe709f4393aa705c92eb6914f1e5775",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f6/40b7ade65a4450458e0bfa42827a668005bbf0",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f6/c7061b58fbd4a3212451a610040da6248ff545",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f7/0fb50cc8a9ed566c9059be356e7e844c673218",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f7/45c9ace14334684de20bf59e75be546ab4b3bb",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f7/a1dd069a86be6cd226297cbb0a1c9711c06c33",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/f8/c9856cbd9bfec903e8786bdcbf726b69164c91",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fa/33451f00266285a2873c30d1d1ebdf7d950e10",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fa/3c1d55a2eae66d1100f52aaada636348ed1a69",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fb/29e71dd106669d79870b608e8ac2b61ff7b360",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fc/491c68847f54fc15601020fa0615d22eb7dc2e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fc/5292877c096cd9506149e833eb9faba4ad173e",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fe/3e8544dd054545889667eef376b0c03f8331c5",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fe/4b49221381bedf15677f4795da99e829bd9bfd",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fe/8b2c1312f10e6b7169d477e9a1df98f3aa1449",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/fe/b6ebf105576f2e785a8028ca60f90678385422",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-1bb11cef9b92108bd03a8426e38c716f5f339990.idx",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-1bb11cef9b92108bd03a8426e38c716f5f339990.pack",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-1bb11cef9b92108bd03a8426e38c716f5f339990.rev",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-a92aedc8ba1c60532e3ba7804120417e5e2b9612.idx",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-a92aedc8ba1c60532e3ba7804120417e5e2b9612.pack",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-a92aedc8ba1c60532e3ba7804120417e5e2b9612.rev",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-ea977f6f5d15faad1c513156d6c38e82fdf9598c.idx",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-ea977f6f5d15faad1c513156d6c38e82fdf9598c.pack",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/objects/pack/pack-ea977f6f5d15faad1c513156d6c38e82fdf9598c.rev",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/heads/HDRP10",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/heads/HDRP12",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/remotes/origin/HDRP12",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/remotes/origin/HDRP14",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/remotes/origin/HDRP171",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/remotes/origin/HEAD",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/.git/refs/remotes/origin/main",
-      "GUID": "",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Diffusion Profiles/RL_Eye_Profile.asset",
       "GUID": "d25471af27c11fe43a02fb4d78506d2e",
       "InstalledGUID": "",
@@ -3792,469 +48,325 @@
     },
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/notes.txt",
-      "GUID": "08f237d6f28473240a551c3f1f43e86a",
+      "GUID": "82934a3c954920e4283d044275b2b7a8",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaBasicCustom_HDRP.mat",
-      "GUID": "bf5a3ded0fdb48d429da0d52bd32b8fa",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaBasicCustom_HDRP.mat",
+      "GUID": "e961efec063d30a40a4bd1a50116dedd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaBasic_HDRP.mat",
-      "GUID": "5a42b63860fcf9947b6f25e1afed3719",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaBasic_HDRP.mat",
+      "GUID": "a2891242eeec1ef459c704dc8dfee5d8",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaParallaxCustom_HDRP.mat",
-      "GUID": "ad3326ce9b9438345a8c70bccf2d44cb",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaParallaxCustom_HDRP.mat",
+      "GUID": "066bd3fec7185ac49a0f9dfe2867c82e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_CorneaRefractiveCustom_HDRP.mat",
-      "GUID": "b0da49a073cbc9f41b9c49a27cd6bb07",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_CorneaRefractiveCustom_HDRP.mat",
+      "GUID": "9e6c9843c36cd7f468f39552ced29c79",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeBasic_Dummy_HDRP.mat",
-      "GUID": "3183d7c1a22cea747b6bdef64de8180c",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeBasic_Dummy_HDRP.mat",
+      "GUID": "f8a70cf61e9e7c44198089aa9652288a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeOcclusionCustom_HDRP.mat",
-      "GUID": "ba6221acb287b3a4fbf256347c2ee8e3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeOcclusionCustom_HDRP.mat",
+      "GUID": "daba28cab9d56c6479643f044ae54bd5",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeOcclusion_HDRP.mat",
-      "GUID": "8305f8ccfe8d6474f9a9e3f89c23d698",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeOcclusion_HDRP.mat",
+      "GUID": "947bb95bbdea03a4e8234757fc20b83f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_EyeRefractiveCustom_HDRP.mat",
-      "GUID": "733f86c64c556e743bfc91a87b6accf3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_EyeRefractiveCustom_HDRP.mat",
+      "GUID": "3df9c686b86855e48b43dcb7d51970cd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_1st_Pass_HDRP.mat",
-      "GUID": "8183fd2d0c567c04597914d8f6a2d389",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_1st_Pass_HDRP.mat",
+      "GUID": "67ca043bfc6b15d49ac6cf2734cc13d3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_2nd_Pass_HDRP.mat",
-      "GUID": "7e0484eba413dc24082625334c931726",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_2nd_Pass_HDRP.mat",
+      "GUID": "fd9a64e212ef9204686b68995c0bc32f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HairCustom_HDRP.mat",
-      "GUID": "3ecfb8073e2c15a49b5025d911e45c13",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HairCustom_HDRP.mat",
+      "GUID": "7380435af183f2444b950e0837ea79dd",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_1st_Pass_HDRP.mat",
-      "GUID": "e9d71863edf7e1247a8dc98417953a37",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_1st_Pass_HDRP.mat",
+      "GUID": "f9536e6575d357c40bbe4fb38cb29d0e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_2nd_Pass_HDRP.mat",
-      "GUID": "0f5e7b131bcfe3940a5c0e4f11008866",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_2nd_Pass_HDRP.mat",
+      "GUID": "8e8f617304302794b813de183bb1ce0a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Hair_HDRP.mat",
-      "GUID": "7fba60151a33b334fbe462045cd18642",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Hair_HDRP.mat",
+      "GUID": "890486f3c425d374eaacd953c3308b2c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_HeadWrinkleCustom_HDRP.mat",
-      "GUID": "1a31950db6fd64e4a95df37b06ec28d7",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadCustom_HDRP.mat",
+      "GUID": "2d8edf574069c1e418b635fe7f5b30a1",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Baked_Skin_HDRP.mat",
-      "GUID": "424c74b137643eb478329bedaeb23667",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadCustom_HDRP_DH.mat",
+      "GUID": "52004033b28457141b6d986c64b348b9",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_AlphaBlend_HDRP.mat",
-      "GUID": "db4dc5ed02cf1b04f9c1353a3f67e675",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadWrinkleCustom_HDRP.mat",
+      "GUID": "1f331bf38be13d74d81ecb2e572eb2f7",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_AlphaClip_HDRP.mat",
-      "GUID": "34df85f08227cd54a995db4deacd20ee",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_HeadWrinkleCustom_HDRP_DH.mat",
+      "GUID": "93810e49785ec7a4681971cc4a7568f5",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Eyelash_HDRP.mat",
-      "GUID": "c2359010df41e3b47a525f4fb0f49216",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_SkinCustom_HDRP.mat",
+      "GUID": "831d39b3d44bb6148af5ddff7c32bf0c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_EyeOcclusion_HDRP.mat",
-      "GUID": "34cc189d81c7e2b41a4f7f3a8151e8c9",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_SkinCustom_HDRP_DH.mat",
+      "GUID": "e18670422725fc248a4ad719c8d93d16",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Hair_HDRP.mat",
-      "GUID": "7ee90b27915bf684986f68bfcf389c51",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Baked_Skin_HDRP.mat",
+      "GUID": "d3ae879a5e362004bb4d1e00ffc513ae",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Opaque_HDRP.mat",
-      "GUID": "c023915403d2db94c9a6daaae3b539aa",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_AlphaBlend_HDRP.mat",
+      "GUID": "203c0120724509a4996be2d17e32155a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_ScalpBase_HDRP.mat",
-      "GUID": "dea828f0231a67542b87328430b396be",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_AlphaClip_HDRP.mat",
+      "GUID": "1231fcc2b93f4bf40a61fb73bae33bae",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_SingleMaterial_HDRP.mat",
-      "GUID": "0f4e301138141e241b80abdc85990760",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Eyelash_HDRP.mat",
+      "GUID": "eac80a2a4d460e6488e92b143dbfc5ac",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Skin_HDRP.mat",
-      "GUID": "36128c2591570644a8079e6e7048efdf",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_EyeOcclusion_HDRP.mat",
+      "GUID": "cb95f544f1ccf3349aba987788cab5b3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_SSS_HDRP.mat",
-      "GUID": "60690dbf282db584f90980560e2f6847",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Hair_HDRP.mat",
+      "GUID": "9e7988a43a89709419739b47281af29d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_Default_Tearline_HDRP.mat",
-      "GUID": "8030603ee283b4543be5ca7705d5b4e8",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Opaque_HDRP.mat",
+      "GUID": "714eafacd996ce9409969b24fd8b3df5",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaBasic_HDRP.mat",
-      "GUID": "27fa3f4fbbe011843870a7ca7b5b2004",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_ScalpBase_HDRP.mat",
+      "GUID": "d169a37ccd50e1f45b944a8842c4711c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaParallax_HDRP.mat",
-      "GUID": "843eb35c8a8792841aa40fd6f5933a7a",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_SingleMaterial_HDRP.mat",
+      "GUID": "0504eaa43b3ed294da85a80c27f2ae38",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_CorneaRefractive_HDRP.mat",
-      "GUID": "bfb04cadcad425647a5f65b9a5eef682",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Skin_HDRP.mat",
+      "GUID": "7068343f208eb8d468059cf82402c44e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeBasic_Dummy_HDRP.mat",
-      "GUID": "83b66b921ec41654aa693e3ffc5d65f0",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_SSS_HDRP.mat",
+      "GUID": "df1823f3105772f45b8e15bb217591e0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeOcclusionPlus_HDRP.mat",
-      "GUID": "c6e43ac276585b440b6bac2f5d625910",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_Default_Tearline_HDRP.mat",
+      "GUID": "3c6d412c2fcfd80459e966dcc0051b39",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeOcclusion_HDRP.mat",
-      "GUID": "45766e0f2064d974b9eee5879b85906f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaBasic_HDRP.mat",
+      "GUID": "f4b61047857bfbb42aae7e1cf694e9da",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeParallax_Dummy_HDRP.mat",
-      "GUID": "77fd424dedc3ae24eb6b9a4f2014674d",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaParallax_HDRP.mat",
+      "GUID": "404a33699e3c9cd46a0cda76e79315f7",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_EyeRefractive_HDRP.mat",
-      "GUID": "fb66d80eb1901e141bf51833949108ca",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_CorneaRefractive_HDRP.mat",
+      "GUID": "a7ab0e652b8e82b459ba9dde3f470aa5",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_1st_Pass_HDRP.mat",
-      "GUID": "7701ab52c302b134ab094404fee45119",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeBasic_Dummy_HDRP.mat",
+      "GUID": "eaf65e627df8be448b34cef840f44f6c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_2nd_Pass_HDRP.mat",
-      "GUID": "030e7ba7342d82946829d240a8420e3a",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeOcclusionPlus_HDRP.mat",
+      "GUID": "441fd965f2dc4114cbc637db65cfe4c2",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Hair_HDRP.mat",
-      "GUID": "86f9d8a19e1a9604ab5188c4049400e5",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeOcclusion_HDRP.mat",
+      "GUID": "75247f49c070a9f4bbeb1db69c4411f0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_HeadWrinkle_HDRP.mat",
-      "GUID": "ee062a756a05b9f428ed78c7b1d3b4d1",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeParallax_Dummy_HDRP.mat",
+      "GUID": "b4911ba8b47a33d448d9e73dbef57135",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_HeadWrinkle_HDRP_DH.mat",
-      "GUID": "ae49ea26ba3177043957143a3459766d",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_EyeRefractive_HDRP.mat",
+      "GUID": "01c80eff86f2b6b4f90b07b24c0cc8e9",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Head_HDRP.mat",
-      "GUID": "98b51244fe155f74a89cc2734d83853e",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_1st_Pass_HDRP.mat",
+      "GUID": "08a3d1fa6e657e34ea3f0b92a401c3e2",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Head_HDRP_DH.mat",
-      "GUID": "2cfef06c0a0cf2f42945d40b9fa2e007",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_2nd_Pass_HDRP.mat",
+      "GUID": "0786d25228614c74c8ae8730c239fc4f",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Skin_HDRP.mat",
-      "GUID": "5fa47099bf7fb534fbc8996a3525c82f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Hair_HDRP.mat",
+      "GUID": "31e69397c450fc6428f2053ca7762a00",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Skin_HDRP_DH.mat",
-      "GUID": "f793ff5dda1ee444689249a52b8b0d48",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_HeadWrinkle_HDRP.mat",
+      "GUID": "fc35bc153336a494ab55110871fa2521",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_TearlinePlus_HDRP.mat",
-      "GUID": "dc825edaf57bd0648b77b5fd404d5168",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_HeadWrinkle_HDRP_DH.mat",
+      "GUID": "c15b2a0ceb3d71d45a977e58dac78a68",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Tearline_HDRP.mat",
-      "GUID": "ce9a0ddb2296b1f408a2b2e71eebeac1",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Head_HDRP.mat",
+      "GUID": "94f56f1ed07a247469efe01a89cc2b63",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Teeth_HDRP.mat",
-      "GUID": "bf2c2c56978b6da41826aba0690d6a97",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Head_HDRP_DH.mat",
+      "GUID": "73db95fc246f5a84cafdefce20f60a3d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL_Template_HQ_Tongue_HDRP.mat",
-      "GUID": "ff83f4946d449ab4e8b55c7ede9f3a77",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Skin_HDRP.mat",
+      "GUID": "d46321c7a621d9d438ff66b9b5346994",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_CorneaParallaxCustom_HDRP_T.mat",
-      "GUID": "8a875fa17b832a84e8dd268295c4724d",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Skin_HDRP_DH.mat",
+      "GUID": "8702c6cb9cbe3b14fb923b1fa5337527",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_CorneaRefractiveCustom_HDRP_T.mat",
-      "GUID": "cd9ffd8dc1c26e64d9e3e3b966ba0378",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_TearlinePlus_HDRP.mat",
+      "GUID": "e6e0e70c5f552a147a76ae71720097f4",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_EyeOcclusion_HDRP_T.mat",
-      "GUID": "2137b165656c9e84eac23a7dd4db775e",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Tearline_HDRP.mat",
+      "GUID": "af2d202ecb3d6934f954b50cce9f03cf",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_1st_Pass_HDRP_T.mat",
-      "GUID": "4c2c82eb07aecd442ab98d5c0f98a947",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Teeth_HDRP.mat",
+      "GUID": "1cdd69c4ceee94048acb9e01e764f77a",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_2nd_Pass_HDRP_T.mat",
-      "GUID": "11e53aeb8c7cd5d40bb47346ae778130",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HairCustom_HDRP_T.mat",
-      "GUID": "02e953db3f187fa4e9f7b4936e9b7037",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_HeadWrinkleCustom_HDRP_T.mat",
-      "GUID": "150f4295f20c127489fb575e5fc77b4b",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Baked_Skin_HDRP_T.mat",
-      "GUID": "4df58baafaf942a4cb42128f5b8e62b9",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_AlphaBlend_HDRP_T.mat",
-      "GUID": "b2018ab2da997b942b037042427719ec",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_AlphaClip_HDRP_T.mat",
-      "GUID": "7c3535e4c80ed294b96801c5a49f05d0",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Eyelash_HDRP_T.mat",
-      "GUID": "0a43f26a370dc93408ccd931d4c7617d",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Opaque_HDRP_T.mat",
-      "GUID": "2b76e812080e6e9478ed16d2bd5813ef",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_ScalpBase_HDRP_T.mat",
-      "GUID": "f1d36fa24f546e545b9b92c5422257e9",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_SingleMaterial_HDRP_T.mat",
-      "GUID": "d46850ced0062984b97226e3db5a83e8",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_Skin_HDRP_T.mat",
-      "GUID": "d17e465fe97436041aae73a3ff516d7d",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_Default_SSS_HDRP_T.mat",
-      "GUID": "2a858b6508c3e67409415c3cc41255a4",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_CorneaParallax_HDRP_T.mat",
-      "GUID": "ce35cbc600c694846aa46e5ffbf46844",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_CorneaRefractive_HDRP_T.mat",
-      "GUID": "bb2a2b99550d6e0468344f81951a6567",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_1st_Pass_HDRP_T.mat",
-      "GUID": "52caab13d5d5f0e4ba2de99c883dce1c",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_2nd_Pass_HDRP_T.mat",
-      "GUID": "bb3d678b1eb590b42b70d86a5865597c",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Hair_HDRP_T.mat",
-      "GUID": "5c3b01d33f7c58547b7be645e3c97d6b",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_HeadWrinkle_HDRP_DH_T.mat",
-      "GUID": "33d32dd35b662644fbfae96c48152897",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_HeadWrinkle_HDRP_T.mat",
-      "GUID": "b018b9e3e584aeb4ea9e2536bbcf8302",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Head_HDRP_DH_T.mat",
-      "GUID": "9466324a23296364facb6acbe2f0d2f1",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Head_HDRP_T.mat",
-      "GUID": "3a672a0e6b2a4c444a936f40a2b754cd",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Skin_HDRP_DH_T.mat",
-      "GUID": "55a1373323552be4a9ad1e96c65e6d57",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Skin_HDRP_T.mat",
-      "GUID": "32edb5732b70a9a489321a059753bfd0",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Teeth_HDRP_T.mat",
-      "GUID": "71bbe3e24d33aa34cbb5866639a7d5e8",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/Tessellation/RL_Template_HQ_Tongue_HDRP_T.mat",
-      "GUID": "d4c029487fe2cfd4c96945c233fe4e22",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Material Templates/RL5_Template_HQ_Tongue_HDRP.mat",
+      "GUID": "12010b3f1e3a4854c8666aa52d5d5170",
       "InstalledGUID": "",
       "Validated": false
     },
@@ -4463,134 +575,128 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_CorneaShaderBasic_Baked_HDRP.shadergraph",
-      "GUID": "c1ebe84cd1b59cc4fb98a8e03ae3f7d1",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_CorneaShaderParallax_Baked_HDRP.shadergraph",
+      "GUID": "e77e5495a9f51844d9ff1e05d2c49f17",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_CorneaShaderParallax_Baked_HDRP.shadergraph",
-      "GUID": "d80f43cce7721c44980ea5de18cb1a4f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_EyeOcclusionShader_Baked_HDRP.shadergraph",
+      "GUID": "5d9a86ed848aca04b9c927aebf22de69",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_EyeOcclusionShader_Baked_HDRP.shadergraph",
-      "GUID": "19cfa70b21a0ca649855cd3bc8896d63",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_EyeShaderRefractive_Baked_HDRP.shadergraph",
+      "GUID": "b4a75ec24e0d74046b05a03c09f53429",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_EyeShaderRefractive_Baked_HDRP.shadergraph",
-      "GUID": "1f94846e709e483448feea617906bc23",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_HairShaderMultiPass_Baked_HDRP.shadergraph",
+      "GUID": "a1b43a9d7e569324bbcd9194c2aee793",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HairShaderMultiPass_Baked_HDRP.shadergraph",
-      "GUID": "34039396b8fa97342b7bb1b05267a5d3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_HairShader_Baked_HDRP.shadergraph",
+      "GUID": "8bc50fe7792ca9c44a1734c8afe118c6",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HairShader_Baked_HDRP.shadergraph",
-      "GUID": "a081e115c7c82634aa606dafdcb27d08",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_SkinShader_Baked_HDRP.shadergraph",
+      "GUID": "d4f51ead72c5b0042a2fee9ac74f0d04",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL_HeadShaderWrinkle_Baked_HDRP.shadergraph",
-      "GUID": "3ee3b6fd4bf488749b8933893a198397",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Baked/RL5_SkinShader_Baked_HDRP_DH.shadergraph",
+      "GUID": "fdb488a0ab53527429e6cd6eedd94da7",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_CorneaShaderBasic_HDRP.shadergraph",
-      "GUID": "2a0e87ae64c033f4fac6433968710650",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL5_EyeShaderBasic_Dummy_HDRP.shadergraph",
+      "GUID": "0e201e78dbb476b4887d8eff1d3f95cb",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_EyeShaderBasic_Dummy_HDRP.shadergraph",
-      "GUID": "24d3e0bdec61420469539fa1aa61c98b",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL5_EyeShaderParallax_Dummy_HDRP.shadergraph",
+      "GUID": "3f26a6d6e96be434394f644b7dc824fa",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Basic/RL_EyeShaderParallax_Dummy_HDRP.shadergraph",
-      "GUID": "133e3b4e4032f0e45a5483e280d767e8",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_CorneaShaderParallax_HDRP.shadergraph",
+      "GUID": "37887422272ed9a458ce22b07981696d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_CorneaShaderParallax_HDRP.shadergraph",
-      "GUID": "6045d5f26aa2fbf47ac082d04ff0caf2",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeOcclusionPlusShader_HDRP.shadergraph",
+      "GUID": "035cc6eeebfdf32428a1382df5802d45",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeOcclusionPlusShader_HDRP.shadergraph",
-      "GUID": "e8e2399bf8988454599a5150fd7795e0",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeOcclusionShader_HDRP.shadergraph",
+      "GUID": "28c3e7968b4d78e469ddc76b5bb01840",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeOcclusionShader_HDRP.shadergraph",
-      "GUID": "e11e1541751f73a4bbdc03b071617a93",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_EyeShaderRefractive_Variants_HDRP.shadergraph",
+      "GUID": "63646206e98aefd4abca6f9f2c0dfb84",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_EyeShaderRefractive_Variants_HDRP.shadergraph",
-      "GUID": "48cccd4fafd06264c9dcce2137ba5738",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_HairShaderMultiPass_Variants_HDRP.shadergraph",
+      "GUID": "f9a01dbbc7d8f0a40939b2119f9afe21",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_HairShaderMultiPass_Variants_HDRP.shadergraph",
-      "GUID": "913a13959a6beae4b9d21bcd34541c26",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_HairShader_Variants_HDRP.shadergraph",
+      "GUID": "a31d4697c47d45f4d9a80903724ae85d",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_HairShader_Variants_HDRP.shadergraph",
-      "GUID": "1b1fb9190f9a21344931aa2df1b6a845",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_SkinShader_Variants_HDRP.shadergraph",
+      "GUID": "51dfe8479dbdf4445bec9983170c2bc4",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_SkinShader_Variants_HDRP.shadergraph",
-      "GUID": "e4b1192022fa52046868c000971f662c",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_SkinShader_Variants_HDRP_DH.shadergraph",
+      "GUID": "53366a33545c0d34384ab70469a0c3ff",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_SkinShader_Variants_HDRP_DH.shadergraph",
-      "GUID": "02e0e95620457f6439b82dabbb80c05b",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TearlinePlusShader_HDRP.shadergraph",
+      "GUID": "d09616385a411ef43933799dba14329e",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TearlinePlusShader_HDRP.shadergraph",
-      "GUID": "c386e8ed4da7dff4da8050b2185d7d6c",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TearlineShader_HDRP.shadergraph",
+      "GUID": "506e4076af62b6f43b6ddc091ee0f9c4",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TearlineShader_HDRP.shadergraph",
-      "GUID": "5acd4540882388b44adfb140c6c6290b",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TeethShader_HDRP.shadergraph",
+      "GUID": "9363784f4317684439cdadf35650c2e1",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TeethShader_HDRP.shadergraph",
-      "GUID": "bade89290ffb11a468a4957d7cfbb4bd",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL_TongueShader_HDRP.shadergraph",
-      "GUID": "9cea8e6ce656ff148a2ec8e1550340ce",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/HQ/RL5_TongueShader_HDRP.shadergraph",
+      "GUID": "2a6311cb32c436d4dac8b4d356ab1a27",
       "InstalledGUID": "",
       "Validated": false
     },
@@ -4637,74 +743,86 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "7935e80451b69f0419cf61b1ad52a736",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "64281af90e9adb24bbea31bf19acd4f3",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "1d02e0dd3fd71bd409f40a782f322394",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_EyeShaderRefractive_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "6567ad9c61381db40b988439d895afed",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HairShader_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "a3c9ad516f103934fbed433b9b48b6f4",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "ca08c6fa992f4744a984c5058a80b7a9",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL_HeadShaderWrinkle_Baked_HDRP_Tessellation.shadergraph",
-      "GUID": "adf209e93ea7abc48b9e5517e58f6c8d",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_HairShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "7dda9440e2a86c64dbcb82c36f658c61",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
-      "GUID": "4bddaf4ee5135794fb0884ce0fa3997f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_SkinShader_Baked_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "038a4f9ae925e114da730968f9335eab",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_EyeShaderRefractive_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "c27fcc77861c7194eb9563ca7cb77d08",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/Baked/RL5_SkinShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "81b9edd19a451da4db5926f5ca61e2c0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "59adc6954f9abbf4b8c16a770e746925",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
+      "GUID": "8653dde4e3d0f1b46a83f8a7388c29eb",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_HairShader_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "c0256c0c7451fb149a1321b58446f275",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_EyeShaderRefractive_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "f190b4353b85d7a4581ca2690aef53b0",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
-      "GUID": "cd95d1e9048a3a94a819e3d5f0d985e3",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "0833e1a8845259648b0813b2cfecd118",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_SkinShader_Variants_HDRP_Tessellation.shadergraph",
-      "GUID": "b95ae4633e90900488df70fccd9bce6f",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_HairShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "ef5c0a799a4e2f94ebf024b17aa3f64c",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_TeethShader_HDRP_Tessellation.shadergraph",
-      "GUID": "6f43a3b233175e04d923f0927167b222",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "70fd42d18877c0b499e53726e54cf775",
       "InstalledGUID": "",
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL_TongueShader_HDRP_Tessellation.shadergraph",
-      "GUID": "a78ef18f64241ab44baa313c0c3b1d6b",
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_SkinShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "3ad100c7585fa66428c2c2585aa60b16",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_TeethShader_HDRP_Tessellation.shadergraph",
+      "GUID": "df8e0df6eb57001498afae6929f2f6df",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Tessellation/HQ/RL5_TongueShader_HDRP_Tessellation.shadergraph",
+      "GUID": "08221f67f0534804698e5685cfdb288e",
       "InstalledGUID": "",
       "Validated": false
     },
