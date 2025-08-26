@@ -298,8 +298,10 @@ namespace Reallusion.Import
         {
             string fullassetPath = ShaderGraphProjectSettings.UnityAssetPathToFullPath();
 
+            bool hasLimit = false;
             int inAssetVariantLimit = 0;
 #if UNITY_6000_2_OR_NEWER
+            bool hasOverride = false;
             int inAssetOverrideLimit = 0;
 #endif
             if (File.Exists(fullassetPath))
@@ -313,6 +315,7 @@ namespace Reallusion.Import
                         string trimmedLine = line.Trim();
                         if (trimmedLine.StartsWith("shaderVariantLimit:"))
                         {
+                            hasLimit = true;
                             string[] strings = trimmedLine.Split(':');
                             if (!int.TryParse(strings[1].Trim(), out inAssetVariantLimit))
                             {
@@ -322,6 +325,7 @@ namespace Reallusion.Import
 #if UNITY_6000_2_OR_NEWER
                         if (trimmedLine.StartsWith("overrideShaderVariantLimit:"))
                         {
+                            hasOverride = true;
                             string[] strings = trimmedLine.Split(':');
                             if (!int.TryParse(strings[1].Trim(), out inAssetOverrideLimit))
                             {
@@ -331,13 +335,18 @@ namespace Reallusion.Import
 #endif
                     }
                 }
-            }
-
 #if UNITY_6000_2_OR_NEWER
-            if (inAssetOverrideLimit > 0 && inAssetVariantLimit < shaderVariantLimit) return true;            
+                if (hasLimit && hasOverride)
+                { 
+                    if (inAssetOverrideLimit > 0 && inAssetVariantLimit < shaderVariantLimit) return true;
+                }
 #else
-            if (inAssetVariantLimit < shaderVariantLimit) return true;
+                if (hasLimit)
+                {
+                    if (inAssetVariantLimit < shaderVariantLimit) return true;
+                }
 #endif
+            }
 
             if (EditorPrefs.HasKey(variantLimit))
             {

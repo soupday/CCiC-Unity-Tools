@@ -758,9 +758,22 @@ namespace Reallusion.Import
 
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("You must manually set this in both project settings and preferences.", guiStyles.InactiveLabel);
+#if UNITY_6000_0_OR_NEWER
+            bool hasProjectSettings = true;
+#elif UNITY_2023_1_OR_NEWER
+            bool hasProjectSettings = false;
+#elif UNITY_2022_1_OR_NEWER
+            bool hasProjectSettings = true;
+#else
+            bool hasProjectSettings = false;
+#endif
+            string prefProjString = "You must manually set this value in 'Preferences'" + (hasProjectSettings ? " AND 'Project Settings'" : ".");
 
-            GUILayout.FlexibleSpace();
+            GUILayout.Label(prefProjString, guiStyles.InactiveLabel);
+
+            //GUILayout.FlexibleSpace();
+
+            GUILayout.Space(VERT_INDENT);
 
             GUILayout.EndVertical();
 
@@ -768,11 +781,21 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical();
 
-            GUILayout.FlexibleSpace();
+            //GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("Open Project Settings"))
+            GUILayout.Space(VERT_INDENT);
+
+            if (hasProjectSettings)
             {
-                SettingsService.OpenProjectSettings("Project/Shader Graph");
+                if (GUILayout.Button("Open Project Settings"))
+                {
+#if UNITY_6000_0_OR_NEWER
+                    string psPathString = "Project/Shader Graph";
+#else
+                    string psPathString = "Project/ShaderGraph";
+#endif
+                    SettingsService.OpenProjectSettings(psPathString);
+                }
             }
 
             GUILayout.Space(12f);
@@ -782,30 +805,13 @@ namespace Reallusion.Import
                 SettingsService.OpenUserPreferences("Preferences/Shader Graph");
             }
 
-            GUILayout.FlexibleSpace();
+            //GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
 
             GUILayout.Space(HORIZ_INDENT);
 
             GUILayout.EndHorizontal();
-
-            if (UpdateManager.platformRestriction != ShaderPackageUtil.PlatformRestriction.None)
-            {
-                GUILayout.Space(VERT_INDENT);
-
-                GUILayout.BeginHorizontal();
-
-                GUILayout.Space(HORIZ_INDENT);
-
-                GUILayout.Label(GetPlatformRestrictionText(), guiStyles.WrappedInfoLabelColor);
-
-                GUILayout.FlexibleSpace();
-
-                GUILayout.Space(HORIZ_INDENT);
-
-                GUILayout.EndHorizontal();
-            }
 
             GUILayout.Space(VERT_INDENT);
 
@@ -1682,7 +1688,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        #endregion GUI
+#endregion GUI
 
         #region UTIL
         public string emptyVersion = "0.0.0";

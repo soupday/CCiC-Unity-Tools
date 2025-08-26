@@ -2490,7 +2490,10 @@ namespace Reallusion.Import
             try
             {
                 if (!File.Exists(fullSystemFilePath))
+                {
                     File.WriteAllText(fullSystemFilePath, fullText);
+                    RefreshAssetDatabase();
+                }
                 else
                     File.AppendAllText(fullSystemFilePath, fullText);
             }
@@ -2518,6 +2521,18 @@ namespace Reallusion.Import
                 SetupLogging();
                 recreateLogFolder = false;
             }
+        }
+
+        private static void RefreshAssetDatabase()
+        {
+            EditorApplication.update -= RefreshDelegate;
+            EditorApplication.update += RefreshDelegate;
+        }
+
+        private static void RefreshDelegate()
+        {
+            EditorApplication.update -= RefreshDelegate;
+            AssetDatabase.Refresh();
         }
 
         #endregion Update worker
