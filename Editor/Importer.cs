@@ -2385,6 +2385,8 @@ namespace Reallusion.Import
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_CorneaDiffuseMap", "_MaskMap", "_MetallicAlphaMap");
 
+            mat.SetColorIf("_LimbusColor", new Color(0.2f, 0.2f, 0.2f));
+
             if (matJson != null)
             {
                 // both the cornea and the eye materials need the same settings:

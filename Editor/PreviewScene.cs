@@ -106,6 +106,32 @@ namespace Reallusion.Import
             }
         }
 
+        public void AdjustHeight(GameObject characterInstance)
+        {
+            Transform[] transforms = characterInstance.GetComponentsInChildren<Transform>();
+            Transform headExact = null;
+            Transform headPossible = null;
+            foreach (Transform t in transforms)
+            {
+                if (t.name.iContains("head"))
+                {
+                    headPossible = t;
+                }
+                if (t.name.iEquals("CC_Base_Head"))
+                {
+                    headExact = t;
+                }
+            }
+            Transform head = headExact ? headExact : headPossible;
+            if (head)
+            {                
+                float height = head.position.y;
+                Vector3 position = lighting.position;
+                position.y = -height;
+                lighting.position = position;
+            }
+        }
+
         public static void RestoreLighting()
         {
             if (EditorPrefs.HasKey("RL_Lighting_Preset"))
@@ -224,8 +250,8 @@ namespace Reallusion.Import
                 GameObject clone = PrefabUtility.InstantiatePrefab(prefabAsset ? prefabAsset : fbxAsset, character.transform) as GameObject;
                 if (clone)
                 {
-                    Selection.activeGameObject = clone;                    
-
+                    Selection.activeGameObject = clone;
+                    AdjustHeight(clone);
                     return clone;
                 }
             }
