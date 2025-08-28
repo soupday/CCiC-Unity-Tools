@@ -849,7 +849,7 @@ void RLHeadMask(uint3 id : SV_DispatchThreadID)
     float ao = INVERTED_SCALE(mask.g, aoStrength) * cavityAO.x;
     //float detailMask = mask.b * subsurfaceFlattenNormals;
     float detailMask = mask.b * microNormalStrength;
-    float smoothness = saturate((smoothnessMod + microSmoothnessMod + mask.a) * cavityAO.y);
+    float smoothness = saturate((mask.a + smoothnessMod + microSmoothnessMod) * cavityAO.x * cavityAO.y);    
     smoothness = lerp(smoothnessMin, smoothnessMax, pow(smoothness, smoothnessPower));    
     float4 packed = float4(metallic, ao, detailMask, smoothness);
 
@@ -895,9 +895,9 @@ void RLHeadMetallicGloss(uint3 id : SV_DispatchThreadID)
     float metallic = mask.r;
     float ao = INVERTED_SCALE(mask.g, aoStrength) * cavityAO.x;
     //float detailMask = mask.b * subsurfaceFlattenNormals;
-    float detailMask = mask.b;   
-    float smoothness = saturate((smoothnessMod + microSmoothnessMod + mask.a) * cavityAO.y);    
-    smoothness = lerp(smoothnessMin, smoothnessMax, pow(smoothness, smoothnessPower));       
+    float detailMask = mask.b;  
+    float smoothness = saturate((mask.a + smoothnessMod + microSmoothnessMod) * cavityAO.x * cavityAO.y);    
+    smoothness = lerp(smoothnessMin, smoothnessMax, pow(smoothness, smoothnessPower));
     float4 packed = float4(metallic, metallic, metallic, smoothness);
 
     Result[id.xy] = packed;
