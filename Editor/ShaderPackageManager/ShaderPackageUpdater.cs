@@ -774,6 +774,13 @@ namespace Reallusion.Import
             //GUILayout.FlexibleSpace();
 
             GUILayout.Space(VERT_INDENT);
+            
+            EditorGUI.BeginDisabledGroup(UpdateManager.IsShaderVariantLimitTooLow());
+            if (GUILayout.Button(new GUIContent("Recompile Shaders", "After correcting the variant limit, use this button to force all the shaders to recompile - any characters built using a broken shader will need to be rebuilt."), GUILayout.Width(120f)))
+            {
+                ShaderPackageUtil.RecompileShaders();
+            }
+            EditorGUI.EndDisabledGroup();
 
             GUILayout.EndVertical();
 
@@ -804,7 +811,7 @@ namespace Reallusion.Import
             {
                 SettingsService.OpenUserPreferences("Preferences/Shader Graph");
             }
-
+                        
             //GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();

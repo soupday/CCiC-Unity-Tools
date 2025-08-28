@@ -1251,6 +1251,28 @@ namespace Reallusion.Import
 #endif
         }
 
+        public static void RecompileShaders()
+        {
+            try
+            {
+                string mostRecentManifestPath = AssetDatabase.GUIDToAssetPath(GetLatestManifestGUID()); // will flag multiple installation errors
+
+                ShaderPackageManifest shaderPackageManifest = ReadJson(mostRecentManifestPath);
+                List<ShaderPackageItem> shaderGraphFiles = shaderPackageManifest.Items.FindAll(x => x.ItemName.EndsWith("shadergraph"));
+
+                foreach (ShaderPackageItem item in shaderGraphFiles)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(item.InstalledGUID);
+                    AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
+            }
+        }
+
+
         public enum PackageType
         {
             None,
