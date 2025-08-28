@@ -1468,6 +1468,7 @@ namespace Reallusion.Import
 
                 // Diffuse tint
                 Color diffuseColor = Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color"));
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 float opacity = matJson.GetFloatValue("Opacity");
                 diffuseColor.a *= opacity;
                 if (RP != RenderPipeline.Builtin)
@@ -1479,9 +1480,9 @@ namespace Reallusion.Import
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                 {
                     if (RP == RenderPipeline.HDRP)
-                        mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                        mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                     else
-                        mat.SetColorIf("_EmissionColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                        mat.SetColorIf("_EmissionColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 }
 
                 // Normal map strength
@@ -2075,10 +2076,11 @@ namespace Reallusion.Import
                     }
                 }
 
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloatIf("_CavityStrength", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f), 0.5f));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
-                    mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                    mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
                     mat.SetFloatIf("_NormalStrength", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloatIf("_MicroNormalTiling", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Tiling"));
@@ -2209,10 +2211,11 @@ namespace Reallusion.Import
 
             if (matJson != null)
             {
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloat("_IsUpperTeeth", matJson.GetFloatValue("Custom Shader/Variable/Is Upper Teeth"));
                 mat.SetFloat("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
-                    mat.SetColor("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                    mat.SetColor("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
                     mat.SetFloat("_NormalStrength", 0.5f * matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloat("_MicroNormalTiling", matJson.GetFloatValue("Custom Shader/Variable/Teeth MicroNormal Tiling"));
@@ -2287,10 +2290,11 @@ namespace Reallusion.Import
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
 
             if (matJson != null)
-            {                
+            {
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloat("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
-                    mat.SetColor("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                    mat.SetColor("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
                     mat.SetFloat("_NormalStrength", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloat("_MicroNormalTiling", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Tiling"));
@@ -2405,9 +2409,10 @@ namespace Reallusion.Import
             if (matJson != null)
             {
                 // both the cornea and the eye materials need the same settings:
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloatIf("_AOStrength", 0.5f * Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
-                    mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                    mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 mat.SetFloatIf("_ColorBlendStrength", 0.5f * matJson.GetFloatValue("Custom Shader/Variable/BlendMap2 Strength"));
                 mat.SetFloatIf("_ShadowRadius", matJson.GetFloatValue("Custom Shader/Variable/Shadow Radius"));
                 mat.SetFloatIf("_ShadowHardness", Mathf.Clamp01(matJson.GetFloatValue("Custom Shader/Variable/Shadow Hardness")));
@@ -2549,13 +2554,14 @@ namespace Reallusion.Import
 
             if (matJson != null)
             {
+                Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 mat.SetFloatIf("_AlphaStrength",
                     matJson.GetFloatValue("Opacity") * 
                     Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f
                     ));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
-                    mat.SetColorIf("_EmissiveColor", Color.white * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
+                    mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
                     mat.SetFloatIf("_NormalStrength", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloatIf("_AOOccludeAll", (RP == RenderPipeline.HDRP ? 0.5f : 1f) * matJson.GetFloatValue("Custom Shader/Variable/AO Map Occlude All Lighting"));
