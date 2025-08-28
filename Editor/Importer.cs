@@ -1291,12 +1291,7 @@ namespace Reallusion.Import
                     int renderQueue = mat.renderQueue;
                     mat.shader = specShader;
                     mat.renderQueue = renderQueue;                    
-                }
-
-                if (customShader == "Reflection Surface")
-                {
-
-                }
+                }                
             }
 
             // these default materials should *not* attach any textures:
