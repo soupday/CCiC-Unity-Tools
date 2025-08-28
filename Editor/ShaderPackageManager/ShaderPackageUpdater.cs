@@ -150,6 +150,7 @@ namespace Reallusion.Import
             public GUIStyle shMismatchLabel;
             public GUIStyle FoldoutTitleLabel;
             public GUIStyle FoldoutTitleErrorLabel;
+            public GUIStyle FoldoutTitleStopLabel;
             public GUIStyle WrappedInfoLabel;
             public GUIStyle WrappedInfoLabelColor;
 
@@ -206,6 +207,11 @@ namespace Reallusion.Import
                 FoldoutTitleErrorLabel.onNormal.textColor = colYellow;
                 FoldoutTitleErrorLabel.fontSize = 14;
                 FoldoutTitleErrorLabel.fontStyle = FontStyle.BoldAndItalic;
+
+                FoldoutTitleStopLabel = new GUIStyle(EditorStyles.foldout);
+                FoldoutTitleStopLabel.onNormal.textColor = colRed;
+                FoldoutTitleStopLabel.fontSize = 14;
+                FoldoutTitleStopLabel.fontStyle = FontStyle.BoldAndItalic;
 
                 WrappedInfoLabel = new GUIStyle(GUI.skin.label);
                 WrappedInfoLabel.wordWrap = true;
@@ -708,7 +714,7 @@ namespace Reallusion.Import
             }
 
             string foldoutLabel = "Shader Graph Settings";
-            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see shortcuts to the project settings and preferences for Shader Graph - with more complex shaders it is important to have a Shader Variant limit of 2048.  This has to be done manually (it can be sticky to set - move focus away from the int field to update the value)."), true, error ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel);
+            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see shortcuts to the project settings and preferences for Shader Graph - with more complex shaders it is important to have a Shader Variant limit of 2048.  This has to be done manually (it can be sticky to set - move focus away from the int field to update the value)."), true, error ? guiStyles.FoldoutTitleStopLabel : guiStyles.FoldoutTitleLabel);
 
             GUILayout.FlexibleSpace();
 
@@ -771,16 +777,18 @@ namespace Reallusion.Import
 
             GUILayout.Label(prefProjString, guiStyles.InactiveLabel);
 
+            GUILayout.Label("After changing the value(s), use the 'Recompile Shaders' button below.");
+
             //GUILayout.FlexibleSpace();
 
             GUILayout.Space(VERT_INDENT);
             
-            EditorGUI.BeginDisabledGroup(UpdateManager.IsShaderVariantLimitTooLow());
+            //EditorGUI.BeginDisabledGroup(UpdateManager.IsShaderVariantLimitTooLow());
             if (GUILayout.Button(new GUIContent("Recompile Shaders", "After correcting the variant limit, use this button to force all the shaders to recompile - any characters built using a broken shader will need to be rebuilt."), GUILayout.Width(120f)))
             {
                 ShaderPackageUtil.RecompileShaders();
             }
-            EditorGUI.EndDisabledGroup();
+            //EditorGUI.EndDisabledGroup();
 
             GUILayout.EndVertical();
 

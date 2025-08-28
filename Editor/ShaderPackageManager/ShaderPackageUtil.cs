@@ -1255,15 +1255,22 @@ namespace Reallusion.Import
         {
             try
             {
-                string mostRecentManifestPath = AssetDatabase.GUIDToAssetPath(GetLatestManifestGUID()); // will flag multiple installation errors
-
+                string mostRecentManifestPath = AssetDatabase.GUIDToAssetPath(GetLatestManifestGUID());
                 ShaderPackageManifest shaderPackageManifest = ReadJson(mostRecentManifestPath);
                 List<ShaderPackageItem> shaderGraphFiles = shaderPackageManifest.Items.FindAll(x => x.ItemName.EndsWith("shadergraph"));
 
                 foreach (ShaderPackageItem item in shaderGraphFiles)
                 {
-                    string path = AssetDatabase.GUIDToAssetPath(item.InstalledGUID);
-                    AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+                    string path = string.Empty;
+
+                    if (!string.IsNullOrEmpty(item.InstalledGUID))
+                        path = AssetDatabase.GUIDToAssetPath(item.InstalledGUID);
+                    else if (!string.IsNullOrEmpty(item.GUID))
+                        path = AssetDatabase.GUIDToAssetPath(item.GUID);
+
+                    if (!string.IsNullOrEmpty(path))
+                        if (File.Exists(path.UnityAssetPathToFullPath()))
+                            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 }
             }
             catch (Exception ex)
@@ -1271,7 +1278,6 @@ namespace Reallusion.Import
                 Debug.Log(ex.ToString());
             }
         }
-
 
         public enum PackageType
         {
