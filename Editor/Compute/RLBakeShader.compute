@@ -770,10 +770,10 @@ float2 HeadCavityAO(float2 uv)
 {
     float4 cavityAO = SAMPLE(CavityAO, uv);
 
-    float mouthAO = pow(cavityAO.g, mouthAOPower);
-    float nostrilAO = pow(cavityAO.b, nostrilAOPower);
-    float lipsAO = pow(cavityAO.a, lipsAOPower);    
-    return float2(saturate(mouthAO * nostrilAO * lipsAO), cavityAO.r);
+    float4 contrast = float4(1, mouthAOPower, nostrilAOPower, lipsAOPower);
+    float4 mask = lerp(1, cavityAO, contrast);    
+
+    return float2(saturate(mask.y * mask.z * mask.w), cavityAO.r);
 }
 
 [numthreads(1, 1, 1)]
@@ -953,7 +953,10 @@ void RLHeadSubsurface(uint3 id : SV_DispatchThreadID)
     float2 uv = GetUV(id.xy);
     float scatterMask = HeadScatterMask(uv);
     float4 subsurface = saturate(scatterMask * subsurfaceScale) * SAMPLE(Subsurface, uv).xxxw * subsurfaceFalloff * SAMPLE(BaseMap, uv);
-    subsurface.a = 1.0;
+    float thickness = SAMPLE(Thickness, uv).y;
+    thickness = lerp(thickness, 1.0 - thickness, invertMap);    
+    thickness = saturate(lerp(thicknessScaleMin, thicknessScale, thickness));
+    subsurface.a = thickness;
     Result[id.xy] = saturate(subsurface);
 }
 
@@ -963,7 +966,10 @@ void RLSkinSubsurface(uint3 id : SV_DispatchThreadID)
     float2 uv = GetUV(id.xy);
     float scatterMask = SkinScatterMask(uv);
     float4 subsurface = saturate(scatterMask * subsurfaceScale) * SAMPLE(Subsurface, uv).xxxw * subsurfaceFalloff * SAMPLE(BaseMap, uv);
-    subsurface.a = 1.0;
+    float thickness = SAMPLE(Thickness, uv).y;
+    thickness = lerp(thickness, 1.0 - thickness, invertMap);    
+    thickness = saturate(lerp(thicknessScaleMin, thicknessScale, thickness));
+    subsurface.a = thickness;    
     Result[id.xy] = saturate(subsurface);
 }
 
@@ -973,14 +979,9 @@ void RLHeadNormal(uint3 id : SV_DispatchThreadID)
     float2 uv = GetUV(id.xy);
 
     float3 normal = SAMPLE_NORMAL(Normal, uv);
-    float3 normalBlend = SAMPLE_NORMAL(NormalBlend, uv);
-    float microScatteringMultiplier = HeadScatterMask(uv) * subsurfaceScale;
-    float subsurface = SAMPLE(Subsurface, uv).x * microScatteringMultiplier;
-    float subsurfaceFlattenNormals = saturate(1.0 - (subsurface * subsurface * sssNormalSoften));    
+    float3 normalBlend = SAMPLE_NORMAL(NormalBlend, uv);    
 
     float3 mn, bn, on;
-    //NormalStrength_float3(normal, normalStrength * subsurfaceFlattenNormals, mn);
-    //NormalStrength_float3(normalBlend, normalBlendStrength * subsurfaceFlattenNormals, bn);
     NormalStrength_float3(normal, normalStrength, mn);
     NormalStrength_float3(normalBlend, normalBlendStrength, bn);
     NormalBlend_float3(mn, bn, on);
@@ -993,14 +994,9 @@ void RLSkinNormal(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
 
-    float3 normal = SAMPLE_NORMAL(Normal, uv);
-    float3 normalBlend = SAMPLE_NORMAL(NormalBlend, uv);
-    float microScatteringMultiplier = SkinScatterMask(uv) * subsurfaceScale;
-    float subsurface = SAMPLE(Subsurface, uv).x * microScatteringMultiplier;
-    float subsurfaceFlattenNormals = saturate(1.0 - (subsurface * subsurface * sssNormalSoften));
-
-    float3 ns; 
-    //NormalStrength_float3(normal, normalStrength * subsurfaceFlattenNormals, ns);
+    float3 normal = SAMPLE_NORMAL(Normal, uv);    
+    
+    float3 ns;   
     NormalStrength_float3(normal, normalStrength, ns);
 
     Result[id.xy] = PackNormal(ns);

@@ -1345,13 +1345,14 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             GUILayout.Space(TITLE_SPACE);
 
+            /*
             if (!Pipeline.isHDRP)
             {
                 Importer.USE_AMPLIFY_SHADER = GUILayout.Toggle(Importer.USE_AMPLIFY_SHADER,
                     new GUIContent("Use Amplify Shaders", "Use the more advanced Amplify shaders where possible. " +
                     "Amplify shaders are capable of subsurface scattering effects, and anisotropic hair lighting in the URP and Build-in 3D pipelines."));
                 GUILayout.Space(ROW_SPACE);
-            }
+            }*/
 
             Importer.RECONSTRUCT_FLOW_NORMALS = GUILayout.Toggle(Importer.RECONSTRUCT_FLOW_NORMALS,
                 new GUIContent("Reconstruct Flow Map Normals", "Rebuild missing Normal maps from Flow Maps in hair materials. " +
@@ -1858,7 +1859,7 @@ namespace Reallusion.Import
             Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;
             Importer.USE_SELF_COLLISION = false;
-            Importer.USE_AMPLIFY_SHADER = true;            
+            Importer.USE_AMPLIFY_SHADER = false;            
             Physics.PHYSICS_SHRINK_COLLIDER_RADIUS = 0.5f;
             Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD = 0.25f;
 

@@ -803,6 +803,7 @@ namespace Reallusion.Import
                     bakedMaterial.globalIlluminationFlags = bakedMaterial.globalIlluminationFlags | MaterialGlobalIlluminationFlags.BakedEmissive;
                 }
             }
+
             bakedMaterial.SetTextureIf("_SubsurfaceMaskMap", subsurfaceMap);
             bakedMaterial.SetTextureIf("_ThicknessMap", thicknessMap);
 
@@ -944,7 +945,9 @@ namespace Reallusion.Import
             bool useDigitalHuman = characterInfo.BakeCustomShaders && (mat.shader.name.iEndsWith("_DH")
                                                                     || mat.shader.name.iEndsWith("_DH_Tessellation"));
 
-            if (!IS_HDRP && !useAmplify) sssNormalSoften = 0f;
+            float bakeAOStrength = aoStrength;
+            if (IS_HDRP) bakeAOStrength = 1f;
+            sssNormalSoften = 0f;
             if (!useBlending)
             {
                 normalBlendStrength = 0f;
@@ -990,7 +993,7 @@ namespace Reallusion.Import
                     bakedMaskMap = BakeHeadMaskMap(mask, cavityAO,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
                         mouthAOPower, nostrilAOPower, lipsAOPower, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, earMSM, neckMSM, cheekMSM, foreheadMSM, upperLipMSM, chinMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
@@ -1002,7 +1005,7 @@ namespace Reallusion.Import
                     bakedMetallicGlossMap = BakeHeadMaskMap(mask, cavityAO, 
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
                         mouthAOPower, nostrilAOPower, lipsAOPower, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, earMSM, neckMSM, cheekMSM, foreheadMSM, upperLipMSM, chinMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
@@ -1012,7 +1015,7 @@ namespace Reallusion.Import
                     bakedAOMap = BakeHeadMaskMap(mask, cavityAO, 
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength,
                         mouthAOPower, nostrilAOPower, lipsAOPower, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, earMSM, neckMSM, cheekMSM, foreheadMSM, upperLipMSM, chinMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
@@ -1020,12 +1023,16 @@ namespace Reallusion.Import
                         sourceName + "_Occlusion", "RLHeadAO");
                 }
 
-                bakedSubsurfaceMap = BakeHeadSubsurfaceMap(sssThicknessPack ? sssThicknessPack : subsurface, 
+                bakedSubsurfaceMap = BakeHeadSubsurfaceMap(
+                    sssThicknessPack ? sssThicknessPack : subsurface,
+                    sssThicknessPack ? sssThicknessPack : thickness,
                     RGBAMask, CFULCMask, EarNeckMask, 
                     subsurfaceScale,
-                    rSS, gSS, bSS, aSS, earSS, neckSS, cheekSS, foreheadSS, upperLipSS, chinSS, unmaskedSS,                    
+                    rSS, gSS, bSS, aSS, earSS, neckSS, cheekSS, foreheadSS, upperLipSS, chinSS, unmaskedSS,
+                    thicknessScaleMin, thicknessScale,
                     Color.white, 
                     Texture2D.whiteTexture,
+                    true,
                     sourceName + "_SSSMap");
 
                 if (useWrinkleMaps && diffuse1 && diffuse2 && diffuse3 && normal1 && normal2 && normal3 
@@ -1104,7 +1111,7 @@ namespace Reallusion.Import
                     bakedMaskMap = BakeSkinMaskMap(mask,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
                         rSS, gSS, bSS, aSS, unmaskedSS,
@@ -1115,7 +1122,7 @@ namespace Reallusion.Import
                     bakedMetallicGlossMap = BakeSkinMaskMap(mask,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
                         rSS, gSS, bSS, aSS, unmaskedSS,
@@ -1124,19 +1131,23 @@ namespace Reallusion.Import
                     bakedAOMap = BakeSkinMaskMap(mask,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask,
-                        1f, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
+                        bakeAOStrength, smoothnessMin, smoothnessMax, smoothnessPower, microNormalStrength, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, unmaskedMSM,
                         subsurfaceScale, sssNormalSoften,
                         rSS, gSS, bSS, aSS, unmaskedSS,
                         sourceName + "_Occlusion", "RLSkinAO");
                 }
 
-                bakedSubsurfaceMap = BakeSkinSubsurfaceMap(sssThicknessPack ? sssThicknessPack : subsurface, 
+                bakedSubsurfaceMap = BakeSkinSubsurfaceMap(
+                    sssThicknessPack ? sssThicknessPack : subsurface,
+                    sssThicknessPack ? sssThicknessPack : thickness,
                     RGBAMask,
                     subsurfaceScale,
                     rSS, gSS, bSS, aSS, unmaskedSS,
-                    Color.white, 
+                    thicknessScaleMin, thicknessScale,
+                    Color.white,
                     Texture2D.whiteTexture,
+                    true,
                     sourceName + "_SSSMap");
             }
             
@@ -1169,6 +1180,7 @@ namespace Reallusion.Import
                 sourceName, templateMaterial);
 
             result.SetTextureIf("_CavityMap", cavity);
+            result.SetFloatIf("_AOStrength", aoStrength);
             result.SetTextureIf("_DisplacementMap", displacement);
             result.SetFloatIf("_CavityStrength", cavityStrength);
             result.SetFloatIf("_EdgePower", edgePower);
@@ -1209,8 +1221,28 @@ namespace Reallusion.Import
                 // displacement pack is always pre baked on full material
                 result.SetTextureIf("_WrinkleDisplacementPack", displacementPack);
             }
+            else
+            {
+                result.SetTextureIf("_WrinkleMaskSet1A", null);
+                result.SetTextureIf("_WrinkleMaskSet1B", null);
+                result.SetTextureIf("_WrinkleMaskSet2", null);
+                result.SetTextureIf("_WrinkleMaskSet3", null);
+                result.SetTextureIf("_WrinkleMaskSet123", null);
 
-            return result;
+                result.SetTextureIf("_WrinkleDiffuseBlend1", null);
+                result.SetTextureIf("_WrinkleDiffuseBlend2", null);
+                result.SetTextureIf("_WrinkleDiffuseBlend3", null);
+
+                result.SetTextureIf("_WrinkleNormalBlend1", null);
+                result.SetTextureIf("_WrinkleNormalBlend2", null);
+                result.SetTextureIf("_WrinkleNormalBlend3", null);
+
+                result.SetTextureIf("_WrinkleSmoothnessPack", null);
+                result.SetTextureIf("_WrinkleFlowPack", null);                
+                result.SetTextureIf("_WrinkleDisplacementPack", null);
+            }
+
+                return result;
         }
 
         private Material BakeTeethMaterial(Material mat, string sourceName)
@@ -2324,7 +2356,7 @@ namespace Reallusion.Import
                 int kernel = bakeShader.FindKernel("RLDetailMask");
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "Mask", mask);
-                bakeShader.SetFloat("microNormalStrength", microNormalStrength);
+                bakeShader.SetFloat("microNormalStrength", 1f);
                 bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
                 return bakeTarget.SaveAndReimport();
             }
@@ -2570,15 +2602,15 @@ namespace Reallusion.Import
             return null;
         }
 
-        private Texture2D BakeHeadSubsurfaceMap(Texture2D subsurface,
+        private Texture2D BakeHeadSubsurfaceMap(Texture2D subsurface, Texture2D thickness,
             Texture2D NMUIL, Texture2D CFULC, Texture2D earNeck,
             float subsurfaceScale,
             float noseSS, float mouthSS, float upperLidSS, float innerLidSS, float earSS,
             float neckSS, float cheekSS, float foreheadSS, float upperLipSS, float chinSS, float unmaskedSS,
-            Color subsurfaceFalloff, Texture2D baseMap,
+            float thicknessScaleMin, float thicknessScale, Color subsurfaceFalloff, Texture2D baseMap, bool invertMap,            
             string name, string kernelName = "RLHeadSubsurface")
         {
-            Vector2Int maxSize = GetMaxSize(subsurface);
+            Vector2Int maxSize = GetMaxSize(subsurface, thickness);
             if (maxSize.x > 1024) maxSize.x = 1024;
             if (maxSize.y > 1024) maxSize.y = 1024;
             ComputeBakeTexture bakeTarget =
@@ -2588,6 +2620,7 @@ namespace Reallusion.Import
             if (bakeShader)
             {
                 subsurface = CheckMask(subsurface);
+                thickness = CheckMask(thickness);
                 NMUIL = CheckBlank(NMUIL);
                 CFULC = CheckBlank(CFULC);
                 earNeck = CheckBlank(earNeck);
@@ -2597,6 +2630,7 @@ namespace Reallusion.Import
                 bakeTarget.Create(bakeShader, kernel);				
 
                 bakeShader.SetTexture(kernel, "Subsurface", subsurface);
+                bakeShader.SetTexture(kernel, "Thickness", thickness);
                 bakeShader.SetTexture(kernel, "NMUILMask", NMUIL);
                 bakeShader.SetTexture(kernel, "CFULCMask", CFULC);
                 bakeShader.SetTexture(kernel, "EarNeckMask", earNeck);
@@ -2613,7 +2647,10 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("upperLipSS", upperLipSS);
                 bakeShader.SetFloat("chinSS", chinSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
-                bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
+                bakeShader.SetFloat("thicknessScale", thicknessScale);
+                bakeShader.SetFloat("thicknessScaleMin", thicknessScaleMin);
+                bakeShader.SetFloat("invertMap", invertMap ? 1.0f : 0.0f);
+                bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);                
                 bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
                 return bakeTarget.SaveAndReimport();
             }
@@ -2672,10 +2709,10 @@ namespace Reallusion.Import
             return null;
         }
 
-        private Texture2D BakeSkinSubsurfaceMap(Texture2D subsurface, Texture2D RGBA,
+        private Texture2D BakeSkinSubsurfaceMap(Texture2D subsurface, Texture2D thickness, Texture2D RGBA,
             float subsurfaceScale,            
             float rSS, float gSS, float bSS, float aSS, float unmaskedSS,
-            Color subsurfaceFalloff, Texture2D baseMap,
+            float thicknessScaleMin, float thicknessScale, Color subsurfaceFalloff, Texture2D baseMap, bool invertMap,
             string name, string kernelName = "RLSkinSubsurface")
         {
             Vector2Int maxSize = GetMaxSize(subsurface);
@@ -2689,11 +2726,13 @@ namespace Reallusion.Import
             {
                 baseMap = CheckDiffuse(baseMap);
                 subsurface = CheckMask(subsurface);
+                thickness = CheckMask(thickness);
                 RGBA = CheckBlank(RGBA);
 
                 int kernel = bakeShader.FindKernel(kernelName);
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "Subsurface", subsurface);
+                bakeShader.SetTexture(kernel, "Thickness", thickness);
                 bakeShader.SetTexture(kernel, "RGBAMask", RGBA);
                 bakeShader.SetTexture(kernel, "BaseMap", baseMap);
                 bakeShader.SetFloat("subsurfaceScale", subsurfaceScale);
@@ -2702,6 +2741,9 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("bSS", bSS);
                 bakeShader.SetFloat("aSS", aSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
+                bakeShader.SetFloat("thicknessScale", thicknessScale);
+                bakeShader.SetFloat("thicknessScaleMin", thicknessScaleMin);
+                bakeShader.SetFloat("invertMap", invertMap ? 1.0f : 0.0f);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
                 bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
                 return bakeTarget.SaveAndReimport();

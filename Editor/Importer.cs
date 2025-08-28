@@ -111,13 +111,16 @@ namespace Reallusion.Import
         {
             get
             {
+                return false;
+                /*
                 if (EditorPrefs.HasKey("RL_Importer_Use_Amplify_Shaders"))
                     return EditorPrefs.GetBool("RL_Importer_Use_Amplify_Shaders");
                 return true;
+                */
             }
 
             set
-            {
+            {                
                 EditorPrefs.SetBool("RL_Importer_Use_Amplify_Shaders", value);
             }
         }        
