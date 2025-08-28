@@ -1271,6 +1271,7 @@ namespace Reallusion.Import
             string jsonMaterialType = matJson?.GetStringValue("Material Type");
             bool isGameBaseSkin = sourceName.iContains("Ga_Skin_");
             int numGameBaseSkinMaterials = CountMaterials(obj, "Ga_Skin_");
+            bool allowSpecular = customShader != "Reflection Surface";
 
             if (jsonMaterialType == "Tra")
             {
@@ -1291,6 +1292,11 @@ namespace Reallusion.Import
                     mat.shader = specShader;
                     mat.renderQueue = renderQueue;                    
                 }
+
+                if (customShader == "Reflection Surface")
+                {
+
+                }
             }
 
             // these default materials should *not* attach any textures:
@@ -1310,9 +1316,12 @@ namespace Reallusion.Import
                         TexCategory.MediumDetail, FLAG_SRGB);
                 }
 
-                ConnectTextureTo(sourceName, mat, "_SpecularColorMap", "Specular",
-                    matJson, "Textures/Specular",
-                    TexCategory.MediumDetail);
+                if (allowSpecular)
+                {
+                    ConnectTextureTo(sourceName, mat, "_SpecularColorMap", "Specular",
+                        matJson, "Textures/Specular",
+                        TexCategory.MediumDetail);
+                }
 
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
                     matJson, "Textures/HDRP",
@@ -1399,9 +1408,12 @@ namespace Reallusion.Import
                     }
                 }
 
-                ConnectTextureTo(sourceName, mat, "_SpecGlossMap", "Specular",
-                        matJson, "Textures/Specular",
-                        TexCategory.MediumDetail);
+                if (allowSpecular)
+                {
+                    ConnectTextureTo(sourceName, mat, "_SpecGlossMap", "Specular",
+                            matJson, "Textures/Specular",
+                            TexCategory.MediumDetail);
+                }
 
                 if (ConnectTextureTo(sourceName, mat, "_MetallicGlossMap", "MetallicAlpha",
                         matJson, "Textures/MetallicAlpha",
@@ -1732,8 +1744,13 @@ namespace Reallusion.Import
                         specular = matJson.GetFloatValue("Specular");
                     if (matJson.PathExists("Specular Color"))
                         specularColor = TRA_SPECULAR_SCALE * Util.LinearTosRGB(matJson.GetColorValue("Specular Color"));
-
                     glossiness = Util.CombineSpecularToSmoothness(specularColor.grayscale * specular, glossiness);
+                    if (customShader == "Reflection Surface")
+                    {
+                        float reflectionStrength = matJson.GetFloatValue("Custom Shader/Reflection Strength");
+                        glossiness = reflectionStrength;
+                    }
+                    
                     mat.SetFloatIf("_Smoothness", glossiness);
                     mat.SetFloatIf("_GlossMapScale", glossiness);
                     mat.SetFloatIf("_Glossiness", glossiness);
