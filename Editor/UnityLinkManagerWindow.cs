@@ -849,7 +849,10 @@ namespace Reallusion.Import
         {
             ControlsSelectModeGUI();
             ControlsTextBoxGUI();
-            if (!UnityLinkManager.SIMPLE_MODE) ImportAdvancedControlsGUI();
+            if (UnityLinkManager.SIMPLE_MODE) 
+                ImportSimpleControlsGUI();
+            else
+                ImportAdvancedControlsGUI();
         }
 
         void ControlsSelectModeGUI()
@@ -899,6 +902,26 @@ namespace Reallusion.Import
 
             EditorGUILayout.SelectableLabel(text, styles.textFieldStyle, GUILayout.Width(360f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));
 
+            GUILayout.EndHorizontal();
+        }
+
+        void ImportSimpleControlsGUI()
+        {
+            GUILayout.Space(2f);
+
+            // IMPORT_INTO_SCENE
+            GUILayout.BeginHorizontal();
+            Texture2D sceneImpToggleImg = UnityLinkManager.IMPORT_INTO_SCENE ? styles.toggleRight : styles.toggleLeft;
+            if (GUILayout.Button(sceneImpToggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
+            {
+                UnityLinkManager.IMPORT_INTO_SCENE = !UnityLinkManager.IMPORT_INTO_SCENE;
+                UnityLinkManager.ADD_TO_TIMELINE = UnityLinkManager.IMPORT_INTO_SCENE;
+                settings.importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
+                settings.addToTimeline = UnityLinkManager.ADD_TO_TIMELINE;
+                SaveSettings();
+            }
+            GUIStyle sceneImp = UnityLinkManager.IMPORT_INTO_SCENE ? styles.selectedLabel : styles.unselectedLabel;
+            GUILayout.Label("Import Into Scene and Timeline", sceneImp, GUILayout.Width(220f));
             GUILayout.EndHorizontal();
         }
 

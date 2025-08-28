@@ -192,10 +192,11 @@ namespace Reallusion.Import
                 else
                 {
                     UnityLinkManager.SCENE_NAME = UnityLinkManager.SCENE_UNSAVED_NAME + "-" + UnityLinkSceneManagement.TimeStampString();
-                    UnityLinkManager.SCENE_FOLDER = Path.Combine(UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER.FullPathToUnityAssetPath(), UnityLinkManager.SCENE_ASSETS, UnityLinkManager.SCENE_NAME);                    
+                    UnityLinkManager.SCENE_FOLDER = Path.Combine(importDestinationFolder.FullPathToUnityAssetPath(), UnityLinkManager.SCENE_ASSETS, UnityLinkManager.SCENE_NAME);
                 }
 
-                UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");                                               
+                UnityLinkManager.SCENE_FOLDER = UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");
+                //Debug.LogWarning("UnityLinkManager.SCENE_FOLDER has been set to: " + UnityLinkManager.SCENE_FOLDER);
             }
 
             if (string.IsNullOrEmpty(item.RemoteId))

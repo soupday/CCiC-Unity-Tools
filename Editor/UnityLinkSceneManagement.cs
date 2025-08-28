@@ -527,6 +527,8 @@ namespace Reallusion.Import
 #if HDRP_10_5_0_OR_NEWER
         private static void CreateHDRPVolumeAsset(bool dofEnabled)
         {
+            Debug.LogWarning("UnityLinkManager.SCENE_FOLDER " + UnityLinkManager.SCENE_FOLDER);
+
             string defaultProfileToClone = "CinematicDark";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
