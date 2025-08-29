@@ -298,30 +298,7 @@ namespace Reallusion.Import
                 importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
                 importer.mipMapBias = Importer.MIPMAP_BIAS;
                 importer.mipMapsPreserveCoverage = false;
-            }
-
-            if ((flags & Importer.FLAG_SINGLE_CHANNEL) > 0)
-            {
-                if ((flags & Importer.FLAG_FLOAT) > 0)
-                {
-
-                }
-                else
-                {
-
-                }
-            }
-            else
-            {
-                if ((flags & Importer.FLAG_FLOAT) > 0)
-                {
-
-                }
-                else
-                {
-
-                }
-            }
+            }            
 
             if ((flags & Importer.FLAG_HAIR) > 0)
             {
@@ -354,7 +331,15 @@ namespace Reallusion.Import
                 importer.textureType = TextureImporterType.Default;
             }
 
-            if ((flags & Importer.FLAG_FOR_BAKE) > 0)
+            if ((flags & Importer.FLAG_FOR_ARRAY) > 0)
+            {
+                importer.isReadable = true;
+                importer.textureCompression = compressionQuality;
+                importer.maxTextureSize = maxSize;
+                importer.crunchedCompression = false;
+                importer.compressionQuality = 50;
+            }
+            else if ((flags & Importer.FLAG_FOR_BAKE) > 0)
             {
                 // turn off texture compression and unlock max size to 8k, for the best possible quality bake
                 importer.textureCompression = TextureImporterCompression.Uncompressed;                

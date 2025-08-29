@@ -1491,7 +1491,7 @@ namespace Reallusion.Import
             Color irisColor = mat.GetColorIf("_IrisColor", Color.white);
             Color irisCloudyColor = mat.GetColorIf("_IrisCloudyColor", Color.black);
             Color limbusColor = mat.GetColorIf("_LimbusColor", Color.black);
-            bool isCornea = mat.GetFloatIf("BOOLEAN_ISCORNEA") > 0f;
+            bool isCornea = sourceName.iContains("Cornea");
             bool isLeftEye = mat.GetFloatIf("_IsLeftEye") > 0f;
             Texture2D emission = GetMaterialTexture(mat, "_EmissionMap");
             Color emissiveColor = mat.GetColorIf("_EmissiveColor", Color.black);
@@ -3575,6 +3575,37 @@ namespace Reallusion.Import
             }
 
             return null;
+        }
+
+        public static Texture2DArray CreateTextureArray(Texture2D[] textures, string path, bool linear)
+        {            
+            int sliceCount = textures.Length;
+            if (sliceCount == 0) return null;
+
+            Texture2D first = textures[0];
+
+            // Create the array with same dims/format        
+            var array = new Texture2DArray(
+                first.width, first.height,
+                sliceCount,
+                first.format,
+                false,
+                linear
+            );
+
+            // Copy each texture into its slice
+            int i = 0;
+            foreach (Texture2D tex in textures)
+            {
+                Graphics.CopyTexture(tex, 0, 0, array, i++, 0);
+            }
+            array.Apply();
+
+            // Save as .asset so it’s assignable in Inspector
+            AssetDatabase.CreateAsset(array, path);
+            AssetDatabase.SaveAssets();
+
+            return array;
         }
     }
 

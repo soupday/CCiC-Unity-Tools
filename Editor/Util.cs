@@ -527,6 +527,25 @@ namespace Reallusion.Import
             return null;
         }
 
+        public static Texture2DArray FindTextureArray(string[] folders, string search)
+        {
+            string[] texGuids;
+
+            texGuids = AssetDatabase.FindAssets(search + " t:texture2darray", folders);
+
+            foreach (string guid in texGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string texName = Path.GetFileNameWithoutExtension(assetPath);
+                if (texName.iEquals(search))
+                {
+                    return AssetDatabase.LoadAssetAtPath<Texture2DArray>(assetPath);
+                }
+            }
+
+            return null;
+        }
+
         public static AnimationClip FindAnimation(string[] folders, string search, bool exactMatch = true, bool matchStart = true)
         {
             string[] guids;

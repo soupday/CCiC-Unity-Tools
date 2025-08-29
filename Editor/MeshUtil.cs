@@ -1087,8 +1087,6 @@ namespace Reallusion.Import
 
                 firstPass.SetFloat("_SurfaceType", 0f);
                 firstPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);                
-                firstPass.DisableKeyword("BOOLEAN_SECONDPASS_ON");
-                firstPass.SetFloat("BOOLEAN_SECONDPASS", 0f);
                 Pipeline.ResetMaterial(firstPass);
 
                 // transparent surface
@@ -1104,9 +1102,7 @@ namespace Reallusion.Import
                 secondPass.SetFloat("_ZTestDepthEqualForOpaque", 2f);
                 secondPass.SetFloat("_ZTestTransparent", 2f);
                 // keywords
-                secondPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);
-                secondPass.EnableKeyword("BOOLEAN_SECONDPASS_ON");
-                secondPass.SetFloat("BOOLEAN_SECONDPASS", 1f);
+                secondPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);                
                 Pipeline.ResetMaterial(secondPass);
 
                 /*

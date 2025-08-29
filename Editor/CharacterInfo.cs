@@ -1194,6 +1194,7 @@ namespace Reallusion.Import
 
         public bool UsePackedTextures(MaterialType materialType)
         {
+            return true;
             return FeatureUseTexturePacking ||
                    (FeatureUseDualSpecularSkin && (materialType == MaterialType.Skin ||
                                                    materialType == MaterialType.Head));            
