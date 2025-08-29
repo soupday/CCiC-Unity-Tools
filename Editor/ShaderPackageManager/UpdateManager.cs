@@ -512,8 +512,8 @@ namespace Reallusion.Import
 
                 bool pipelineActionRequired = incompatible;
 
-                bool shaderActionRequired = force || (optional && sos) || incompatible || shaderGraphActionRequired;                
-                
+                bool shaderActionRequired = force || (optional && sos) || incompatible; // || shaderGraphActionRequired; // suppressing the shadergraph error reporting for the moment - leaving the UI available          
+
                 //if (critical) Debug.LogWarning("Critical package updates are required.");
                 //else if (optional) Debug.LogWarning("An optional shader package is available.");
                 //else if (!valid) Debug.LogWarning("Problem with shader installation.");
@@ -555,7 +555,8 @@ namespace Reallusion.Import
                         ShaderPackageUpdater.Instance.pipeLineActionRequired = pipelineActionRequired;
                         ShaderPackageUpdater.Instance.shaderActionRequired = shaderActionRequired;
                         ShaderPackageUpdater.Instance.softwareActionRequired = swUpdateAvailable;
-                        ShaderPackageUpdater.Instance.shaderGraphActionRequired = shaderGraphActionRequired;
+                        // suppressing the shadergraph error reporting for the moment - leaving the UI available
+                        //ShaderPackageUpdater.Instance.shaderGraphActionRequired = shaderGraphActionRequired;
                     }
                 }
             }
