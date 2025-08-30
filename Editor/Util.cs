@@ -1101,11 +1101,14 @@ namespace Reallusion.Import
 
         public static void FindSceneObjects(Transform root, string search, List<GameObject> found)
         {
-            if (root.name.iStartsWith(search)) found.Add(root.gameObject);
-
-            for (int i = 0; i < root.childCount; i++)
+            if (root && !string.IsNullOrEmpty(search))
             {
-                FindSceneObjects(root.GetChild(i), search, found);
+                if (root.name.iStartsWith(search)) found.Add(root.gameObject);
+
+                for (int i = 0; i < root.childCount; i++)
+                {
+                    FindSceneObjects(root.GetChild(i), search, found);
+                }
             }
         }
         
