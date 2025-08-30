@@ -50,7 +50,9 @@ namespace Reallusion.Import
         private Dictionary<Material, Texture2D> bakedHDRPMaps;
         private readonly BaseGeneration generation;
         private readonly bool blenderProject;
-        
+        private float characterBoneScale;
+
+
         public bool recordMotionListForTimeLine;
         public List<AnimationClip> clipListForTimeLine = new List<AnimationClip>();
 
@@ -229,6 +231,7 @@ namespace Reallusion.Import
             importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
             characterName = info.name;
             fbxFolder = info.folder;
+            characterBoneScale = info.GetBoneScale();
 
             // construct the texture folder list for the character.
             fbmFolder = Path.Combine(fbxFolder, characterName + ".fbm");
@@ -1435,22 +1438,32 @@ namespace Reallusion.Import
                     mat.EnableKeyword("_HEIGHTMAP");
                     if (characterInfo.UseTessellation(materialType, matJson))
                     {
-                        mat.EnableKeyword("_TESSELLATION_DISPLACEMENT");                        
+                        mat.EnableKeyword("_TESSELLATION_DISPLACEMENT");
+                        mat.EnableKeyword("_TESSELLATION_PHONG");                        
                         mat.SetFloatIf("_DisplacementMode", 3f);  // 3 - tessellation displacment
                         ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
                             matJson, "Textures/Displacement",
-                            TexCategory.MaxDetail);
+                            TexCategory.MaxDetail);                        
                     }
                     else
                     {
                         mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)
                         ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
                             matJson, "Textures/Displacement",
-                            TexCategory.MaxDetail);                                                                     
+                            TexCategory.MaxDetail);
+                        
                     }
                     mat.SetFloatIf("_HeightMapParametrization", 1f);  // 1 - amplitude                        
+                    mat.SetFloatIf("_HeightAmplitude", 1f / 100f);
+                    mat.SetFloatIf("_HeightCenter", 1f);                    
+                    mat.SetFloatIf("_HeightOffset", 0f);
+                    mat.SetFloatIf("_HeightMax", 1f);
+                    mat.SetFloatIf("_HeightMin", -1f);                    
+                    mat.SetFloatIf("_HeightPoMAmplitude", 1f / 100f);                    
+                    mat.SetFloatIf("_DisplacementLockObjectScale", 1f);
+                    mat.SetFloatIf("_DisplacementLockTilingScale", 1f);
                     mat.EnableKeyword("_VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE");
-                    mat.EnableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");
+                    mat.EnableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");                    
                 }
             }
             else
@@ -1587,9 +1600,11 @@ namespace Reallusion.Import
                     if (RP == RenderPipeline.HDRP)
                     {
                         // _HeightOffset ?
-                        mat.SetFloatIf("_HeightAmplitude", displacementStrength * tessellationMultiplier * 2f);
-                        mat.SetFloatIf("_HeightTessAmplitude", displacementStrength * tessellationMultiplier * 2f);
-                        mat.SetFloatIf("_HeightPoMAmplitude", displacementStrength * tessellationMultiplier * 2f);                        
+                        float scale = obj.transform.localScale.y * characterBoneScale;
+                        // amplitude in cm.
+                        mat.SetFloatIf("_HeightAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
+                        mat.SetFloatIf("_HeightTessAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
+                        mat.SetFloatIf("_HeightPoMAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
                         mat.SetFloatIf("_TessellationFactor", 8f);
                         mat.SetFloatIf("_TessellationFactorTriangleSize", 8f);
                         mat.SetFloatIf("_HeightCenter", displacementLevel);
@@ -2528,7 +2543,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_IOR", matJson.GetFloatValue("Custom Shader/Variable/_IoR"));
                 mat.SetFloatIf("_IrisRadius", matJson.GetFloatValue("Custom Shader/Variable/Iris UV Radius"));                
                 mat.SetFloatIf("_LimbusWidth", matJson.GetFloatValue("Custom Shader/Variable/Limbus UV Width Color"));
-                float limbusDarkScale = matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale");
+                float limbusDarkScale = Mathf.Max(0.1f, matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale"));
                 float ds = Mathf.Pow(0.01f, 0.2f) / limbusDarkScale;
                 float dm = Mathf.Pow(0.5f, 0.2f) / limbusDarkScale;
                 mat.SetFloatIf("_LimbusDarkRadius", ds);
@@ -2543,7 +2558,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_CorneaSmoothness", MAX_SMOOTHNESS);
                 mat.SetFloatIf("_ScleraScale", matJson.GetFloatValue("Custom Shader/Variable/Sclera UV Radius"));
                 mat.SetFloatIf("_ScleraNormalStrength", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Flatten Normal"));
-                mat.SetFloatIf("_ScleraNormalTiling", Mathf.Clamp(1f / matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 10f));
+                mat.SetFloatIf("_ScleraNormalTiling", 1f / Mathf.Clamp(matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 5f));
                 mat.SetFloatIf("_IsLeftEye", isLeftEye ? 1f : 0f);
             }
         }

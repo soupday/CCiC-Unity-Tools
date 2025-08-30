@@ -1227,5 +1227,20 @@ namespace Reallusion.Import
             return FeatureUseTessellation || useDisplacement;
         }
 
+        public float GetBoneScale()
+        {
+            Animator animator = fbx.GetComponentInChildren<Animator>();
+            if (animator)
+            {
+                Avatar avatar = animator.avatar;
+                if (avatar.isHuman && avatar.humanDescription.skeleton.Length > 0)
+                {
+                    return avatar.humanDescription.skeleton[0].scale.y;
+                }
+            }           
+
+            return 1f;
+        }
+
     }
 }
