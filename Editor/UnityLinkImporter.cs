@@ -46,7 +46,8 @@ using System.Linq.Expressions;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
 using UnityEditor.Rendering;
-#elif UNITY_POST_PROCESSING_3_1_1
+#endif
+#if UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
 #endif
 using Object = UnityEngine.Object;
