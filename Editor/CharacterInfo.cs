@@ -1211,9 +1211,11 @@ namespace Reallusion.Import
         public bool UsePackedTextures(MaterialType materialType)
         {
             return true;
+            /*
             return FeatureUseTexturePacking ||
                    (FeatureUseDualSpecularSkin && (materialType == MaterialType.Skin ||
-                                                   materialType == MaterialType.Head));            
+                                                   materialType == MaterialType.Head));
+            */
         }
 
         public bool UseTessellation(MaterialType materialType, QuickJSON matJson)

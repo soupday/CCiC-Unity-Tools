@@ -46,11 +46,10 @@ using System.Linq.Expressions;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
 using UnityEditor.Rendering;
-using Object = UnityEngine.Object;
 #elif UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
-using Object = UnityEngine.Object;
 #endif
+using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
