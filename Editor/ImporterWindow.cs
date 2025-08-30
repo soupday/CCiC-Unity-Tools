@@ -1354,6 +1354,10 @@ namespace Reallusion.Import
                 GUILayout.Space(ROW_SPACE);
             }*/
 
+            Importer.BUILD_MODE = GUILayout.Toggle(Importer.BUILD_MODE,
+                new GUIContent("Automatically Build Animations", "Always build animations when building materials."));            
+            GUILayout.Space(ROW_SPACE);
+
             Importer.RECONSTRUCT_FLOW_NORMALS = GUILayout.Toggle(Importer.RECONSTRUCT_FLOW_NORMALS,
                 new GUIContent("Reconstruct Flow Map Normals", "Rebuild missing Normal maps from Flow Maps in hair materials. " +
                 "Reconstructed Normals add extra detail to the lighting models."));
@@ -1382,7 +1386,7 @@ namespace Reallusion.Import
             GUILayout.Space(ROW_SPACE);
 
             Importer.USE_SELF_COLLISION = GUILayout.Toggle(Importer.USE_SELF_COLLISION,
-                    new GUIContent("Use self collision", "Use the self collision distances from the Character Creator export."));
+                    new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export."));
             GUILayout.Space(ROW_SPACE);
 
             GUILayout.Space(10f);
@@ -1804,8 +1808,7 @@ namespace Reallusion.Import
                     AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionPath, characterPrefab, true);
                 }
             }
-            int animationRetargeted = contextCharacter.DualMaterialHair ? 2 : 1;
-            contextCharacter.animationRetargeted = animationRetargeted;
+            contextCharacter.UpdateAnimationRetargeting();
             contextCharacter.Write();
         }
 

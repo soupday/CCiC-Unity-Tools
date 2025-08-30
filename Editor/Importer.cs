@@ -202,6 +202,19 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool BUILD_MODE
+        {
+            get
+            {
+                return EditorPrefs.GetBool("RL_Build_Mode", true);
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Build_Mode", value);
+            }
+        }
+
         private RenderPipeline RP => Pipeline.GetRenderPipeline();
 
         public Importer(CharacterInfo info)
@@ -342,6 +355,7 @@ namespace Reallusion.Import
             // setup initial animations (only do this once)
             if (!characterInfo.animationSetup)
             {
+                Util.LogInfo("Initializing Animations...");
                 RL.SetupAnimation(importer, characterInfo, false);
             }
 
@@ -382,34 +396,37 @@ namespace Reallusion.Import
 
             Util.LogAlways("Done building materials for character " + characterName + "!");
 
-            // extract and retarget animations if needed.
-            int animationRetargeted = characterInfo.DualMaterialHair ? 2 : 1;
-            bool replace = true;// characterInfo.animationRetargeted != animationRetargeted;
-            if (replace) Util.LogInfo("Retargeting all imported animations.");
-            //Debug.Log("fbxPath" + fbxPath);
-            clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);
-            // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
-
-            // create default animator if there isn't one:
-            //  commenting out due to a unity bug in 2022+,
-            //  adding any animator controller to a skinned mesh renderer prefab
-            //  generates a memory leak warning.
-            //RL.AddDefaultAnimatorController(characterInfo, prefabInstance);
-
-            List<string> motionGuids = characterInfo.GetMotionGuids();
-            if (motionGuids.Count > 0)
+            if (BUILD_MODE)
             {
-                Avatar sourceAvatar = characterInfo.GetCharacterAvatar();
-                if (sourceAvatar)
+                Util.LogInfo("Processing animations...");
+                // extract and retarget animations if needed.                
+                bool replace = characterInfo.AnimationNeedsRetargeting();
+                if (replace) Util.LogInfo("Retargeting all imported animations.");
+
+                // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
+                clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);                
+
+                // create default animator if there isn't one:
+                //  commenting out due to a unity bug in 2022+,
+                //  adding any animator controller to a skinned mesh renderer prefab
+                //  generates a memory leak warning.
+                //RL.AddDefaultAnimatorController(characterInfo, prefabInstance);
+            
+                List<string> motionGuids = characterInfo.GetMotionGuids();
+                if (motionGuids.Count > 0)
                 {
-                    foreach (string guid in motionGuids)
+                    Avatar sourceAvatar = characterInfo.GetCharacterAvatar();
+                    if (sourceAvatar)
                     {
-                        ProcessMotionFbx(guid, sourceAvatar, prefabInstance);
+                        foreach (string guid in motionGuids)
+                        {
+                            ProcessMotionFbx(guid, sourceAvatar, prefabInstance);
+                        }
                     }
                 }
-            }
 
-            characterInfo.animationRetargeted = animationRetargeted;
+                characterInfo.UpdateAnimationRetargeting();
+            }
             
             // save final prefab instance and remove from scene
             GameObject prefabAsset = RL.SaveAndRemovePrefabInstance(prefabInstance, prefabAssetPath);
@@ -1197,8 +1214,14 @@ namespace Reallusion.Import
                 }
 
                 // Texture Arrays
-                Texture2DArray diffuseArray = GetTextureArrayFrom(sourceName, "Wrinkle_DiffuseArray", out string diffuseName);
-                Texture2DArray normalArray = GetTextureArrayFrom(sourceName, "Wrinkle_NormalArray", out string normalName);
+                Texture2DArray diffuseArray = null;
+                Texture2DArray normalArray = null;                
+                
+                if (!REBAKE_PACKED_TEXTURE_MAPS)
+                {
+                    diffuseArray = GetTextureArrayFrom(sourceName, "Wrinkle_DiffuseArray", out string diffuseName);
+                    normalArray = GetTextureArrayFrom(sourceName, "Wrinkle_NormalArray", out string normalName);
+                }
 
                 if (!diffuseArray)
                 {
@@ -3285,6 +3308,7 @@ namespace Reallusion.Import
 
             string[] maskNames = new string[] { "RL_WrinkleMask_Set1A", "RL_WrinkleMask_Set1B", "RL_WrinkleMask_Set2", "RL_WrinkleMask_Set3", "RL_WrinkleMask_Set123" };
             string[] refNames = new string[] { "_WrinkleMaskSet1A", "_WrinkleMaskSet1B", "_WrinkleMaskSet2", "_WrinkleMaskSet3", "_WrinkleMaskSet123" };
+            Texture2D[] textures = new Texture2D[maskNames.Length];
             
             for (int i = 0; i < maskNames.Length; i++)
             {
@@ -3295,7 +3319,15 @@ namespace Reallusion.Import
                 {
                     mat.SetTextureIf(refName, tex);
                 }
+                textures[i] = tex;
             }
+            /*
+            string folder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(textures[0]));
+            string path = Path.Combine(folder, "RL_WrinkleMask_Set_TextureArray.asset");
+            if (!File.Exists(path))
+            {
+                ComputeBake.CreateTextureArray(textures, path, true);
+            }*/
 
             string maskArrayName = "RL_WrinkleMask_Set_TextureArray";
             Texture2DArray texArray = Util.FindTextureArray(folders, maskArrayName);
@@ -3450,18 +3482,18 @@ namespace Reallusion.Import
         }
 
         public void ProcessMotionFbx(string guid, Avatar sourceAvatar, GameObject targetCharacterModel)
-        {
+        {            
             string motionAssetPath = AssetDatabase.GUIDToAssetPath(guid);
             if (!string.IsNullOrEmpty(motionAssetPath))
             {
                 Util.LogInfo("Processing motion Fbx: " + motionAssetPath);
-                RL.DoMotionImport(characterInfo, sourceAvatar, motionAssetPath);                
+                RL.DoMotionImport(characterInfo, sourceAvatar, motionAssetPath);
 
                 // extract and retarget animations if needed.                
-                int animationRetargeted = characterInfo.DualMaterialHair ? 2 : 1;
-                bool replace = characterInfo.animationRetargeted != animationRetargeted;
+                bool replace = characterInfo.AnimationNeedsRetargeting();
                 if (replace) Util.LogInfo("Retargeting all imported animations: " + motionAssetPath);
                 AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionAssetPath, targetCharacterModel, replace);
+                characterInfo.UpdateAnimationRetargeting();
             }            
         }
     }

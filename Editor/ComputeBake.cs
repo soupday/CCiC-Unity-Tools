@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using static Reallusion.Import.CharacterInfo;
 using static UnityEngine.Terrain;
 
 namespace Reallusion.Import
@@ -168,47 +169,16 @@ namespace Reallusion.Import
         {
             Texture2D tex = null;
             if (mat.HasProperty(shaderRef))
-                tex = (Texture2D)mat.GetTexture(shaderRef);
-
-            if (tex)
-            {
-                string assetPath = AssetDatabase.GetAssetPath(tex);
-                TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(assetPath);
-
-                if (importer)
-                {
-                    /*
-                    // TODO should the character importer set these as the defaults?
-                    // Turn off texture compression and unlock max size to 4k, for the best possible quality bake:
-                    if (importer.textureCompression != TextureImporterCompression.Uncompressed ||
-                        importer.compressionQuality != 0 ||
-                        importer.maxTextureSize < 4096 ||
-                        (isNormal && importer.textureType != TextureImporterType.NormalMap))
-                    {
-                        importer.textureCompression = TextureImporterCompression.Uncompressed;
-                        importer.compressionQuality = 0;
-                        importer.maxTextureSize = 4096;
-                        if (isNormal)
-                        {
-                            importer.textureType = TextureImporterType.NormalMap;
-
-                            string texPath = AssetDatabase.GetAssetPath(tex);
-                            string texName = Path.GetFileNameWithoutExtension(texPath);
-                            if (texName.iEndsWith("Bump"))
-                            {
-                                importer.convertToNormalmap = true;
-                                importer.heightmapScale = 0.025f;
-                                importer.normalmapFilter = TextureImporterNormalFilter.Standard;
-                            }
-                        }
-                        else importer.textureType = TextureImporterType.Default;
-                        //importer.SaveAndReimport();
-                    }
-                    */
-                }
-            }
-
+                tex = (Texture2D)mat.GetTexture(shaderRef);           
             return tex;
+        }
+
+        private Texture2DArray GetMaterialTextureArray(Material mat, string shaderRef, bool isNormal = false)
+        {
+            Texture2DArray texArray = null;
+            if (mat.HasProperty(shaderRef))
+                texArray = (Texture2DArray)mat.GetTexture(shaderRef);
+            return texArray;
         }
 
         private Texture2D CheckHDRP(Texture2D tex)
@@ -893,33 +863,18 @@ namespace Reallusion.Import
             if (IS_HDRP) subsurfaceFalloff = Color.white;
 
             // Wrinkle Maps
-            Texture2D maskSet1A = GetMaterialTexture(mat, "_WrinkleMaskSet1A");
-            Texture2D maskSet1B = GetMaterialTexture(mat, "_WrinkleMaskSet1B");
-            Texture2D maskSet2 = GetMaterialTexture(mat, "_WrinkleMaskSet2");
-            Texture2D maskSet3 = GetMaterialTexture(mat, "_WrinkleMaskSet3");
-            Texture2D maskSet123 = GetMaterialTexture(mat, "_WrinkleMaskSet123");
-            Texture2D diffuse1 = GetMaterialTexture(mat, "_WrinkleDiffuseBlend1");
-            Texture2D diffuse2 = GetMaterialTexture(mat, "_WrinkleDiffuseBlend2");
-            Texture2D diffuse3 = GetMaterialTexture(mat, "_WrinkleDiffuseBlend3");
-            Texture2D roughness1 = GetMaterialTexture(mat, "_WrinkleRoughnessBlend1");
-            Texture2D roughness2 = GetMaterialTexture(mat, "_WrinkleRoughnessBlend2");
-            Texture2D roughness3 = GetMaterialTexture(mat, "_WrinkleRoughnessBlend3");
+            Texture2DArray maskSetArray = GetMaterialTextureArray(mat, "_WrinkleMaskSetArray");
+            Texture2DArray diffuseArray = GetMaterialTextureArray(mat, "_WrinkleDiffuseArray");
+            Texture2DArray normalArray = GetMaterialTextureArray(mat, "_WrinkleNormalArray");            
+            List<Texture2D> diffuseTextures = GetTextureArraySourceFiles(diffuseArray);
+            List<Texture2D> normalTextures = GetTextureArraySourceFiles(normalArray);
             Texture2D roughnessPack = GetMaterialTexture(mat, "_WrinkleRoughnessPack");
-            Texture2D normal1 = GetMaterialTexture(mat, "_WrinkleNormalBlend1", true);
-            Texture2D normal2 = GetMaterialTexture(mat, "_WrinkleNormalBlend2", true);
-            Texture2D normal3 = GetMaterialTexture(mat, "_WrinkleNormalBlend3", true);
-            Texture2D flow1 = GetMaterialTexture(mat, "_WrinkleFlowMap1");
-            Texture2D flow2 = GetMaterialTexture(mat, "_WrinkleFlowMap2");
-            Texture2D flow3 = GetMaterialTexture(mat, "_WrinkleFlowMap3");
             Texture2D flowPack = GetMaterialTexture(mat, "_WrinkleFlowPack");
-            Texture2D displacement1 = GetMaterialTexture(mat, "_WrinkleDisplacementMap1");
-            Texture2D displacement2 = GetMaterialTexture(mat, "_WrinkleDisplacementMap2");
-            Texture2D displacement3 = GetMaterialTexture(mat, "_WrinkleDisplacementMap3");
             Texture2D displacementPack = GetMaterialTexture(mat, "_WrinkleDisplacmentPack");
 
             bool isHead = mat.GetFloatIf("BOOLEAN_IS_HEAD") > 0f;
-            bool useCavity = mat.GetFloatIf("BOOLEAN_USE_CAVITY") > 0f;
-            bool useBlending = mat.GetFloatIf("BOOLEAN_USE_BLENDING") > 0f;
+            bool useCavity = mat.GetFloatIf("_UseCavity") > 0f;
+            bool useBlend = mat.GetFloatIf("_UseBlend") > 0f;
             bool useTexturePacking = mat.GetFloatIf("BOOLEAN_USE_TEXTURE_PACKING") > 0f;
             float displacementMode = mat.GetFloatIf("ENUM_DISPLACEMENT_MODE");
             float wrinkleMode = mat.GetFloatIf("ENUM_WRINKLE_MODE");
@@ -948,7 +903,7 @@ namespace Reallusion.Import
             float bakeAOStrength = aoStrength;
             if (IS_HDRP) bakeAOStrength = 1f;
             sssNormalSoften = 0f;
-            if (!useBlending)
+            if (!useBlend)
             {
                 normalBlendStrength = 0f;
                 colorBlendStrength = 0f;
@@ -965,14 +920,16 @@ namespace Reallusion.Import
             Texture2D bakedThicknessMap = thickness;
             Texture2D emissionMap = emission;
 
-            Texture2D bakedBaseMap1 = diffuse1;
-            Texture2D bakedBaseMap2 = diffuse2;
-            Texture2D bakedBaseMap3 = diffuse3;
-            Texture2D bakedNormalMap1 = normal1;
-            Texture2D bakedNormalMap2 = normal2;
-            Texture2D bakedNormalMap3 = normal3;
+            Texture2D bakedBaseMap1 = null;
+            Texture2D bakedBaseMap2 = null;
+            Texture2D bakedBaseMap3 = null;
+            Texture2D bakedNormalMap1 = null;
+            Texture2D bakedNormalMap2 = null;
+            Texture2D bakedNormalMap3 = null;
             Texture2D bakedSmoothnessPack = null;
             Texture2D bakedFlowPack = null;
+            Texture2DArray bakedDiffuseArray = null;
+            Texture2DArray bakedNormalArray = null;
 
             if (isHead)
             {
@@ -1035,15 +992,14 @@ namespace Reallusion.Import
                     true,
                     sourceName + "_SSSMap");
 
-                if (useWrinkleMaps && diffuse1 && diffuse2 && diffuse3 && normal1 && normal2 && normal3 
-                                   && ((roughness1 && roughness2 && roughness3) || roughnessPack))
+                if (useWrinkleMaps && diffuseTextures.Count == 3 && normalTextures.Count == 3 && roughnessPack)
                 {
                     // set 1
-                    bakedBaseMap1 = BakeHeadDiffuseMap(diffuse1, colorBlend, cavityAO,
+                    bakedBaseMap1 = BakeHeadDiffuseMap(diffuseTextures[0], colorBlend, cavityAO,
                         colorBlendStrength, mouthAOPower, nostrilAOPower, lipsAOPower,
                         sourceName + "_Wrinkle_BaseMap1");
 
-                    bakedNormalMap1 = BakeHeadNormalMap(normal1, normalBlend,
+                    bakedNormalMap1 = BakeHeadNormalMap(normalTextures[0], normalBlend,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
                         normalStrength, normalBlendStrength, sssNormalSoften,
@@ -1052,11 +1008,11 @@ namespace Reallusion.Import
                         sourceName + "_Wrinkle_Normal1");
 
                     // set 2
-                    bakedBaseMap2 = BakeHeadDiffuseMap(diffuse2, colorBlend, cavityAO,
+                    bakedBaseMap2 = BakeHeadDiffuseMap(diffuseTextures[1], colorBlend, cavityAO,
                         colorBlendStrength, mouthAOPower, nostrilAOPower, lipsAOPower,
                         sourceName + "_Wrinkle_BaseMap2");
 
-                    bakedNormalMap2 = BakeHeadNormalMap(normal2, normalBlend,
+                    bakedNormalMap2 = BakeHeadNormalMap(normalTextures[1], normalBlend,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
                         normalStrength, normalBlendStrength, sssNormalSoften,
@@ -1065,11 +1021,11 @@ namespace Reallusion.Import
                         sourceName + "_Wrinkle_Normal2");
 
                     // set 3
-                    bakedBaseMap3 = BakeHeadDiffuseMap(diffuse3, colorBlend, cavityAO,
+                    bakedBaseMap3 = BakeHeadDiffuseMap(diffuseTextures[2], colorBlend, cavityAO,
                         colorBlendStrength, mouthAOPower, nostrilAOPower, lipsAOPower,
                         sourceName + "_Wrinkle_BaseMap3");
 
-                    bakedNormalMap3 = BakeHeadNormalMap(normal3, normalBlend,
+                    bakedNormalMap3 = BakeHeadNormalMap(normalTextures[2], normalBlend,
                         sssThicknessPack ? sssThicknessPack : subsurface, 
                         RGBAMask, CFULCMask, EarNeckMask,
                         normalStrength, normalBlendStrength, sssNormalSoften,
@@ -1079,22 +1035,24 @@ namespace Reallusion.Import
 
                     // packed smoothness
                     bakedSmoothnessPack = BakeHeadWrinkleSmoothnessPack(
-                        roughnessPack ? roughnessPack : roughness1,
-                        roughnessPack ? roughnessPack : roughness2,
-                        roughnessPack ? roughnessPack : roughness3,
+                        roughnessPack, roughnessPack, roughnessPack,
                         cavityAO, RGBAMask, CFULCMask, EarNeckMask,
                         smoothnessMin, smoothnessMax, smoothnessPower,
                         mouthAOPower, nostrilAOPower, lipsAOPower, microSmoothnessMod,
                         rMSM, gMSM, bMSM, aMSM, earMSM, neckMSM, cheekMSM, 
                         foreheadMSM, upperLipMSM, chinMSM, unmaskedMSM,
-                        sourceName + "_Wrinkle_SmoothnessPack");                    
+                        sourceName + "_Wrinkle_SmoothnessPack");
 
-                    if (!flowPack)
-                    {
-                        bakedFlowPack = BakeHeadWrinkleFlowPack(flow1, flow2, flow3,
-                            sourceName + "_Wrinkle_FlowPack");
-                    }
-                }
+                    Texture2D[] bakedDiffuseTextures = new Texture2D[] { bakedBaseMap1, bakedBaseMap2, bakedBaseMap3 };                    
+                    string assetFolder = Util.GetAssetFolder(bakedBaseMap1, bakedBaseMap2, bakedBaseMap3);
+                    string path = Path.Combine(assetFolder, sourceName + "_Wrinkle_DiffuseArray.asset");
+                    bakedDiffuseArray = CreateTextureArray(bakedDiffuseTextures, path, false);
+
+                    Texture2D[] bakedNormalTextures = new Texture2D[] { bakedNormalMap1, bakedNormalMap2, bakedNormalMap3 };
+                    assetFolder = Util.GetAssetFolder(bakedNormalMap1, bakedNormalMap2, bakedNormalMap3);
+                    path = Path.Combine(assetFolder, sourceName + "_Wrinkle_NormalArray.asset");
+                    bakedNormalArray = CreateTextureArray(bakedNormalTextures, path, true);
+                }                
             }
             else
             {
@@ -1186,7 +1144,7 @@ namespace Reallusion.Import
             result.SetFloatIf("_EdgePower", edgePower);
             result.SetFloatIf("_BumpStrength", bumpStrength);
             result.SetFloatIf("_WrinkleDisplacementStrength", wrinkleDisplacementStrength);
-            result.SetBooleanKeyword("BOOLEAN_USE_CAVITY", useCavity);
+            result.SetFloatIf("_UseCavity", useCavity ? 1f : 0f);
             result.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", displacementMode, ENUM_DISPLACEMENT_MODE);
             result.SetEnumKeyword("ENUM_WRINKLE_MODE", wrinkleMode, ENUM_WRINKLE_MODE);            
 
@@ -1202,47 +1160,24 @@ namespace Reallusion.Import
             
             if (useWrinkleMaps)
             {
-                result.SetTextureIf("_WrinkleMaskSet1A", maskSet1A);
-                result.SetTextureIf("_WrinkleMaskSet1B", maskSet1B);
-                result.SetTextureIf("_WrinkleMaskSet2", maskSet2);
-                result.SetTextureIf("_WrinkleMaskSet3", maskSet3);
-                result.SetTextureIf("_WrinkleMaskSet123", maskSet123);
-
-                result.SetTextureIf("_WrinkleDiffuseBlend1", bakedBaseMap1);
-                result.SetTextureIf("_WrinkleDiffuseBlend2", bakedBaseMap2);
-                result.SetTextureIf("_WrinkleDiffuseBlend3", bakedBaseMap3);
-
-                result.SetTextureIf("_WrinkleNormalBlend1", bakedNormalMap1);
-                result.SetTextureIf("_WrinkleNormalBlend2", bakedNormalMap2);
-                result.SetTextureIf("_WrinkleNormalBlend3", bakedNormalMap3);
-
+                result.SetTextureIf("_WrinkleMaskSetArray", maskSetArray);
+                result.SetTextureIf("_WrinkleDiffuseArray", bakedDiffuseArray);
+                result.SetTextureIf("_WrinkleNormalArray", bakedNormalArray);                
                 result.SetTextureIf("_WrinkleSmoothnessPack", bakedSmoothnessPack);
-                result.SetTextureIf("_WrinkleFlowPack", flowPack ? flowPack : bakedFlowPack);
-                // displacement pack is always pre baked on full material
+                result.SetTextureIf("_WrinkleFlowPack", bakedFlowPack);                
                 result.SetTextureIf("_WrinkleDisplacementPack", displacementPack);
             }
             else
             {
-                result.SetTextureIf("_WrinkleMaskSet1A", null);
-                result.SetTextureIf("_WrinkleMaskSet1B", null);
-                result.SetTextureIf("_WrinkleMaskSet2", null);
-                result.SetTextureIf("_WrinkleMaskSet3", null);
-                result.SetTextureIf("_WrinkleMaskSet123", null);
-
-                result.SetTextureIf("_WrinkleDiffuseBlend1", null);
-                result.SetTextureIf("_WrinkleDiffuseBlend2", null);
-                result.SetTextureIf("_WrinkleDiffuseBlend3", null);
-
-                result.SetTextureIf("_WrinkleNormalBlend1", null);
-                result.SetTextureIf("_WrinkleNormalBlend2", null);
-                result.SetTextureIf("_WrinkleNormalBlend3", null);
-
+                result.SetTextureIf("_WrinkleMaskSetArray", null);
+                result.SetTextureIf("_WrinkleDiffuseArray", null);
+                result.SetTextureIf("_WrinkleNormalArray", null);
                 result.SetTextureIf("_WrinkleSmoothnessPack", null);
-                result.SetTextureIf("_WrinkleFlowPack", null);                
+                result.SetTextureIf("_WrinkleFlowPack", null);
                 result.SetTextureIf("_WrinkleDisplacementPack", null);
             }
 
-                return result;
+            return result;
         }
 
         private Material BakeTeethMaterial(Material mat, string sourceName)
@@ -1485,7 +1420,8 @@ namespace Reallusion.Import
             float parallaxMod = mat.GetFloatIf("_PMod");
             float scleraSubsurfaceScale = mat.GetFloatIf("_ScleraSubsurfaceScale");
             float irisSubsurfaceScale = mat.GetFloatIf("_IrisSubsurfaceScale");
-            float subsurfaceThickness = mat.GetFloatIf("_SubsurfaceThickness");            
+            float subsurfaceThickness = mat.GetFloatIf("_SubsurfaceThickness");
+            float useDepth = mat.GetFloatIf("_UseDepth");
 
             Color cornerShadowColor = mat.GetColorIf("_CornerShadowColor", Color.red);
             Color irisColor = mat.GetColorIf("_IrisColor", Color.white);
@@ -1636,7 +1572,8 @@ namespace Reallusion.Import
                     result.SetFloatIf("_ScleraNormalTiling", microNormalTiling);
                     result.SetFloatIf("_ScleraNormalStrength", microNormalStrength);                    
                     result.SetFloatIf("_Thickness", subsurfaceThickness);
-                    result.SetFloatIf("_PMod", parallaxMod);                    
+                    result.SetFloatIf("_PMod", parallaxMod);
+                    result.SetFloatIf("_UseDepth", useDepth);
                 }
             }
             else
@@ -3593,11 +3530,15 @@ namespace Reallusion.Import
                 linear
             );
 
+            string guidInfo = "# Texture array source files\n";
+
             // Copy each texture into its slice
             int i = 0;
             foreach (Texture2D tex in textures)
             {
                 Graphics.CopyTexture(tex, 0, 0, array, i++, 0);
+                string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(tex)).ToString();
+                guidInfo += guid + "\n";
             }
             array.Apply();
 
@@ -3605,8 +3546,52 @@ namespace Reallusion.Import
             AssetDatabase.CreateAsset(array, path);
             AssetDatabase.SaveAssets();
 
+            string folder = Path.GetDirectoryName(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+            string infoFilePath = Path.Combine(folder, name + "_info.txt");
+            StreamWriter writer = new StreamWriter(infoFilePath, false);
+            writer.Write(guidInfo);
+            writer.Close();
+            AssetDatabase.ImportAsset(infoFilePath);
+
             return array;
         }
-    }
 
+        public static List<Texture2D> GetTextureArraySourceFiles(Texture2DArray texArray)
+        {
+            List<Texture2D> textures = new List<Texture2D>();
+
+            if (texArray)
+            {
+                string arrayPath = AssetDatabase.GetAssetPath(texArray);
+                string folder = Path.GetDirectoryName(arrayPath);
+                string file = Path.GetFileNameWithoutExtension(arrayPath);
+                string infoPath = Path.Combine(folder, file + "_info.txt");                
+
+                TextAsset infoAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(infoPath);
+                string[] lineEndings = new string[] { "\r\n", "\r", "\n" };
+                string[] lines = infoAsset.text.Split(lineEndings, System.StringSplitOptions.None);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string line = lines[i].Trim();
+                    if (!line.StartsWith("#"))
+                    {
+                        string guid = line;
+                        string path = AssetDatabase.GUIDToAssetPath(guid);
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                            if (tex)
+                            {
+                                textures.Add(tex);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            return textures;
+        }
+    }    
 }

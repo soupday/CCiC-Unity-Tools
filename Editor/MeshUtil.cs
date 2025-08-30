@@ -1071,7 +1071,17 @@ namespace Reallusion.Import
         }
 
         private static void FixHDRP2PassMaterials(Material firstPass, Material secondPass)
-        {            
+        {
+            // Note: These are not present in the single pass and
+            // are wiped from the template in the material parameter copy
+            // HDShaderUtils.ResetMaterialKeywords complains *a lot* if they are missing...
+            firstPass.SetFloatIf("_IsSecondPass", 0f);
+            secondPass.SetFloatIf("_IsSecondPass", 1f);
+
+            float displace = firstPass.GetFloatIf("_Displace", 1f / 1000f);
+            firstPass.SetFloatIf("_Displace", displace + (1f / 1000f));
+            secondPass.SetFloatIf("_Displace", displace);
+
             if (Pipeline.isHDRP)
             {
                 /*
@@ -1109,10 +1119,7 @@ namespace Reallusion.Import
                 aif.SaveAndReimport();
                 ais.SaveAndReimport();
                 */
-            }
-
-            firstPass.SetFloatIf("_Displace", 2f / 1000f);
-            secondPass.SetFloatIf("_Displace", 1f / 1000f);
+            }            
         }
 
         public struct TwoPassPair

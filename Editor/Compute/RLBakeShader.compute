@@ -953,7 +953,7 @@ void RLHeadSubsurface(uint3 id : SV_DispatchThreadID)
     float2 uv = GetUV(id.xy);
     float scatterMask = HeadScatterMask(uv);
     float4 subsurface = saturate(scatterMask * subsurfaceScale) * SAMPLE(Subsurface, uv).xxxw * subsurfaceFalloff * SAMPLE(BaseMap, uv);
-    float thickness = SAMPLE(Thickness, uv).y;
+    float thickness = SAMPLE(Thickness, uv).a;
     thickness = lerp(thickness, 1.0 - thickness, invertMap);    
     thickness = saturate(lerp(thicknessScaleMin, thicknessScale, thickness));
     subsurface.a = thickness;
@@ -966,7 +966,7 @@ void RLSkinSubsurface(uint3 id : SV_DispatchThreadID)
     float2 uv = GetUV(id.xy);
     float scatterMask = SkinScatterMask(uv);
     float4 subsurface = saturate(scatterMask * subsurfaceScale) * SAMPLE(Subsurface, uv).xxxw * subsurfaceFalloff * SAMPLE(BaseMap, uv);
-    float thickness = SAMPLE(Thickness, uv).y;
+    float thickness = SAMPLE(Thickness, uv).a;
     thickness = lerp(thickness, 1.0 - thickness, invertMap);    
     thickness = saturate(lerp(thicknessScaleMin, thicknessScale, thickness));
     subsurface.a = thickness;    

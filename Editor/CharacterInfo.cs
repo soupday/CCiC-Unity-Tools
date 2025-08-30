@@ -61,6 +61,9 @@ namespace Reallusion.Import
             UNKNOWN = 999
         }
 
+        // Note: Modified refers to 2-pass hair meshes that need animations retargeted to them.
+        public enum AnimationTargetLevel { None, Unmodified, Modified }
+
         public string linkId = string.Empty;
         public bool isLinked { get {  return linkId != string.Empty; } }
 
@@ -99,7 +102,8 @@ namespace Reallusion.Import
         public bool bakeIsBaked = false;
         public bool tempHairBake = false;
         public bool animationSetup = false;
-        public int animationRetargeted = 0;
+        // 0 - not set, 1 - targeted to unmodified character, 2 - targeted to modified character (2-pass hair)
+        public AnimationTargetLevel animationRetargeted = AnimationTargetLevel.None;
 
         public bool selectedInList;
         public bool settingsChanged;
@@ -192,6 +196,18 @@ namespace Reallusion.Import
         public void CleanGUIDRemaps()
         {
             RemoveGUIDRemap(null, null);
+        }
+
+        public bool AnimationNeedsRetargeting()
+        {
+            AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
+            return animationRetargeted != neededTargetLevel;
+        }
+
+        public void UpdateAnimationRetargeting()
+        {
+            AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
+            animationRetargeted = neededTargetLevel;
         }
 
         public ProcessingType BuildType { get { return logType; } set { logType = value; } }
@@ -1001,7 +1017,7 @@ namespace Reallusion.Import
                         animationSetup = value == "true" ? true : false;
                         break;
                     case "animationRetargeted":
-                        animationRetargeted = int.Parse(value);
+                        animationRetargeted = (AnimationTargetLevel)int.Parse(value);
                         break;
                     case "rigOverride":
                         UnknownRigType = (RigOverride)System.Enum.Parse(typeof(RigOverride), value);
@@ -1058,7 +1074,7 @@ namespace Reallusion.Import
             writer.WriteLine("bakeSeparatePrefab=" + (builtBakeSeparatePrefab ? "true" : "false"));
             writer.WriteLine("shaderFlags=" + (int)BuiltShaderFlags);
             writer.WriteLine("animationSetup=" + (animationSetup ? "true" : "false"));
-            writer.WriteLine("animationRetargeted=" + animationRetargeted.ToString());
+            writer.WriteLine("animationRetargeted=" + ((int)animationRetargeted).ToString());
             writer.WriteLine("rigOverride=" + UnknownRigType.ToString());
             writer.WriteLine("linkId=" + linkId);
             writer.WriteLine("projectName=" + projectName);

@@ -127,7 +127,7 @@ namespace Reallusion.Import
             {                
                 float height = head.position.y;
                 Vector3 position = lighting.position;
-                position.y = -height;
+                position.y = -(1.45f - height);
                 lighting.position = position;
             }
         }
