@@ -3336,13 +3336,13 @@ namespace Reallusion.Import
                 }
                 textures[i] = tex;
             }
-            /*
+            
             string folder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(textures[0]));
             string path = Path.Combine(folder, "RL_WrinkleMask_Set_TextureArray.asset");
             if (!File.Exists(path))
             {
                 ComputeBake.CreateTextureArray(textures, path, true);
-            }*/
+            }
 
             string maskArrayName = "RL_WrinkleMask_Set_TextureArray";
             Texture2DArray texArray = Util.FindTextureArray(folders, maskArrayName);
