@@ -328,13 +328,16 @@ namespace Reallusion.Import
             {
 #if UNITY_2020_1_OR_NEWER
 
-                // purge bound clips
-                var clips = workingtrack.GetClips();
-                if (clips != null)
+                // purge bound clips unless the input clip list is empty
+                if (animClipList.Count > 0)
                 {
-                    foreach (var c in clips)
+                    var clips = workingtrack.GetClips();
+                    if (clips != null)
                     {
-                        workingtrack.DeleteClip(c);
+                        foreach (var c in clips)
+                        {
+                            workingtrack.DeleteClip(c);
+                        }
                     }
                 }
 #endif
