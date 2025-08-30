@@ -197,6 +197,18 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set_TextureArray.asset",
+      "GUID": "a08a219be7b2e9a43a6a8e892cea096f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set_TextureArray_info.txt",
+      "GUID": "abc98d2ac3af3d940aa1b824d1365193",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/notes.txt",
       "GUID": "08f237d6f28473240a551c3f1f43e86a",
       "InstalledGUID": "",
