@@ -380,12 +380,12 @@ namespace Reallusion.Import
         {
             WindowManager.UpdateImportList();
 
-            Debug.Log("ImporterWindow.validCharacters.Count " + WindowManager.ValidImports.Count);
+            //Debug.Log("ImporterWindow.validCharacters.Count " + WindowManager.ValidImports.Count);
 
             CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
             if (characterMatch != null)
             {
-                Debug.Log("Matched Asset Path = " + characterMatch.path);
+                Util.LogInfo("Found a matched linkID for the character at: " + characterMatch.path);
                 return characterMatch;
             }
                 
@@ -674,7 +674,7 @@ namespace Reallusion.Import
 
                 string targetFile = Path.Combine(targetFolder, sourceFile);
                 string uniqueTargetFile = GetNonDuplicateFileName(targetFile, false);
-                Debug.Log("uniqueTargetFile " + uniqueTargetFile);
+                //Debug.Log("uniqueTargetFile " + uniqueTargetFile);
 
                 File.Move(fullFbxPath, uniqueTargetFile);
                 Directory.Delete(sourceFolder, true);

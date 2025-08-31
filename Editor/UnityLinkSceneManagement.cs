@@ -291,8 +291,26 @@ namespace Reallusion.Import
 
             if (workingtrack == null)
             {
-                // no track to update 
-                return false;
+                // no track to update
+                // 
+#if UNITY_2023_OR_NEWER
+                DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+                DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+#endif
+
+                if (linkedObjects.Length > 0)
+                {
+                    foreach (var linkedObject in linkedObjects)
+                    {
+                        if (linkedObject.GetComponent<Animator>() != null)
+                        {
+                            Debug.Log($"Found a character with LinkId: {linkId} in the scene.");
+                            sceneObject = linkedObject.gameObject;
+                            return true;
+                        }
+                    }
+                }                
             }
             else
             {
@@ -300,6 +318,7 @@ namespace Reallusion.Import
                 sceneObject = (GameObject)director.GetGenericBinding(workingtrack);
                 return true;
             }
+            return false;
         }
 
         public static void AddAnimationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)

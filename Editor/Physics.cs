@@ -1692,28 +1692,18 @@ namespace Reallusion.Import
         }
        
         public static bool CreateAbstractColliders(ColliderManager colliderManager, out List<ColliderManager.AbstractCapsuleCollider> abstractColliders)
-        {
-            CharacterInfo current = null;
+        { 
+            CharacterInfo current = WindowManager.FindCharacterByGUID(colliderManager.characterGUID);
+            abstractColliders = new List<ColliderManager.AbstractCapsuleCollider>();
+            if (current == null) return false;
 
-            if (ImporterWindow.Current != null)
-            {
-                // current live info (used for shaderflags) allows for switching between native and magica and rebuilding physics
-                current = ImporterWindow.Current.Character;  
-            }
-            
-            if (current == null)
-            {
-                // contains shaderflags from last build - this is acceptable when this function is called from the collidermanager in the absence of an importer window
-                current = new CharacterInfo(colliderManager.characterGUID); 
-            }
-            
             bool native = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.UnityClothPhysics);
             bool nativeHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.UnityClothHairPhysics);
             bool magica = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaCloth) && MagicaCloth2IsAvailable();
             bool magicaMeshClothHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaClothHairPhysics) && MagicaCloth2IsAvailable();
             bool magicaBoneHair = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.MagicaBone) && MagicaCloth2IsAvailable();
             bool dynamic = current.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBoneHair) && DynamicBoneIsAvailable();
-            abstractColliders = new List<ColliderManager.AbstractCapsuleCollider>();
+           
 
             if (MagicaCloth2IsAvailable())
             {

@@ -579,7 +579,7 @@ namespace Reallusion.Import
         {
             Tools.hidden = false;
             // optional: deselect the collider for editing
-            bool deSelectChar = false;
+            bool deSelectChar = true;
             if (deSelectChar)
             {
                 DeSelectColliderForEdit();
@@ -851,6 +851,9 @@ namespace Reallusion.Import
             colliderManager.selectedAbstractCapsuleCollider = null;
             colliderManager.mirrorImageAbstractCapsuleCollider = null;
             activeEdit = false;
+
+            colliderManager.manipulator = ColliderManager.ManipulatorType.position;
+            Tools.current = Tool.Move;
 
             SceneView.RepaintAll();
         }
