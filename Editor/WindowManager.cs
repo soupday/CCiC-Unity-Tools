@@ -44,6 +44,20 @@ namespace Reallusion.Import
         public static OnTimer onTimer;
         private static float timer = 0f;
 
+        // stable valid import list
+        public static List<CharacterInfo> validImports;
+        public static List<CharacterInfo> ValidImports {
+            get 
+            {
+                if (validImports == null)
+                {
+                    validImports = new List<CharacterInfo>();
+                    UpdateImportList();
+                }
+                return validImports;
+            }            
+        }
+
         //unique editorprefs key names
         public const string sceneFocus = "RL_Scene_Focus_Key_0000";
         public const string clipKey = "RL_Animation_Asset_Key_0000";
@@ -628,6 +642,107 @@ namespace Reallusion.Import
         public static void StartTimer(float delay)
         {
             timer = delay;
-        }        
+        }
+
+
+        
+
+        public static CharacterInfo FindCharacterByGUID(string GUID)
+        {
+            if (ValidImports != null)
+            {
+                foreach (CharacterInfo character in ValidImports)
+                {
+                    if (character.guid == GUID) return character;
+                }
+            }
+            return null;
+        }
+
+        public static CharacterInfo FindCharacterByLinkIDAndName(string linkID, string name, bool allowJustName =false)
+        {
+            if (ValidImports != null)
+            {
+                CharacterInfo nameResult = null;
+                CharacterInfo linkIDResult = null;
+
+                foreach (CharacterInfo character in ValidImports)
+                {
+                    if (character.name.iEquals(name)) nameResult = character;
+                    if (character.linkId == linkID) linkIDResult = character;
+
+                    // both name and linkID match, GOOD result
+                    if (nameResult != null && nameResult == linkIDResult) return linkIDResult;
+                }
+
+                // just linkID matches, OK result
+                if (linkIDResult != null) return linkIDResult;
+
+                // just name matches, BAD result (optional)
+                if (nameResult != null && allowJustName) return nameResult;
+            }
+
+            // no matches
+            return null;
+        }            
+
+        public static void UpdateImportList()
+        {
+            if (validImports == null) validImports = new List<CharacterInfo>();
+            
+            List<string> validCharacterGUIDs = Util.GetValidCharacterGUIDS();
+
+            // remove any valid imports not found in the valid character GUIDs
+            for (int i = ValidImports.Count - 1; i >= 0; i--)
+            {
+                if (!validCharacterGUIDs.Contains(ValidImports[i].guid))
+                {
+                    ValidImports.RemoveAt(i);                    
+                }
+            }
+
+            // add valid character GUIDs not found in the valid imports
+            foreach (string validGUID in validCharacterGUIDs)
+            {
+                if (FindCharacterByGUID(validGUID) == null)
+                {
+                    CharacterInfo info = new CharacterInfo(validGUID);
+                    ValidImports.Add(info);
+                }
+            }
+        }
+
+        public static List<CharacterInfo> GetCharacterList(bool includeAvatars, bool includeProps, string nameFilter = null, string GUIDFilter = null)
+        {
+            List<CharacterInfo> result = new List<CharacterInfo>();            
+
+            if (includeAvatars)
+            {
+                foreach (CharacterInfo info in ValidImports)
+                {
+                    if (info.exportType == CharacterInfo.ExportType.AVATAR || 
+                        info.exportType == CharacterInfo.ExportType.NONE || 
+                        info.exportType == CharacterInfo.ExportType.UNKNOWN)
+                    {
+                        if (Util.Filter(info.name, nameFilter) &&
+                            Util.Filter(info.guid, GUIDFilter)) result.Add(info);
+                    }
+                }
+            }
+
+            if (includeProps)
+            {
+                foreach (CharacterInfo info in ValidImports)
+                {
+                    if (info.exportType == CharacterInfo.ExportType.PROP)
+                    {
+                        if (Util.Filter(info.name, nameFilter) &&
+                            Util.Filter(info.guid, GUIDFilter)) result.Add(info);
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }

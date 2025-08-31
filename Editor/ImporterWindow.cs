@@ -66,16 +66,12 @@ namespace Reallusion.Import
 
         private static readonly string windowTitle = "CC/iC Importer " + Pipeline.FULL_VERSION;
         private static CharacterInfo contextCharacter;
-        public static List<CharacterInfo> validCharacters;
-        private static List<CharacterInfo> validAvatars;
-        private static List<CharacterInfo> validProps;
+        public static List<CharacterInfo> CharacterList { get; set; }
         private static bool showProps = true;
         private static string backScenePath;
         private static Mode mode;
         public static ImporterWindow Current { get; private set; }
-        public CharacterInfo Character { get { return contextCharacter; } }
-        public static List<CharacterInfo> ValidCharacters => validCharacters;
-        public static List <CharacterInfo> ValidAvatars => validAvatars;
+        public CharacterInfo Character { get { return contextCharacter; } }        
 
         private Vector2 iconScrollView;
         private bool previewCharacterAfterGUI;
@@ -241,7 +237,7 @@ namespace Reallusion.Import
                 if (Pipeline.isHDRP && contextCharacter.BuiltDualMaterialHair) characterTreeView.EnableMultiPass();
                 else characterTreeView.DisableMultiPass();
 
-                EditorPrefs.SetString("RL_Importer_Context_Path", contextCharacter.path);
+                EditorPrefs.SetString("RL_Importer_Context_GUID", contextCharacter.guid);
             }
         }
 
@@ -264,7 +260,7 @@ namespace Reallusion.Import
         {
             if (Util.IsCC3Character(obj))
             {
-                EditorPrefs.SetString("RL_Importer_Context_Path", AssetDatabase.GetAssetPath(obj));
+                EditorPrefs.SetString("RL_Importer_Context_GUID", AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(obj)));
             }
 
             ImporterWindow.mode = mode;
@@ -398,67 +394,17 @@ namespace Reallusion.Import
 
         public void RefreshCharacterList()
         {
-            if (validCharacters == null)
-                validCharacters = new List<CharacterInfo>();
-            else
-                validCharacters.Clear();
+            WindowManager.UpdateImportList();
 
-            if (validAvatars == null)
-                validAvatars = new List<CharacterInfo>();
-            else
-                validAvatars.Clear();
+            string guidFilter = null;
+            if (mode == Mode.single) guidFilter = EditorPrefs.GetString("RL_Importer_Context_GUID");
 
-            if (validProps == null)
-                validProps = new List<CharacterInfo>();
-            else
-                validProps.Clear();
-
-            if (mode == Mode.none)
-            {
-                mode = Mode.multi;
-                string modeValue = EditorPrefs.GetString("RL_Importer_Mode");
-                if (!string.IsNullOrEmpty(modeValue))
-                    mode = (Mode)Enum.Parse(typeof(Mode), modeValue);
-            }
-
-            if (mode == Mode.single)
-            {
-                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_Path");
-                if (!string.IsNullOrEmpty(editorPrefsContextPath) &&
-                    File.Exists(editorPrefsContextPath))
-                {
-                    string guid = AssetDatabase.AssetPathToGUID(editorPrefsContextPath);
-                    if (!string.IsNullOrEmpty(guid))
-                        validAvatars.Add(new CharacterInfo(guid));
-                }
-
-                // fallback to multi mode
-                if (validAvatars.Count == 0) mode = Mode.multi;
-            }
-
-            if (mode == Mode.multi)
-            {
-                List<string> validCharacterGUIDs = Util.GetValidCharacterGUIDS();
-                foreach (string validGUID in validCharacterGUIDs)
-                {
-                    //validCharacters.Add(new CharacterInfo(validGUID));
-
-                    CharacterInfo info = new CharacterInfo(validGUID);
-                    if (info.exportType == CharacterInfo.ExportType.AVATAR || info.exportType == CharacterInfo.ExportType.NONE || info.exportType == CharacterInfo.ExportType.UNKNOWN)
-                        validAvatars.Add(info);
-
-                    if (info.exportType == CharacterInfo.ExportType.PROP)
-                        validProps.Add(info);
-                }
-
-                validCharacters = validAvatars;
-                if (showProps) validCharacters.AddRange(validProps);
-            }
+            CharacterList = WindowManager.GetCharacterList(true, showProps, null, guidFilter);     
         }
 
         private void RestoreData()
         {
-            if (validCharacters == null)
+            if (CharacterList == null)
             {
                 InitData();
             }
@@ -466,36 +412,36 @@ namespace Reallusion.Import
 
         private void RestoreSelection()
         {
-            if (contextCharacter == null && validCharacters.Count > 0)
+            if (contextCharacter == null && CharacterList.Count > 0)
             {
-                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_Path");
+                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_GUID");
                 if (!string.IsNullOrEmpty(editorPrefsContextPath))
                 {
-                    for (int i = 0; i < validCharacters.Count; i++)
+                    for (int i = 0; i < CharacterList.Count; i++)
                     {
-                        if (validCharacters[i].path == editorPrefsContextPath)
-                            SetContextCharacter(validCharacters[i].guid);
+                        if (CharacterList[i].path == editorPrefsContextPath)
+                            SetContextCharacter(CharacterList[i].guid);
                     }
                 }
 
                 if (Selection.activeGameObject)
                 {
                     string selectionPath = AssetDatabase.GetAssetPath(Selection.activeGameObject);
-                    for (int i = 0; i < validCharacters.Count; i++)
+                    for (int i = 0; i < CharacterList.Count; i++)
                     {
-                        if (validCharacters[i].path == selectionPath)
-                            SetContextCharacter(validCharacters[i].guid);
+                        if (CharacterList[i].path == selectionPath)
+                            SetContextCharacter(CharacterList[i].guid);
                     }
                 }
 
                 if (contextCharacter == null)
-                    SetContextCharacter(validCharacters[0].guid);
+                    SetContextCharacter(CharacterList[0].guid);
             }
         }
 
         private CharacterInfo GetCharacterState(string guid)
         {
-            foreach (CharacterInfo s in validCharacters)
+            foreach (CharacterInfo s in CharacterList)
             {
                 if (s.guid.Equals(guid)) return s;
             }
@@ -638,7 +584,7 @@ namespace Reallusion.Import
 
         private void ImporterOnGUI(Rect contentRect)
         {                        
-            if (validCharacters == null || validCharacters.Count == 0)
+            if (CharacterList == null || CharacterList.Count == 0)
             {
                 RefreshGUI(RefreshMessage.NoneDetected, contentRect);
                 return;
@@ -1614,14 +1560,14 @@ namespace Reallusion.Import
             if (contextCharacter != null) contextCharacter.Release();
             contextCharacter = null;
 
-            if (validCharacters != null)
+            if (CharacterList != null)
             {
-                foreach (CharacterInfo ci in validCharacters)
+                foreach (CharacterInfo ci in CharacterList)
                 {
                     ci.Release();
                 }
-                validCharacters.Clear();
-                validCharacters = null;
+                CharacterList.Clear();
+                CharacterList = null;
             }
 
             if (Current && Current.characterTreeView != null)
@@ -1911,8 +1857,8 @@ namespace Reallusion.Import
             showProps = GUILayout.Toggle(showProps, "Show Props");
             if (EditorGUI.EndChangeCheck())
             {
-                RefreshCharacterList();
                 generalSettings.showProps = showProps;
+                RefreshCharacterList();                
                 SaveSettings();
             }
             GUILayout.FlexibleSpace();
@@ -1938,9 +1884,9 @@ namespace Reallusion.Import
                 iconScrollView = iconScrollViewScope.scrollPosition;
                 GUILayout.BeginVertical();
 
-                for (int idx = 0; idx < validCharacters.Count; idx++)
+                for (int idx = 0; idx < CharacterList.Count; idx++)
                 {
-                    CharacterInfo info = validCharacters[idx];
+                    CharacterInfo info = CharacterList[idx];
                     Texture2D iconTexture = iconUnprocessed;
                     string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
                     if (info.bakeIsBaked)
@@ -2004,13 +1950,13 @@ namespace Reallusion.Import
 
             Rect boxRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 4f, rowHeight);
             Rect posRect = new Rect(iconBlock);
-            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * validCharacters.Count);
+            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * CharacterList.Count);
 
             iconScrollView = GUI.BeginScrollView(posRect, iconScrollView, viewRect, false, false);
 
-            for (int idx = 0; idx < validCharacters.Count; idx++)
+            for (int idx = 0; idx < CharacterList.Count; idx++)
             {
-                CharacterInfo info = validCharacters[idx];
+                CharacterInfo info = CharacterList[idx];
                 Texture2D iconTexture = iconUnprocessed;
                 string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
 
@@ -2090,12 +2036,12 @@ namespace Reallusion.Import
 
             Rect boxRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 4f, rowHeight);
             Rect posRect = new Rect(iconBlock);
-            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * validCharacters.Count);
+            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * CharacterList.Count);
 
             iconScrollView = GUI.BeginScrollView(posRect, iconScrollView, viewRect, false, false);
-            for (int idx = 0; idx < validCharacters.Count; idx++)
+            for (int idx = 0; idx < CharacterList.Count; idx++)
             {
-                CharacterInfo info = validCharacters[idx];
+                CharacterInfo info = CharacterList[idx];
                 
                 Texture2D iconTexture = iconUnprocessed;
                 string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));

@@ -99,7 +99,7 @@ namespace Reallusion.Import
             if (contextChar != null)
             {
                 contextCharacter = contextChar;
-                originalCharacter = ImporterWindow.ValidCharacters.Where(x => x.guid == contextChar.guid).FirstOrDefault();
+                originalCharacter = ImporterWindow.CharacterList.Where(x => x.guid == contextChar.guid).FirstOrDefault();
                 massProcessingValidate = true;
             }
             else

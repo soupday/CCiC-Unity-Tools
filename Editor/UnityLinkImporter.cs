@@ -378,58 +378,53 @@ namespace Reallusion.Import
         #region Asset Retrieval
         public CharacterInfo GetCharacterInfoFomLinkId(string linkId)
         {
-            if (ImporterWindow.Current != null)
+            WindowManager.UpdateImportList();
+
+            Debug.Log("ImporterWindow.validCharacters.Count " + WindowManager.ValidImports.Count);
+
+            CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
+            if (characterMatch != null)
             {
-                ImporterWindow.Current.RefreshCharacterList();
-
-                Debug.Log("ImporterWindow.validCharacters.Count " + ImporterWindow.validCharacters.Count);
-
-                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
-                if (characterMatch != null)
-                {
-                    Debug.Log("Matched Asset Path = " + characterMatch.path);
-                    return characterMatch;
-                }
-            }            
+                Debug.Log("Matched Asset Path = " + characterMatch.path);
+                return characterMatch;
+            }
+                
             return null;
         }
 
         public string GetAssetFolderFromLinkId(string linkId)
         {
-            if (ImporterWindow.Current != null)
+            WindowManager.UpdateImportList();
+            CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
+            if (characterMatch != null)
             {
-                ImporterWindow.Current.RefreshCharacterList();
-                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
-                if (characterMatch != null)
+                Debug.Log("Existing character found at: " + characterMatch.path + "for linkId: " + linkId);
+                string fbxPath = characterMatch.path;
+                if (!string.IsNullOrEmpty(fbxPath))
                 {
-                    Debug.Log("Existing character found at: " + characterMatch.path + "for linkId: " + linkId);
-                    string fbxPath = characterMatch.path;
-                    if (!string.IsNullOrEmpty(fbxPath))
-                    {
-                        return Path.GetDirectoryName(fbxPath);
-                    }
+                    return Path.GetDirectoryName(fbxPath);
                 }
             }
+            
             //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
 
         public string GetFbxPathFromLinkId(string linkId)
         {
-            if (ImporterWindow.Current != null)
+            WindowManager.UpdateImportList();
+
+            CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
+            if (characterMatch != null)
             {
-                ImporterWindow.Current.RefreshCharacterList();
-                CharacterInfo characterMatch = ImporterWindow.validCharacters.FirstOrDefault(x => x.linkId == linkId);
-                if (characterMatch != null)
+                //Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
+                string fbxPath = characterMatch.path;
+                if (!string.IsNullOrEmpty(fbxPath))
                 {
-                    //Debug.Log("Matched Asset Path for linkId: " + linkId + " - " + characterMatch.path);
-                    string fbxPath = characterMatch.path;
-                    if (!string.IsNullOrEmpty(fbxPath))
-                    {
-                        return fbxPath;
-                    }
+                    return fbxPath;
                 }
             }
+            
             //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
@@ -743,8 +738,7 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             c.Write();
 
-            if (ImporterWindow.Current != null)
-                ImporterWindow.Current.RefreshCharacterList();
+            WindowManager.UpdateImportList();
 
             List<AnimationClip> animsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
 
@@ -782,8 +776,7 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             charInfo.Write();
 
-            if (ImporterWindow.Current != null)
-                ImporterWindow.Current.RefreshCharacterList();
+            WindowManager.UpdateImportList();
 
             // only animation tracks permitted for Avatars
             UnityLinkSceneManagement.TrackType trackType = addToTimeLine ? UnityLinkSceneManagement.TrackType.AnimationTrack : UnityLinkSceneManagement.TrackType.NoTrack;

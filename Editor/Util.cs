@@ -1185,6 +1185,18 @@ namespace Reallusion.Import
             return Regex.Replace(s, "([A-Z0-9]+)", " $1").Trim();
         }
 
+        public static bool Filter(string name, string filter)
+        {
+            if (!string.IsNullOrEmpty(filter))
+            {
+                return name.iContains(filter);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
 
         public static GameObject EditPrefabContents(GameObject prefabAsset)
         {

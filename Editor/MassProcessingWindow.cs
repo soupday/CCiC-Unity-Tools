@@ -87,7 +87,6 @@ namespace Reallusion.Import
         Rect prev = new Rect();
 
         private bool initDone = false;                
-        private ImporterWindow importerWindow;
         public List<CharacterInfo> workingList;
         List<CharacterListDisplay> displayList;        
         CharacterInfo characterSettings;
@@ -99,16 +98,7 @@ namespace Reallusion.Import
         public static void ATInitAssetProcessing()
         {
             massProcessingWindow = OpenProcessingWindow();
-        }
-
-        [MenuItem("Reallusion/Processing Tools/Batch Processing", true)]
-        public static bool ValidateATInitAssetProcessing()
-        {
-            if (ImporterWindow.Current != null && !EditorWindow.HasOpenInstances<MassProcessingWindow>())
-                return true;
-            else
-                return false;
-        }
+        }        
 
         public static MassProcessingWindow OpenProcessingWindow()
         {
@@ -133,8 +123,7 @@ namespace Reallusion.Import
 
         private void InitData()
         {
-            SetWindowSize();
-            importerWindow = ImporterWindow.Current;
+            SetWindowSize();            
 
             string[] folders = new string[] { "Assets", "Packages" };
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
@@ -183,7 +172,7 @@ namespace Reallusion.Import
             EditorApplication.update -= BatchUpdateTimer;
             Selection.activeObject = null;
 
-            if (buildQueue == null || buildQueue.Count == 0 || ImporterWindow.Current == null)
+            if (buildQueue == null || buildQueue.Count == 0)
             {
                 Util.LogInfo("Done batch processing!");
                 batchTimer = 0f;
@@ -199,18 +188,12 @@ namespace Reallusion.Import
         }
 
         public void BatchBuildNextQueueCharacter()
-        {
-            if (ImporterWindow.Current == null) 
-            {
-                buildQueue = null;
-                return;
-            }
-
+        {            
             if (buildQueue == null || buildQueue.Count == 0) return;
 
             CharacterInfo batchCharacter = buildQueue[0];
 
-            CharacterInfo character = ImporterWindow.ValidCharacters.Where(t => t.guid == batchCharacter.guid).FirstOrDefault();
+            CharacterInfo character = WindowManager.ValidImports.Where(t => t.guid == batchCharacter.guid).FirstOrDefault();
             if (character != null)
             {
                 Util.LogInfo("Batch Queue Processing: " + character.name);
@@ -240,7 +223,7 @@ namespace Reallusion.Import
 
         private void ProcessingRefresh()
         {
-            importerWindow.RefreshCharacterList();
+            WindowManager.UpdateImportList();
             FilterDisplayedList();
         }
 
@@ -349,9 +332,9 @@ namespace Reallusion.Import
         {
             List<CharacterInfo> output = new List<CharacterInfo>();
 
-            if (ImporterWindow.ValidCharacters?.Count > 0)
+            if (WindowManager.ValidImports?.Count > 0)
             {
-                foreach (Reallusion.Import.CharacterInfo c in ImporterWindow.ValidCharacters)
+                foreach (CharacterInfo c in WindowManager.ValidImports)
                 {
                     output.Add(new CharacterInfo(c.guid));
                 }
@@ -457,9 +440,9 @@ namespace Reallusion.Import
         {
             List<CharacterInfo> output = new List<CharacterInfo>();
 
-            if (ImporterWindow.ValidCharacters.Count > 0)
+            if (WindowManager.ValidImports.Count > 0)
             {
-                List<CharacterInfo> processingList = ImporterWindow.ValidCharacters.ToList();
+                List<CharacterInfo> processingList = WindowManager.ValidImports.ToList();
 
                 IEnumerable<CharacterInfo> query = new List<CharacterInfo>();
 
@@ -506,12 +489,7 @@ namespace Reallusion.Import
         }
 
         private void OnGUI()
-        {
-            if (ImporterWindow.Current == null)
-            {
-                CloseWindow();
-                return;
-            }
+        {            
             if (!initDone) InitData();
             if (windowStyles == null) windowStyles = new Styles();
             if (workingList == null) workingList = BuildCharacterInfoList();
@@ -704,7 +682,7 @@ namespace Reallusion.Import
             for (int idx = 0; idx < displayList.Count; idx++)
             {
                 CharacterListDisplay info = displayList[idx];                
-                CharacterInfo importerWindowInfo = ImporterWindow.ValidCharacters.Where(t => t.guid == info.guid).FirstOrDefault();
+                CharacterInfo importerWindowInfo = WindowManager.ValidImports.Where(t => t.guid == info.guid).FirstOrDefault();
                 Texture2D iconTexture = iconUnprocessed;
                 string name = "";
                 if (importerWindowInfo != null)
@@ -1063,7 +1041,7 @@ namespace Reallusion.Import
             if (characterSettings != null)
             {
                 // find the original settings in validCharacters
-                CharacterInfo original = ImporterWindow.ValidCharacters.Where(x => x.guid == characterSettings.guid).FirstOrDefault();
+                CharacterInfo original = WindowManager.ValidImports.Where(x => x.guid == characterSettings.guid).FirstOrDefault();
                 if (original != null)
                 {
                     if (characterSettings.UnknownRigType != original.UnknownRigType) dirty = true;
