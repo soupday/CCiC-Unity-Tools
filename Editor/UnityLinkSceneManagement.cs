@@ -164,7 +164,7 @@ namespace Reallusion.Import
             UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(validatedDestFolder, UnityLinkManager.SCENE_ASSETS);
             UnityLinkImporter.CheckUnityPath(UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline" + "-" + stamp;
-            Debug.Log("Creating timeline asset in: " + UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
+            Util.LogInfo("Creating timeline asset in: " + UnityLinkManager.TIMELINE_SAVE_FOLDER.FullPathToUnityAssetPath());
             director = CreateTimelineAsset();
             return (director != null);
         }
@@ -837,7 +837,7 @@ namespace Reallusion.Import
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.Log("Creating URP VolumeAsset: " + sharedProfilePath);
+                    Util.LogInfo("Creating URP VolumeAsset: " + sharedProfilePath);
                     UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                     // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
                     AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
@@ -846,7 +846,7 @@ namespace Reallusion.Import
                 {
 
                 }
-                Debug.Log("Assigning URP VolumeAsset: " + sharedProfile.name);
+                Util.LogInfo("Assigning URP VolumeAsset: " + sharedProfile.name);
                 global.sharedProfile = sharedProfile;
                 global.runInEditMode = true;
             }

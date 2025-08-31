@@ -524,7 +524,7 @@ namespace Reallusion.Import
                         if (Util.IsCC3CharacterAtPath(projectAssetPath))
                         {
                             string charName = Path.GetFileNameWithoutExtension(projectAssetPath);
-                            Debug.Log("Valid CC character: " + charName + " found.");
+                            //Debug.Log("Valid CC character: " + charName + " found.");
                             inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                             break;
                         }
@@ -841,13 +841,13 @@ namespace Reallusion.Import
             {
                 case (RLX_ID_CAMERA):
                     {
-                        Debug.Log("Processing Camera " + folderPath);
+                        Util.LogInfo("Processing Camera " + folderPath);
                         MakeAnimatedCamera(folderPath, frameData, jsonString);
                         break;
                     }
                 case (RLX_ID_LIGHT):
                     {
-                        Debug.Log("Processing Light " + folderPath);
+                        Util.LogInfo("Processing Light " + folderPath);
                         MakeAnimatedLight(folderPath, frameData, jsonString);
                         break;
                     }
@@ -942,7 +942,7 @@ namespace Reallusion.Import
                 frames.Add(new UnityLinkManager.DeserializedCameraFrames(frameBytes));
             }
 
-            Debug.Log("Make Animated Camera: Frames processed " + frames.Count);
+            //Debug.Log("Make Animated Camera: Frames processed " + frames.Count);
 
             // construct a camera object paretented to a dolly object
             GameObject root = GetRootSceneObject(jsonCameraObject.LinkId);
@@ -1281,7 +1281,7 @@ namespace Reallusion.Import
 
             float frameRate = (frames[frames.Count - 1].Frame) / frames[frames.Count - 1].Time;
             clip.frameRate = frameRate;
-            Debug.Log("Make Camera Animation - Calculated Frame Rate = " + frameRate);
+            //Debug.Log("Make Camera Animation - Calculated Frame Rate = " + frameRate);
             return clip;
         }
 
@@ -1386,7 +1386,7 @@ namespace Reallusion.Import
                 frames.Add(new UnityLinkManager.DeserializedLightFrames(frameBytes));
             }
 
-            Debug.Log("Make Animated Light: Frames processed " + frames.Count);
+            //Debug.Log("Make Animated Light: Frames processed " + frames.Count);
 
             // construct a light object paretented to a dolly object
             GameObject root = GetRootSceneObject(jsonLightObject.LinkId);
@@ -1938,7 +1938,7 @@ namespace Reallusion.Import
                 pwd += "/" + strings[i];
                 if (!AssetDatabase.IsValidFolder(pwd))
                 {
-                    Debug.Log("Creating " + pwd);
+                    //Debug.Log("Creating " + pwd);
                     AssetDatabase.CreateFolder(parentFolder, strings[i]);
                     AssetDatabase.Refresh();
                 }

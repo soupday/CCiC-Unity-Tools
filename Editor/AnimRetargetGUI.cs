@@ -1526,7 +1526,7 @@ namespace Reallusion.Import
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
                     if (File.Exists(assetPath) && !replaceIfExists)
                     {
-                        Debug.Log("FAIL CASE");
+                        //Debug.Log("FAIL CASE");
                         continue;
                     }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
@@ -1542,9 +1542,10 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.Log("FAIL CASE NO CLIPS");
+                Util.LogInfo("No animation clips found.");
             }
-                return animationClips;
+            
+            return animationClips;
         }
 
         /// <summary>
