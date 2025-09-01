@@ -2466,15 +2466,23 @@ namespace Reallusion.Import
             string assetFilePath = Path.Combine(ROOT_FOLDER, IMPORT_PARENT, IMPORT_FOLDER, fileName);
 
             string beautifiedJson = string.Empty;
-            try
+            if (!string.IsNullOrEmpty(dataString))
             {
-                JToken parsedJson = JToken.Parse(dataString);
-                beautifiedJson = parsedJson.ToString(Formatting.Indented);
+                
+                try
+                {
+                    JToken parsedJson = JToken.Parse(dataString);
+                    beautifiedJson = parsedJson.ToString(Formatting.Indented);
+                }
+                catch
+                {
+                    Debug.Log("JToken didn't parse");
+                    beautifiedJson = dataString;
+                }
             }
-            catch
+            else
             {
-                Debug.Log("JToken didn't parse");
-                beautifiedJson = dataString;
+                beautifiedJson = dataString; // opportunity for a descriptive message - only STOP code will use this
             }
 
             string fullText = opCode.ToString() + " " + DateTime.Now.ToLocalTime().ToString() + (valid ? " VALID" : " INVALID") + Environment.NewLine + beautifiedJson + Environment.NewLine + Environment.NewLine;
