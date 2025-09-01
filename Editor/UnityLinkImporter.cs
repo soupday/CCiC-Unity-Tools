@@ -118,7 +118,7 @@ namespace Reallusion.Import
 #else
         public const float HDRP_INTENSITY_SCALE = 25000f;
 #endif
-        public const float URP_INTENSITY_SCALE = 1f;
+        public const float URP_INTENSITY_SCALE = 1.0f;
         public const float PP_INTENSITY_SCALE = 0.12f;
         public const float BASE_INTENSITY_SCALE = 0.12f;
         public const float RANGE_SCALE = 0.01f;
@@ -1435,16 +1435,16 @@ namespace Reallusion.Import
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
-            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif HDRP_10_5_0_OR_NEWER
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
-            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
 #elif URP_10_5_0_OR_NEWER
-            light.shadows = light.type != LightType.Directional ? LightShadows.Hard : LightShadows.None;
+            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
 #elif UNITY_POST_PROCESSING_3_1_1
             light.lightmapBakeType = LightmapBakeType.Mixed;
