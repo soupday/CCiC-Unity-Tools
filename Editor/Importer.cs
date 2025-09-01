@@ -397,7 +397,26 @@ namespace Reallusion.Import
             // apply post setup to prefab instance
             ProcessObjectTreePostPass(prefabInstance);
 
-            Util.LogAlways("Done building materials for character " + characterName + "!");
+            string typeMessage = string.Empty;
+            switch (characterInfo.exportType)
+            {
+                case CharacterInfo.ExportType.AVATAR:
+                    {
+                        typeMessage = " character: ";
+                        break;
+                    }
+                case CharacterInfo.ExportType.PROP:
+                    {
+                        typeMessage = " prop: ";
+                        break;
+                    }
+                default:
+                    {
+                        typeMessage = ": ";
+                        break;
+                    }
+            }
+            Util.LogAlways("Done building materials for" + typeMessage + characterName + "!");
 
             if (BUILD_MODE)
             {

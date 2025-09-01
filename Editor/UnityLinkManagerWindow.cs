@@ -363,7 +363,7 @@ namespace Reallusion.Import
                 Debug.LogWarning("No settings available");
             }
 
-            Debug.LogWarning("ConnectedToserver");
+            Debug.LogWarning("Connected to server");
         }
 
         static void DisconnectedFromServer(object sender, EventArgs e)
@@ -377,7 +377,7 @@ namespace Reallusion.Import
             RepaintOnUpdate(stop: true);
             UnityLinkManager.StopQueue();
 
-            Debug.LogWarning("DisconnectedFromServer");
+            Debug.LogWarning("Disconnected from server");
         }
 
         static void OnImportStarted(object sender, EventArgs e)
