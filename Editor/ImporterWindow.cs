@@ -116,6 +116,7 @@ namespace Reallusion.Import
         private Styles importerStyles;
         
         private Texture2D iconUnprocessed;
+        private Texture2D iconBlenderUnprocessed;
         private Texture2D iconBasic;
         private Texture2D iconLinkedBasic;
         private Texture2D iconBlenderBasic;
@@ -302,6 +303,7 @@ namespace Reallusion.Import
 
             string[] folders = new string[] { "Assets", "Packages" };
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
+            iconBlenderUnprocessed = Util.FindTexture(folders, "RLICon_Blender_UnprocessedChar");            
             iconBasic = Util.FindTexture(folders, "RLIcon_BasicChar");
             iconLinkedBasic = Util.FindTexture(folders, "RLIcon_Linked_BasicChar");
             iconBlenderBasic = Util.FindTexture(folders, "RLIcon_Blender_BasicChar");
@@ -2023,7 +2025,7 @@ namespace Reallusion.Import
 
         private Texture2D GetLargeIconTexture(CharacterInfo info)
         {
-            Texture2D iconTexture = iconUnprocessed;
+            Texture2D iconTexture = info.IsBlenderProject ? iconBlenderUnprocessed : iconUnprocessed;
 
             if (info.exportType == CharacterInfo.ExportType.PROP)
             {
@@ -2331,7 +2333,7 @@ namespace Reallusion.Import
                 nameTextBlenderStyle.alignment = TextAnchor.MiddleLeft;
                 nameTextBlenderStyle.wordWrap = false;
                 nameTextBlenderStyle.fontStyle = FontStyle.Normal;
-                nameTextBlenderStyle.normal.textColor = new Color(1.0f, 0.61f, 22f); //new Color(0.91f, 0.46f, 0f);
+                nameTextBlenderStyle.normal.textColor = new Color(0.91f, 0.46f, 0f);
 
                 fakeButton = new GUIStyle();
                 //fakeButton.normal.background = nonContextTex;
