@@ -73,6 +73,7 @@ namespace Reallusion.Import
         string SCENE_NAME = string.Empty; // new scene would be SAVE_FOLDER_PATH/SCENE_NAME.unity
                                           // associated assets would be in SAVE_FOLDER_PATH/SCENE_NAME/<asset files>
         string LinkId = string.Empty;
+        string MotionPrefix = string.Empty;
 
         string fbxPath = string.Empty;
         CharacterInfo motionTargetChar = null;
@@ -231,6 +232,7 @@ namespace Reallusion.Import
                         name = QueueItem.Motion.Name;
                         importMotion = true;
                         LinkId = QueueItem.Motion.LinkId;
+                        MotionPrefix = QueueItem.Motion.MotionPrefix;
                         motionTargetChar = GetCharacterInfoFomLinkId(QueueItem.Motion.LinkId);
                         break;
                     }
@@ -240,6 +242,7 @@ namespace Reallusion.Import
                         name = QueueItem.Character.Name;
                         importAvatar = true;
                         LinkId = QueueItem.Character.LinkId;
+                        MotionPrefix = QueueItem.Character.MotionPrefix;
                         existingLinkedFbxPath = GetFbxPathFromLinkId(LinkId);
                         existingLinkedCharFolder = GetAssetFolderFromLinkId(LinkId);
                         break;
@@ -249,6 +252,7 @@ namespace Reallusion.Import
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Prop.Path; }
                         name = QueueItem.Prop.Name;
                         LinkId = QueueItem.Prop.LinkId;
+                        MotionPrefix = QueueItem.Prop.MotionPrefix;
                         importProp = true;
                         break;
                     }
@@ -256,6 +260,7 @@ namespace Reallusion.Import
                     {
                         if (packageType == PackageType.DISK) { assetPath = QueueItem.Staging.Path; }
                         name = Path.GetFileName(Path.GetDirectoryName(QueueItem.Staging.Path));
+                        MotionPrefix = QueueItem.Staging.MotionPrefix;
                         importStaging = true;
                         break;
                     }
@@ -674,7 +679,6 @@ namespace Reallusion.Import
 
                 string targetFile = Path.Combine(targetFolder, sourceFile);
                 string uniqueTargetFile = GetNonDuplicateFileName(targetFile, false);
-                //Debug.Log("uniqueTargetFile " + uniqueTargetFile);
 
                 File.Move(fullFbxPath, uniqueTargetFile);
                 Directory.Delete(sourceFolder, true);
@@ -688,7 +692,7 @@ namespace Reallusion.Import
 
                 if (characterPrefab != null)
                 {
-                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true);
+                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true, MotionPrefix);
 
                     // Motions are implicitly animated
                     animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
@@ -725,18 +729,17 @@ namespace Reallusion.Import
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
             
-            CharacterInfo c = new CharacterInfo(guid);
+            CharacterInfo charInfo = new CharacterInfo(guid);
 
-            c.linkId = linkId;
-            c.exportType = CharacterInfo.ExportType.PROP;
-            c.projectName = "iclone project name";
-            //c.sceneid = add this later
+            charInfo.linkId = linkId;
+            charInfo.exportType = CharacterInfo.ExportType.PROP;
+            charInfo.motionPrefix = MotionPrefix;  
 
-            c.BuildQuality = MaterialQuality.High;
-            Importer import = new Importer(c);
+            charInfo.BuildQuality = MaterialQuality.High;
+            Importer import = new Importer(charInfo);
             import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
-            c.Write();
+            charInfo.Write();
 
             WindowManager.UpdateImportList();
 
@@ -760,11 +763,9 @@ namespace Reallusion.Import
 
             charInfo.linkId = linkId;
             charInfo.exportType = CharacterInfo.ExportType.AVATAR;
-            charInfo.projectName = "iclone project name";
-            //c.sceneid = add this later
+            charInfo.motionPrefix = MotionPrefix;
 
             charInfo.CheckGeneration();
-            //charInfo.InitPhysics();
 
             if (charInfo.CanHaveHighQualityMaterials)
                 charInfo.BuildQuality = MaterialQuality.High;
@@ -912,7 +913,7 @@ namespace Reallusion.Import
             }            
             return root;
         }
-#endregion Staging Import
+        #endregion Staging Import
 
         #region Animated Camera
         void MakeAnimatedCamera(string folderPath, byte[] frameData, string jsonString)
@@ -1832,7 +1833,15 @@ namespace Reallusion.Import
         {
             if (!string.IsNullOrEmpty(importDestinationFolder))
             {
-                string linkedName = Name + "_" + LinkId;
+                string linkedName = string.Empty;
+                if (!string.IsNullOrEmpty(MotionPrefix))
+                {
+                    linkedName = Name + "_" + MotionPrefix + "_" + LinkId;
+                }
+                else
+                {
+                    linkedName = Name + "_" + LinkId;
+                }
                 string fullClipAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".anim";
                 string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(clipAssetPath));

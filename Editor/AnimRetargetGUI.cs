@@ -1506,7 +1506,7 @@ namespace Reallusion.Import
         }
 
         public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath, 
-            GameObject targetCharacterModel, bool replaceIfExists)
+            GameObject targetCharacterModel, bool replaceIfExists, string motionPrefix = null)
         {
             List<AnimationClip> animationClips = new List<AnimationClip>();
 
@@ -1522,7 +1522,8 @@ namespace Reallusion.Import
                 int index = 0;
                 foreach (AnimationClip clip in clips)
                 {
-                    string assetPath = GenerateClipAssetPath(clip, motionAssetPath, RETARGET_SOURCE_PREFIX, true);
+                    string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
+                    string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
                     if (File.Exists(assetPath) && !replaceIfExists)
                     {
@@ -1559,11 +1560,25 @@ namespace Reallusion.Import
                 if (clip)
                 {
                     string fbxPath = AssetDatabase.GetAssetPath(fbxAsset);
+                    string fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath);
+
+                    string prefix = RETARGET_SOURCE_PREFIX;
+                    try
+                    {
+                        CharacterInfo characterInfo = WindowManager.ValidImports.FirstOrDefault(x => x.guid == fbxGuid);
+                        if (characterInfo != null)
+                        {
+                            if (!string.IsNullOrEmpty(characterInfo.motionPrefix))
+                                prefix = characterInfo.motionPrefix;
+                        }
+                    }
+                    catch (Exception ex) { Util.LogError(ex.Message); }
+
                     string characterName = Path.GetFileNameWithoutExtension(fbxPath);
                     string fbxFolder = Path.GetDirectoryName(fbxPath);
                     string animFolder = Path.Combine(fbxFolder, ANIM_FOLDER_NAME, characterName);
 
-                    string animName = NameAnimation(characterName, clip.name, RETARGET_SOURCE_PREFIX);
+                    string animName = NameAnimation(characterName, clip.name, prefix);
                     string assetPath = Path.Combine(animFolder, animName + ".anim");
                     AnimationClip retargetedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
                     if (retargetedClip) return retargetedClip;

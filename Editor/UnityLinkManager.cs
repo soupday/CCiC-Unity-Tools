@@ -1312,6 +1312,7 @@ namespace Reallusion.Import
             public const string nameString = "names";
             public const string typeStr = "types";
             public const string linkIdStr = "link_ids";
+            public const string motionPrefixStr = "motion_prefix";
 
             [JsonProperty(remoteIdStr)]
             public string RemoteId { get; set; }
@@ -1323,6 +1324,8 @@ namespace Reallusion.Import
             public string[] Types { get; set; }
             [JsonProperty(linkIdStr)]
             public string[] LinkIds { get; set; }
+            [JsonProperty(motionPrefixStr)]
+            public string MotionPrefix { get; set; }
 
             public JsonStaging()
             {
@@ -1331,6 +1334,7 @@ namespace Reallusion.Import
                 Names = new string[0];
                 Types = new string[0];
                 LinkIds = new string[0];
+                MotionPrefix = string.Empty;
             }
 
             public override string ToString()

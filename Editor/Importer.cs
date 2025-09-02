@@ -38,6 +38,7 @@ namespace Reallusion.Import
         private readonly string texFolder;
         private readonly string materialsFolder;
         private readonly string characterName;
+        private readonly string motionPrefix;
         private readonly int id;
         private readonly List<string> textureFolders;
         private readonly ModelImporter importer;
@@ -232,6 +233,7 @@ namespace Reallusion.Import
             characterName = info.name;
             fbxFolder = info.folder;
             characterBoneScale = info.GetBoneScale();
+            motionPrefix = info.motionPrefix;
 
             // construct the texture folder list for the character.
             fbmFolder = Path.Combine(fbxFolder, characterName + ".fbm");
@@ -426,7 +428,7 @@ namespace Reallusion.Import
                 if (replace) Util.LogInfo("Retargeting all imported animations.");
 
                 // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
-                clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace);                
+                clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace, motionPrefix);                
 
                 // create default animator if there isn't one:
                 //  commenting out due to a unity bug in 2022+,

@@ -67,7 +67,7 @@ namespace Reallusion.Import
         public string linkId = string.Empty;
         public bool isLinked { get {  return linkId != string.Empty; } }
 
-        public string projectName = string.Empty;
+        public string motionPrefix = string.Empty;
         public ExportType exportType = ExportType.NONE;
 
         // 'radio groups' of mutually exclusive settings
@@ -1034,9 +1034,9 @@ namespace Reallusion.Import
                             linkId = value;
                             break;
                         }
-                    case "projectName":
+                    case "motionPrefix":
                         {
-                            projectName = value;
+                            motionPrefix = value;
                             break;
                         }
                     case "exportType":
@@ -1077,7 +1077,7 @@ namespace Reallusion.Import
             writer.WriteLine("animationRetargeted=" + ((int)animationRetargeted).ToString());
             writer.WriteLine("rigOverride=" + UnknownRigType.ToString());
             writer.WriteLine("linkId=" + linkId);
-            writer.WriteLine("projectName=" + projectName);
+            writer.WriteLine("motionPrefix=" + motionPrefix);
             writer.WriteLine("exportType=" + exportType.ToString());
             writer.WriteLine("qualTexSize=" + qualTexSize.ToString());
             writer.WriteLine("qualTexCompress=" + qualTexCompress.ToString());

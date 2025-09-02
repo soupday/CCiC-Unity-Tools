@@ -118,12 +118,16 @@ namespace Reallusion.Import
         private Texture2D iconUnprocessed;
         private Texture2D iconBasic;
         private Texture2D iconLinkedBasic;
+        private Texture2D iconBlenderBasic;
         private Texture2D iconHQ;
         private Texture2D iconLinkedHQ;
+        private Texture2D iconBlenderHQ;
         private Texture2D iconBaked;
         private Texture2D iconLinkedBaked;
+        private Texture2D iconBlenderBaked;
         private Texture2D iconMixed;
         private Texture2D iconLinkedMixed;
+        private Texture2D iconBlenderMixed;
         private Texture2D iconActionBake;
         private Texture2D iconActionBakeOn;
         private Texture2D iconActionBakeHair;
@@ -147,8 +151,10 @@ namespace Reallusion.Import
         private Texture2D iconBuildMaterials;
         private Texture2D iconProp;
         private Texture2D iconLinkedProp;
+        private Texture2D iconBlenderProp;
         private Texture2D iconPropG;
         private Texture2D iconLinkedPropG;
+        private Texture2D iconBlenderPropG;
 
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
@@ -298,12 +304,16 @@ namespace Reallusion.Import
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
             iconBasic = Util.FindTexture(folders, "RLIcon_BasicChar");
             iconLinkedBasic = Util.FindTexture(folders, "RLIcon_Linked_BasicChar");
+            iconBlenderBasic = Util.FindTexture(folders, "RLIcon_Blender_BasicChar");
             iconHQ = Util.FindTexture(folders, "RLIcon_HQChar");
             iconLinkedHQ = Util.FindTexture(folders, "RLIcon_Linked_HQChar");
+            iconBlenderHQ = Util.FindTexture(folders, "RLIcon_Blender_HQChar");
             iconBaked = Util.FindTexture(folders, "RLIcon_BakedChar");
             iconLinkedBaked = Util.FindTexture(folders, "RLIcon_Linked_BakedChar");
+            iconBlenderBaked = Util.FindTexture(folders, "RLIcon_Blender_BakedChar");
             iconMixed = Util.FindTexture(folders, "RLIcon_MixedChar");
             iconLinkedMixed = Util.FindTexture(folders, "RLIcon_Linked_MixedChar");
+            iconBlenderMixed = Util.FindTexture(folders, "RLIcon_Blender_MixedChar");
             iconActionBake = Util.FindTexture(folders, "RLIcon_ActionBake");
             iconActionBakeOn = Util.FindTexture(folders, "RLIcon_ActionBake_Sel");
             iconActionBakeHair = Util.FindTexture(folders, "RLIcon_ActionBakeHair");
@@ -327,8 +337,11 @@ namespace Reallusion.Import
             iconBuildMaterials = Util.FindTexture(folders, "RLIcon_ActionBuildMaterials");
             iconProp = Util.FindTexture(folders, "RLIcon-Prop_W");
             iconLinkedProp = Util.FindTexture(folders, "RLIcon_Linked_Prop_W");
+            iconBlenderProp = Util.FindTexture(folders, "RLIcon_Blender_Prop_W");
             iconPropG = Util.FindTexture(folders, "RLIcon-Prop_G");
             iconLinkedPropG = Util.FindTexture(folders, "RLIcon_Linked_Prop_G");
+            iconBlenderPropG = Util.FindTexture(folders, "RLIcon_Blender_Prop_G");
+            mode = Mode.multi;
 
             Current = this;
 
@@ -1957,26 +1970,9 @@ namespace Reallusion.Import
             for (int idx = 0; idx < CharacterList.Count; idx++)
             {
                 CharacterInfo info = CharacterList[idx];
-                Texture2D iconTexture = iconUnprocessed;
                 string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
 
-                if (info.exportType == CharacterInfo.ExportType.PROP)
-                {
-                    iconTexture = info.isLinked ? iconLinkedProp : iconProp;
-                }
-                else
-                {   
-                    if (info.bakeIsBaked)
-                    {
-                        if (info.BuiltBasicMaterials) iconTexture = info.isLinked ? iconLinkedMixed : iconMixed;
-                        else if (info.BuiltHQMaterials) iconTexture = info.isLinked ? iconLinkedBaked : iconBaked;
-                    }
-                    else
-                    {
-                        if (info.BuiltBasicMaterials) iconTexture = info.isLinked ? iconLinkedBasic : iconBasic;
-                        else if (info.BuiltHQMaterials) iconTexture = info.isLinked ? iconLinkedHQ : iconHQ;
-                    }
-                }
+                Texture2D iconTexture = GetLargeIconTexture(info);
 
                 Color background = GUI.backgroundColor;
                 Color tint = background;
@@ -2023,6 +2019,57 @@ namespace Reallusion.Import
                 HandleDrag(boxRect, info);
             }
             GUI.EndScrollView();
+        }
+
+        private Texture2D GetLargeIconTexture(CharacterInfo info)
+        {
+            Texture2D iconTexture = iconUnprocessed;
+
+            if (info.exportType == CharacterInfo.ExportType.PROP)
+            {
+                if (info.IsBlenderProject)
+                    iconTexture = iconBlenderProp;
+                else
+                    iconTexture = info.isLinked ? iconLinkedProp : iconProp;
+            }
+            else
+            {
+                if (info.bakeIsBaked)
+                {
+                    if (info.BuiltBasicMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderMixed;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedMixed : iconMixed;
+                    }
+                    else if (info.BuiltHQMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderBaked;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedBaked : iconBaked;
+                    }
+                }
+                else
+                {
+                    if (info.BuiltBasicMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderBasic;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedBasic : iconBasic;
+                    }
+                    else if (info.BuiltHQMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderHQ;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedHQ : iconHQ;
+                    }
+                }
+            }
+            return iconTexture;
         }
 
         // detail view icon area layout
@@ -2084,7 +2131,15 @@ namespace Reallusion.Import
 
                 GUILayout.BeginVertical(); // vertical container for label
                 GUILayout.FlexibleSpace();
-                GUILayout.Label(name, info.isLinked ? importerStyles.nameTextLinkedStyle : importerStyles.nameTextStyle);
+
+                GUIStyle nameTextStyle = GUIStyle.none;
+
+                if (info.IsBlenderProject)
+                    nameTextStyle = importerStyles.nameTextBlenderStyle;
+                else
+                    nameTextStyle = info.isLinked ? importerStyles.nameTextLinkedStyle : importerStyles.nameTextStyle;
+
+                GUILayout.Label(name, nameTextStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndVertical(); // vertical container for label
 
@@ -2205,6 +2260,7 @@ namespace Reallusion.Import
             public GUIStyle dragBarStyle;
             public GUIStyle nameTextStyle;
             public GUIStyle nameTextLinkedStyle;
+            public GUIStyle nameTextBlenderStyle;
             public GUIStyle fakeButton;
             public GUIStyle fakeButtonContext;
             public Texture2D dragTex, contextTex;
@@ -2270,6 +2326,12 @@ namespace Reallusion.Import
                 nameTextLinkedStyle.wordWrap = false;
                 nameTextLinkedStyle.fontStyle = FontStyle.Normal;
                 nameTextLinkedStyle.normal.textColor = Color.cyan;
+
+                nameTextBlenderStyle = new GUIStyle();
+                nameTextBlenderStyle.alignment = TextAnchor.MiddleLeft;
+                nameTextBlenderStyle.wordWrap = false;
+                nameTextBlenderStyle.fontStyle = FontStyle.Normal;
+                nameTextBlenderStyle.normal.textColor = new Color(1.0f, 0.61f, 22f); //new Color(0.91f, 0.46f, 0f);
 
                 fakeButton = new GUIStyle();
                 //fakeButton.normal.background = nonContextTex;
