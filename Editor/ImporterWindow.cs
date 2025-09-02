@@ -757,7 +757,8 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            if (!string.IsNullOrEmpty(contextCharacter.linkId))
+            //if (!string.IsNullOrEmpty(contextCharacter.linkId))
+            if(contextCharacter.isLinked)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
@@ -766,8 +767,17 @@ namespace Reallusion.Import
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
             }
+            else if (contextCharacter.IsBlenderProject)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Source: ", importerStyles.boldStyle);
+                GUILayout.Label("Blender Project", importerStyles.blenderStyle);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
 
-            GUILayout.FlexibleSpace();
+                GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
 
@@ -2258,6 +2268,7 @@ namespace Reallusion.Import
             public GUIStyle labelStyle;
             public GUIStyle boldStyle;
             public GUIStyle linkStyle;
+            public GUIStyle blenderStyle;
             public GUIStyle iconStyle;
             public GUIStyle dragBarStyle;
             public GUIStyle nameTextStyle;
@@ -2297,6 +2308,12 @@ namespace Reallusion.Import
                 linkStyle.fontStyle = FontStyle.Bold;
                 linkStyle.normal.textColor = new Color(0.82f, 1.0f, 0.48f);
 
+                blenderStyle = new GUIStyle();
+                blenderStyle.alignment = TextAnchor.UpperLeft;
+                blenderStyle.wordWrap = false;
+                blenderStyle.fontStyle = FontStyle.Bold;
+                blenderStyle.normal.textColor = new Color(0.91f, 0.46f, 0f);
+
                 labelStyle = new GUIStyle();
                 labelStyle.alignment = TextAnchor.UpperLeft;
                 labelStyle.wordWrap = false;
@@ -2327,7 +2344,7 @@ namespace Reallusion.Import
                 nameTextLinkedStyle.alignment = TextAnchor.MiddleLeft;
                 nameTextLinkedStyle.wordWrap = false;
                 nameTextLinkedStyle.fontStyle = FontStyle.Normal;
-                nameTextLinkedStyle.normal.textColor = Color.cyan;
+                nameTextLinkedStyle.normal.textColor = new Color(0.82f, 1.0f, 0.48f);
 
                 nameTextBlenderStyle = new GUIStyle();
                 nameTextBlenderStyle.alignment = TextAnchor.MiddleLeft;
