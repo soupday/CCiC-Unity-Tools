@@ -1139,7 +1139,7 @@ namespace Reallusion.Import
         }
                 
         static void ImportItem(QueueItem item)
-        {            
+        {
             try
             {
                 UnityLinkImporter Importer = new UnityLinkImporter(item);

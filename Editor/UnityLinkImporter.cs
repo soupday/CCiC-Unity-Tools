@@ -465,16 +465,15 @@ namespace Reallusion.Import
                 //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
-                    //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
-                    FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
+                    Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
 
+                    FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
                     AssetDatabase.Refresh();
                 }
                 else
                 {
                     string targetFolder = existingLinkedCharFolder.UnityAssetPathToFullPath();
                     Debug.LogWarning("Moving Folder " + assetFolder + " to existing linked folder " + targetFolder);
-
 
                     string prevParentName = "Previous_Imports";
                     string prevParentPath = Path.Combine(existingLinkedCharFolder, prevParentName);
@@ -509,9 +508,9 @@ namespace Reallusion.Import
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("Cannot copy asset to AssetDatabase! " + ex.Message); return string.Empty;
+                Debug.Log("Cannot copy asset to AssetDatabase! " + ex.Message); return string.Empty;
             }
-            
+
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
             {
                 // return the containing folder in the unity project 
@@ -1361,6 +1360,8 @@ namespace Reallusion.Import
         #region Animated Light
         void MakeAnimatedLight(string folderPath, byte[] frameData, string jsonString)
         {
+            //LogBeautifiedJson(jsonString);
+            
             UnityLinkManager.JsonLightData jsonLightObject = null;
             try
             {
@@ -1462,7 +1463,8 @@ namespace Reallusion.Import
             light.spotAngle = jsonLightObject.Angle;
             light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);
             light.range = jsonLightObject.Range * RANGE_SCALE;
-            
+            light.cookie = GetIESCookie(light, jsonLightObject.LinkId, jsonLightObject.Name);
+
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
             target.transform.SetParent(root.transform, true);
@@ -1473,12 +1475,9 @@ namespace Reallusion.Import
 
             AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
 
-            if (jsonLightObject != null)
-            {
-                clip.name = jsonLightObject.LinkId;
-                SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
-                SetupLight(jsonLightObject, root, clip);
-            }
+            clip.name = jsonLightObject.LinkId;
+            SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);                
+            SetupLight(jsonLightObject, root, clip);            
         }
         
         public float GetInnerAngle(float fall, float att)
@@ -1753,15 +1752,15 @@ namespace Reallusion.Import
             return clip;
         }
 
-        GameObject SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)//, GameObject prefab = null)
+        void SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)//, GameObject prefab = null)
         {
             if (LightProxyType == null)
             {
                 LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
                 if (LightProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class.");
-                    return null;
+                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class - is the runtime package installed correctly?");
+                    return;// null;
                 }
             }
 
@@ -1778,13 +1777,13 @@ namespace Reallusion.Import
                 if (SetupLightMethod == null)
                 {
                     Debug.LogWarning("SetupLight MethodInfo cannot be determined");
-                    return null;
+                    return;// null;
                 }
             }
             else
             {
                 Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
-                return null;
+                return;// null;
             }
 
             json.pos_delta = pos_delta;
@@ -1824,7 +1823,63 @@ namespace Reallusion.Import
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
 
-            return root;
+            //return root;
+        }
+
+        // find and return the cubemap or texture2d asset at the ies path according to light type
+        Texture GetIESCookie(Light light, string LinkId, string Name)
+        {
+            // find the ies file delivered with the staging RLX file (and store it)
+            string iesPath = SaveStagingIESFile(LinkId, Name);
+            
+            if (!string.IsNullOrEmpty(iesPath))
+            {
+                switch (light.type)
+                {
+                    case LightType.Point:
+                        {
+                            try
+                            {
+                                Cubemap cookie = (Cubemap)AssetDatabase.LoadAssetAtPath(iesPath, typeof(Cubemap));
+
+                                if (cookie != null)
+                                    return cookie;
+                            }
+                            catch
+                            {
+                                Debug.Log($"IES file for light: {Name} cannot be read");
+                            }
+                            break;
+                        }
+                        case LightType.Spot:
+                        {
+                            try
+                            {
+                                Texture2D cookie = (Texture2D)AssetDatabase.LoadAssetAtPath(iesPath, typeof(Texture2D));
+
+                                if (cookie != null)
+                                    return cookie;
+                            }
+                            catch
+                            {
+                                Debug.Log($"IES file for light: {Name} cannot be read");
+                            }
+                            break;
+                        }
+                        case LightType.Directional:
+                        {
+                            // not allowed in iclone
+                            break;
+                        }
+                    default:
+                        {
+                            return null;
+                        }
+                }
+                return null;
+            }
+            Debug.Log("No IES file found");
+            return null;
         }
         #endregion Animated Light
 
@@ -1842,6 +1897,7 @@ namespace Reallusion.Import
                 {
                     linkedName = Name + "_" + LinkId;
                 }
+
                 string fullClipAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".anim";
                 string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(clipAssetPath));
@@ -1873,13 +1929,88 @@ namespace Reallusion.Import
             }
         }
 
+        // recover the ies file if it exists and copy to the final staging folder and return the new path
+        string SaveStagingIESFile(string LinkId, string Name)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(assetImportDestinationPath))
+                {
+                    string destination = GetFinalStagingDestinationFolder(LinkId, Name);
+                    string ies = ".ies";
+
+                    foreach (string file in Directory.GetFiles(assetImportDestinationPath))
+                    {
+                        string fileName = Path.GetFileName(file);
+                        string ext = Path.GetExtension(file);
+                        string name = Path.GetFileNameWithoutExtension(fileName);
+
+                        if (name.iEquals(Name) && ext.iEquals(ies))
+                        {
+                            string dest = destination.FullPathToUnityAssetPath() + "/" + Name + ies;
+
+                            CheckUnityPath(Path.GetDirectoryName(dest));
+
+                            if (File.Exists(dest))
+                            {
+                                AssetDatabase.DeleteAsset(dest);
+                            }
+
+                            if (AssetDatabase.MoveAsset(file, dest) == string.Empty)
+                            {
+                                AssetDatabase.Refresh();
+                                return dest;
+                            }
+                            else
+                            {
+                                return string.Empty;
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception e) { Debug.LogWarning(e.Message); }
+            return string.Empty;
+        }
+
+        string GetFinalStagingDestinationFolder(string LinkId, string Name)
+        {
+            if (!string.IsNullOrEmpty(importDestinationFolder))
+            {
+                string linkedName = string.Empty;
+                if (!string.IsNullOrEmpty(MotionPrefix))
+                {
+                    linkedName = Name + "_" + MotionPrefix + "_" + LinkId;
+                }
+                else
+                {
+                    linkedName = Name + "_" + LinkId;
+                }
+
+                return importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
         GameObject GetPrefabAsset(string LinkId, string Name, GameObject toPrefab)
         {
             //return new GameObject("GetPrefabAsset");
             GameObject prefab = null;
             if (!string.IsNullOrEmpty(importDestinationFolder))
             {
-                string linkedName = Name + "_" + LinkId;
+                string linkedName = string.Empty;
+                if (!string.IsNullOrEmpty(MotionPrefix))
+                {
+                    linkedName = Name + "_" + MotionPrefix + "_" + LinkId;
+                }
+                else
+                {
+                    linkedName = Name + "_" + LinkId;
+                }
+
                 string fullPrefabAssetPath = importDestinationFolder + "/" + UnityLinkManager.STAGING_IMPORT_SUBFOLDER + "/" + linkedName + "/" + linkedName + ".prefab";
                 string prefabAssetPath = fullPrefabAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(prefabAssetPath));
@@ -1896,7 +2027,7 @@ namespace Reallusion.Import
 
             if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
             {
-                //Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
+                Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
                 UnityEditor.PrefabUtility.UnpackPrefabInstance(toPrefab, UnityEditor.PrefabUnpackMode.Completely, UnityEditor.InteractionMode.AutomatedAction);
             }
             else
@@ -2092,6 +2223,24 @@ namespace Reallusion.Import
             }
             return animatedStatus;
         }
+
+        public static void LogBeautifiedJson(string jsonString)
+        {
+            string beautifiedJson = string.Empty;
+            try
+            {
+                JToken parsedJson = JToken.Parse(jsonString);
+                beautifiedJson = parsedJson.ToString(Formatting.Indented);
+            }
+            catch
+            {
+                Debug.Log("JToken didn't parse");
+                beautifiedJson = jsonString;
+            }
+
+            Debug.LogWarning(beautifiedJson);
+        }
+
         #endregion
 
     }
