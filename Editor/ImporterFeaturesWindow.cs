@@ -167,8 +167,10 @@ namespace Reallusion.Import
                     flagChanged = true;
             }
 
+            /*
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
                 flagChanged = true;
+            */
 
             DrawLabelLine(line++, "Character Physics:");
 

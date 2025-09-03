@@ -1137,16 +1137,17 @@ namespace Reallusion.Import
                 1.0f, microNormalTiling, microNormalStrength, displacementStrength, displacementLevel, emissiveColor,
                 sourceName, templateMaterial);
 
-            result.SetTextureIf("_CavityMap", cavity);
             result.SetFloatIf("_AOStrength", aoStrength);
-            result.SetTextureIf("_DisplacementMap", displacement);
-            result.SetFloatIf("_CavityStrength", cavityStrength);
-            result.SetFloatIf("_EdgePower", edgePower);
-            result.SetFloatIf("_BumpStrength", bumpStrength);
-            result.SetFloatIf("_WrinkleDisplacementStrength", wrinkleDisplacementStrength);
             result.SetFloatIf("_UseCavity", useCavity ? 1f : 0f);
+            result.SetTextureIf("_CavityMap", cavity);
+            result.SetFloatIf("_CavityStrength", cavityStrength);
+            result.SetFloatIf("_EdgePower", edgePower);                        
             result.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", displacementMode, ENUM_DISPLACEMENT_MODE);
-            result.SetEnumKeyword("ENUM_WRINKLE_MODE", wrinkleMode, ENUM_WRINKLE_MODE);            
+            result.SetTextureIf("_DisplacementMap", displacement);
+            result.SetFloatIf("_BumpStrength", bumpStrength);
+            // make sure only the head material gets a wrinkle mode
+            result.SetEnumKeyword("ENUM_WRINKLE_MODE", (isHead && useWrinkleMaps) ? wrinkleMode : 0f, ENUM_WRINKLE_MODE);
+            result.SetFloatIf("_WrinkleDisplacementStrength", (isHead && useWrinkleMaps) ? wrinkleDisplacementStrength : 0f);
 
             CopyAMPSubsurface(mat, result);
 
@@ -1605,6 +1606,7 @@ namespace Reallusion.Import
             float blendStrength = mat.GetFloatIf("_BlendStrength");
             float vertexColorStrength = mat.GetFloatIf("_VertexColorStrength");
             float baseColorStrength = mat.GetFloatIf("_BaseColorStrength");
+            float alphaStrength = mat.GetFloatIf("_AlphaStrength");
             float alphaPower = mat.GetFloatIf("_AlphaPower");
             float alphaRemap = mat.GetFloatIf("_AlphaRemap");
             float alphaClip = mat.GetFloatIf("_AlphaClip");
@@ -1674,7 +1676,7 @@ namespace Reallusion.Import
             if (enableColor)
             {
                 bakedBaseMap = BakeHairDiffuseMap(diffuse, blend, id, root, mask,
-                    diffuseStrength, alphaPower, alphaRemap, aoStrength, diffuseAO,
+                    diffuseStrength, alphaStrength, alphaPower, alphaRemap, aoStrength, diffuseAO,
                     rootColor, rootColorStrength, endColor, endColorStrength, globalStrength,
                     invertRootMap, baseColorStrength, highlightBlend,
                     highlightAColor, highlightADistribution, highlightAOverlapEnd,
@@ -1687,7 +1689,7 @@ namespace Reallusion.Import
             else
             {
                 bakedBaseMap = BakeHairDiffuseMap(diffuse, blend, mask,
-                    diffuseStrength, alphaPower, alphaRemap, aoStrength, diffuseAO,
+                    diffuseStrength, alphaStrength, alphaPower, alphaRemap, aoStrength, diffuseAO,
                     blendStrength, vertexBaseColor, vertexColorStrength,
                     sourceName + "_BaseMap");
             }
@@ -1913,7 +1915,7 @@ namespace Reallusion.Import
             if (enableColor)
             {
                 bakedBaseMap = BakeHairDiffuseMap(diffuse, null, id, root, null,
-                    1f, 1f, 1f, 1f, 0f,
+                    1f, 1f, 1f, 1f, 1f, 0f,
                     rootColor, rootColorStrength, endColor, endColorStrength, globalStrength,
                     invertRootMap, baseColorStrength, highlightBlend,
                     highlightAColor, highlightADistribution, highlightAOverlapEnd,
@@ -3272,7 +3274,7 @@ namespace Reallusion.Import
         }
 
         private Texture2D BakeHairDiffuseMap(Texture2D diffuse, Texture2D blend, Texture2D id, Texture2D root, Texture2D mask,
-                        float diffuseStrength, float alphaPower, float alphaRemap, float aoStrength, float aoOccludeAll,
+                        float diffuseStrength, float alphaStrength, float alphaPower, float alphaRemap, float aoStrength, float aoOccludeAll,
                         Color rootColor, float rootColorStrength, Color endColor, float endColorStrength, float globalStrength, 
                         float invertRootMap, float baseColorStrength, float highlightBlend,
                         Color highlightAColor, Vector4 highlightADistribution, float highlightAOverlapEnd, 
@@ -3306,6 +3308,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Root", root);
                 bakeShader.SetTexture(kernel, "Mask", mask);
                 bakeShader.SetFloat("diffuseStrength", diffuseStrength);
+                bakeShader.SetFloat("alphaStrength", alphaStrength);
                 bakeShader.SetFloat("alphaPower", alphaPower);
                 bakeShader.SetFloat("alphaRemap", alphaRemap);
                 bakeShader.SetFloat("aoStrength", aoStrength);
@@ -3339,7 +3342,7 @@ namespace Reallusion.Import
         }
 
         private Texture2D BakeHairDiffuseMap(Texture2D diffuse, Texture2D blend, Texture2D mask,
-                        float diffuseStrength, float alphaPower, float alphaRemap, float aoStrength, float aoOccludeAll,
+                        float diffuseStrength, float alphaStrength, float alphaPower, float alphaRemap, float aoStrength, float aoOccludeAll,
                         float blendStrength, Color vertexBaseColor, float vertexColorStrength,
                         string name, string kernelName = "RLHairDiffuse")
         {
@@ -3363,6 +3366,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "ColorBlend", blend);
                 bakeShader.SetTexture(kernel, "Mask", mask);
                 bakeShader.SetFloat("diffuseStrength", diffuseStrength);
+                bakeShader.SetFloat("alphaStrength", alphaStrength);
                 bakeShader.SetFloat("alphaPower", alphaPower);
                 bakeShader.SetFloat("alphaRemap", alphaRemap);
                 bakeShader.SetFloat("aoStrength", aoStrength);

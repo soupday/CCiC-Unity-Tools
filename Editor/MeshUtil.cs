@@ -1196,10 +1196,11 @@ namespace Reallusion.Import
                         {
                             float alphaClipValue = 0.666f;
                             if (Pipeline.is3D) alphaClipValue = 0.55f;
+                            float shadowClip = oldMat.GetFloatIf("_ShadowClip", 0.5f);
                                                         
                             oldMat.SetFloatIf("_AlphaClip", alphaClipValue);
                             oldMat.SetFloatIf("_AlphaClip2", alphaClipValue);                            
-                            oldMat.SetFloatIf("_ShadowClip", 0.5f);                            
+                            oldMat.SetFloatIf("_ShadowClip", shadowClip);                            
                         }
 
                         bool useTessellation = oldMat.shader.name.iContains("_Tessellation");
@@ -1246,6 +1247,8 @@ namespace Reallusion.Import
                                 Material secondPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS, useTessellation);
                                 Material firstPass = new Material(firstPassTemplate);
                                 Material secondPass = new Material(secondPassTemplate);
+                                Pipeline.UpgradeShader(firstPass, useTessellation);
+                                Pipeline.UpgradeShader(secondPass, useTessellation);
                                 CopyMaterialParameters(oldMat, firstPass);
                                 CopyMaterialParameters(oldMat, secondPass);
                                 FixHDRP2PassMaterials(firstPass, secondPass);
@@ -1285,6 +1288,8 @@ namespace Reallusion.Import
                                 Material secondPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS, useTessellation);
                                 Material firstPass = new Material(firstPassTemplate);
                                 Material secondPass = new Material(secondPassTemplate);
+                                Pipeline.UpgradeShader(firstPass, useTessellation);
+                                Pipeline.UpgradeShader(secondPass, useTessellation);
                                 CopyMaterialParameters(oldMat, firstPass);
                                 CopyMaterialParameters(oldMat, secondPass);
                                 FixHDRP2PassMaterials(firstPass, secondPass);
@@ -1656,6 +1661,34 @@ namespace Reallusion.Import
                 if (Util.HasMaterialKeywords(obj, "base", "brow", "beard",
                                                   "mustache", "goatee", "stubble",
                                                   "bushy", "sword", "eyebrow", "eyelash", "lash"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool MeshIsEyelash(GameObject obj)
+        {
+            // if it has facial blend shapes...
+            if (FacialProfileMapper.MeshHasFacialBlendShapes(obj))
+            {
+                if (Util.HasMaterialKeywords(obj, "eyelash", "lash"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool MeshIsEyebrow(GameObject obj)
+        {
+            // if it has facial blend shapes...
+            if (FacialProfileMapper.MeshHasFacialBlendShapes(obj))
+            {
+                if (Util.HasMaterialKeywords(obj, "Eyebrow", "brow"))
                 {
                     return true;
                 }

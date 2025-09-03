@@ -189,7 +189,7 @@ TEX2D(ID);
 TEX2D(Root);
 TEX2D(Specular);
 float4 baseColor, vertexBaseColor;
-float vertexColorStrength, baseColorStrength, diffuseStrength, alphaPower, alphaRemap;
+float vertexColorStrength, baseColorStrength, diffuseStrength, alphaStrength, alphaPower, alphaRemap;
 float globalStrength, rootColorStrength, endColorStrength, invertRootMap;
 float highlightBlend;
 float3 highlightADistribution, highlightBDistribution;
@@ -1515,7 +1515,7 @@ void RLHairColoredDiffuse(uint3 id : SV_DispatchThreadID)
     float4 mask = SAMPLE(Mask, uv);
 
     float ao = INVERTED_SCALE(mask.g, aoStrength);
-    float alpha = pow(saturate((diffuse.a / alphaRemap)), alphaPower);
+    float alpha = pow(saturate((diffuse.a / alphaRemap)), alphaPower) * alphaStrength;
     
     float4 color = RootEndBlend(diffuse, rootMap.g);
     color = HighlightBlend(color, idMap.g, rootMap.g, highlightAColor, highlightADistribution,
@@ -1566,7 +1566,7 @@ void RLHairDiffuse(uint3 id : SV_DispatchThreadID)
     float4 mask = SAMPLE(Mask, uv);    
     
     float ao = INVERTED_SCALE(mask.g, aoStrength);
-    float alpha = saturate(pow(saturate((diffuse.a / alphaRemap)), alphaPower));
+    float alpha = saturate(pow(saturate((diffuse.a / alphaRemap)), alphaPower)) * alphaStrength;
     
     float4 color = diffuse * diffuseStrength;
     color = lerp(color, color * depthBlend, colorBlendStrength);

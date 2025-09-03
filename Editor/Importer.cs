@@ -716,7 +716,8 @@ namespace Reallusion.Import
                     blendOpacity = true;
                 }
 
-                if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap"))
+                if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap") ||
+                    Util.NameContainsKeywords(obj.name, "Eyelash_"))
                 {
                     hasOpacity = true;
                     blendOpacity = true;
@@ -753,6 +754,8 @@ namespace Reallusion.Import
                 {
                     if (customShader == "Pbr" || customShader == "Tra")
                     {
+                        if (Util.NameContainsKeywords(obj.name, "Eyelash_"))
+                            return MaterialType.Eyelash;
                         if (Util.NameContainsKeywords(sourceName, "Eyelash", "Lash"))
                             return MaterialType.Eyelash;
                         if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Hair", "Clap"))
@@ -1140,7 +1143,7 @@ namespace Reallusion.Import
                 if (!REBAKE_PACKED_TEXTURE_MAPS)
                 {
                     displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
-                    sssThickness = GetTexture(sourceName, "BSSSThicknessSMPack", matJson, "Textures/NOTEX", true);
+                    sssThickness = GetTexture(sourceName, "BSSSThicknessPack", matJson, "Textures/NOTEX", true);
                 }                
 
                 Texture2D cavity = GetTexture(sourceName, "Cavitymap", matJson, "Custom Shader/Image/Cavity Map", true);
@@ -1168,7 +1171,7 @@ namespace Reallusion.Import
                         assetFolder = Util.GetAssetFolder(sss, transmission);
                         folder = GetPackedTextureFolder(obj, sourceName, assetFolder);
                         sssThickness = baker.BakeChannelPackLinear(folder, sss, sss, sss, transmission,
-                                                                         sourceName + "_BSSSThicknessSMPack",
+                                                                         sourceName + "_BSSSThicknessPack",
                                                                          0, 1f, 1f, 1f, 1f);
                     }
                 }
@@ -1286,7 +1289,7 @@ namespace Reallusion.Import
             if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
             {
                 //Texture2D displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
-                Texture2D sssThickness = GetTexture(sourceName, "BSSSThicknessSMPack", matJson, "Textures/NOTEX", true);
+                Texture2D sssThickness = GetTexture(sourceName, "BSSSThicknessPack", matJson, "Textures/NOTEX", true);
                 //if (displacementCavity) mat.SetTextureIf("_DisplacementCavityPack", displacementCavity);
                 if (sssThickness) mat.SetTextureIf("_SSSThicknessPack", sssThickness);
             }
@@ -2552,7 +2555,7 @@ namespace Reallusion.Import
                     //float pupilScale = Mathf.Clamp(1f / Mathf.Pow((depth * 2f + 1f), 2f), 0.1f, 2.0f);                    
                     mat.SetFloatIf("_IrisDepth", depth);
                     //mat.SetFloat("_PupilScale", pupilScale);
-                    mat.SetFloatIf("_PupilScale", 0.75f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
+                    mat.SetFloatIf("_PupilScale", 1f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
                 }
                 else
                 {                    
@@ -2586,7 +2589,7 @@ namespace Reallusion.Import
 
         private void ConnectHQHairMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
             MaterialType materialType, QuickJSON matJson)
-        {                        
+        {                                    
             if (!ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
                     TexCategory.HighDetail,
@@ -2619,11 +2622,15 @@ namespace Reallusion.Import
                 {
                     BakeHairFlowToNormalMap(mat, sourceName, matJson);
                 }
-            }    
+            }
 
-            ConnectTextureTo(sourceName, mat, "_BlendMap", "blend_multiply",
-                matJson, "Textures/Blend",
-                TexCategory.HighDetail);
+            bool hasBlendMap = false;
+            if (ConnectTextureTo(sourceName, mat, "_BlendMap", "blend_multiply",
+                    matJson, "Textures/Blend",
+                    TexCategory.HighDetail))
+            {
+                hasBlendMap = true;
+            }
 
             ConnectTextureTo(sourceName, mat, "_FlowMap", "Hair Flow Map",
                 matJson, "Custom Shader/Image/Hair Flow Map",
@@ -2670,6 +2677,13 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_SmoothnessPower", smoothnessPowerMod);
             }
 
+            bool isEyeBrow = MeshUtil.MeshIsEyebrow(obj);
+            bool isEyelash = MeshUtil.MeshIsEyelash(obj);
+            if (isEyelash || isEyeBrow)
+            {
+                mat.SetFloatIf("_ShadowClip", 1.0f);
+            }
+
             Color diffuseColor = Color.white;
 
             if (matJson != null)
@@ -2685,7 +2699,7 @@ namespace Reallusion.Import
                 if (matJson.PathExists("Textures/Normal/Strength"))
                     mat.SetFloatIf("_NormalStrength", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloatIf("_AOOccludeAll", (RP == RenderPipeline.HDRP ? 0.5f : 1f) * matJson.GetFloatValue("Custom Shader/Variable/AO Map Occlude All Lighting"));
-                mat.SetFloatIf("_BlendStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/Blend/Strength") / 100f));
+                mat.SetFloatIf("_BlendStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/Blend/Strength") / 100f) * (hasBlendMap ? 1f: 0f));
                 mat.SetColorIf("_VertexBaseColor", Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/VertexGrayToColor")));                
                 mat.SetFloatIf("_VertexColorStrength", 1f * matJson.GetFloatValue("Custom Shader/Variable/VertexColorStrength"));
                 mat.SetFloatIf("_BaseColorStrength", 1f * matJson.GetFloatValue("Custom Shader/Variable/BaseColorMapStrength"));                
