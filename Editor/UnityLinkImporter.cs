@@ -466,8 +466,11 @@ namespace Reallusion.Import
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
                     Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
-
+                    
                     FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
+                    // or
+                    //CopyDirectory(assetFolder, destinationFolder, true);
+
                     AssetDatabase.Refresh();
                 }
                 else
@@ -582,29 +585,29 @@ namespace Reallusion.Import
 
         private void CopyDirectory(string sourcePath, string destinationPath, bool overwrite)
         {
-            DirectoryInfo dSource = new DirectoryInfo(sourcePath);
-            DirectoryInfo dDestination = new DirectoryInfo(destinationPath);
+            DirectoryInfo source = new DirectoryInfo(sourcePath);
+            DirectoryInfo dest = new DirectoryInfo(destinationPath);
 
-            if (!dDestination.Exists)
+            if (!dest.Exists)
             {
-                dDestination.Create();
+                dest.Create();
             }
 
-            foreach (FileInfo f in dSource.GetFiles())
+            foreach (FileInfo f in source.GetFiles())
             {
                 try
                 {
-                    f.CopyTo(Path.Combine(dDestination.FullName, f.Name), overwrite);
+                    f.CopyTo(Path.Combine(dest.FullName, f.Name), overwrite);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error copying file {f.FullName}: {ex.Message}"); // Log the error
+                    Console.Error.WriteLine($"Error copying file {f.FullName}: {ex.Message}");
                 }
             }
 
-            foreach (DirectoryInfo dir in dSource.GetDirectories())
+            foreach (DirectoryInfo dir in source.GetDirectories())
             {
-                CopyDirectory(dir.FullName, Path.Combine(dDestination.FullName, dir.Name), overwrite);
+                CopyDirectory(dir.FullName, Path.Combine(dest.FullName, dir.Name), overwrite);
             }
         }
 
@@ -1456,8 +1459,7 @@ namespace Reallusion.Import
             light.lightmapBakeType = LightmapBakeType.Mixed;
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
-#endif
-
+#endif            
             light.useColorTemperature = false;
             light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
@@ -1752,6 +1754,7 @@ namespace Reallusion.Import
             return clip;
         }
 
+        // Use reflection to pass a json string to the LightProxy script with all the required info to set itself up - since the runtime should be distributable and independent of this code
         void SetupLight(UnityLinkManager.JsonLightData json, GameObject root, AnimationClip clip)//, GameObject prefab = null)
         {
             if (LightProxyType == null)
