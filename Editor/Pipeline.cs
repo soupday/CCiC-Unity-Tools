@@ -519,10 +519,20 @@ namespace Reallusion.Import
 #else
         public static bool isHDRP12 => false;
 #endif
+#if HDRP_17_0_0_OR_NEWER
+        public static bool isHDRP17 => true;
+#else
+        public static bool isHDRP17 => false;
+#endif
 #if URP_12_0_0_OR_NEWER
         public static bool isURP12 => true;
 #else
         public static bool isURP12 => false;
+#endif
+#if URP_17_0_0_OR_NEWER
+        public static bool isURP17 => true;
+#else
+        public static bool isURP17 => false;
 #endif
 
 

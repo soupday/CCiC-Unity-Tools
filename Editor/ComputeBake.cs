@@ -20,6 +20,7 @@ using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 using static Reallusion.Import.CharacterInfo;
@@ -3597,5 +3598,130 @@ namespace Reallusion.Import
 
             return textures;
         }
-    }    
+
+        
+        [MenuItem("Assets/Create/Blur Texture 32-4")]
+        static void BlurSelectedTexture()
+        {
+            Texture2D tex = Selection.activeObject as Texture2D;
+            GuassianBlurTexture(tex, 128, 16f, "Blur");
+        }
+
+        static void ComputeWeights(int radius, float sigma, ComputeBuffer weightsBuffer)
+        {
+            var weights = new float[radius + 1];
+            float twoSigmaSq = 2f * sigma * sigma;
+
+            // 1) Unnormalized
+            for (int i = 0; i <= radius; i++)
+                weights[i] = Mathf.Exp(-(i * i) / twoSigmaSq);
+
+            // 2) Sum for normalization (center + 2× others)
+            float sum = weights[0];
+            for (int i = 1; i <= radius; i++)
+                sum += 2f * weights[i];
+
+            // 3) Normalize
+            for (int i = 0; i <= radius; i++)
+                weights[i] /= sum;
+
+            weightsBuffer.SetData(weights);
+        }
+        
+
+        public static Texture2D GuassianBlurTexture(Texture2D tex, 
+                                                    int radius, float sigma,
+                                                    string suffix)
+        {
+            RenderTexture src;
+            RenderTexture dst;
+            RenderTexture temp;
+            
+            int w = tex.width;
+            int h = tex.height;            
+            RenderTextureFormat rtFormat = RenderTextureFormat.ARGB32;
+
+            src = new RenderTexture(w, h, 0, rtFormat);
+            src.enableRandomWrite = true;            
+            src.Create();
+
+            Graphics.Blit(tex, src);
+
+            ComputeBuffer weightsBuffer;
+            weightsBuffer = new ComputeBuffer(radius + 1, sizeof(float));
+            ComputeWeights(radius, sigma, weightsBuffer);
+
+            RenderTextureDescriptor desc = src.descriptor;
+            desc.enableRandomWrite = true;
+            desc.autoGenerateMips = false;
+            desc.useMipMap = false;
+            
+            temp = new RenderTexture(desc);
+            temp.Create();
+
+            dst = new RenderTexture(desc);
+            dst.Create();
+
+            ComputeShader bakeShader = Util.FindComputeShader(COMPUTE_SHADER);
+
+            // 1) Horizontal
+            int kernelH = bakeShader.FindKernel("HorizontalBlur");
+            bakeShader.SetInt("_BlurRadius", radius);
+            bakeShader.SetBuffer(kernelH, "_BlurWeights", weightsBuffer);
+            bakeShader.SetTexture(kernelH, "_BlurSource", src);
+            bakeShader.SetTexture(kernelH, "_BlurResult", temp);
+            BlurDispatch(bakeShader, src.width, src.height, kernelH);
+
+            // 2) Vertical
+            int kernelV = bakeShader.FindKernel("VerticalBlur");
+            bakeShader.SetInt("_BlurRadius", radius);
+            bakeShader.SetBuffer(kernelV, "_BlurWeights", weightsBuffer);
+            bakeShader.SetTexture(kernelV, "_BlurSource", temp);
+            bakeShader.SetTexture(kernelV, "_BlurResult", dst);
+            BlurDispatch(bakeShader, src.width, src.height, kernelV);            
+
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = dst;
+            TextureFormat texFormat = TextureFormat.ARGB32;
+            Texture2D texOut = new Texture2D(dst.width, dst.height, texFormat, true, false);
+            texOut.ReadPixels(new Rect(0, 0, dst.width, dst.height), 0, 0);
+            texOut.Apply();
+            RenderTexture.active = null;
+
+            byte[] bytes = texOut.EncodeToPNG();
+
+            // Write file and import
+
+            string texPath = AssetDatabase.GetAssetPath(tex);
+            string folder = Path.GetDirectoryName(texPath);
+            string name = Path.GetFileNameWithoutExtension(texPath);
+            string path = Path.Combine(folder, $"{name}_{suffix}.png");
+
+            File.WriteAllBytes(path, bytes);
+            AssetDatabase.ImportAsset(path);
+
+            // Cleanup            
+            Debug.Log($"RenderTexture saved to {path}");
+
+            src.Release();
+            UnityEngine.Object.DestroyImmediate(src);
+            temp.Release();
+            UnityEngine.Object.DestroyImmediate(temp);            
+            dst.Release();
+            UnityEngine.Object.DestroyImmediate(dst);            
+
+            return texOut;
+        }
+
+        static void BlurDispatch(ComputeShader bakeShader, int width, int height, int kernel)
+        {
+            uint tx, ty, tz;
+            bakeShader.GetKernelThreadGroupSizes(kernel, out tx, out ty, out tz);
+            int gx = Mathf.CeilToInt((float)width / tx);
+            int gy = Mathf.CeilToInt((float)height / ty);
+            bakeShader.Dispatch(kernel, gx, gy, 1);
+        }
+
+
+    }
 }

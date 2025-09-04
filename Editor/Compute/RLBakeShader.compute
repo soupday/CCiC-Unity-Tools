@@ -61,6 +61,9 @@
 #pragma kernel RLChannelPackLinear
 #pragma kernel RLChannelPackSymmetryLinear
 
+#pragma kernel HorizontalBlur
+#pragma kernel VerticalBlur
+
 #pragma multi_compile _ _MAC_OS
 
 // Defines
@@ -1686,4 +1689,52 @@ void RLHDRPCorrected(uint3 id : SV_DispatchThreadID)
 
 
 
+// Max radius we support
+#define MAX_RADIUS 128
 
+// Shared between passes
+StructuredBuffer<float> _BlurWeights;
+int _BlurRadius;
+
+// Source and result textures
+Texture2D<float4> _BlurSource;
+RWTexture2D<float4> _BlurResult;
+
+// Horizontal pass: sample along X
+[numthreads(16,16,1)]
+void HorizontalBlur(uint3 id : SV_DispatchThreadID)
+{
+    int2 uv = id.xy;
+    float4 sum = 0;
+
+    // Center tap
+    sum += _BlurSource[uv] * _BlurWeights[0];
+     
+    // Offsets
+    for (int i = 1; i <= _BlurRadius; i++)
+    {
+        float w = _BlurWeights[i];
+        sum += _BlurSource[int2(uv.x + i, uv.y)] * w;
+        sum += _BlurSource[int2(uv.x - i, uv.y)] * w;
+    }
+
+    _BlurResult[uv] = LinearTosRGB(sum);
+}
+
+// Vertical pass: sample along Y
+[numthreads(16,16,1)]
+void VerticalBlur(uint3 id : SV_DispatchThreadID)
+{
+    int2 uv = id.xy;
+    float4 sum = 0;
+
+    sum += _BlurSource[uv] * _BlurWeights[0];
+    for (int i = 1; i <= _BlurRadius; i++)
+    {
+        float w = _BlurWeights[i];
+        sum += _BlurSource[int2(uv.x, uv.y + i)] * w;
+        sum += _BlurSource[int2(uv.x, uv.y - i)] * w;
+    }
+
+    _BlurResult[uv] = LinearTosRGB(sum);
+}

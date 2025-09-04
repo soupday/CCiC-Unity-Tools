@@ -151,9 +151,12 @@ namespace Reallusion.Import
             // much more flexible than EditorGUILayout.EnumFlagsField
 
             DrawLabelLine(line++, "Material Shader Features:");
-            
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
-                flagChanged = true;
+
+            if (Pipeline.isHDRP12 || Pipeline.isURP17 || Pipeline.is3D)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
+                    flagChanged = true;
+            }
 
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
                 flagChanged = true;

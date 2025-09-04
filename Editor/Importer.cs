@@ -205,6 +205,20 @@ namespace Reallusion.Import
             }
         }
 
+        public static int BUILD_NORMALS_MODE
+        {
+            get
+            {
+                return EditorPrefs.GetInt("RL_Build_Normals_Mode", 0);
+            }
+
+            set
+            {
+                EditorPrefs.SetInt("RL_Build_Normals_Mode", value);
+            }
+        }
+
+
         public static bool BUILD_MODE
         {
             get
@@ -229,6 +243,7 @@ namespace Reallusion.Import
             fbx = info.Fbx;
             id = fbx.GetInstanceID();
             fbxPath = info.path;
+            AssetDatabase.Refresh();
             importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
             characterName = info.name;
             fbxFolder = info.folder;

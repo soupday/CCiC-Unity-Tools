@@ -152,14 +152,14 @@ namespace Reallusion.Import
             return BaseGeneration.Unknown;
         }
 
-        public static void ForceLegacyBlendshapeNormals(ModelImporter importer)
+        public static void ForceLegacyBlendshapeNormals(ModelImporter importer, bool value)
         {
             string pName = "legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes";
             PropertyInfo prop = importer.GetType().GetProperty(pName, 
                                                                 BindingFlags.Instance | 
                                                                 BindingFlags.NonPublic | 
                                                                 BindingFlags.Public);
-            prop.SetValue(importer, true);
+            prop.SetValue(importer, value);
         }
 
         public static void HumanoidImportSettings(GameObject fbx, ModelImporter importer, CharacterInfo info, Avatar avatar = null)
@@ -172,29 +172,56 @@ namespace Reallusion.Import
             switch(importSet)
             {
                 case 0: // From CC3/4
-                    importer.importNormals = ModelImporterNormals.Import;
-                    importer.importBlendShapes = true;
-                    importer.importBlendShapeNormals = ModelImporterNormals.Import;                    
-                    importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;                    
-                    importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
-                    importer.normalSmoothingAngle = 60f;
+                    if (Importer.BUILD_NORMALS_MODE == 0)
+                    {
+                        importer.importNormals = ModelImporterNormals.Import;
+                        importer.importBlendShapes = true;
+                        importer.importBlendShapeNormals = ModelImporterNormals.Import;
+                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
+                        importer.normalSmoothingAngle = 180f;
+                        ForceLegacyBlendshapeNormals(importer, true);
+                    }
+                    else
+                    {
+                        importer.importNormals = ModelImporterNormals.Calculate;
+                        importer.importBlendShapes = true;
+                        importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
+                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
+                        importer.normalSmoothingAngle = 180f;
+                        ForceLegacyBlendshapeNormals(importer, false);
+                    }
                     break;
                 case 1: // From Blender
-                    importer.importNormals = ModelImporterNormals.Import;
-                    importer.importBlendShapes = true;
-                    importer.importBlendShapeNormals = ModelImporterNormals.Import;
-                    importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;                    
-                    importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
-                    importer.normalSmoothingAngle = 60f;
-                    break;                
+                    if (Importer.BUILD_NORMALS_MODE == 0)
+                    {
+                        importer.importNormals = ModelImporterNormals.Import;
+                        importer.importBlendShapes = true;
+                        importer.importBlendShapeNormals = ModelImporterNormals.Import;
+                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
+                        importer.normalSmoothingAngle = 180f;
+                        ForceLegacyBlendshapeNormals(importer, true);
+                    }
+                    else
+                    {
+                        importer.importNormals = ModelImporterNormals.Calculate;
+                        importer.importBlendShapes = true;
+                        importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
+                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.PreferSmoothingGroups;
+                        importer.normalSmoothingAngle = 180f;
+                        ForceLegacyBlendshapeNormals(importer, false);
+                    }
+                    break;                    
             }
             importer.importTangents = ModelImporterTangents.CalculateMikk;
             importer.generateAnimations = ModelImporterGenerateAnimations.GenerateAnimations;
             importer.animationType = ModelImporterAnimationType.Human;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.keepQuads = false;
-            importer.weldVertices = true;
-            ForceLegacyBlendshapeNormals(importer);
+            importer.weldVertices = true;            
 
             importer.autoGenerateAvatarMappingIfUnspecified = true;
             

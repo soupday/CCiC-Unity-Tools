@@ -738,6 +738,7 @@ namespace Reallusion.Import
             charInfo.motionPrefix = MotionPrefix;  
 
             charInfo.BuildQuality = MaterialQuality.High;
+            charInfo.animationSetup = false;
             Importer import = new Importer(charInfo);
             import.recordMotionListForTimeLine = importIntoScene;
             GameObject prefab = import.Import();
@@ -773,6 +774,7 @@ namespace Reallusion.Import
                 charInfo.BuildQuality = MaterialQuality.High;
             else
                 charInfo.BuildQuality = MaterialQuality.Default;
+            charInfo.animationSetup = false;
 
             Importer import = new Importer(charInfo);
             import.recordMotionListForTimeLine = importIntoScene;

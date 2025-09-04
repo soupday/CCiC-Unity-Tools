@@ -1293,6 +1293,19 @@ namespace Reallusion.Import
             GUILayout.EndArea();
         }
 
+        private void DropDownBox(string[] options, int value, GenericMenu.MenuFunction2 func)
+        {                           
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(options[value]),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+                for (int i = 0; i < options.Length; i++)
+                    menu.AddItem(new GUIContent(options[i]), value == i, func, i);
+                menu.ShowAsContext();
+            }
+        }
+
         private void OnGUISettingsArea(Rect settingsBlock)
         {
             if (EditorApplication.isPlaying)
@@ -1324,6 +1337,11 @@ namespace Reallusion.Import
                     "Amplify shaders are capable of subsurface scattering effects, and anisotropic hair lighting in the URP and Build-in 3D pipelines."));
                 GUILayout.Space(ROW_SPACE);
             }*/
+            
+            string[] options = new string[] { "Import Normals", "Calculate Normals" };
+            void UpdateBuildNormalsMode(object value) { Importer.BUILD_NORMALS_MODE = (int)value; }
+            DropDownBox(options, Importer.BUILD_NORMALS_MODE, UpdateBuildNormalsMode);
+            GUILayout.Space(ROW_SPACE);
 
             Importer.BUILD_MODE = GUILayout.Toggle(Importer.BUILD_MODE,
                 new GUIContent("Automatically Build Animations", "Always build animations when building materials."));            
@@ -1465,21 +1483,9 @@ namespace Reallusion.Import
             */
 
             GUILayout.Space(10f);
-            string label = "Log Everything";
-            if (Util.LOG_LEVEL == 0) label = "Log Errors Only";
-            if (Util.LOG_LEVEL == 1) label = "Log Warnings and Errors";
-            if (Util.LOG_LEVEL == 2) label = "Log Messages";
-            if (EditorGUILayout.DropdownButton(
-                content: new GUIContent(label),
-                focusType: FocusType.Passive))
-            {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Log Errors Only"), Util.LOG_LEVEL == 0, LogOptionSelected, 0);
-                menu.AddItem(new GUIContent("Log Warnings and Errors"), Util.LOG_LEVEL == 1, LogOptionSelected, 1);
-                menu.AddItem(new GUIContent("Log Messages"), Util.LOG_LEVEL == 2, LogOptionSelected, 2);
-                menu.AddItem(new GUIContent("Log Everything"), Util.LOG_LEVEL == 3, LogOptionSelected, 3);
-                menu.ShowAsContext();
-            }
+            options = new string[] { "Log Errors Only", "Log Warnings and Errors", "Log Messages", "Log Everything" };
+            void UpdateLogLevel(object value) { Util.LOG_LEVEL = (int)value; }
+            DropDownBox(options, Util.LOG_LEVEL, UpdateLogLevel);            
             GUILayout.Space(ROW_SPACE);
 
             GUILayout.Space(10f);
@@ -1507,7 +1513,7 @@ namespace Reallusion.Import
         private void LogOptionSelected(object sel)
         {
             Util.LOG_LEVEL = (int)sel;
-        }
+        }        
 
         private void EyeOptionSelected(object sel)
         {
