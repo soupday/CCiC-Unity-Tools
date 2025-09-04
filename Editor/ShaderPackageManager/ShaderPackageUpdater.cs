@@ -835,7 +835,7 @@ namespace Reallusion.Import
 
         private string GetShaderLabel()
         {
-            string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
+            string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (UpdateManager.installedShaderPipelineVersion.ToString() + " v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
             return shaderVersion;
         }
 
