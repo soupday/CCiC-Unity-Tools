@@ -1206,8 +1206,7 @@ namespace Reallusion.Import
                     {
                         Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", true);
                         if (diffuse)
-                        {
-                            Color falloff = matJson.GetColorValue("Subsurface Scatter/Falloff");
+                        {                            
                             ComputeBake.GuassianBlurTexture(diffuse, 512, 16, 4f, "BDiffuseBlur", sourceName);
                         }
                     }
@@ -2574,9 +2573,9 @@ namespace Reallusion.Import
                     TexCategory.LowDetail);
             }
 
-            if (characterInfo.RefractiveEyes)
+            if (characterInfo.RefractiveEyes && isMorphCombined)
             {
-                mat.SetBooleanKeyword("BOOLEAN_ZUP", isMorphCombined);
+                mat.SetVectorIf("_DepthVector", new Vector4(0f,0f,1f));
             }
 
             // reconstruct any missing packed texture maps from Blender source maps.
@@ -2862,7 +2861,7 @@ namespace Reallusion.Import
                 mat.SetVectorIf("_HighlightBDistribution", (1f / 255f) * matJson.GetVector3Value("Custom Shader/Variable/_2nd Dye Distribution from Grayscale"));
                 mat.SetFloatIf("_HighlightBOverlapEnd", matJson.GetFloatValue("Custom Shader/Variable/Mask 2nd Dye by RootMap"));
                 mat.SetFloatIf("_HighlightBOverlapInvert", matJson.GetFloatValue("Custom Shader/Variable/Invert 2nd Dye RootMap Mask"));                
-            }            
+            }
         }
 
         private void ConnectHQEyeOcclusionMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,

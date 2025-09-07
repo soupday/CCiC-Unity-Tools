@@ -611,6 +611,42 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "fc833fb56978cb8439bb65561b07ea5d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_EyeShaderRefractive_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "5e5a79e3f34658f47b7e7829ead39646",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "23f52b8a2dc8ccd4a975b156accc0f52",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_HairShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "b864022b80ad12f48944461fcb4658f1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_SkinShader_Baked_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "ea3b2eb47b2401a47b3bd57b29a0feac",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Baked/Tessellation/RL5_SkinShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "8ed8f13f7d3c109439ab3728e1ed9184",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/Basic/RL5_EyeShaderBasic_Dummy_HDRP.shadergraph",
       "GUID": "0e201e78dbb476b4887d8eff1d3f95cb",
       "InstalledGUID": "",
@@ -691,6 +727,54 @@
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/RL5_TongueShader_HDRP.shadergraph",
       "GUID": "2a6311cb32c436d4dac8b4d356ab1a27",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
+      "GUID": "4c0b613a79547d348a810fc004631b8c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_EyeShaderRefractive_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "747c44e21771c7a4895e068ed2ca6771",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "5923be52a799c3241ab04d48760aaa84",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_HairShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "fbeae0f5558aa994aa5740605d7ff5b7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "8a6acac53886ba847ab87c37f071e307",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_SkinShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "43415460e3ef4c14caa44890d20a67e2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_TeethShader_HDRP_Tessellation.shadergraph",
+      "GUID": "b7eaf60a1f4049c40b5432e480a10ae9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Shader Graph/HQ/Tessellation/RL5_TongueShader_HDRP_Tessellation.shadergraph",
+      "GUID": "90dd3557665d23c4ea1e8b0a8fba463a",
       "InstalledGUID": "",
       "Validated": false
     },

@@ -1448,6 +1448,7 @@ namespace Reallusion.Import
             float irisSubsurfaceScale = mat.GetFloatIf("_IrisSubsurfaceScale");
             float subsurfaceThickness = mat.GetFloatIf("_SubsurfaceThickness");
             float useDepth = mat.GetFloatIf("_UseDepth");
+            Vector4 depthVector = mat.GetVectorIf("_DepthVector");
 
             Color cornerShadowColor = mat.GetColorIf("_CornerShadowColor", Color.red);
             Color irisColor = mat.GetColorIf("_IrisColor", Color.white);
@@ -1576,6 +1577,7 @@ namespace Reallusion.Import
                 result.SetTextureIf("_SecondaryColorMap", bakedSecondaryMap);
 
             result.SetColorIf("_LimbusColor", limbusColor);
+            result.SetVectorIf("_DepthVector", depthVector);
 
             if (isCornea)
             {
