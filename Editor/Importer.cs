@@ -16,6 +16,7 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Codice.Client.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1148,7 +1149,7 @@ namespace Reallusion.Import
         {
             ComputeBake baker = new ComputeBake(characterInfo.Fbx, characterInfo);
             string assetFolder;
-            string folder;            
+            string folder;
 
             if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
             {
@@ -1159,12 +1160,12 @@ namespace Reallusion.Import
                 {
                     displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
                     sssThickness = GetTexture(sourceName, "BSSSThicknessPack", matJson, "Textures/NOTEX", true);
-                }                
+                }
 
                 Texture2D cavity = GetTexture(sourceName, "Cavitymap", matJson, "Custom Shader/Image/Cavity Map", true);
                 Texture2D displacement = GetTexture(sourceName, "Displacement", matJson, "Textures/Displacement", true);
                 Texture2D sss = GetTexture(sourceName, "SSSMap", matJson, "Custom Shader/Image/SSS Map", true);
-                Texture2D transmission = GetTexture(sourceName, "TransMap", matJson, "Custom Shader/Image/Transmission Map", true);                
+                Texture2D transmission = GetTexture(sourceName, "TransMap", matJson, "Custom Shader/Image/Transmission Map", true);
 
                 /*
                 if (!displacementCavity)
@@ -1188,6 +1189,27 @@ namespace Reallusion.Import
                         sssThickness = baker.BakeChannelPackLinear(folder, sss, sss, sss, transmission,
                                                                          sourceName + "_BSSSThicknessPack",
                                                                          0, 1f, 1f, 1f, 1f);
+                    }
+                }
+
+                // URP SSS Blur
+                if (Pipeline.isURP)
+                {
+                    Texture2D diffuseBlur = null;
+
+                    if (!REBAKE_PACKED_TEXTURE_MAPS)
+                    {
+                        diffuseBlur = GetTexture(sourceName, "BDiffuseBlur", matJson, "Textures/NOTEX", true);                        
+                    }
+
+                    if (!diffuseBlur)
+                    {
+                        Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", true);
+                        if (diffuse)
+                        {
+                            Color falloff = matJson.GetColorValue("Subsurface Scatter/Falloff");
+                            ComputeBake.GuassianBlurTexture(diffuse, 512, 16, 4f, "BDiffuseBlur", sourceName);
+                        }
                     }
                 }
             }
@@ -1304,9 +1326,23 @@ namespace Reallusion.Import
             if (materialType == MaterialType.Skin || materialType == MaterialType.Head)
             {
                 //Texture2D displacementCavity = GetTexture(sourceName, "BDisplacementCavityPack", matJson, "Textures/NOTEX", true);
-                Texture2D sssThickness = GetTexture(sourceName, "BSSSThicknessPack", matJson, "Textures/NOTEX", true);
+                Texture2D sssThickness = GetTexture(sourceName, "BSSSThicknessPack", matJson, "Textures/NOTEX", true);                
                 //if (displacementCavity) mat.SetTextureIf("_DisplacementCavityPack", displacementCavity);
                 if (sssThickness) mat.SetTextureIf("_SSSThicknessPack", sssThickness);
+
+                if (Pipeline.isURP)
+                {
+                    Texture2D diffuseBlur = GetTexture(sourceName, "BDiffuseBlur", matJson, "Textures/NOTEX", true);
+                    if (diffuseBlur)
+                    {
+                        mat.SetTextureIf("_SubsurfaceBlurMap", diffuseBlur);
+                        mat.SetBooleanKeyword("BOOLEAN_USE_SSS", true);
+                    }
+                    else
+                    {
+                        mat.SetBooleanKeyword("BOOLEAN_USE_SSS", false);                        
+                    }
+                }
             }
 
             if (materialType == MaterialType.Head)
@@ -2185,8 +2221,16 @@ namespace Reallusion.Import
 
             if (matJson != null)
             {
+                Color sssFalloff = Color.white;
+                float subsurfaceScale = 0.85f;
                 float specular = matJson.GetFloatValue("Custom Shader/Variable/_Specular");
-                bool specularBakeZero = false;
+                bool specularBakeZero = false;                
+
+                if (matJson.PathExists("Subsurface Scatter/Falloff"))
+                    sssFalloff = matJson.GetColorValue("Subsurface Scatter/Falloff");
+
+                if (matJson.PathExists("Subsurface Scatter/Lerp"))
+                    subsurfaceScale = matJson.GetFloatValue("Subsurface Scatter/Lerp");
 
                 // work around CC4 Head specular export bug, when exporting with bake skin option
                 if (specular == 0.0f && materialType == MaterialType.Head)
@@ -2223,18 +2267,14 @@ namespace Reallusion.Import
                     mat.SetFloatIf("_NormalStrength", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                 mat.SetFloatIf("_MicroNormalTiling", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Tiling"));
                 mat.SetFloatIf("_MicroNormalStrength", matJson.GetFloatValue("Custom Shader/Variable/MicroNormal Strength"));                                
-                float smoothnessMax = Util.CombineSpecularToSmoothness(specular, ValueByPipeline(1f, 0.9f, 1f));
+                float smoothnessMax = Util.CombineSpecularToSmoothness(specular, ValueByPipeline(1f, 0.88f, 1f));
                 float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
                 mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
+                mat.SetFloat("_SmoothnessPower", useCavity ? 2.0f : 1.5f);
                 mat.SetFloatIf("_SecondarySmoothness", useCavity ? 0.5f : 0.25f);
-                //float secondarySmoothness = 0.85f * smoothnessMax;
-                //float smoothnessMix = Mathf.Clamp(0.15f * ((1f / Mathf.Pow(secondarySmoothness, 4f)) - 1f), 0.05f, 0.9f);
-                //mat.SetFloatIf("_Smoothness2", secondarySmoothness);
-                //mat.SetFloatIf("_SmoothnessMix", smoothnessMix);
-                // URP's lights affect the AMP SSS more than 3D or HDRP
-                //mat.SetFloatIf("_SubsurfaceScale", matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
-                //mat.SetFloatIf("_SubsurfaceScale", 1.25f);
+                mat.SetFloatIf("_SubsurfaceScale", 1.65f * matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
+                mat.SetColorIf("_SubsurfaceFalloff", sssFalloff);
                 mat.SetFloatIf("_MicroSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Micro Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Unmasked Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedScatterScale", matJson.GetFloatValue("Custom Shader/Variable/Unmasked Scatter Scale"));
@@ -2960,7 +3000,7 @@ namespace Reallusion.Import
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
-            mat.SetFloatIf("_DisplaceScale", 0.01f / modelScale);            
+            mat.SetFloatIf("_DisplaceScale", 0.01f / modelScale);
         }
 
         private void ConnectHQTearlineMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -2983,7 +3023,7 @@ namespace Reallusion.Import
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
-            mat.SetFloatIf("_DepthScale", 0.005f / modelScale);
+            mat.SetFloatIf("_DepthScale", 0.01f / modelScale);
         }
 
         private void ConnectHQTearlinePlusMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -3015,7 +3055,7 @@ namespace Reallusion.Import
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
-            mat.SetFloatIf("_DisplaceScale", 0.2f / modelScale);
+            mat.SetFloatIf("_DisplaceScale", 0.01f / modelScale);
         }
 
         private Texture2D GetCachedBakedMap(Material sharedMaterial, string shaderRef)

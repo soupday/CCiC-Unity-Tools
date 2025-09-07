@@ -425,14 +425,14 @@ namespace Reallusion.Import
             return defaultValue;
         }
 
-        public Color GetColorValue(string path)
+        public Color GetColorValue(string path, Color defaultValue = default)
         {
             string[] paths = path.Split('/');
 
-            return GetColorValue(paths);
+            return GetColorValue(paths, defaultValue);
         }
 
-        public Color GetColorValue(string[] paths)
+        public Color GetColorValue(string[] paths, Color defaultValue = default)
         {
             if (paths.Length > 0)
             {
@@ -443,7 +443,7 @@ namespace Reallusion.Import
                     return mv.ObjectValue.ColorValue;
             }
 
-            return Color.white;
+            return defaultValue;
         }
 
 
