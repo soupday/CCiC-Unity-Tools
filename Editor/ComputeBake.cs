@@ -1198,7 +1198,7 @@ namespace Reallusion.Import
                 result.SetBooleanKeyword("BOOLEAN_USE_SSS", useCustomSSS);
                 if (useCustomSSS)
                 {
-                    Texture2D diffuseBlur = GuassianBlurTexture(bakedBaseMap, 512, 16, 4f, "BDiffuseBlur", sourceName);
+                    Texture2D diffuseBlur = GuassianBlurTexture(bakedBaseMap, 512, 24, 4f, "BDiffuseBlur", sourceName);
                     if (diffuseBlur) result.SetTextureIf("_SubsurfaceBlurMap", diffuseBlur);
                 }
             }

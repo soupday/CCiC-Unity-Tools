@@ -611,18 +611,6 @@
       "Validated": false
     },
     {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HLSL/CustomFunctionTessellationBase.hlsl",
-      "GUID": "aeda11a418c9d2e4bb7aeed8476f77a3",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HLSL/_Template.shadergraph",
-      "GUID": "b80f039caca2bc74d889f4b514c529df",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_CorneaShaderParallax_URP.shadergraph",
       "GUID": "28d12b9b79962d04fb6b50a9ccf15d3b",
       "InstalledGUID": "",
@@ -685,12 +673,6 @@
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_TongueShader_URP.shadergraph",
       "GUID": "4ff292228cf2e114ead19d62fe48192a",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/Tessellation/RL5_SkinShader_Variants_URP_Tessellation.shadergraph",
-      "GUID": "bac4120c5bf55c44e9ccdd6467a6f50c",
       "InstalledGUID": "",
       "Validated": false
     },

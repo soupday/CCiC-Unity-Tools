@@ -1207,7 +1207,7 @@ namespace Reallusion.Import
                         Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", true);
                         if (diffuse)
                         {                            
-                            ComputeBake.GuassianBlurTexture(diffuse, 512, 16, 4f, "BDiffuseBlur", sourceName);
+                            ComputeBake.GuassianBlurTexture(diffuse, 512, 24, 4f, "BDiffuseBlur", sourceName);
                         }
                     }
                 }
@@ -2282,8 +2282,8 @@ namespace Reallusion.Import
                 float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
                 float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
                 float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value");                
-                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.02f);
-                mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * 0.005f);
+                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.01f);
+                mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * 0.01f);
                 mat.SetFloatIf("_DisplacementLevel", displacementLevel);
 
 
