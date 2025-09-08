@@ -868,15 +868,12 @@ namespace Reallusion.Import
 
         public static PipelineVersion GetVersion(InstalledPipeline pipe, Version version)
         {
-            int major = version.Major;
-            int minor = version.Minor;
-
             Func<Version, Version, PipelineVersion, VersionLimits> Rule = (min, max, ver) => new VersionLimits(min, max, ver);
 
             if (pipe == InstalledPipeline.URP)
             {
                 // Specific rule to limit WebGL to a maximum of URP12
-                if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL && major >= 12)
+                if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL && version.Major >= 12)
                 {
                     UpdateManager.platformRestriction = PlatformRestriction.URPWebGL;
                     return PipelineVersion.URP12;
