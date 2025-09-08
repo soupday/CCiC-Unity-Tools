@@ -152,7 +152,7 @@ namespace Reallusion.Import
 
             DrawLabelLine(line++, "Material Shader Features:");
 
-            if (Pipeline.isHDRP12 || Pipeline.isURP17 || Pipeline.is3D)
+            if (Pipeline.isHDRP12 || Pipeline.is3D)
             {
                 if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
                     flagChanged = true;
