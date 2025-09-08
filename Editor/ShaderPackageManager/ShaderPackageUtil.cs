@@ -882,29 +882,17 @@ namespace Reallusion.Import
                     return PipelineVersion.URP12;
                 }
 
-                //if (major >= 17 && minor >= 1) return PipelineVersion.URP171;
-
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
-                    // Rule(min max, version)
-                    
-                    Rule(new Version(0,0,0), new Version(9, 9, 99), PipelineVersion.Incompatible),
-                    Rule(new Version(10, 0, 0), new Version(11, 9, 99), PipelineVersion.URP10),
-                    Rule(new Version(12, 0, 0), new Version(13, 9, 99), PipelineVersion.URP12),
-                    Rule(new Version(14, 0, 0), new Version(16, 9, 99), PipelineVersion.URP14),
-                    Rule(new Version(17, 0, 0), new Version(17, 0, 99), PipelineVersion.URP17),
-                    Rule(new Version(17, 1, 0), new Version(17, 1, 99), PipelineVersion.URP171),
-                    Rule(new Version(17, 2, 0), new Version(100, 99, 99), PipelineVersion.URP172)
-
-                    // use these if 6000.3 (URP 17.3) requires new shaders
-                    //Rule(new Version(17, 2, 0), new Version(17, 2, 99), PipelineVersion.URP172),  
-                    //Rule(new Version(17, 3, 0), new Version(100, 99, 99), PipelineVersion.URP173)
+                    // Rule(min max, version)                    
+                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
+                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.URP10),
+                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
+                    Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
+                    Rule(new Version(17, 0, 0), new Version(100, 99, 99), PipelineVersion.URP17)
                 };
 
-                VersionLimits result = urpRules.Find(z => version >= z.Min && version <= z.Max);
-
-                //List<VersionLimits> byMax = urpRules.FindAll(z => version <= z);
-                //VersionLimits result = byMax.Find(z => major >= z.Min);
+                VersionLimits result = urpRules.Find(z => version >= z.Min && version < z.Max);
 
                 if (result != null)
                 {
@@ -918,35 +906,16 @@ namespace Reallusion.Import
 
             if (pipe == InstalledPipeline.HDRP)
             {
-                //if (major >= 17 && minor >= 1) return PipelineVersion.HDRP171;
-
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
-                    /*
-                    // Rule(min max, version)
-                    Rule(0, 9, PipelineVersion.Incompatible),
-                    Rule(10, 11, PipelineVersion.HDRP10),
-                    Rule(12, 13, PipelineVersion.HDRP12),
-                    Rule(14, 16, PipelineVersion.HDRP14),
-                    Rule(17, 100, PipelineVersion.HDRP17)
-                    */
-                    Rule(new Version(0, 0, 0), new Version(9, 9 , 99), PipelineVersion.Incompatible),
-                    Rule(new Version(10, 0, 0), new Version(11, 9, 99), PipelineVersion.HDRP10),
-                    Rule(new Version(12, 0, 0), new Version(13, 9, 99), PipelineVersion.HDRP12),
-                    Rule(new Version(14, 0, 0), new Version(16, 9, 99), PipelineVersion.HDRP14),
-                    Rule(new Version(17, 0, 0), new Version(17, 0, 99), PipelineVersion.HDRP17),
-                    Rule(new Version(17, 1, 0), new Version(17, 1, 99), PipelineVersion.HDRP171),
-                    Rule(new Version(17, 2, 0), new Version(100, 9, 99), PipelineVersion.HDRP172),
-
-                    // use these if 6000.3 (HDRP 17.3) requires new shaders
-                    //Rule(new Version(17, 2, 0), new Version(17, 2, 99), PipelineVersion.HDRP17),
-                    //Rule(new Version(17, 3, 0), new Version(100, 9, 99), PipelineVersion.HDRP17)
+                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
+                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.HDRP10),
+                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.HDRP12),
+                    Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.HDRP14),
+                    Rule(new Version(17, 0, 0), new Version(100, 9, 99), PipelineVersion.HDRP17)
                 };
 
-                //List<VersionLimits> byMax = hdrpRules.FindAll(z => major <= z.Max);
-                //VersionLimits result = byMax.Find(z => major >= z.Min);
-
-                VersionLimits result = hdrpRules.Find(z => version >= z.Min && version <= z.Max);
+                VersionLimits result = hdrpRules.Find(z => version >= z.Min && version < z.Max);
 
                 if (result != null)
                 {

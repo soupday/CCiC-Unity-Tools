@@ -258,16 +258,16 @@ namespace Reallusion.Import
             //UnityLinkManager.IS_CLIENT_LOCAL = isClientLocal;
             if (!UnityLinkManager.IS_CLIENT_LOCAL)
             {
-                UnityLinkManager.NotifyInternalQueue("Attempting connection to " + remoteHost);
+                UnityLinkManager.NotifyInternalQueue($"Attempting connection to {remoteHost}");
                 bool valid = false;
                 control = Control.Validating;
 
-                Debug.LogWarning("Testing host");
+                Debug.Log("Testing host");
 
                 // validate IP address
                 if (IPAddress.TryParse(remoteHost, out IPAddress ip))
                 {
-                    Debug.LogWarning("IP address is an ip address");
+                    Debug.Log("Supplied IP address is a valid IPv4 address.");
                     valid = true;
                     UnityLinkManager.REMOTE_HOST = remoteHost;
                 }
@@ -280,7 +280,7 @@ namespace Reallusion.Import
                     // https://stackoverflow.com/questions/41348873/limit-dns-gethostaddresses-by-time
                     try
                     {
-                        Debug.LogWarning("try Dns resolution async");
+                        //Debug.Log("Trying Dns resolution (async)");
                         var addr = Dns.GetHostAddressesAsync(remoteHost);
                         bool isTaskComplete = addr.Wait(3000);
                         if (isTaskComplete)
@@ -288,49 +288,42 @@ namespace Reallusion.Import
                             IPAddress[] hosts = addr.Result;
                             if (hosts.Length > 0)
                             {
-                                Debug.LogWarning("Dns name resolves async");
-                                valid = true;
-                                UnityLinkManager.REMOTE_HOST = hosts[0].MapToIPv4().ToString();
-                                UnityLinkManager.NotifyInternalQueue("Hostname " + remoteHost + " resolves to " + UnityLinkManager.REMOTE_HOST);
+                                //Debug.LogWarning("Dns name resolves (async)");
+
+                                // ensure the IPv4 address is being used (eg 127.0.0.1 rather than ::1 - which would map to 0.0.0.1) 
+                                IPAddress remote = hosts.FirstOrDefault(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).MapToIPv4();
+
+                                if (remote != null)
+                                {
+                                    UnityLinkManager.REMOTE_HOST = remote.ToString();
+                                    UnityLinkManager.NotifyInternalQueue($"Hostname: {remoteHost} resolves to {UnityLinkManager.REMOTE_HOST}");
+                                    valid = true;
+                                }
+                                else
+                                {
+                                    UnityLinkManager.NotifyInternalQueue($"DNS resolution of hostname: {remoteHost} could not find a valid IPv4 address.");
+                                    Debug.LogWarning($"Hostname: {remoteHost} does not resolve to a vaid IPv4 address.");
+                                    valid = false;
+                                    control = Control.InValid;
+                                }
                             }
                         }
                         else // Task timed out
                         {
-                            UnityLinkManager.NotifyInternalQueue(remoteHost + " does not resolve to a vaid IP address");
-                            Debug.LogWarning("Dns name resolution timed out async");
+                            UnityLinkManager.NotifyInternalQueue($"DNS resolution of hostname: {remoteHost} timed out.");
+                            Debug.LogWarning($"Dns name resolution of hostname: {remoteHost} timed out.");
                         }
                     }
                     catch
                     {
-                        UnityLinkManager.NotifyInternalQueue("Dns cannot resolve " + remoteHost);
-                        Debug.LogWarning("Dns name does not resolve async");
+                        UnityLinkManager.NotifyInternalQueue($"Error resolving hostname: {remoteHost}");
+                        Debug.LogWarning($"Error resolving hostname: {remoteHost}");
                         valid = false;
                         control = Control.InValid;
                     }
-
-                    /*
-                    try
-                    {
-                        IPAddress[] hostaddrs = Dns.GetHostAddresses(remoteHost);
-
-                        if(hostaddrs.Length>0)
-                        {
-                            Debug.LogWarning("Dns name resolves");
-                            valid = true;                            
-                            UnityLinkManager.remoteHost = hostaddrs[0].MapToIPv4().ToString();
-                        }
-                    }
-                    catch
-                    {
-                        Debug.LogWarning("Dns name does not resolve");
-                        valid = false;
-                        control = Control.InValid;
-                    }
-                    */
-
                 }
                 connectInProgress = valid;
-                Debug.LogWarning("connectInProgress = " + connectInProgress);
+                //Debug.LogWarning("connectInProgress = " + connectInProgress);
             }
             if (connectInProgress)
             {
@@ -354,7 +347,7 @@ namespace Reallusion.Import
                 if (!UnityLinkManager.IS_CLIENT_LOCAL)
                 {
                     // since the last remote ip connected properly, save it in settings
-                    settings.lastSuccessfulHost = UnityLinkManager.REMOTE_HOST;
+                    settings.lastSuccessfulHost = remoteHost; // UnityLinkManager.REMOTE_HOST; 
                     SaveSettings();
                 }
             }
@@ -1200,6 +1193,8 @@ namespace Reallusion.Import
             {
                 guiQueue.Add(UnityLinkManager.activityQueue[i]);
             }
+
+            GUILayout.Space(6f);
 
             logScrollPos = GUILayout.BeginScrollView(logScrollPos);
 

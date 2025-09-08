@@ -334,7 +334,7 @@ namespace Reallusion.Import
                 if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
                 {
                     workingtrack = track as AnimationTrack;
-                    Debug.LogWarning("workingtrack matched");
+                    //Debug.LogWarning("workingtrack matched");
                     break;
                 }
             }

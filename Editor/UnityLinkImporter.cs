@@ -403,7 +403,7 @@ namespace Reallusion.Import
             CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
             if (characterMatch != null)
             {
-                Debug.Log("Existing character found at: " + characterMatch.path + "for linkId: " + linkId);
+                Debug.Log($"Existing linked character found at: {characterMatch.path} for linkId: {linkId}");
                 string fbxPath = characterMatch.path;
                 if (!string.IsNullOrEmpty(fbxPath))
                 {
@@ -454,7 +454,7 @@ namespace Reallusion.Import
 
             if (string.IsNullOrEmpty(destinationFolder))
             {
-                Debug.LogWarning("Cannot find a folder to import into - " + proposedDestinationFolder + " has too many copies");
+                Debug.LogWarning($"Cannot find a folder to import into {proposedDestinationFolder} has too many copies");
                 return string.Empty;
             }
 
@@ -465,7 +465,7 @@ namespace Reallusion.Import
                 //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
-                    Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                    //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                     
                     FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
                     // or
@@ -476,7 +476,7 @@ namespace Reallusion.Import
                 else
                 {
                     string targetFolder = existingLinkedCharFolder.UnityAssetPathToFullPath();
-                    Debug.LogWarning("Moving Folder " + assetFolder + " to existing linked folder " + targetFolder);
+                    Debug.Log($"Importing to existing linked folder {targetFolder}.");
 
                     string prevParentName = "Previous_Imports";
                     string prevParentPath = Path.Combine(existingLinkedCharFolder, prevParentName);
@@ -488,7 +488,7 @@ namespace Reallusion.Import
                     string prev_name = Path.GetFileNameWithoutExtension(existingLinkedFbxPath);
 
                     string uniqueFolder = GetNonDuplicateFolderName(Path.Combine(prevParentPath, prev_name), true);
-                    Debug.LogWarning("uniqueFolder " + uniqueFolder);
+                    Debug.Log($"Moving previous FBX: {prev_fbx} to new folder: {uniqueFolder}");
                     string prev_dest = Path.Combine(uniqueFolder, prev_fbx);
 
                     if (!AssetDatabase.IsValidFolder(uniqueFolder))
@@ -511,7 +511,7 @@ namespace Reallusion.Import
             }
             catch (Exception ex)
             {
-                Debug.Log("Cannot copy asset to AssetDatabase! " + ex.Message); return string.Empty;
+                Debug.LogWarning($"Cannot copy asset to AssetDatabase! Error: {ex.Message}"); return string.Empty;
             }
 
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
