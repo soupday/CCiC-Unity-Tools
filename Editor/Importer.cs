@@ -2579,9 +2579,7 @@ namespace Reallusion.Import
             }
 
             // reconstruct any missing packed texture maps from Blender source maps.
-            ConnectBlenderTextures(sourceName, mat, matJson, "_CorneaDiffuseMap", "_MaskMap", "_MetallicAlphaMap");
-
-            mat.SetColorIf("_LimbusColor", new Color(0.2f, 0.2f, 0.2f));
+            ConnectBlenderTextures(sourceName, mat, matJson, "_CorneaDiffuseMap", "_MaskMap", "_MetallicAlphaMap");            
 
             if (matJson != null)
             {
@@ -2620,16 +2618,19 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_IrisBrightness", 1.5f * matJson.GetFloatValue("Custom Shader/Variable/Iris Color Brightness"));
                 mat.SetFloatIf("_IOR", matJson.GetFloatValue("Custom Shader/Variable/_IoR"));
                 mat.SetFloatIf("_IrisRadius", matJson.GetFloatValue("Custom Shader/Variable/Iris UV Radius"));                
-                mat.SetFloatIf("_LimbusWidth", matJson.GetFloatValue("Custom Shader/Variable/Limbus UV Width Color"));
-                float limbusDarkScale = Mathf.Max(0.1f, matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale"));
+                mat.SetFloatIf("_LimbusWidth", matJson.GetFloatValue("Custom Shader/Variable/Limbus UV Width Color"));                
+                /*
                 float ds = Mathf.Pow(0.01f, 0.2f) / limbusDarkScale;
-                float dm = Mathf.Pow(0.5f, 0.2f) / limbusDarkScale;
+                float dm = Mathf.Pow(0.5f, 0.2f) / limbusDarkScale;                
                 mat.SetFloatIf("_LimbusDarkRadius", ds);
-                mat.SetFloatIf("_LimbusDarkWidth", 2f * (dm - ds));
-                //mat.SetFloatIf("_LimbusDarkWidth", 0.035f);
+                //mat.SetFloatIf("_LimbusDarkWidth", 2f * (dm - ds));
+                mat.SetFloatIf("_LimbusDarkWidth", Mathf.Max(0.05f, 0.14f - ds));
+                */                                          
+                mat.SetFloatIf("_LimbusContrast", 1f);
                 float scleraBrightnessPower = 0.65f;
+                float scleraBrightness = Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/ScleraBrightness"), scleraBrightnessPower);
                 if (Pipeline.isHDRP) scleraBrightnessPower = 0.75f;
-                mat.SetFloatIf("_ScleraBrightness", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/ScleraBrightness"), scleraBrightnessPower));
+                mat.SetFloatIf("_ScleraBrightness", scleraBrightness);
                 mat.SetFloatIf("_ScleraSaturation", 1f);
                 mat.SetFloatIf("_ScleraHue", 0.51f);
                 mat.SetFloatIf("_ScleraSmoothness", MAX_SMOOTHNESS - MAX_SMOOTHNESS * matJson.GetFloatValue("Custom Shader/Variable/Sclera Roughness"));
@@ -2638,6 +2639,13 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_ScleraNormalStrength", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Flatten Normal"));
                 mat.SetFloatIf("_ScleraNormalTiling", 1f / Mathf.Clamp(matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 5f));
                 mat.SetFloatIf("_IsLeftEye", isLeftEye ? 1f : 0f);
+
+                mat.SetFloatIf("_LimbusDarkRadius", 0.085f);
+                mat.SetFloatIf("_LimbusDarkWidth", 0.04f);
+                float limbusDarkScale = Mathf.Max(0f, matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale"));
+                float limbusColorDark = Mathf.Pow(1f - (limbusDarkScale / 10f), 0.2f);
+                float lc = Mathf.Lerp(0.2f, scleraBrightness, limbusColorDark);
+                mat.SetColorIf("_LimbusColor", new Color(lc, lc, lc));
             }
         }
 
@@ -3304,6 +3312,8 @@ namespace Reallusion.Import
             FacialProfile profile = FacialProfileMapper.GetMeshFacialProfile(obj);
             int wrinkleProfile = profile.expressionProfile == ExpressionProfile.MH ? 2 : 1;
             Physics.SetTypeField(WrinkleManagerType, wm, "profile", wrinkleProfile);
+            // blendCurve of 1.0 fits the wrinkle displacements better
+            Physics.SetTypeField(WrinkleManagerType, wm, "blendCurve", 1.0f);
 
             float overallWeight = 1;
             if (matJson.PathExists("Wrinkle/WrinkleOverallWeight"))
