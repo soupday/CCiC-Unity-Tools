@@ -38,12 +38,15 @@ namespace Reallusion.Import
         public static Version activeVersion = new Version(0, 0, 0);
         public static ShaderPackageUtil.InstalledPipeline activePipeline = ShaderPackageUtil.InstalledPipeline.None;
         public static ShaderPackageUtil.PipelineVersion activePipelineVersion = ShaderPackageUtil.PipelineVersion.None;
+        public static ShaderPackageUtil.PipelineVersion activeLegacyPipelineVersion = ShaderPackageUtil.PipelineVersion.None;
         public static ShaderPackageUtil.PipelineVersion installedShaderPipelineVersion = ShaderPackageUtil.PipelineVersion.None;
         public static ShaderPackageUtil.PlatformRestriction platformRestriction = ShaderPackageUtil.PlatformRestriction.None;
         public static Version installedShaderVersion = new Version(0, 0, 0);
         public static ShaderPackageUtil.InstalledPackageStatus installedPackageStatus = ShaderPackageUtil.InstalledPackageStatus.None;
         public static List<ShaderPackageUtil.ShaderPackageManifest> availablePackages;
+        public static List<ShaderPackageUtil.ShaderPackageManifest> availableLegacyShaderPackages;
         public static ShaderPackageUtil.ShaderPackageManifest currentPackageManifest;
+        public static ShaderPackageUtil.ShaderPackageManifest currentLegacyPackageManifest;
         public static string activePackageString = string.Empty;
         public static List<ShaderPackageUtil.InstalledPipelines> installedPipelines;
         public static ShaderPackageUtil.PackageVailidity shaderPackageValid = ShaderPackageUtil.PackageVailidity.None;

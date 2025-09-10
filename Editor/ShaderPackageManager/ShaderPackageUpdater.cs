@@ -267,6 +267,7 @@ namespace Reallusion.Import
         private Texture2D iconInstallRuntimeY;
         private Texture2D iconInstallRuntimeR;
         private Texture2D iconUpgradePipelineY;
+        private Texture2D iconInstallLegacyW;
 
         public void InitGUI()
         {
@@ -277,7 +278,9 @@ namespace Reallusion.Import
             iconInstallRuntimeG = Util.FindTexture(folders, "RLIcon-RuntimeStatus-G");
             iconInstallRuntimeY = Util.FindTexture(folders, "RLIcon-RuntimeStatus-Y");
             iconInstallRuntimeR = Util.FindTexture(folders, "RLIcon-RuntimeStatus-R");
-            iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");            
+            iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");
+            iconInstallLegacyW = Util.FindTexture(folders, "RLIcon_Install_Shader_W");
+            
             initGUI = false;
         }
 
@@ -328,6 +331,10 @@ namespace Reallusion.Import
             GUILayout.Space(SECTION_SPACER);
 
             ShaderGraphGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
+            LegacyShaderGUI();
 
             GUILayout.Space(SECTION_SPACER);
 
@@ -831,6 +838,80 @@ namespace Reallusion.Import
             GUILayout.Space(VERT_INDENT);
 
             GUILayout.EndVertical(); // current target build platform details
+        }
+
+        bool legacyShaderFoldout = false;
+        private void LegacyShaderGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box);
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            string foldoutLabel = "Legacy Shaders (Optional Extra)";
+            legacyShaderFoldout = EditorGUILayout.Foldout(legacyShaderFoldout, new GUIContent(foldoutLabel, "If characters have been built using older versions of this tool, then the shader packages here will enable their use."), true, guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (legacyShaderFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                LegacyShaderInstallGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+        }
+
+        private void LegacyShaderInstallGUI()
+        {
+            EditorGUI.BeginDisabledGroup(UpdateManager.currentLegacyPackageManifest == null);
+            GUILayout.BeginVertical(GUI.skin.box);
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.Label("Required Legacy Shader Version:  ", guiStyles.InactiveLabel);
+            GUILayout.Label(new GUIContent(UpdateManager.activeLegacyPipelineVersion.ToString(), "The current active render pipeline requires the legacy version " + UpdateManager.activeLegacyPipelineVersion.ToString() + ""), guiStyles.ActiveLabel);
+            GUILayout.FlexibleSpace();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+            if (GUILayout.Button(iconInstallLegacyW, GUILayout.Width(50f), GUILayout.Height(50f)))
+            {
+                ShaderPackageUtil.GUIPerformLegacyShaderInstall();
+            }
+            GUILayout.BeginVertical();
+            GUILayout.Space(19f);
+            GUILayout.Label("Install Legacy Shader for this pipeline." );
+            GUILayout.EndVertical();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+            EditorGUI.EndDisabledGroup();
         }
 
         private string GetShaderLabel()

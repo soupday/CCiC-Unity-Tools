@@ -139,6 +139,7 @@ namespace Reallusion.Import
             string guid = string.Empty;
 
             UpdateManager.currentPackageManifest = GetCurrentShaderForPipeline();
+            UpdateManager.currentLegacyPackageManifest = GetCurrentLegacyShaderForPipeline();
             UpdateManager.missingShaderPackageItems = new List<ShaderPackageItem>();
 
             // consider simplest cases 'Nothing installed' 'One Shader Installed' 'Multiple shaders installed'
@@ -394,6 +395,35 @@ namespace Reallusion.Import
             return null;
         }
 
+        public static ShaderPackageManifest GetCurrentLegacyShaderForPipeline()
+        {
+            if (UpdateManager.availableLegacyShaderPackages != null)
+            {
+                List<ShaderPackageManifest> applicablePackages = UpdateManager.availableLegacyShaderPackages.FindAll(x => x.Pipeline == UpdateManager.activeLegacyPipelineVersion);
+
+                if (applicablePackages.Count > 0)
+                {
+                    //Debug.LogWarning("Found: " + applicablePackages.Count + " packages for this pipeline");
+                    // determine the max available version
+                    applicablePackages.Sort((a, b) => b.Version.ToVersion().CompareTo(a.Version.ToVersion()));  // descending sort
+
+                    foreach (ShaderPackageManifest pkg in applicablePackages)
+                    {
+                        Debug.Log(" LEGACY " + pkg.FileName + " " + pkg.Version);
+                    }
+
+                    //Debug.Log("Maximum available package version for this pipeline: " + applicablePackages[0].Version);
+                    return applicablePackages[0];  // set the current release for the pipeline -- this is the default to be installed
+                }
+                else
+                {
+                    Debug.LogWarning("No legacy shader packages available to install for this pipeline");
+                    return null;
+                }
+            }
+            return null;
+        }
+
         public static void DetermineShaderAction()
         {
             Func<DeterminedAction, InstalledPackageStatus, PackageVailidity, string, ActionRules> ActionRule = (action, status, validity, text) => new ActionRules(action, status, validity, text);
@@ -615,6 +645,7 @@ namespace Reallusion.Import
         private static void BuildPackageMaps()
         {
             UpdateManager.availablePackages = BuildPackageMap("_RL_referencemanifest");
+            UpdateManager.availableLegacyShaderPackages = BuildPackageMap("_RL_referencelegacymanifest");
             UpdateManager.availableRuntimePackages = BuildPackageMap("_RL_reference_runtimemanifest");
         }
 
@@ -767,8 +798,9 @@ namespace Reallusion.Import
 
             UpdateManager.installedPipelines = installed;
 
-            PipelineVersion activePipelineVersion = DetermineActivePipelineVersion(packageList);            
-            UpdateManager.activePipelineVersion = activePipelineVersion;
+            (PipelineVersion, PipelineVersion) activePipelineVersion = DetermineActivePipelineVersion(packageList);            
+            UpdateManager.activePipelineVersion = activePipelineVersion.Item1;
+            UpdateManager.activeLegacyPipelineVersion = activePipelineVersion.Item2;
 
 
             if (ShaderPackageUpdater.Instance != null)
@@ -778,7 +810,7 @@ namespace Reallusion.Import
                 OnPipelineDetermined.Invoke(null, null);
         }
 
-        public static PipelineVersion DetermineActivePipelineVersion(List<UnityEditor.PackageManager.PackageInfo> packageList)
+        public static (PipelineVersion, PipelineVersion) DetermineActivePipelineVersion(List<UnityEditor.PackageManager.PackageInfo> packageList)
         {
             //TestVersionResponse(); // **** important to run after rule editing ****
 
@@ -833,22 +865,22 @@ namespace Reallusion.Import
             {
                 case InstalledPipeline.Builtin:
                     {
-                        return PipelineVersion.BuiltIn;
+                        return (PipelineVersion.BuiltIn, PipelineVersion.BuiltIn);
                     }
                 case InstalledPipeline.HDRP:
                     {
-                        return GetVersion(InstalledPipeline.HDRP, UpdateManager.activeVersion);
+                        return (GetVersion(InstalledPipeline.HDRP, UpdateManager.activeVersion), GetLegacyVersion(InstalledPipeline.HDRP, UpdateManager.activeVersion));
                     }
                 case InstalledPipeline.URP:
                     {
-                        return GetVersion(InstalledPipeline.URP, UpdateManager.activeVersion);
+                        return (GetVersion(InstalledPipeline.URP, UpdateManager.activeVersion), GetLegacyVersion(InstalledPipeline.URP, UpdateManager.activeVersion));
                     }
                 case InstalledPipeline.None:
                     {
-                        return PipelineVersion.None;
+                        return (PipelineVersion.None, PipelineVersion.None);
                     }
             }
-            return PipelineVersion.None;
+            return (PipelineVersion.None, PipelineVersion.None);
         }
 
         public class VersionLimits
@@ -887,6 +919,69 @@ namespace Reallusion.Import
                     Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
                     Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
                     Rule(new Version(17, 0, 0), new Version(100, 99, 99), PipelineVersion.URP17)
+                };
+
+                VersionLimits result = urpRules.Find(z => version >= z.Min && version < z.Max);
+
+                if (result != null)
+                {
+                    return result.Version;
+                }
+                else
+                {
+                    return PipelineVersion.URP10;
+                }
+            }
+
+            if (pipe == InstalledPipeline.HDRP)
+            {
+                List<VersionLimits> hdrpRules = new List<VersionLimits>
+                {
+                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
+                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.HDRP10),
+                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.HDRP12),
+                    Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.HDRP14),
+                    Rule(new Version(17, 0, 0), new Version(100, 9, 99), PipelineVersion.HDRP17)
+                };
+
+                VersionLimits result = hdrpRules.Find(z => version >= z.Min && version < z.Max);
+
+                if (result != null)
+                {
+                    return result.Version;
+                }
+                else
+                {
+                    return PipelineVersion.HDRP10;
+                }
+            }
+            return PipelineVersion.None;
+        }
+
+        // legacy shaders have different package compatablilty to the main shaders
+        public static PipelineVersion GetLegacyVersion(InstalledPipeline pipe, Version version)
+        {
+            Func<Version, Version, PipelineVersion, VersionLimits> Rule = (min, max, ver) => new VersionLimits(min, max, ver);
+
+            if (pipe == InstalledPipeline.URP)
+            {
+                // Specific rule to limit WebGL to a maximum of URP12
+                if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL && version.Major >= 12)
+                {
+                    UpdateManager.platformRestriction = PlatformRestriction.URPWebGL;
+                    return PipelineVersion.URP12;
+                }
+
+                List<VersionLimits> urpRules = new List<VersionLimits>
+                {
+                    // Rule(min max, version)                    
+                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
+                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.URP10),
+                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
+                    Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
+                    Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP17),
+                    Rule(new Version(17, 1, 0), new Version(17, 2, 0), PipelineVersion.URP17),
+                    Rule(new Version(17, 2, 0), new Version(100, 99, 99), PipelineVersion.Incompatible)
                 };
 
                 VersionLimits result = urpRules.Find(z => version >= z.Min && version < z.Max);
@@ -1067,6 +1162,12 @@ namespace Reallusion.Import
             }
         }
 
+        public static void GUIPerformLegacyShaderInstall()
+        {
+            Debug.Log(UpdateManager.currentLegacyPackageManifest.referenceShaderPackagePath);
+            InstallLegacyShaderPackage(UpdateManager.currentLegacyPackageManifest, false);
+        }
+
         public static void ProcessPendingActions()
         {
             if (ImporterWindow.GeneralSettings != null)
@@ -1163,6 +1264,15 @@ namespace Reallusion.Import
                 Debug.Log("No runtime package is available.");
             }
         }
+
+        public static void InstallLegacyShaderPackage(ShaderPackageManifest shaderPackageManifest, bool interactive = true)
+        {
+            if (UpdateManager.currentLegacyPackageManifest != null)
+            {
+                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+            }
+        }
+
 
         private static void OnImportPackageCompleted(string packagename)
         {            
