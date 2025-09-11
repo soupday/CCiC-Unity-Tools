@@ -371,16 +371,9 @@ namespace Reallusion.Import
 
                 if (applicablePackages.Count > 0)
                 {
-                    //Debug.LogWarning("Found: " + applicablePackages.Count + " packages for this pipeline");
                     // determine the max available version
                     applicablePackages.Sort((a, b) => b.Version.ToVersion().CompareTo(a.Version.ToVersion()));  // descending sort
 
-                    //foreach (ShaderPackageManifest pkg in applicablePackages)
-                    //{
-                    //    Debug.Log(pkg.FileName + " " + pkg.Version);
-                    //}
-
-                    //Debug.Log("Maximum available package version for this pipeline: " + applicablePackages[0].Version);
                     return applicablePackages[0];  // set the current release for the pipeline -- this is the default to be installed
                 }
                 else
@@ -403,17 +396,15 @@ namespace Reallusion.Import
 
                 if (applicablePackages.Count > 0)
                 {
-                    //Debug.LogWarning("Found: " + applicablePackages.Count + " packages for this pipeline");
                     // determine the max available version
                     applicablePackages.Sort((a, b) => b.Version.ToVersion().CompareTo(a.Version.ToVersion()));  // descending sort
-
+                    /*
                     foreach (ShaderPackageManifest pkg in applicablePackages)
                     {
                         Debug.Log(" LEGACY " + pkg.FileName + " " + pkg.Version);
                     }
-
-                    //Debug.Log("Maximum available package version for this pipeline: " + applicablePackages[0].Version);
-                    return applicablePackages[0];  // set the current release for the pipeline -- this is the default to be installed
+                    */
+                    return applicablePackages[0];
                 }
                 else
                 {
@@ -1164,7 +1155,7 @@ namespace Reallusion.Import
 
         public static void GUIPerformLegacyShaderInstall()
         {
-            Debug.Log(UpdateManager.currentLegacyPackageManifest.referenceShaderPackagePath);
+            //Debug.Log(UpdateManager.currentLegacyPackageManifest.referenceShaderPackagePath);
             InstallLegacyShaderPackage(UpdateManager.currentLegacyPackageManifest, false);
         }
 
@@ -1269,6 +1260,7 @@ namespace Reallusion.Import
         {
             if (UpdateManager.currentLegacyPackageManifest != null)
             {
+                Debug.Log($"Installing 'Legacy Shader Package' for {shaderPackageManifest.Pipeline} version {shaderPackageManifest.Version} from package: '{shaderPackageManifest.SourcePackageName}'");
                 AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
             }
         }

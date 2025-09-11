@@ -142,6 +142,7 @@ namespace Reallusion.Import
             public GUIStyle SectionHeader;
             public GUIStyle SubSectionTitle;
             public GUIStyle InactiveLabel;
+            public GUIStyle InactiveHighlighLabel;
             public GUIStyle ActiveLabel;
             public GUIStyle VersionLabel;
             public GUIStyle shCurrentLabel;
@@ -179,6 +180,12 @@ namespace Reallusion.Import
                 SubSectionTitle.normal.textColor = Color.gray;
 
                 InactiveLabel = new GUIStyle(GUI.skin.label);
+                InactiveLabel.wordWrap = true;
+
+                InactiveHighlighLabel = new GUIStyle(GUI.skin.label);
+                InactiveHighlighLabel.wordWrap = true;
+                InactiveHighlighLabel.normal.textColor = colYellow;
+                InactiveHighlighLabel.hover.textColor = colYellow;
 
                 ActiveLabel = new GUIStyle(GUI.skin.label);
                 ActiveLabel.normal.textColor = activeColor;
@@ -880,10 +887,36 @@ namespace Reallusion.Import
 
         private void LegacyShaderInstallGUI()
         {
-            EditorGUI.BeginDisabledGroup(UpdateManager.currentLegacyPackageManifest == null);
+            bool disabled = UpdateManager.currentLegacyPackageManifest == null;
+            EditorGUI.BeginDisabledGroup(disabled);
             GUILayout.BeginVertical(GUI.skin.box);
 
             GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.Label("If characters have been built using older versions of this tool, then the shader packages here will enable their continued use.", guiStyles.InactiveLabel);
+
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            if (Pipeline.isURP)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUIStyle urpNoteStyle = disabled ? guiStyles.InactiveHighlighLabel : guiStyles.InactiveLabel;
+
+                GUILayout.Label("For the 'Universal Render Pipeline', the legacy shaders are ONLY compatible with URP version 17.1.0 and BELOW.", urpNoteStyle);
+
+                GUILayout.Space(HORIZ_INDENT);
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(VERT_INDENT);
+            }
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HORIZ_INDENT);
@@ -903,7 +936,9 @@ namespace Reallusion.Import
             }
             GUILayout.BeginVertical();
             GUILayout.Space(19f);
-            GUILayout.Label("Install Legacy Shader for this pipeline." );
+            GUIStyle instNoteStyle = disabled ? guiStyles.InactiveHighlighLabel : guiStyles.InactiveLabel;
+            string installLabel = disabled ? "No legacy shader is available for this pipeline." : "Install Legacy Shader for this pipeline.";
+            GUILayout.Label(installLabel, instNoteStyle);
             GUILayout.EndVertical();
             GUILayout.Space(HORIZ_INDENT);
             GUILayout.EndHorizontal();
