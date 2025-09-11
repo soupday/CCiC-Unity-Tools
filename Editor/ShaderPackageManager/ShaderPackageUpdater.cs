@@ -208,7 +208,12 @@ namespace Reallusion.Import
 
                 FoldoutTitleLabel = new GUIStyle(EditorStyles.foldout);
                 FoldoutTitleLabel.fontSize = 14;
+                Color ftlcol = EditorStyles.foldout.normal.textColor;
                 FoldoutTitleLabel.fontStyle = FontStyle.BoldAndItalic;
+                //FoldoutTitleLabel.active.textColor = ftlc;
+                //FoldoutTitleLabel.onActive.textColor = ftlc;
+                FoldoutTitleLabel.focused.textColor = ftlcol;
+                FoldoutTitleLabel.onFocused.textColor = ftlcol;
 
                 FoldoutTitleErrorLabel = new GUIStyle(EditorStyles.foldout);
                 FoldoutTitleErrorLabel.onNormal.textColor = colYellow;
