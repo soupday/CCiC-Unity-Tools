@@ -347,7 +347,8 @@ namespace Reallusion.Import
                     {
                         // zip file remote id
                         string remoteId = Encoding.UTF8.GetString(data);
-                        Debug.Log("Expecting ZipFile with remoteId: " + remoteId);
+                        //Debug.Log("Expecting ZipFile with remoteId: " + remoteId);  // dont Util.LogInfo this since it is not on the main thread
+
                         // next 4 bytes is zipfile length
                         byte[] len = new byte[4];
                         bytesRead = 0;
@@ -364,7 +365,7 @@ namespace Reallusion.Import
                         }
 
                         int zipSize = GetCurrentEndianWord(len, SourceEndian.BigEndian);
-                        Debug.Log("Expected ZipFile size: " + zipSize);
+                        //Debug.Log("Expected ZipFile size: " + zipSize);
 
                         string streamPath = Path.Combine(EXPORTPATH, remoteId + ".zip");
                         FileStream fileStream = new FileStream(streamPath, FileMode.Create, FileAccess.ReadWrite);
