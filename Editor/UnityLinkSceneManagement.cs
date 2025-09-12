@@ -976,7 +976,7 @@ namespace Reallusion.Import
                     string[] volumeGuids = AssetDatabase.FindAssets(searchTerm, new string[] { "Assets" });
                     foreach (string volumeGuid in volumeGuids)
                     {
-                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).Contains(defaultProfileToClone, StringComparison.InvariantCultureIgnoreCase))
+                        if (AssetDatabase.GUIDToAssetPath(volumeGuid).iContains(defaultProfileToClone))
                         {
                             PostProcessProfile found = AssetDatabase.LoadAssetAtPath<PostProcessProfile>(AssetDatabase.GUIDToAssetPath(volumeGuid));
                             if (found != null)

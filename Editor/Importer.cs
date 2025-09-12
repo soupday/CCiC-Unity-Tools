@@ -1193,7 +1193,7 @@ namespace Reallusion.Import
                 }
 
                 // URP SSS Blur
-                if (Pipeline.isURP)
+                if (Pipeline.isURP || Pipeline.is3D)
                 {
                     Texture2D diffuseBlur = null;
 
@@ -1329,7 +1329,7 @@ namespace Reallusion.Import
                 //if (displacementCavity) mat.SetTextureIf("_DisplacementCavityPack", displacementCavity);
                 if (sssThickness) mat.SetTextureIf("_SSSThicknessPack", sssThickness);
 
-                if (Pipeline.isURP)
+                if (Pipeline.isURP || Pipeline.is3D)
                 {
                     Texture2D diffuseBlur = GetTexture(sourceName, "BDiffuseBlur", matJson, "Textures/NOTEX", true);
                     if (diffuseBlur)
