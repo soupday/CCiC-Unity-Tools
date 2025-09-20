@@ -398,17 +398,26 @@ namespace Reallusion.Import
                 {
                     // determine the max available version
                     applicablePackages.Sort((a, b) => b.Version.ToVersion().CompareTo(a.Version.ToVersion()));  // descending sort
-                    /*
-                    foreach (ShaderPackageManifest pkg in applicablePackages)
+
+                    bool sortByDate = true;
+
+                    if (sortByDate)
                     {
-                        Debug.Log(" LEGACY " + pkg.FileName + " " + pkg.Version);
+                        Version latestVersion = applicablePackages[0].Version.ToVersion();
+
+                        List<ShaderPackageManifest> latestPackages = applicablePackages.FindAll(x => x.Version.ToVersion() == latestVersion);
+
+                        if (latestPackages.Count > 1)
+                        {
+                            latestPackages.Sort((a, b) => (AssetImporter.GetAtPath(b.referenceShaderPackagePath).assetTimeStamp).CompareTo(AssetImporter.GetAtPath(a.referenceShaderPackagePath).assetTimeStamp));
+                        }
+                        return latestPackages[0];
                     }
-                    */
+
                     return applicablePackages[0];
                 }
                 else
                 {
-                    Debug.LogWarning("No legacy shader packages available to install for this pipeline");
                     return null;
                 }
             }
@@ -677,7 +686,7 @@ namespace Reallusion.Import
                             string selectedPackage = shaderPackages[0]; // default case
                             if (shaderPackages.Length > 1) // error case
                             {
-                                Debug.LogWarning("Multiple shader packages detected for: " + packageManifest.SourcePackageName + " ... using the one in Packages/.");
+                                //Debug.LogWarning("Multiple shader packages detected for: " + packageManifest.SourcePackageName + " ... using the one in Packages/.");
 
                                 foreach (string shaderPackage in shaderPackages)
                                 {

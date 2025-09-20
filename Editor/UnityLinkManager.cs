@@ -390,13 +390,13 @@ namespace Reallusion.Import
                                 if (stream.CanRead)
                                 {
                                     bytesRead = stream.Read(chunk, 0, chunkSize);
+                                    fileStream.Write(chunk, 0, bytesRead); // chunk.Length);
                                 }
                             }
                             catch (Exception ex)
                             {
                                 Debug.Log("Data read: " + ex);
-                            }
-                            fileStream.Write(chunk, 0, chunk.Length);
+                            }                            
                             zipSize -= bytesRead;
                         }
                         fileStream.Close();

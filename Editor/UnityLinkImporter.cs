@@ -1883,7 +1883,7 @@ namespace Reallusion.Import
                 }
                 return null;
             }
-            Debug.Log("No IES file found");
+            //Debug.Log("No IES file found");
             return null;
         }
         #endregion Animated Light
