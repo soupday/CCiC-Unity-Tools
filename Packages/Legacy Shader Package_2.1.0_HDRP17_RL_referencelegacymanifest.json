@@ -1,0 +1,212 @@
+{
+  "FileName": "Legacy Shader Package",
+  "Pipeline": 217,
+  "Version": "2.1.0",
+  "SourcePackageName": "Legacy Shader Package_2.1.0_HDRP17_RL_legacyshaderpackage.unitypackage",
+  "VersionEdit": false,
+  "ManifestPath": "",
+  "Validated": false,
+  "Visible": false,
+  "referenceMainfestPath": "",
+  "referenceShaderPackagePath": "",
+  "Items": [
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_CorneaShaderBasic_Baked_HDRP.shadergraph",
+      "GUID": "c1ebe84cd1b59cc4fb98a8e03ae3f7d1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_CorneaShaderBasic_HDRP.shadergraph",
+      "GUID": "2a0e87ae64c033f4fac6433968710650",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_CorneaShaderParallax_Baked_HDRP.shadergraph",
+      "GUID": "d80f43cce7721c44980ea5de18cb1a4f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_CorneaShaderParallax_HDRP.shadergraph",
+      "GUID": "6045d5f26aa2fbf47ac082d04ff0caf2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeOcclusionShader_Baked_HDRP.shadergraph",
+      "GUID": "19cfa70b21a0ca649855cd3bc8896d63",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeOcclusionShader_HDRP.shadergraph",
+      "GUID": "e11e1541751f73a4bbdc03b071617a93",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeShaderBasic_Dummy_HDRP.shadergraph",
+      "GUID": "24d3e0bdec61420469539fa1aa61c98b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeShaderParallax_Dummy_HDRP.shadergraph",
+      "GUID": "133e3b4e4032f0e45a5483e280d767e8",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeShaderRefractive_Baked_HDRP.shadergraph",
+      "GUID": "1f94846e709e483448feea617906bc23",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_EyeShaderRefractive_Variants_HDRP.shadergraph",
+      "GUID": "48cccd4fafd06264c9dcce2137ba5738",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_Function_WrinkleMaskBlend.shadersubgraph",
+      "GUID": "27136356b7dbacc488c6d93117e810f9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_Function_WrinkleSystem.shadersubgraph",
+      "GUID": "eb5a7673e0bf6f341ad6a60f3d98ae7e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_HairShaderMultiPass_Baked_HDRP.shadergraph",
+      "GUID": "34039396b8fa97342b7bb1b05267a5d3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_HairShaderMultiPass_Variants_HDRP.shadergraph",
+      "GUID": "913a13959a6beae4b9d21bcd34541c26",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_HairShader_Baked_HDRP.shadergraph",
+      "GUID": "a081e115c7c82634aa606dafdcb27d08",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_HairShader_Variants_HDRP.shadergraph",
+      "GUID": "1b1fb9190f9a21344931aa2df1b6a845",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_HeadShaderWrinkle_Baked_HDRP.shadergraph",
+      "GUID": "3ee3b6fd4bf488749b8933893a198397",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_SkinShader_Variants_HDRP.shadergraph",
+      "GUID": "e4b1192022fa52046868c000971f662c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_SkinShader_Variants_HDRP_DH.shadergraph",
+      "GUID": "02e0e95620457f6439b82dabbb80c05b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_TearlineShader_HDRP.shadergraph",
+      "GUID": "5acd4540882388b44adfb140c6c6290b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_TeethShader_HDRP.shadergraph",
+      "GUID": "bade89290ffb11a468a4957d7cfbb4bd",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/RL_TongueShader_HDRP.shadergraph",
+      "GUID": "9cea8e6ce656ff148a2ec8e1550340ce",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_CorneaShaderParallax_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "7935e80451b69f0419cf61b1ad52a736",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_CorneaShaderParallax_HDRP_Tessellation.shadergraph",
+      "GUID": "4bddaf4ee5135794fb0884ce0fa3997f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_HairShaderMultiPass_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "1d02e0dd3fd71bd409f40a782f322394",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_HairShaderMultiPass_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "59adc6954f9abbf4b8c16a770e746925",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_HairShader_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "a3c9ad516f103934fbed433b9b48b6f4",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_HairShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "c0256c0c7451fb149a1321b58446f275",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_HeadShaderWrinkle_Baked_HDRP_Tessellation.shadergraph",
+      "GUID": "adf209e93ea7abc48b9e5517e58f6c8d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_SkinShader_Variants_HDRP_DH_Tessellation.shadergraph",
+      "GUID": "cd95d1e9048a3a94a819e3d5f0d985e3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_SkinShader_Variants_HDRP_Tessellation.shadergraph",
+      "GUID": "b95ae4633e90900488df70fccd9bce6f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_TeethShader_HDRP_Tessellation.shadergraph",
+      "GUID": "6f43a3b233175e04d923f0927167b222",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/HDRP/Shaders/Legacy/Shader Graph/Tessellation/RL_TongueShader_HDRP_Tessellation.shadergraph",
+      "GUID": "a78ef18f64241ab44baa313c0c3b1d6b",
+      "InstalledGUID": "",
+      "Validated": false
+    }
+  ]
+}

@@ -16,6 +16,7 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Codice.Client.BaseCommands;
 using Codice.Client.Common;
 using System;
 using System.Collections.Generic;
@@ -957,7 +958,7 @@ namespace Reallusion.Import
         private void ProcessTextures(GameObject obj, string sourceName, Material sharedMat, Material mat, 
             MaterialType materialType, QuickJSON matJson)
         {
-            string shaderName = mat.shader.name;
+            string shaderName = mat.shader.name;            
 
             if (shaderName.iContains(Pipeline.SHADER_DEFAULT))
             {
@@ -1350,7 +1351,7 @@ namespace Reallusion.Import
                 Texture2D wrinkleDisplacement = GetTexture(sourceName, "BWrinkleDisplacementPack", matJson, "Textures/NOTEX", true);
                 Texture2D wrinkleFlow = GetTexture(sourceName, "BWrinkleFlowPack", matJson, "Textures/NOTEX", true);
                 if (wrinkleRoughness) mat.SetTextureIf("_WrinkleRoughnessPack", wrinkleRoughness);
-                if (wrinkleDisplacement) mat.SetTextureIf("_WrinkleDisplacmentPack", wrinkleDisplacement);
+                if (wrinkleDisplacement) mat.SetTextureIf("_WrinkleDisplacementPack", wrinkleDisplacement);
                 if (wrinkleFlow) mat.SetTextureIf("_WrinkleFlowPack", wrinkleFlow);
 
                 // Texture Arrays
@@ -1391,7 +1392,7 @@ namespace Reallusion.Import
                 if (!DoneTexture(roughness2)) SetTextureImport(roughness2, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.MediumDetail);
                 if (!DoneTexture(roughness3)) SetTextureImport(roughness3, "", FLAG_FOR_BAKE | FLAG_SINGLE_CHANNEL, TexCategory.MediumDetail);
 
-                // Wrinkle Displacement Pack _WrinkleDisplacementMap1 => _WrinkleDisplacmentPack
+                // Wrinkle Displacement Pack _WrinkleDisplacementMap1 => _WrinkleDisplacementPack
                 Texture2D displacement1 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 1", matJson, "Resource Textures/Wrinkle Dis 1", true);
                 Texture2D displacement2 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 2", matJson, "Resource Textures/Wrinkle Dis 2", true);
                 Texture2D displacement3 = GetTexture(sourceName, "ResourceMap_Wrinkle Dis 3", matJson, "Resource Textures/Wrinkle Dis 3", true);
@@ -1505,40 +1506,7 @@ namespace Reallusion.Import
                 {                    
                     mat.SetFloatIf("_DoubleSidedEnable", 1f);
                     mat.EnableKeyword("_DOUBLESIDED_ON");                    
-                }
-                
-                if (useDisplacement)
-                {
-                    mat.EnableKeyword("_HEIGHTMAP");
-                    if (characterInfo.UseTessellation(materialType, matJson))
-                    {
-                        mat.EnableKeyword("_TESSELLATION_DISPLACEMENT");
-                        mat.EnableKeyword("_TESSELLATION_PHONG");                        
-                        mat.SetFloatIf("_DisplacementMode", 3f);  // 3 - tessellation displacment
-                        ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
-                            matJson, "Textures/Displacement",
-                            TexCategory.MaxDetail);                        
-                    }
-                    else
-                    {
-                        mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)
-                        ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
-                            matJson, "Textures/Displacement",
-                            TexCategory.MaxDetail);
-                        
-                    }
-                    mat.SetFloatIf("_HeightMapParametrization", 1f);  // 1 - amplitude                        
-                    mat.SetFloatIf("_HeightAmplitude", 1f / 100f);
-                    mat.SetFloatIf("_HeightCenter", 1f);                    
-                    mat.SetFloatIf("_HeightOffset", 0f);
-                    mat.SetFloatIf("_HeightMax", 1f);
-                    mat.SetFloatIf("_HeightMin", -1f);                    
-                    mat.SetFloatIf("_HeightPoMAmplitude", 1f / 100f);                    
-                    mat.SetFloatIf("_DisplacementLockObjectScale", 1f);
-                    mat.SetFloatIf("_DisplacementLockTilingScale", 1f);
-                    mat.EnableKeyword("_VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE");
-                    mat.EnableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");                    
-                }
+                }                               
             }
             else
             {
@@ -1620,7 +1588,9 @@ namespace Reallusion.Import
                 KeywordsOnTexture(mat, "_OcclusionMap", "_OCCLUSIONMAP");
                 KeywordsOnTexture(mat, "_BumpMap", "_NORMALMAP");
             }
-            
+
+            SetTessellationAndDisplacement(obj, mat, sourceName, materialType, matJson);
+
             // All
             if (matJson != null)
             {                
@@ -1663,28 +1633,7 @@ namespace Reallusion.Import
                         mat.SetFloatIf("_NormalScale", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
                     else
                         mat.SetFloatIf("_BumpScale", matJson.GetFloatValue("Textures/Normal/Strength") / 100f);
-                }
-
-                // Displacement
-                if (useDisplacement)
-                {
-                    float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
-                    float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
-                    float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value");
-                    if (RP == RenderPipeline.HDRP)
-                    {
-                        // _HeightOffset ?
-                        float scale = obj.transform.localScale.y * characterBoneScale;
-                        // amplitude in cm.
-                        mat.SetFloatIf("_HeightAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
-                        mat.SetFloatIf("_HeightTessAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
-                        mat.SetFloatIf("_HeightPoMAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
-                        mat.SetFloatIf("_TessellationFactor", 8f);
-                        mat.SetFloatIf("_TessellationFactorTriangleSize", 8f);
-                        mat.SetFloatIf("_HeightCenter", displacementLevel);
-                        mat.SetFloatIf("_HeightTessCenter", displacementLevel);
-                    }
-                }
+                }                
             }
 
             // Subsurface overrides
@@ -2063,29 +2012,6 @@ namespace Reallusion.Import
                     matJson, "Custom Shader/Image/Cavity Map",
                     TexCategory.MaxDetail);
             }            
-            
-            if (useDisplacement)
-            {
-                ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
-                    matJson, "Textures/Displacement",
-                    TexCategory.MaxDetail);                
-            }
-
-            /*
-            if (!characterInfo.UsePackedTextures(materialType))
-            {
-                ConnectTextureTo(sourceName, mat, "_SSSMap", "SSSMap",
-                    matJson, "Custom Shader/Image/SSS Map",
-                    TexCategory.LowDetail);
-
-                ConnectTextureTo(sourceName, mat, "_ThicknessMap", "TransMap",
-                    matJson, "Custom Shader/Image/Transmission Map",
-                    TexCategory.LowDetail);
-
-                ConnectTextureTo(sourceName, mat, "_SpecularMask", "SpecMask",
-                    matJson, "Custom Shader/Image/Specular Mask",
-                    TexCategory.LowDetail);
-            }*/
 
             ConnectTextureTo(sourceName, mat, "_MicroNormalMap", "MicroN",
                 matJson, "Custom Shader/Image/MicroNormal",
@@ -2128,80 +2054,8 @@ namespace Reallusion.Import
                     FLAG_NORMAL);
                  
                 if (characterInfo.FeatureUseWrinkleMaps && hasWrinkle)
-                {                                        
-                    /*
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend1", "Wrinkle_Diffuse1",
-                        matJson, "Wrinkle/Textures/Diffuse_1",
-                        TexCategory.HighDetail,
-                        FLAG_SRGB);
-
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend2", "Wrinkle_Diffuse2",
-                        matJson, "Wrinkle/Textures/Diffuse_2",
-                        TexCategory.HighDetail,
-                        FLAG_SRGB);
-
-                    ConnectTextureTo(sourceName, mat, "_WrinkleDiffuseBlend3", "Wrinkle_Diffuse3",
-                        matJson, "Wrinkle/Textures/Diffuse_3",
-                        TexCategory.HighDetail,
-                        FLAG_SRGB);
-
-                    ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend1", "Wrinkle_Normal1",
-                        matJson, "Wrinkle/Textures/Normal_1",
-                        TexCategory.HighDetail,
-                        FLAG_NORMAL);
-
-                    ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend2", "Wrinkle_Normal2",
-                        matJson, "Wrinkle/Textures/Normal_2",
-                        TexCategory.HighDetail,
-                        FLAG_NORMAL);
-
-                    ConnectTextureTo(sourceName, mat, "_WrinkleNormalBlend3", "Wrinkle_Normal3",
-                        matJson, "Wrinkle/Textures/Normal_3",
-                        TexCategory.HighDetail,
-                        FLAG_NORMAL);
-                    */
-
-                    /*
-                    if (!characterInfo.UsePackedTextures(materialType))
-                    {
-                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend1", "Wrinkle_Roughness1",
-                            matJson, "Wrinkle/Textures/Roughness_1",
-                            TexCategory.MediumDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend2", "Wrinkle_Roughness2",
-                            matJson, "Wrinkle/Textures/Roughness_2",
-                            TexCategory.MediumDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleRoughnessBlend3", "Wrinkle_Roughness3",
-                            matJson, "Wrinkle/Textures/Roughness_3",
-                            TexCategory.MediumDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap1", "Wrinkle_Flow1",
-                            matJson, "Wrinkle/Textures/Flow_1",
-                            TexCategory.LowDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap2", "Wrinkle_Flow2",
-                            matJson, "Wrinkle/Textures/Flow_2",
-                            TexCategory.LowDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleFlowMap3", "Wrinkle_Flow3",
-                            matJson, "Wrinkle/Textures/Flow_3",
-                            TexCategory.LowDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap1", "ResourceMap_Wrinkle Dis 1",
-                            matJson, "Resource Textures/Wrinkle Dis 1",
-                            TexCategory.HighDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap2", "ResourceMap_Wrinkle Dis 2",
-                            matJson, "Resource Textures/Wrinkle Dis 2",
-                            TexCategory.HighDetail);
-
-                        ConnectTextureTo(sourceName, mat, "_WrinkleDisplacementMap3", "ResourceMap_Wrinkle Dis 3",
-                            matJson, "Resource Textures/Wrinkle Dis 3",
-                            TexCategory.HighDetail);
-                    }*/
-
-                    ApplyWrinkleMasks(mat);                    
+                {
+                    ApplyWrinkleMasks(mat);
                 }
 
                 mat.SetBooleanKeyword("BOOLEAN_IS_HEAD", true);                
@@ -2216,7 +2070,9 @@ namespace Reallusion.Import
             // reconstruct any missing packed texture maps from Blender source maps.
             ConnectBlenderTextures(sourceName, mat, matJson, "_DiffuseMap", "_MaskMap", "_MetallicAlphaMap");
 
-            ConnectPackedTextures(sourceName, mat, matJson, materialType);            
+            ConnectPackedTextures(sourceName, mat, matJson, materialType);
+
+            SetTessellationAndDisplacement(obj, mat, sourceName, materialType, matJson);
 
             if (matJson != null)
             {
@@ -2258,7 +2114,7 @@ namespace Reallusion.Import
                 }
 
                 Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
-                mat.SetFloatIf("_CavityStrength", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f), 0.5f));
+                mat.SetFloatIf("_CavityStrength", Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/Cavity Strength", 0.0f), 0.25f));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
@@ -2270,22 +2126,14 @@ namespace Reallusion.Import
                 float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
                 mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
-                mat.SetFloat("_SmoothnessPower", useCavity ? 2.0f : 1.5f);
-                mat.SetFloatIf("_SecondarySmoothness", useCavity ? 0.5f : 0.25f);
+                mat.SetFloat("_SmoothnessContrast", useCavity ? 2.0f : 1.5f);
+                mat.SetFloatIf("_SecondarySmoothness", 0.5f);
                 mat.SetFloatIf("_SubsurfaceScale", 1.65f * matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
                 mat.SetColorIf("_SubsurfaceFalloff", sssFalloff);
                 mat.SetFloatIf("_MicroSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Micro Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Unmasked Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedScatterScale", matJson.GetFloatValue("Custom Shader/Variable/Unmasked Scatter Scale"));
-                mat.SetColorIf("_DiffuseColor", Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color")));
-
-                float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength") / 100f;
-                float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier");
-                float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value");                
-                mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.01f);
-                mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * 0.01f);
-                mat.SetFloatIf("_DisplacementLevel", displacementLevel);
-
+                mat.SetColorIf("_DiffuseColor", Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color")));                
 
                 if (materialType == MaterialType.Head)
                 {
@@ -2402,7 +2250,7 @@ namespace Reallusion.Import
                 float roughness = 1f - matJson.GetFloatValue("Custom Shader/Variable/Front Roughness");
                 mat.SetFloat("_SmoothnessMin", roughness * 0.9f);
                 mat.SetFloat("_SmoothnessMax", Mathf.Lerp(0.9f, 1f, specularT));
-                mat.SetFloat("_SmoothnessPower", 0.5f);
+                mat.SetFloat("_SmoothnessContrast", 0.5f);
                 */
                 float frontSpecular = matJson.GetFloatValue("Custom Shader/Variable/Front Specular");
                 float rearSpecular = matJson.GetFloatValue("Custom Shader/Variable/Back Specular");
@@ -2722,7 +2570,7 @@ namespace Reallusion.Import
             //    mat.SetFloatIf("_AlphaRemap", 0.5f);
             //}
 
-            float smoothnessPowerMod = ValueByPipeline(1f, 1f, 1f);
+            float smoothnessContrast = ValueByPipeline(1f, 1f, 1f);
             float specularPowerMod = ValueByPipeline(0.5f, 0.5f, 0.33f);
             float specularMin = ValueByPipeline(0.05f, 0f, 0f);
             float specularMax = ValueByPipeline(0.5f, 0.4f, 0.65f);
@@ -2731,12 +2579,12 @@ namespace Reallusion.Import
             if (isFacialHair)
             {
                 // make facial hair thinner and rougher  
-                smoothnessPowerMod = ValueByPipeline(1.25f, 1.25f, 1.25f);
+                smoothnessContrast = ValueByPipeline(1.25f, 1.25f, 1.25f);
                 specularPowerMod = ValueByPipeline(1f, 1f, 1f);
                 mat.SetFloatIf("_DepthPrepass", 0.75f);                
-                mat.SetFloatIf("_AlphaPower", 1.25f);
-                mat.SetFloatIf("_AlphaRemap", 1.0f);
-                mat.SetFloatIf("_SmoothnessPower", smoothnessPowerMod);
+                mat.SetFloatIf("_AlphaContrast", 1.25f);
+                mat.SetFloatIf("_AlphaStrength", 1.0f);
+                mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
             }
 
             bool isEyeBrow = MeshUtil.MeshIsEyebrow(obj);
@@ -2752,10 +2600,10 @@ namespace Reallusion.Import
             {
                 Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
-                mat.SetFloatIf("_AlphaStrength",
-                    matJson.GetFloatValue("Opacity") * 
-                    Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f
-                    ));
+                float opacityMapStrength = Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f);
+                float opacity = Mathf.Clamp01(matJson.GetFloatValue("Opacity"));
+                mat.SetFloatIf("_AlphaContrast", opacityMapStrength);
+                mat.SetFloatIf("_AlphaStrength", Mathf.Max(1f, opacity * ValueByPipeline(1.0f, 1f/0.75f, 1f/0.75f)));
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
@@ -2797,7 +2645,7 @@ namespace Reallusion.Import
                 if (RP == RenderPipeline.HDRP)
                 {
                     float secondarySpecStrength = matJson.GetFloatValue("Custom Shader/Variable/Secondary Specular Strength");
-                    SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessPowerMod);
+                    SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
                     SetFloatPowerRange(mat, "_SpecularMultiplier", specMapStrength * specStrength, specularMin, specularMax, specularPowerMod);
                     SetFloatPowerRange(mat, "_SecondarySpecularMultiplier", specMapStrength * specStrength2, 0.0125f, 0.125f, specularPowerMod);
                     // set by template
@@ -2826,7 +2674,7 @@ namespace Reallusion.Import
                 {
                     if (USE_AMPLIFY_SHADER)
                     {
-                        SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessPowerMod);
+                        SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
                         SetFloatPowerRange(mat, "_SpecularMultiplier", specMapStrength * specStrength, specularMin, specularMax, specularPowerMod);
                         mat.SetFloatIf("_RimTransmissionIntensity", ValueByPipeline(1f, 75f, 75f) * specMapStrength * Mathf.Pow(rimTransmission, 0.5f));
                         mat.SetFloatIf("_FlowMapFlipGreen", 1f -
@@ -2931,12 +2779,13 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_Top2Max", top2Max);                
             }
 
+            /*
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;            
             mat.SetFloatIf("_ExpandScale", 0.005f / modelScale);
-
-
+            */
+            mat.SetFloatIf("_ExpandScale", 0.005f);
         }
 
         private void ConnectHQEyeOcclusionPlusMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -3003,11 +2852,13 @@ namespace Reallusion.Import
 
                 mat.SetFloatIf("_Displace", matJson.GetFloatValue("Custom Shader/Variable/Depth Offset"));
             }
-
+            /*
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
             mat.SetFloatIf("_DisplaceScale", 0.01f / modelScale);
+            */
+            mat.SetFloatIf("_DisplaceScale", 0.01f);
         }
 
         private void ConnectHQTearlineMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -3025,12 +2876,15 @@ namespace Reallusion.Import
                 mat.SetVectorIf("_DetailTiling", detailTiling);
 
                 mat.SetFloatIf("_DetailAmount", matJson.GetFloatValue("Custom Shader/Variable/Detail Amount"));
-            }            
+            }
 
+            /*
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
             mat.SetFloatIf("_DepthScale", 0.01f / modelScale);
+            */
+            mat.SetFloatIf("_DepthScale", 0.01f);
         }
 
         private void ConnectHQTearlinePlusMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -3059,10 +2913,147 @@ namespace Reallusion.Import
 
             }
 
+            /*
             float modelScale = (obj.transform.localScale.x +
                                 obj.transform.localScale.y +
                                 obj.transform.localScale.z) / 3.0f;
             mat.SetFloatIf("_DisplaceScale", 0.01f / modelScale);
+            */
+            mat.SetFloatIf("_DisplaceScale", 0.01f);
+        }
+
+        private void SetTessellationAndDisplacement(GameObject obj, Material mat, string sourceName, MaterialType materialType, QuickJSON matJson)
+        {
+            bool isDefaultMaterial = (materialType == MaterialType.SSS ||
+                                      materialType == MaterialType.DefaultOpaque ||
+                                      materialType == MaterialType.DefaultAlpha);
+
+            if (matJson != null)
+            {
+                bool useDisplacement = GetTexture(sourceName, "Displacement",
+                                              matJson, "Textures/Displacement", true);
+
+                // enable tessellation and/or displacement first
+                if (useDisplacement && isDefaultMaterial)
+                {
+                    // enable default HDRP material displacement & tessellation
+                    if (Pipeline.isHDRP)
+                    {
+                        mat.EnableKeyword("_HEIGHTMAP");
+                        if (characterInfo.UseTessellation(materialType, matJson))
+                        {
+                            mat.EnableKeyword("_TESSELLATION_DISPLACEMENT");
+                            mat.EnableKeyword("_TESSELLATION_PHONG");
+                            mat.SetFloatIf("_DisplacementMode", 3f);  // 3 - tessellation displacement
+
+                            ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
+                                matJson, "Textures/Displacement",
+                                TexCategory.MaxDetail);
+                        }
+                        else
+                        {
+                            mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)
+
+                            ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
+                                matJson, "Textures/Displacement",
+                                TexCategory.MaxDetail);
+
+                        }
+                        mat.SetFloatIf("_HeightMapParametrization", 1f);  // 1 - amplitude                        
+                        mat.SetFloatIf("_HeightAmplitude", 1f / 100f);
+                        mat.SetFloatIf("_HeightCenter", 1f);
+                        mat.SetFloatIf("_HeightOffset", 0f);
+                        mat.SetFloatIf("_HeightMax", 1f);
+                        mat.SetFloatIf("_HeightMin", -1f);
+                        mat.SetFloatIf("_HeightPoMAmplitude", 1f / 100f);
+                        mat.SetFloatIf("_DisplacementLockObjectScale", 1f);
+                        mat.SetFloatIf("_DisplacementLockTilingScale", 1f);
+                        mat.EnableKeyword("_VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE");
+                        mat.EnableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");
+                    }
+                }
+                else if (useDisplacement && !isDefaultMaterial)
+                {
+                    ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
+                        matJson, "Textures/Displacement",
+                        TexCategory.MaxDetail);                    
+                }
+
+                    // apply json settings to tessellation and displacement
+                    QuickJSON objJson = characterInfo.GetObjJson(obj);
+                int subDLevel = 0;
+                if (objJson != null)
+                {
+                    subDLevel = objJson.GetIntValue("SubD Level");
+                }
+                
+                float displacementStrength = matJson.GetFloatValue("Textures/Displacement/Strength", 0f) / 100f;
+                float tessellationMultiplier = matJson.GetFloatValue("Textures/Displacement/Multiplier", 1f);
+                float displacementLevel = matJson.GetFloatValue("Textures/Displacement/Gray-scale Base Value", 0.5f);
+                int tessellationLevel = matJson.GetIntValue("Textures/Displacement/Tessellation Level", 0);
+
+                float minDistance = 0f;
+                float maxDistance = 1f;                
+                float shapeFactor = 0.75f;
+                float tessellationFactor = 1f + tessellationLevel * 2f;                
+
+                if (Pipeline.isURP || Pipeline.is3D)
+                {
+                    maxDistance = 1f;                    
+
+                    if (isDefaultMaterial)
+                    {
+
+                    }
+                    else
+                    {
+                        // ASE distance based tessellation
+                        mat.SetFloatIf("_TessMax", maxDistance);
+                        mat.SetFloatIf("_TessMin", minDistance);
+                        mat.SetFloatIf("_TessPhongStrength", shapeFactor);
+                        mat.SetFloatIf("_TessValue", tessellationFactor);
+
+                        // custom shader graph / ASE displacement
+                        mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.01f);
+                        mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * ValueByPipeline(0.01f, 0.1f, 0.1f));
+                        mat.SetFloatIf("_DisplacementLevel", displacementLevel);
+                    }
+                }
+                else if (Pipeline.isHDRP)
+                {
+                    maxDistance = 2.5f;
+
+                    if (isDefaultMaterial)
+                    {                        
+                        // Default HDRP material tessellation and displacement
+                        float scale = obj.transform.localScale.y * characterBoneScale;                        
+                        mat.SetFloatIf("_HeightAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
+                        mat.SetFloatIf("_HeightTessAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
+                        mat.SetFloatIf("_HeightPoMAmplitude", displacementStrength * tessellationMultiplier * 2f * characterBoneScale / 100f);
+                        mat.SetFloatIf("_TessellationFactor", tessellationFactor);
+                        mat.SetFloatIf("_TessellationFactorTriangleSize", 8f);
+                        mat.SetFloatIf("_HeightCenter", displacementLevel);
+                        mat.SetFloatIf("_HeightTessCenter", displacementLevel);
+                        // _HeightOffset ?
+                    }
+                    else
+                    {                        
+                        // HDRP shader graph tessellation parameters
+                        mat.SetFloatIf("_TessellationFactorMaxDistance", maxDistance);
+                        mat.SetFloatIf("_TessellationFactorMinDistance", minDistance);
+                        mat.SetFloatIf("_TessellationShapeFactor", shapeFactor);
+                        mat.SetFloatIf("_TessellationFactor", tessellationFactor);
+                        mat.SetFloatIf("_TessellationMaxDisplacement", 0.01f);
+                        mat.SetFloatIf("_TessellationFactorTriangleSize", 1f);
+                        mat.SetFloatIf("_TessellationBackFaceCullEpsilon", -0.25f);
+
+                        // custom shader graph displacement
+                        mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.01f);
+                        mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * ValueByPipeline(0.01f, 0.1f, 0.1f));
+                        mat.SetFloatIf("_DisplacementLevel", displacementLevel);
+                    }                    
+                }
+            }
         }
 
         private Texture2D GetCachedBakedMap(Material sharedMaterial, string shaderRef)

@@ -558,6 +558,61 @@ namespace Reallusion.Import
             }
         }
 
+        public QuickJSON GetObjJson(GameObject obj)
+        {
+            QuickJSON objectsData = ObjectsJsonData;
+            string objName = obj.name;            
+            List<string> tryObjectNames = new List<string>();            
+
+            if (objName.iContains("_Extracted"))
+            {
+                objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            tryObjectNames.Add(objName);
+
+            // there is a bug where a space in name causes the name to be truncated on export from CC3/4
+            if (objName.Contains(" "))
+            {
+                Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
+                tryObjectNames.Add(objName.Split(' ')[0]);
+            }
+
+            // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
+            // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
+            // (seems to happen mostly on accessories)
+            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            {
+                Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realObjName = objectsData.FindKeyName(specObjName);
+            }            
+
+            // search for the material json directly from the possible object and material names
+            foreach (string objectName in tryObjectNames)
+            {
+                if (objectsData.PathExists(objectName))
+                {
+                    return objectsData.GetObjectAtPath(objectName);                    
+                }
+            }
+
+            // finally search for an object and material names in the mesh json whose name starts with the truncted source names
+            foreach (string objectName in tryObjectNames)
+            {
+                string findObjectName = objectName;
+                if (!objectsData.PathExists(findObjectName))
+                    findObjectName = objectsData.FindKeyName(objectName);
+                if (!string.IsNullOrEmpty(findObjectName) && objectsData.PathExists(findObjectName))
+                {
+                    return objectsData.GetObjectAtPath(findObjectName);
+                }
+            }
+
+            return null;
+        }
+
         public QuickJSON GetMatJson(GameObject obj, string sourceName)
         {            
             QuickJSON objectsData = ObjectsJsonData;

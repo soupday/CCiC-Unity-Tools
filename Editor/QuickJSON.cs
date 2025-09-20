@@ -362,25 +362,25 @@ namespace Reallusion.Import
             return false;
         }
 
-        public int GetIntValue(string path)
+        public int GetIntValue(string path, int defaultValue=0)
         {
             string[] paths = path.Split('/');
 
-            return GetIntValue(paths);
+            return GetIntValue(paths, defaultValue);
         }
 
-        public int GetIntValue(string[] paths)
+        public int GetIntValue(string[] paths, int defaultValue=0)
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetIntValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetIntValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.Integer)
                     return mv.IntValue;
             }
 
-            return 0;
+            return defaultValue;
         }
 
         public float GetFloatValue(string path, float defaultValue=0.0f)

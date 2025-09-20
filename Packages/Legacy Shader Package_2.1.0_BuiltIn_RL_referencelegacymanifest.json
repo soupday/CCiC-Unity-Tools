@@ -1,0 +1,320 @@
+{
+  "FileName": "Legacy Shader Package",
+  "Pipeline": 1,
+  "Version": "2.1.0",
+  "SourcePackageName": "Legacy Shader Package_2.1.0_BuiltIn_RL_legacyshaderpackage.unitypackage",
+  "VersionEdit": false,
+  "ManifestPath": "",
+  "Validated": false,
+  "Visible": false,
+  "referenceMainfestPath": "",
+  "referenceShaderPackagePath": "",
+  "Items": [
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_CorneaShaderParallax_3D.shader",
+      "GUID": "63d5771360ced2f4d9683cccd76fdecf",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_CorneaShaderParallax_Baked_3D.shader",
+      "GUID": "b82ab701bb21d664e9f95a54ae4f4ccf",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_1st_Pass_Baked_3D.shader",
+      "GUID": "f8a7a3dc59d041f4c8c4ca35b932ce8e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_1st_Pass_Variants_3D.shader",
+      "GUID": "360ccb948905e854aa51a2cbc68846b9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_2nd_Pass_Baked_3D.shader",
+      "GUID": "f8160bb58192c9a4b9958edf4aab18ac",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_2nd_Pass_Variants_3D.shader",
+      "GUID": "a641ee34650e2134985a3f9b4ded71e7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Baked_3D.shader",
+      "GUID": "943fab1314bb0004bbace292ebd0a6a5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Clipped_3D.shader",
+      "GUID": "fdf1b756c56298643b40c91e5c358e3b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Coverage_3D.shader",
+      "GUID": "ae2f4a89bebc7da4ea6274d9b9ae3967",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Coverage_Baked_3D.shader",
+      "GUID": "cb7ced0bffb7d7649b6de0273cc18468",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_HeadShaderWrinkle_Baked_3D.shader",
+      "GUID": "ddd7bea8cb643e14b989d8ad3b3dcc7a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_SkinShader_Variants_3D.shader",
+      "GUID": "526231ed22d70c042b4bec774e071cbb",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_TeethShader_3D.shader",
+      "GUID": "c97c524a8e426ed42981718f450e903b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_TongueShader_3D.shader",
+      "GUID": "9219d756f955c9f449409d0ed28b9b25",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_WrinkleMapSystem.asset",
+      "GUID": "66048c3ae18f3f84c9195a84e20ae59a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/RL_Amplify_WrinkleMaskBlend.asset",
+      "GUID": "2dd083c563814274eb11b0e3acfe6235",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_CorneaShaderParallax_3D_Tessellation.shader",
+      "GUID": "59a49e22a22e9624483a8e76649efa67",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_CorneaShaderParallax_Baked_3D_Tessellation.shader",
+      "GUID": "047667283b8b0a443be46af767f5b898",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_1st_Pass_Baked_3D_Tessellation.shader",
+      "GUID": "15067a1a6e3e60c4bb7bcd7f36f9236b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_1st_Pass_Variants_3D_Tessellation.shader",
+      "GUID": "b4862b279f0aaf64d9422d269a6b0454",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_2nd_Pass_Baked_3D_Tessellation.shader",
+      "GUID": "d2bfbbb33499a2c419feb7b8a16e6f04",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_2nd_Pass_Variants_3D_Tessellation.shader",
+      "GUID": "b185831023d7ab74eb7ed0518031ab4f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Baked_3D_Tessellation.shader",
+      "GUID": "3c643f03ed841cf4ca2a7c7006e9df23",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Clipped_3D_Tessellation.shader",
+      "GUID": "4acd053984849e44ba6202f4207dcbd2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Coverage_3D_Tessellation.shader",
+      "GUID": "7e66cd9875689ad489ca81def2593567",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Coverage_Baked_3D_Tessellation.shader",
+      "GUID": "4fc51d382ebbcb74bb20bc237f99208a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HeadShaderWrinkle_Baked_3D_Tessellation.shader",
+      "GUID": "8e4833a0959eb1a48a248b864068a51f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_SkinShader_Variants_3D_Tessellation.shader",
+      "GUID": "91a1da0efbf4186438a64f0fa74f8788",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_TeethShader_3D_Tessellation.shader",
+      "GUID": "baddc7e783ebef348b6be69990a72451",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_TongueShader_3D_Tessellation.shader",
+      "GUID": "353bc03200cdbda4f9be5a8eeed87ac2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_CorneaShaderBasic_3D.shader",
+      "GUID": "ddff2ee84b2a2c446bb6cb01b03a380a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_CorneaShaderBasic_Baked_3D.shader",
+      "GUID": "526959adc9afad74386484581606475c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_CorneaShaderParallax_3D.shader",
+      "GUID": "3098a5991ea2cf44983194c71b099d2e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_CorneaShaderParallax_Baked_3D.shader",
+      "GUID": "43d56ca5898428f4ca8c7220b8fe0939",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_EyeOcclusionShader_3D.shader",
+      "GUID": "fd50ac59639bb2a41a4d7e5c855dea2b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_EyeOcclusionShader_Baked_3D.shader",
+      "GUID": "1580ad03aebfa104a94237eadebb28d0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_EyeShaderBasic_Dummy_3D.shader",
+      "GUID": "c1670edcaf99840479df236793638029",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_EyeShaderParallax_Dummy_3D.shader",
+      "GUID": "75fa4e9b57bffaf4aadfb176729c0382",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_EyeShaderRefractive_Variants_Dummy_3D.shader",
+      "GUID": "b81720927d7e2834ba52eaadb91d00c5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_1st_Pass_Baked_3D.shader",
+      "GUID": "bd0e08e9c807bd84f9a60614b8d7292e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_1st_Pass_Variants_3D.shader",
+      "GUID": "4772f2270f012e54ebddfdbf68340e84",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_2nd_Pass_Baked_3D.shader",
+      "GUID": "8211b66840a861e47b2799845a68d13f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_2nd_Pass_Variants_3D.shader",
+      "GUID": "f7f292e9c1adae64b850b66a14b68d99",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_Baked_3D.shader",
+      "GUID": "7132cd41c8d6fad448b61cdd226bebba",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_Clipped_3D.shader",
+      "GUID": "c8658ae2e2f235246a90bea5a1d6c5da",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_Clipped_Baked_3D.shader",
+      "GUID": "a0133c7617d5ecc43a0039d04a6da874",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_HairShader_Variants_3D.shader",
+      "GUID": "32e3aea66bcf5844e9fa1d4b4b9f6752",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_SkinShader_Variants_3D.shader",
+      "GUID": "3c08a5ab3fc755f439964a4c2c5dd38b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_TearlineShader_3D.shader",
+      "GUID": "330ae441fbddc6b4babdfe9466734f3a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_TeethShader_3D.shader",
+      "GUID": "cd92cb0391f2ede4bbf464ed3d73d56b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Legacy/Standard/RL_TongueShader_3D.shader",
+      "GUID": "bbb361fb71edaec43b703ccf1c0fe683",
+      "InstalledGUID": "",
+      "Validated": false
+    }
+  ]
+}
