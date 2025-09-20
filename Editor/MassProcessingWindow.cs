@@ -906,8 +906,8 @@ namespace Reallusion.Import
                     GenericMenu menu = new GenericMenu();
                     menu.AddItem(new GUIContent("Single Pass Hair"), characterSettings.DefaultHair, HairOptionSelected, CharacterInfo.HairQuality.Default);
                     menu.AddItem(new GUIContent("Two Pass Hair"), characterSettings.DualMaterialHair, HairOptionSelected, CharacterInfo.HairQuality.TwoPass);
-                    if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
-                        menu.AddItem(new GUIContent("MSAA Coverage Hair"), characterSettings.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
+                    //if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
+                    //    menu.AddItem(new GUIContent("MSAA Coverage Hair"), characterSettings.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
                     menu.ShowAsContext();
                 }
                 // /*

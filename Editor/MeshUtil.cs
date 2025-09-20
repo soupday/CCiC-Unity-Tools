@@ -1078,8 +1078,8 @@ namespace Reallusion.Import
             firstPass.SetFloatIf("_IsSecondPass", 0f);
             secondPass.SetFloatIf("_IsSecondPass", 1f);
 
-            float displace = firstPass.GetFloatIf("_Displace", 1f / 1000f);
-            firstPass.SetFloatIf("_Displace", displace + (1f / 1000f));
+            float displace = firstPass.GetFloatIf("_Displace", 1f / 4000f);
+            firstPass.SetFloatIf("_Displace", displace + (1f / 4000f));
             secondPass.SetFloatIf("_Displace", displace);
 
             if (Pipeline.isHDRP)
@@ -1204,6 +1204,7 @@ namespace Reallusion.Import
                         }
 
                         bool useTessellation = oldMat.shader.name.iContains("_Tessellation");
+                        bool useAmplify = oldMat.shader.name.iContains("/Amplify/");
 
                         if (subMeshCount > 1 && oldMat.shader.name.iContains(Pipeline.SHADER_HQ_HAIR))
                         {
@@ -1243,12 +1244,12 @@ namespace Reallusion.Import
                             {
                                 // - add first pass hair shader material
                                 // - add second pass hair shader material
-                                Material firstPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_1ST_PASS, useTessellation);
-                                Material secondPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS, useTessellation);
+                                Material firstPassTemplate = Util.FindMaterial(Pipeline.MATERIAL_HQ_HAIR_1ST_PASS);
+                                Material secondPassTemplate = Util.FindMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS);
                                 Material firstPass = new Material(firstPassTemplate);
                                 Material secondPass = new Material(secondPassTemplate);
-                                Pipeline.UpgradeShader(firstPass, useTessellation);
-                                Pipeline.UpgradeShader(secondPass, useTessellation);
+                                Pipeline.UpgradeShader(firstPass, useTessellation, useAmplify);
+                                Pipeline.UpgradeShader(secondPass, useTessellation, useAmplify);
                                 CopyMaterialParameters(oldMat, firstPass);
                                 CopyMaterialParameters(oldMat, secondPass);
                                 FixHDRP2PassMaterials(firstPass, secondPass);
@@ -1284,12 +1285,12 @@ namespace Reallusion.Import
                             {
                                 // - add first pass hair shader material
                                 // - add second pass hair shader material
-                                Material firstPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_1ST_PASS, useTessellation);
-                                Material secondPassTemplate = Util.FindCustomMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS, useTessellation);
+                                Material firstPassTemplate = Util.FindMaterial(Pipeline.MATERIAL_HQ_HAIR_1ST_PASS);
+                                Material secondPassTemplate = Util.FindMaterial(Pipeline.MATERIAL_HQ_HAIR_2ND_PASS);
                                 Material firstPass = new Material(firstPassTemplate);
                                 Material secondPass = new Material(secondPassTemplate);
-                                Pipeline.UpgradeShader(firstPass, useTessellation);
-                                Pipeline.UpgradeShader(secondPass, useTessellation);
+                                Pipeline.UpgradeShader(firstPass, useTessellation, useAmplify);
+                                Pipeline.UpgradeShader(secondPass, useTessellation, useAmplify);
                                 CopyMaterialParameters(oldMat, firstPass);
                                 CopyMaterialParameters(oldMat, secondPass);
                                 FixHDRP2PassMaterials(firstPass, secondPass);

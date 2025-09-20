@@ -169,13 +169,18 @@ namespace Reallusion.Import
                 if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.DualSpecularSkin, "Dual Specular Skin", SECTION_INDENT))
                     flagChanged = true;
             }
+            else if (Pipeline.isURP)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.AmplifyShaders, "Amplify Shaders", SECTION_INDENT))
+                    flagChanged = true;
+            }
 
-            /*
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
-                flagChanged = true;
-            */
+                /*
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
+                    flagChanged = true;
+                */
 
-            DrawLabelLine(line++, "Character Physics:");
+                DrawLabelLine(line++, "Character Physics:");
 
             // Cloth Physics
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ClothPhysics, "Enable Cloth Physics", SECTION_INDENT))

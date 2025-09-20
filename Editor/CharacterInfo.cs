@@ -49,6 +49,7 @@ namespace Reallusion.Import
             Displacement = 2048,
             TexturePacking = 4096,
             DualSpecularSkin = 8192,
+            AmplifyShaders = 16384,
         }
 
         public enum ExportType
@@ -236,6 +237,7 @@ namespace Reallusion.Import
         public bool FeatureUseDisplacement => (ShaderFlags & ShaderFeatureFlags.Displacement) > 0;
         public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
         public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
+        public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;
 
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;

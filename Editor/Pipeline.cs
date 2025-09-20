@@ -863,30 +863,20 @@ namespace Reallusion.Import
         }        
 
         public static Material GetTemplateMaterial(string sourceName, MaterialType materialType, MaterialQuality quality, 
-            CharacterInfo info, bool useAmplify = false, bool useTessellation = false, bool useWrinkleMaps = false, bool useDigitalHuman = false)
+                                                   CharacterInfo info, bool useDigitalHuman = false)
         {
             string templateName = GetTemplateMaterialName(sourceName, materialType, quality, info);
 
-            return GetUpgradedTemplateMaterial(sourceName, templateName, quality, useAmplify, useTessellation, useWrinkleMaps, useDigitalHuman);
+            return GetUpgradedTemplateMaterial(sourceName, templateName, quality, useDigitalHuman);
         }
 
-        public static Material GetUpgradedTemplateMaterial(string sourceName, string templateName, MaterialQuality quality, 
-            bool useAmplify, bool useTessellation, bool useWrinkleMaps, bool useDigitalHuman)
+        public static Material GetUpgradedTemplateMaterial(string sourceName, string templateName, 
+                                                           MaterialQuality quality, 
+                                                           bool useDigitalHuman)
         {
             string customTemplateName;
             Material customTemplate = null;
-            Material foundTemplate = null;
-
-            if (useAmplify)
-            {
-                customTemplateName = templateName + "_Amplify";
-                foundTemplate = Util.FindMaterial(customTemplateName);
-                if (foundTemplate)
-                {
-                    templateName = customTemplateName;
-                    customTemplate = foundTemplate;
-                }
-            }
+            Material foundTemplate = null;            
 
             if (useDigitalHuman)
             {
@@ -897,19 +887,7 @@ namespace Reallusion.Import
                     templateName = customTemplateName;
                     customTemplate = foundTemplate;
                 }
-            }
-
-            /*
-            if (useTessellation)
-            {                
-                customTemplateName = templateName + "_T";
-                foundTemplate = Util.FindMaterial(customTemplateName);
-                if (foundTemplate)
-                {
-                    templateName = customTemplateName;
-                    customTemplate = foundTemplate;                    
-                }
-            }*/
+            }            
 
             if (customTemplate) return customTemplate;
 
@@ -919,11 +897,26 @@ namespace Reallusion.Import
             return GetDefaultMaterial(quality);
         }
 
-        public static bool UpgradeShader(Material mat, bool useTessellation)
+        public static bool UpgradeShader(Material mat, bool useTessellation, bool useAmplify)
         {
             Shader shader = mat.shader;
             string shaderName = shader.name;
             bool tessellationUpgrade = false;
+            bool amplifyUpgrade = false;
+
+            if (useAmplify)
+            {
+                string customAmplifyShaderName = shaderName.Replace("Shader Graphs/", "Reallusion/Amplify/");
+                Shader customShader = Shader.Find(customAmplifyShaderName);
+                
+                if (customShader)
+                {
+                    Util.LogInfo("Upgrading Shader: " + shaderName + " to Amplify Shader: " + customAmplifyShaderName);
+                    mat.shader = customShader;
+                    shaderName = mat.shader.name;
+                    amplifyUpgrade = true;
+                }
+            }
 
             if (useTessellation)
             {
@@ -945,10 +938,15 @@ namespace Reallusion.Import
                     tessellationUpgrade = true;
                 }
 
+                if (amplifyUpgrade)
+                {
+                    // addition amplify settings
+                }
+
                 if (tessellationUpgrade)
                 {
                     // default materials
-                    mat.SetFloatIf("_TessellationFactor", 8f);
+                    mat.SetFloatIf("_TessellationFactor", 3f);
                     mat.SetFloatIf("_TessellationFactorTriangleSize", 25f);
                     mat.SetFloatIf("_TessellationShapeFactor", 0.75f);
                     mat.SetFloatIf("_TessellationBackFaceCullEpsilon", -0.25f);
@@ -959,7 +957,7 @@ namespace Reallusion.Import
                 }
             }
 
-            return tessellationUpgrade;
+            return tessellationUpgrade || amplifyUpgrade;
         }
 
         public static bool IsShaderFor(string shaderName, params MaterialType[] materialType)

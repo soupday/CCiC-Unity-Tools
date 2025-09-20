@@ -112,25 +112,7 @@ namespace Reallusion.Import
             {
                 EditorPrefs.SetFloat("RL_Importer_Mipmap_Bias_Hair", value);
             }
-        }
-
-        public static bool USE_AMPLIFY_SHADER
-        {
-            get
-            {
-                return false;
-                /*
-                if (EditorPrefs.HasKey("RL_Importer_Use_Amplify_Shaders"))
-                    return EditorPrefs.GetBool("RL_Importer_Use_Amplify_Shaders");
-                return true;
-                */
-            }
-
-            set
-            {                
-                EditorPrefs.SetBool("RL_Importer_Use_Amplify_Shaders", value);
-            }
-        }        
+        }             
 
         public static bool ANIMPLAYER_ON_BY_DEFAULT
         {
@@ -852,14 +834,13 @@ namespace Reallusion.Import
         private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial, 
                                              string sourceName, QuickJSON matJson)
         {
+            bool useAmplify = characterInfo.FeatureUseAmplifyShaders;
             bool useTessellation = characterInfo.UseTessellation(materialType, matJson);
+
             // get the template material.
             Material templateMaterial = Pipeline.GetTemplateMaterial(sourceName, materialType, 
                 characterInfo.BuildQuality, 
-                characterInfo, USE_AMPLIFY_SHADER, 
-                useTessellation, 
-                characterInfo.FeatureUseWrinkleMaps,
-                characterInfo.FeatureUseDualSpecularSkin);
+                characterInfo, characterInfo.FeatureUseDualSpecularSkin);
 
             // get the appropriate shader to use            
             Shader shader;
@@ -919,7 +900,7 @@ namespace Reallusion.Import
                 remapMaterial.CopyPropertiesFromMaterial(templateMaterial);
             }
 
-            Pipeline.UpgradeShader(remapMaterial, useTessellation);            
+            Pipeline.UpgradeShader(remapMaterial, useTessellation, useAmplify);
 
             // add the path of the remapped material for later re-import.
             string remapPath = AssetDatabase.GetAssetPath(remapMaterial);
@@ -1433,7 +1414,7 @@ namespace Reallusion.Import
             string jsonMaterialType = matJson?.GetStringValue("Material Type");
             bool isGameBaseSkin = sourceName.iContains("Ga_Skin_");
             int numGameBaseSkinMaterials = CountMaterials(obj, "Ga_Skin_");
-            bool allowSpecular = customShader != "Reflection Surface";
+            bool allowSpecular = customShader != "Reflection Surface";            
 
             if (jsonMaterialType == "Tra")
             {
@@ -2642,7 +2623,7 @@ namespace Reallusion.Import
 
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
 
-                if (RP == RenderPipeline.HDRP)
+                if (RP == RenderPipeline.HDRP) // Shader Graph hair shader
                 {
                     float secondarySpecStrength = matJson.GetFloatValue("Custom Shader/Variable/Secondary Specular Strength");
                     SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
@@ -2652,42 +2633,36 @@ namespace Reallusion.Import
                     //mat.SetFloatIf("_SecondarySmoothness", 0.5f);
                     mat.SetFloatIf("_RimTransmissionIntensity", 0.75f * specMapStrength * Mathf.Pow(rimTransmission, 0.5f));
                     mat.SetFloatIf("_FlowMapFlipGreen", 1f -
-                        matJson.GetFloatValue("Custom Shader/Variable/TangentMapFlipGreen"));
+                                    matJson.GetFloatValue("Custom Shader/Variable/TangentMapFlipGreen"));
 
                     mat.SetFloatIf("_SpecularShiftMin",
-                        matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
+                                    matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
                     mat.SetFloatIf("_SpecularShiftMax",
-                        matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));
+                                    matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));
                 }
-                else if (RP == RenderPipeline.URP && !USE_AMPLIFY_SHADER)
+                else if (RP == RenderPipeline.URP) // Shader Graph hair shader
                 {
                     mat.SetFloatIf("_DiffuseStrength", 1.15f * matJson.GetFloatValue("Custom Shader/Variable/Diffuse Strength"));
                     mat.SetFloatIf("_SmoothnessMin", 0f);
                     mat.SetFloatIf("_SpecularMultiplier", Mathf.Lerp(0.1f, 0.5f, specMapStrength * specStrength));
                     mat.SetFloatIf("_FlowMapFlipGreen", 1f - matJson.GetFloatValue("Custom Shader/Variable/TangentMapFlipGreen"));
                     mat.SetFloatIf("_SpecularShiftMin",
-                        matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
+                                    matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
                     mat.SetFloatIf("_SpecularShiftMax",
-                        matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));
+                                    matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));
                 }
-                else
-                {
-                    if (USE_AMPLIFY_SHADER)
-                    {
-                        SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
-                        SetFloatPowerRange(mat, "_SpecularMultiplier", specMapStrength * specStrength, specularMin, specularMax, specularPowerMod);
-                        mat.SetFloatIf("_RimTransmissionIntensity", ValueByPipeline(1f, 75f, 75f) * specMapStrength * Mathf.Pow(rimTransmission, 0.5f));
-                        mat.SetFloatIf("_FlowMapFlipGreen", 1f -
-                            matJson.GetFloatValue("Custom Shader/Variable/TangentMapFlipGreen"));
-                        mat.SetFloatIf("_SpecularShiftMin", -0.25f +
-                            matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
-                        mat.SetFloatIf("_SpecularShiftMax", -0.25f +
-                            matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));
-                    }
-                    else
-                    {
-                        mat.SetFloatIf("_SmoothnessMin", Util.CombineSpecularToSmoothness(specMapStrength * specStrength, smoothnessStrength));
-                    }
+                else // 3D (Amplify hair shader)
+                {                    
+                    SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
+                    SetFloatPowerRange(mat, "_SpecularMultiplier", specMapStrength * specStrength, specularMin, specularMax, specularPowerMod);
+                    mat.SetFloatIf("_RimTransmissionIntensity", ValueByPipeline(1f, 75f, 75f) * specMapStrength * Mathf.Pow(rimTransmission, 0.5f));
+                    mat.SetFloatIf("_FlowMapFlipGreen", 1f -
+                                    matJson.GetFloatValue("Custom Shader/Variable/TangentMapFlipGreen"));
+                    mat.SetFloatIf("_SpecularShiftMin", -0.25f +
+                                    matJson.GetFloatValue("Custom Shader/Variable/BlackColor Reflection Offset Z"));
+                    mat.SetFloatIf("_SpecularShiftMax", -0.25f +
+                                    matJson.GetFloatValue("Custom Shader/Variable/WhiteColor Reflection Offset Z"));                    
+                    //mat.SetFloatIf("_SmoothnessMin", Util.CombineSpecularToSmoothness(specMapStrength * specStrength, smoothnessStrength));
                 }
 
                 Color rootColor = Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/RootColor"));
@@ -2718,6 +2693,8 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_HighlightBOverlapEnd", matJson.GetFloatValue("Custom Shader/Variable/Mask 2nd Dye by RootMap"));
                 mat.SetFloatIf("_HighlightBOverlapInvert", matJson.GetFloatValue("Custom Shader/Variable/Invert 2nd Dye RootMap Mask"));                
             }
+
+            mat.SetFloatIf("_Displace", 1f / 4000f);
         }
 
         private void ConnectHQEyeOcclusionMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,

@@ -906,8 +906,8 @@ namespace Reallusion.Import
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Single Pass Hair"), contextCharacter.DefaultHair, HairOptionSelected, CharacterInfo.HairQuality.Default);
                 menu.AddItem(new GUIContent("Two Pass Hair"), contextCharacter.DualMaterialHair, HairOptionSelected, CharacterInfo.HairQuality.TwoPass);
-                if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
-                    menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
+                //if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
+                //    menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
                 menu.ShowAsContext();
             }
             EditorGUI.EndDisabledGroup();
@@ -1838,8 +1838,7 @@ namespace Reallusion.Import
             Importer.REBAKE_BLENDER_UNITY_MAPS = false;
             Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;
-            Importer.USE_SELF_COLLISION = false;
-            Importer.USE_AMPLIFY_SHADER = false;            
+            Importer.USE_SELF_COLLISION = false;            
             Physics.PHYSICS_SHRINK_COLLIDER_RADIUS = 0.5f;
             Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD = 0.25f;
 
