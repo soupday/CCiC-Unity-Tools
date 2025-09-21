@@ -152,7 +152,7 @@ namespace Reallusion.Import
 
             DrawLabelLine(line++, "Material Shader Features:");
 
-            if (Pipeline.isHDRP12 || Pipeline.is3D || Pipeline.isURP17)
+            if (Pipeline.isHDRP12 || Pipeline.is3D)
             {
                 if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
                     flagChanged = true;
@@ -173,7 +173,7 @@ namespace Reallusion.Import
             {
                 if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.AmplifyShaders, "Amplify Shaders", SECTION_INDENT))
                     flagChanged = true;
-                if (!Pipeline.isURP17 && contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.AmplifyShaders))
+                if (contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.AmplifyShaders))
                 {
                     if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
                         flagChanged = true;
