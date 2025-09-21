@@ -906,8 +906,24 @@ namespace Reallusion.Import
 
             if (useAmplify)
             {
-                string customAmplifyShaderName = shaderName.Replace("Shader Graphs/", "Reallusion/Amplify/");
-                Shader customShader = Shader.Find(customAmplifyShaderName);
+                string customAmplifyShaderName = "";
+
+                /*
+                Dictionary<string, string> amplifyMappings = new Dictionary<string, string>()
+                {                    
+                    { "", "" },                    
+                };
+                */
+
+                Shader customShader = null;
+                if (shaderName.StartsWith("Shader Graphs/"))
+                {
+                    customAmplifyShaderName = shaderName.Replace("Shader Graphs/", "Reallusion/Amplify/");
+                    if (customAmplifyShaderName != shaderName)
+                    {
+                        customShader = Shader.Find(customAmplifyShaderName);
+                    }
+                }                
                 
                 if (customShader)
                 {

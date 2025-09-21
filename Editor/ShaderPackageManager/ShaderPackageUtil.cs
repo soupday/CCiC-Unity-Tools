@@ -683,25 +683,28 @@ namespace Reallusion.Import
                             string packageSearchTerm = Path.GetFileNameWithoutExtension(packageManifest.SourcePackageName);
                             string[] shaderPackages = AssetDatabase.FindAssets(packageSearchTerm);
 
-                            string selectedPackage = shaderPackages[0]; // default case
-                            if (shaderPackages.Length > 1) // error case
+                            if (shaderPackages.Length > 0)
                             {
-                                //Debug.LogWarning("Multiple shader packages detected for: " + packageManifest.SourcePackageName + " ... using the one in Packages/.");
-
-                                foreach (string shaderPackage in shaderPackages)
+                                string selectedPackage = shaderPackages[0]; // default case
+                                if (shaderPackages.Length > 1) // error case
                                 {
-                                    if (AssetDatabase.GUIDToAssetPath(shaderPackage).StartsWith("Packages"))
+                                    //Debug.LogWarning("Multiple shader packages detected for: " + packageManifest.SourcePackageName + " ... using the one in Packages/.");
+
+                                    foreach (string shaderPackage in shaderPackages)
                                     {
-                                        selectedPackage = shaderPackage;
-                                        break;
+                                        if (AssetDatabase.GUIDToAssetPath(shaderPackage).StartsWith("Packages"))
+                                        {
+                                            selectedPackage = shaderPackage;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
 
-                            string packageAssetPath = AssetDatabase.GUIDToAssetPath(selectedPackage);
-                            packageManifest.referenceMainfestPath = manifestAssetPath;
-                            packageManifest.referenceShaderPackagePath = packageAssetPath;
-                            manifestPackageMap.Add(packageManifest);
+                                string packageAssetPath = AssetDatabase.GUIDToAssetPath(selectedPackage);
+                                packageManifest.referenceMainfestPath = manifestAssetPath;
+                                packageManifest.referenceShaderPackagePath = packageAssetPath;
+                                manifestPackageMap.Add(packageManifest);
+                            }
                         }
                     }
                 }

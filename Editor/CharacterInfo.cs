@@ -1283,7 +1283,17 @@ namespace Reallusion.Import
             {
                 useDisplacement = FeatureUseDisplacement;
             }
-            return FeatureUseTessellation || useDisplacement;
+
+            // always try to tessellate with displacement maps
+            if (FeatureUseTessellation && useDisplacement) return true;
+
+            // try tessellate skin and teeth if requested
+            if (FeatureUseTessellation && 
+                (materialType == MaterialType.Skin ||
+                 materialType == MaterialType.Head ||
+                 materialType == MaterialType.Teeth)) return true;
+
+            return false;
         }
 
         public float GetBoneScale()

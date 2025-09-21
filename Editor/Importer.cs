@@ -2107,7 +2107,7 @@ namespace Reallusion.Import
                 float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
                 mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
-                mat.SetFloat("_SmoothnessContrast", useCavity ? 2.0f : 1.5f);
+                mat.SetFloat("_SmoothnessContrast", 1.0f);
                 mat.SetFloatIf("_SecondarySmoothness", 0.5f);
                 mat.SetFloatIf("_SubsurfaceScale", 1.65f * matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
                 mat.SetColorIf("_SubsurfaceFalloff", sssFalloff);
@@ -2252,6 +2252,8 @@ namespace Reallusion.Import
                 mat.SetFloat("_TeethSaturation", Mathf.Clamp01(1f - matJson.GetFloatValue("Custom Shader/Variable/Teeth Desaturation")));
                 mat.SetFloat("_TeethBrightness", matJson.GetFloatValue("Custom Shader/Variable/Teeth Brightness"));
             }
+
+            mat.SetFloatIf("_SmoothnessContrast", 1.0f);
         }
 
         private void ConnectHQTongueMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -2320,6 +2322,8 @@ namespace Reallusion.Import
                 mat.SetFloat("_TongueSaturation", Mathf.Clamp01(1f - matJson.GetFloatValue("Custom Shader/Variable/_Desaturation")));
                 mat.SetFloat("_TongueBrightness", matJson.GetFloatValue("Custom Shader/Variable/_Brightness"));                
             }
+
+            mat.SetFloatIf("_SmoothnessContrast", 1.0f);
         }
 
         private void ConnectHQEyeMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -2455,7 +2459,7 @@ namespace Reallusion.Import
                 //mat.SetFloatIf("_LimbusDarkWidth", 2f * (dm - ds));
                 mat.SetFloatIf("_LimbusDarkWidth", Mathf.Max(0.05f, 0.14f - ds));
                 */                                          
-                mat.SetFloatIf("_LimbusContrast", 1f);
+                mat.SetFloatIf("_LimbusContrast", 1.1f);
                 float scleraBrightnessPower = 0.65f;
                 float scleraBrightness = Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/ScleraBrightness"), scleraBrightnessPower);
                 if (Pipeline.isHDRP) scleraBrightnessPower = 0.75f;

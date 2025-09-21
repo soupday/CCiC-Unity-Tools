@@ -1,0 +1,452 @@
+{
+  "FileName": "Legacy Shader Package",
+  "Pipeline": 117,
+  "Version": "2.1.0",
+  "SourcePackageName": "Legacy Shader Package_2.1.0_URP17_RL_legacyshaderpackage.unitypackage",
+  "VersionEdit": false,
+  "ManifestPath": "",
+  "Validated": false,
+  "Visible": false,
+  "referenceMainfestPath": "",
+  "referenceShaderPackagePath": "",
+  "Items": [
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_CorneaShaderParallax_Baked_URP.shader",
+      "GUID": "18ddb0805d6262f4da19209d4ffbfdcc",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_CorneaShaderParallax_URP.shader",
+      "GUID": "63d5771360ced2f4d9683cccd76fdecf",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Eye_IrisBaseColor.asset",
+      "GUID": "b4913df2dad5f8c4e9bf1330dbfd831a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Eye_ScleraBaseColor.asset",
+      "GUID": "98f1301b5bf292b40a1af78544e1e01c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_AnisotropicLighting.asset",
+      "GUID": "1c2ce0d33e6d0364e94912a58b37cdd2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_IDBlend.asset",
+      "GUID": "6afb608343a58854589726462adfdb8b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_LightingMain.asset",
+      "GUID": "4647d52851087ee4888984e98079370b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_RootBlend.asset",
+      "GUID": "3304ef6ee2139bd4cab5d899498bc3dd",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_ShiftTangents.asset",
+      "GUID": "6dfd3f9332e451e4daa85e7d45af183f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Function_Hair_StrandSpecular.asset",
+      "GUID": "6275bdb2984984a48bdc734d8e324810",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_1st_Pass_Baked_URP.shader",
+      "GUID": "be60fcfbf2dd9d646b288686e5979193",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_1st_Pass_Variants_URP.shader",
+      "GUID": "360ccb948905e854aa51a2cbc68846b9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_2nd_Pass_Baked_URP.shader",
+      "GUID": "1d7ffba6750cd8249839e1a625aa766d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_2nd_Pass_Variants_URP.shader",
+      "GUID": "a641ee34650e2134985a3f9b4ded71e7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Baked_URP.shader",
+      "GUID": "ab5a68f241ede7448b2b10218290475b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Coverage_Baked_URP.shader",
+      "GUID": "dd9bc3ea77e4e1d4daf1a5593e65e2ee",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Coverage_URP.shader",
+      "GUID": "16f2b7583e367844c8199e778982ce94",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HairShader_Variants_URP.shader",
+      "GUID": "fdf1b756c56298643b40c91e5c358e3b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_HeadShaderWrinkle_Baked_URP.shader",
+      "GUID": "ada65dfc2ad6f5b41b2d7eb2e958e3b2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_AlphaBlendRefractive_URP.shader",
+      "GUID": "d697ad5c3ba3e034eb9707273907db68",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_AlphaBlend_URP.shader",
+      "GUID": "ce9f21a9602bd994ab3b40302670a666",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_AlphaClipped_URP.shader",
+      "GUID": "424715e0a2a24c947ac485aceb95fae6",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_Opaque_DblSided_URP.shader",
+      "GUID": "735027ad2d1f1ee4b95c949d5ec86f13",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_Opaque_URP.shader",
+      "GUID": "b4d69e9884d97884abb1fb941b7ac2d1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_Lit_SSS_URP.shader",
+      "GUID": "d8afc8854fab20d479cb729752651858",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_SkinShader_Variants_URP.shader",
+      "GUID": "526231ed22d70c042b4bec774e071cbb",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_TeethShader_URP.shader",
+      "GUID": "c97c524a8e426ed42981718f450e903b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_TongueShader_URP.shader",
+      "GUID": "9219d756f955c9f449409d0ed28b9b25",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_WrinkleMapSystem.asset",
+      "GUID": "d27d6ddfed52eb04ba4585a9fc285421",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/RL_Amplify_WrinkleMaskBlend.asset",
+      "GUID": "3f445c9de4a3a124d841df7bd233b17f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_CorneaShaderParallax_Baked_URP_Tessellation.shader",
+      "GUID": "3bb97a932bcfd50419b3dacd0fc65a12",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_CorneaShaderParallax_URP_Tessellation.shader",
+      "GUID": "e140ee6ce2e0ada48b80454abeb373bc",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_1st_Pass_Baked_URP_Tessellation.shader",
+      "GUID": "7aba3ffd9c6686d4c803ea26138f78ba",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_1st_Pass_Variants_URP_Tessellation.shader",
+      "GUID": "ad146e2204503c642b13922d4cf5682e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_2nd_Pass_Baked_URP_Tessellation.shader",
+      "GUID": "ecc7b41eb9f63b645ac666204fcac3a6",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_2nd_Pass_Variants_URP_Tessellation.shader",
+      "GUID": "0b271f7c00cdc6b4cb64979cff408d9c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Baked_URP_Tessellation.shader",
+      "GUID": "82b0bae1e5c7ee64493e56b9550ccdd4",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Coverage_Baked_URP_Tessellation.shader",
+      "GUID": "0a92b045809df134c9b50eec33ed062d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Coverage_URP_Tessellation.shader",
+      "GUID": "fe6a9fe24a411ba439968bb183f3de50",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HairShader_Variants_URP_Tessellation.shader",
+      "GUID": "fe04871bf6daa7142907064b6f4bfadd",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_HeadShaderWrinkle_Baked_URP_Tessellation.shader",
+      "GUID": "cfc3368aaa12faa4ca702c3baae3c71d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_AlphaBlendRefractive_URP_Tessellation.shader",
+      "GUID": "0a7948cb737bf1443a94f847286acd11",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_AlphaBlend_DblSided_URP_Tessellation.shader",
+      "GUID": "ac0f5a04c2069c942b928f3009e6fac6",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_AlphaBlend_URP_Tessellation.shader",
+      "GUID": "63de2c28061646a498463c03d1812350",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_AlphaClipped_URP_Tessellation.shader",
+      "GUID": "bbcbb60f367232545ab01c8c2aba3f83",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_Opaque_DblSided_URP_Tessellation.shader",
+      "GUID": "7ddf1dc9ca8382741ac020bbba3aaa45",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_Opaque_URP_Tessellation.shader",
+      "GUID": "48446a24d15aae84fbbd49864800ad77",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_Lit_SSS_URP_Tessellation.shader",
+      "GUID": "bd98ec651ba13834698fd6ed569b8aac",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_SkinShader_Variants_URP_Tessellation.shader",
+      "GUID": "1641195dcc1df5e49b393cf22d62937f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_TeethShader_URP_Tessellation.shader",
+      "GUID": "0f9da85a0900f2548a2cce351a21e9e4",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Amplify/Tessellation/RL_Amplify_TongueShader_URP_Tessellation.shader",
+      "GUID": "2bccee9fdec55ea48aa560365acaa688",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_CorneaShaderBasic_Baked_URP.shadergraph",
+      "GUID": "c3096731e3b697649a6196443670bcf1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_CorneaShaderBasic_URP.shadergraph",
+      "GUID": "867b56f935b69f7438de4f3082e4dcc2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_CorneaShaderParallax_Baked_URP.shadergraph",
+      "GUID": "4ddc5098cc80e7f43a0b4c43b38b06b3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_CorneaShaderParallax_URP.shadergraph",
+      "GUID": "db0032156b53ffc4d8d744c3dc1c02e8",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_EyeOcclusionShader_Baked_URP.shadergraph",
+      "GUID": "19cfa70b21a0ca649855cd3bc8896d63",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_EyeOcclusionShader_URP.shadergraph",
+      "GUID": "e11e1541751f73a4bbdc03b071617a93",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_EyeShaderBasic_Dummy_URP.shadergraph",
+      "GUID": "97ffe1dd935ebd24daf136a19a6ef9a8",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_EyeShaderParallax_Dummy_URP.shadergraph",
+      "GUID": "bfc66dbf789b50d4da9dddcacf6ba59f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_EyeShaderRefractive_Variants_Dummy_URP.shadergraph",
+      "GUID": "6b2d7f0096d7e2d4eab83e9c0d1093f0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_Function_WrinkleMaskBlend.shadersubgraph",
+      "GUID": "27136356b7dbacc488c6d93117e810f9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_Function_WrinkleSystem.shadersubgraph",
+      "GUID": "eb5a7673e0bf6f341ad6a60f3d98ae7e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_1st_Pass_Baked_URP.shadergraph",
+      "GUID": "cb2911e3502375340a81b53821baae78",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_1st_Pass_Variants_URP.shadergraph",
+      "GUID": "9a913a189857ad442be1407de107c28a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_2nd_Pass_Baked_URP.shadergraph",
+      "GUID": "aa5cad896f52da84f87161c1f82e79fb",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_2nd_Pass_Variants_URP.shadergraph",
+      "GUID": "484c818db3202dc48bac7074ef16e8e3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_Baked_URP.shadergraph",
+      "GUID": "a081e115c7c82634aa606dafdcb27d08",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HairShader_Variants_URP.shadergraph",
+      "GUID": "1b1fb9190f9a21344931aa2df1b6a845",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_HeadShaderWrinkle_Baked_URP.shadergraph",
+      "GUID": "51be62320dfe9d04283ea425fec629cd",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_SkinShader_Variants_URP.shadergraph",
+      "GUID": "e4b1192022fa52046868c000971f662c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_TearlineShader_URP.shadergraph",
+      "GUID": "5acd4540882388b44adfb140c6c6290b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_TeethShader_URP.shadergraph",
+      "GUID": "bade89290ffb11a468a4957d7cfbb4bd",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Legacy/Shader Graph/RL_TongueShader_URP.shadergraph",
+      "GUID": "9cea8e6ce656ff148a2ec8e1550340ce",
+      "InstalledGUID": "",
+      "Validated": false
+    }
+  ]
+}

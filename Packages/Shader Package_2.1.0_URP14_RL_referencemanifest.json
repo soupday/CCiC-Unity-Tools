@@ -551,6 +551,48 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Baked/RL5_Amplify_SkinShader_Baked_3D.shader",
+      "GUID": "b9fab8ecd41f338448a052c80d9483b5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Baked/Tessellation/RL5_Amplify_SkinShader_Baked_3D_Tessellation.shader",
+      "GUID": "bb01208b7b5d66540b52f064b944159f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_Function_Skin_SSS.asset",
+      "GUID": "3a15041bfe742e24d9003ae8b3e9eee0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_WrinkleMapSystem.asset",
+      "GUID": "ada0dcb2336c5f74995ee8fbcf5e9cf2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_WrinkleMaskBlend.asset",
+      "GUID": "d95dd752eb0dee340b5d885eef184dc7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/HQ/RL5_Amplify_SkinShader_Variants_URP.shader",
+      "GUID": "71e7f1aa896f68145b92a9e015469807",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/HQ/Tessellation/RL5_Amplify_SkinShader_Variants_URP_Tessellation.shader",
+      "GUID": "0e116b395c389534bb14bd9b9c52355b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_CorneaShaderParallax_Baked_URP.shadergraph",
       "GUID": "6af0342b967924e43b2deb1f413aee00",
       "InstalledGUID": "",
@@ -677,6 +719,12 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_SSSMain.shadersubgraph",
+      "GUID": "a5d5626b26317bb4da5b2cf1ab86bd12",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_WrinkleMaskBlend.shadersubgraph",
       "GUID": "58f87cc05391d014e8fa62e5df499d00",
       "InstalledGUID": "",
@@ -703,12 +751,6 @@
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL_Function_Eevee_Anisotropic_Highlights.shadersubgraph",
       "GUID": "236bf16c777154140aa8e3516958c847",
-      "InstalledGUID": "",
-      "Validated": false
-    },
-    {
-      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL_Function_SSSMain.shadersubgraph",
-      "GUID": "a5d5626b26317bb4da5b2cf1ab86bd12",
       "InstalledGUID": "",
       "Validated": false
     }
