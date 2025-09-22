@@ -1065,7 +1065,7 @@ namespace Reallusion.Import
                     }
                     case OpCodes.REQUEST:
                     {
-                        Debug.LogWarning("The 'Send Scene' function is not yet fully implemented - use the 'Send All' button with everything in the scene selected.");
+                        //Debug.LogWarning("The 'Send Scene' function is not yet fully implemented - Use with caution.");
                         RespondToSceneRequest(next);
                         break;
                     }
@@ -1175,7 +1175,7 @@ namespace Reallusion.Import
 
             if (item.SceneRequest != null && item.SceneRequest.Actors != null)
             {
-                Debug.Log("Listing iClone scene contents");
+                //Debug.Log("Listing iClone scene contents");
                 foreach (var actor in item.SceneRequest.Actors)
                 {
                     bool isPresentInScene = false;
@@ -1186,8 +1186,20 @@ namespace Reallusion.Import
                     }
                     catch { }
                         
-                    Debug.Log($"Name: {actor.Name}, Type: {actor.Type}, LinkID: {actor.LinkId} , Present in scene: {isPresentInScene}");
+                    //Debug.Log($"Name: {actor.Name}, Type: {actor.Type}, LinkID: {actor.LinkId} , Present in scene: {isPresentInScene}");
 
+                    if (actor.Type == "AVATAR" || actor.Type == "PROP")
+                    {
+                        GameObject go = null;
+                        if (!isPresentInScene) { 
+                            go = GetPrefabFromLinkId(actor.LinkId);
+                            if (go != null)
+                            {
+                                UnityLinkSceneManagement.AddToScene(go, actor.LinkId);
+                                isPresentInScene = true;
+                            }
+                        }
+                    }
                     actor.Confirm = isPresentInScene;
                     reply.Actors.Add(actor);
                 }
@@ -1202,6 +1214,33 @@ namespace Reallusion.Import
                     Debug.Log("Cannot format scene request reply");
                 }
             }
+        }
+
+        static GameObject GetPrefabFromLinkId(string linkId)
+        {
+            WindowManager.UpdateImportList();
+
+            CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
+            if (characterMatch != null)
+            {
+                GameObject match = characterMatch.GetDraggablePrefab();
+                if (match != null)
+                {
+                    return match;
+                }
+            }
+            return null;
+        }
+
+        public static CharacterInfo GetCharacterInfoFromLinkId(string linkId)
+        {
+            WindowManager.UpdateImportList();
+
+            CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
+            if (characterMatch != null)
+                return characterMatch;
+
+            return null;
         }
 
         #endregion  Activity queue handling

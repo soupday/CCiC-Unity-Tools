@@ -253,6 +253,8 @@ namespace Reallusion.Import
                         name = QueueItem.Prop.Name;
                         LinkId = QueueItem.Prop.LinkId;
                         MotionPrefix = QueueItem.Prop.MotionPrefix;
+                        existingLinkedFbxPath = GetFbxPathFromLinkId(LinkId);
+                        existingLinkedCharFolder = GetAssetFolderFromLinkId(LinkId);
                         importProp = true;
                         break;
                     }
@@ -550,10 +552,15 @@ namespace Reallusion.Import
                     {
                         string propExt = Path.GetExtension(projectAssetPath);
                         string propName = Path.GetFileName(projectAssetPath);
+                        string folderName = Path.GetFileNameWithoutExtension(projectAssetPath);
                         if (propExt.Equals(".fbx", System.StringComparison.InvariantCultureIgnoreCase))
                         {
-                            //Debug.Log("FBX: " + propName + " found.");
-                            inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                            string rejectName = folderName + Path.DirectorySeparatorChar + "Previous_Imports";
+                            if (!propName.iContains(rejectName))
+                            {
+                                inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
+                                break;
+                            }
                         }
                     }
                 }
@@ -696,8 +703,22 @@ namespace Reallusion.Import
                 {
                     clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true, MotionPrefix);
 
-                    // Motions are implicitly animated
-                    animatedStatus = GetAnimatedStatus(clipListForTimeLine);// |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+                    // determine if PROP or AVATAR from characterID
+                    CharacterInfo charInfo = UnityLinkManager.GetCharacterInfoFromLinkId(linkId);
+
+                    if (charInfo.exportType == CharacterInfo.ExportType.PROP)
+                    {
+                        animatedStatus = GetAnimatedStatus(clipListForTimeLine);
+                        if (animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.NotAnimated))
+                        {
+                            UpdateCharacterPrefabTransform(charInfo, characterPrefab, clipListForTimeLine);
+                        }
+                    }
+                    else if (charInfo.exportType == CharacterInfo.ExportType.AVATAR)
+                    {
+                        // Motions are implicitly animated for AVATAR
+                        animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+                    }
 
                     // only animation track update permitted for Motion
                     UnityLinkSceneManagement.TrackType trackType = 0;
@@ -2224,6 +2245,115 @@ namespace Reallusion.Import
                 }
             }
             return animatedStatus;
+        }
+
+        public static GameObject UpdateCharacterPrefabTransform(CharacterInfo charInfo, GameObject characterPrefab, List<AnimationClip> clips)
+        {
+            if (clips != null)
+            {
+                if (clips.Count == 0) return null;
+
+                AnimationClip clipToUse = null;
+                // find suitable aniamtion clip (should be the first non T-Pose)
+                foreach (AnimationClip animClip in clips)
+                {
+                    if (animClip == null) continue;
+
+                    if (animClip.name.iContains("T-Pose"))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        clipToUse = animClip;
+                        break;
+                    }
+                }
+
+                if (clipToUse == null) return null;
+
+                if (PrefabUtility.GetPrefabAssetType(characterPrefab) != PrefabAssetType.NotAPrefab)
+                {
+                    using (var editingScope = new PrefabUtility.EditPrefabContentsScope(AssetDatabase.GetAssetPath(characterPrefab)))
+                    {
+                        var prefabRoot = editingScope.prefabContentsRoot;
+
+                        try
+                        {
+                            EditorCurveBinding[] bindings = AnimationUtility.GetCurveBindings(clipToUse);
+                            Transform[] transforms = prefabRoot.GetComponentsInChildren<Transform>();
+                            map = new Dictionary<string, Transform>();
+
+                            IterateOverHierarchy(prefabRoot.transform);
+
+                            List<string> uniquePaths = bindings.Select(x => x.path).Distinct().ToList();
+
+                            foreach(var path in uniquePaths)
+                            {
+                                if (map.TryGetValue(path, out Transform t))
+                                {
+                                    Vector3 position = new Vector3();
+                                    Vector4 rotation = new Vector4();
+                                    Vector3 scale = new Vector3();
+
+                                    var bindingsForPath = bindings.ToList().FindAll(x => x.path.Equals(path));
+                                    foreach (var binding in bindingsForPath)
+                                    {
+                                        AnimationCurve curve = AnimationUtility.GetEditorCurve(clipToUse, binding);
+
+                                        string[] strings = binding.propertyName.Split('.');
+                                        if (strings.Length != 2) continue;
+
+                                        // Not checking for differences here just updating everything
+
+                                        if (strings[0].iEndsWith("LocalPosition"))
+                                        {
+                                            if (strings[1].iEquals("x")) position.x = curve.keys[0].value;
+                                            if (strings[1].iEquals("y")) position.y = curve.keys[0].value;
+                                            if (strings[1].iEquals("z")) position.z = curve.keys[0].value;
+                                        }
+
+                                        if (strings[0].iEndsWith("LocalRotation"))
+                                        {
+                                            if (strings[1].iEquals("x")) rotation.x = curve.keys[0].value;
+                                            if (strings[1].iEquals("y")) rotation.y = curve.keys[0].value;
+                                            if (strings[1].iEquals("z")) rotation.z = curve.keys[0].value;
+                                            if (strings[1].iEquals("w")) rotation.w = curve.keys[0].value;
+                                        }
+
+                                        if (strings[0].iEndsWith("LocalScale"))
+                                        {
+                                            if (strings[1].iEquals("x")) scale.x = curve.keys[0].value;
+                                            if (strings[1].iEquals("y")) scale.y = curve.keys[0].value;
+                                            if (strings[1].iEquals("z")) scale.z = curve.keys[0].value;
+                                        }
+                                    }
+                                    t.localPosition = position;
+                                    t.localRotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+                                    t.localScale = scale;                                                                       
+                                }
+                            }
+                        }
+                        catch (Exception e) { Debug.Log(e.Message); }
+                    }
+                    // will purge the existing object in the scene and reinstatiate the modified prefab
+                    UnityLinkSceneManagement.AddToScene(characterPrefab, charInfo.linkId);
+                }
+            }
+            return characterPrefab;
+        }
+
+        static Dictionary<string, Transform> map;
+
+        public static void IterateOverHierarchy(Transform transform, string fullPath = "")
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                string childPath = fullPath + (string.IsNullOrEmpty(fullPath) ? "" : "/") + transform.GetChild(i).name;
+                Debug.Log($"Adding {childPath}");
+                map.Add(childPath, transform.GetChild(i));
+                IterateOverHierarchy(transform.GetChild(i), childPath);
+            }
         }
 
         public static void LogBeautifiedJson(string jsonString)

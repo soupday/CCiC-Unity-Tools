@@ -239,9 +239,14 @@ namespace Reallusion.Import
 
             if (trackType.HasFlag(TrackType.AnimationTrackUpdate)) // updating the animation track - no input sceneObject needed - sceneObject should be the GameObject bound to the existing track for the linkid
             {
-                if(!TryGetBoundSceneObjectByLinkId(director, linkId, out sceneObject))
+                if(!TryGetBoundSceneObjectByLinkId(director, linkId, out sceneObject, out bool hasTrack))
                 {
                     return;
+                }
+                Debug.LogWarning($"SceneObject Found: {sceneObject.name} - LinkId: {linkId} - Has animation track: {hasTrack}");
+                if (!hasTrack && animatedStatus.HasFlag(AnimatedStatus.Animation))
+                {
+                    AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
                 }
             }
 
@@ -271,10 +276,11 @@ namespace Reallusion.Import
             }
         }
 
-        public static bool TryGetBoundSceneObjectByLinkId(PlayableDirector director, string linkId, out GameObject sceneObject)
+        public static bool TryGetBoundSceneObjectByLinkId(PlayableDirector director, string linkId, out GameObject sceneObject, out bool hasTrack)
         {
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
             sceneObject = null;
+            hasTrack = false;
 
             //Debug.LogWarning("TrackType.AnimationTrackUpdate");
             AnimationTrack workingtrack = null;
@@ -303,10 +309,11 @@ namespace Reallusion.Import
                 {
                     foreach (var linkedObject in linkedObjects)
                     {
-                        if (linkedObject.GetComponent<Animator>() != null)
+                        if (linkedObject.GetComponent<Animator>() != null && linkedObject.linkId == linkId)
                         {
-                            Debug.Log($"Found a character with LinkId: {linkId} in the scene.");
+                            Debug.Log($"Found a character with LinkId: {linkId} in the scene. ({linkedObject.name} - {linkedObject.linkId})");
                             sceneObject = linkedObject.gameObject;
+                            hasTrack = false;
                             return true;
                         }
                     }
@@ -316,6 +323,7 @@ namespace Reallusion.Import
             {
                 // https://discussions.unity.com/t/noob-question-on-timeline-get-gameobject-reference-from-a-timeline-track/790521
                 sceneObject = (GameObject)director.GetGenericBinding(workingtrack);
+                hasTrack = true;
                 return true;
             }
             return false;
