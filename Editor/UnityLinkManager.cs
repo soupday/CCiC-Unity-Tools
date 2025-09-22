@@ -510,6 +510,8 @@ namespace Reallusion.Import
             CAMERA_SYNC = 231,
             FRAME_SYNC = 232,
             MOTION = 240,
+            REQUEST = 250,
+            CONFIRM = 251,
 
             // additions for testing
             TEST = 999,
@@ -867,6 +869,11 @@ namespace Reallusion.Import
                         try { qItem.FrameSync = JsonConvert.DeserializeObject<JsonFrameSync>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
+                case OpCodes.REQUEST:
+                    {
+                        try { qItem.SceneRequest = JsonConvert.DeserializeObject<JsonSceneRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; } 
+                        break;
+                    }
             }
 
             WriteIncomingLog(dataString, add);
@@ -1056,6 +1063,12 @@ namespace Reallusion.Import
                         //Debug.Log(next.FrameSync.ToString());
                         break;
                     }
+                    case OpCodes.REQUEST:
+                    {
+                        Debug.LogWarning("The 'Send Scene' function is not yet fully implemented - use the 'Send All' button with everything in the scene selected.");
+                        RespondToSceneRequest(next);
+                        break;
+                    }
             }
             next.Processed = true;
             if (UnityLinkManagerWindow.Instance != null) UnityLinkManagerWindow.Instance.Focus();            
@@ -1152,6 +1165,45 @@ namespace Reallusion.Import
                 Debug.LogWarning(e.ToString());
             }
         }
+
+        static void RespondToSceneRequest(QueueItem item)
+        {
+            // Examine current scene contents
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+
+            JsonSceneRequest reply = new JsonSceneRequest();
+
+            if (item.SceneRequest != null && item.SceneRequest.Actors != null)
+            {
+                Debug.Log("Listing iClone scene contents");
+                foreach (var actor in item.SceneRequest.Actors)
+                {
+                    bool isPresentInScene = false;
+                    try
+                    {
+                        var presentInScene = linkedSceneObjects.FirstOrDefault(x => x.linkId == actor.LinkId);
+                        isPresentInScene = presentInScene != null;
+                    }
+                    catch { }
+                        
+                    Debug.Log($"Name: {actor.Name}, Type: {actor.Type}, LinkID: {actor.LinkId} , Present in scene: {isPresentInScene}");
+
+                    actor.Confirm = isPresentInScene;
+                    reply.Actors.Add(actor);
+                }
+
+                try
+                {
+                    string replyString = JsonConvert.SerializeObject(reply);
+                    SendMessage(OpCodes.CONFIRM, replyString);
+                }
+                catch
+                {
+                    Debug.Log("Cannot format scene request reply");
+                }
+            }
+        }
+
         #endregion  Activity queue handling
 
         #region Class data               
@@ -2164,7 +2216,61 @@ namespace Reallusion.Import
                 return "Fps " + this.Fps + ", Start Time " + this.StartTime + ", End Time " + this.EndTime + ", Current Time " + this.CurrentTime + ", Start Frame " + this.StartFrame + ", End Frame " + this.EndFrame + ", Current Frame " + this.CurrentFrame;
             }
         }
-                
+
+        public class JsonSceneRequest
+        {
+            /*
+             "type": "SCENE",
+             "actors": [
+                {
+                  "name": "Eddy",
+                  "type": "AVATAR",
+                  "link_id": "6224490459904"
+                },
+                {
+                  "name": "Floor_Wood_A",
+                  "type": "PROP",
+                  "link_id": "6224490412288"
+                }
+              ]
+             */
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            [JsonProperty("actors")]
+            public List<JsonSceneRequestActors> Actors { get; set; }
+
+            public JsonSceneRequest()
+            {
+                Type = "SCENE";
+                Actors = new List<JsonSceneRequestActors>();
+            }
+        }
+
+        public class JsonSceneRequestActors
+        {
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            [JsonProperty("link_id")]
+            public string LinkId { get; set; }
+
+            [JsonProperty("confirm")]
+            public bool Confirm { get; set; }
+
+            public JsonSceneRequestActors(string name, string type, string linkId, bool confirm)
+            {
+                Name = name;
+                Type = type;
+                LinkId = linkId;
+                Confirm = confirm;
+            }
+        }
+
         public class QueueItem
         {
             public OpCodes OpCode { get; set; }
@@ -2185,6 +2291,7 @@ namespace Reallusion.Import
             public JsonLighting Lighting { get; set; }
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
+            public JsonSceneRequest SceneRequest { get; set; }
             public string RemoteId {  get; set; }
 
             public QueueItem(OpCodes opCode, Exchange direction)

@@ -697,7 +697,7 @@ namespace Reallusion.Import
                     clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true, MotionPrefix);
 
                     // Motions are implicitly animated
-                    animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
+                    animatedStatus = GetAnimatedStatus(clipListForTimeLine);// |= UnityLinkSceneManagement.AnimatedStatus.Animation;
 
                     // only animation track update permitted for Motion
                     UnityLinkSceneManagement.TrackType trackType = 0;
@@ -744,7 +744,11 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             charInfo.Write();
 
-            WindowManager.UpdateImportList();
+            if (ImporterWindow.Current != null)
+            {
+                ImporterWindow.Current.RefreshCharacterList();
+            }
+            //WindowManager.UpdateImportList();
 
             List<AnimationClip> animsForTimeLine = importIntoScene ? import.clipListForTimeLine : new List<AnimationClip>();
 
@@ -781,7 +785,11 @@ namespace Reallusion.Import
             GameObject prefab = import.Import();
             charInfo.Write();
 
-            WindowManager.UpdateImportList();
+            if (ImporterWindow.Current != null)
+            {
+                ImporterWindow.Current.RefreshCharacterList();
+            }
+            //WindowManager.UpdateImportList();
 
             // only animation tracks permitted for Avatars
             UnityLinkSceneManagement.TrackType trackType = addToTimeLine ? UnityLinkSceneManagement.TrackType.AnimationTrack : UnityLinkSceneManagement.TrackType.NoTrack;
@@ -2032,12 +2040,7 @@ namespace Reallusion.Import
 
             if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
             {
-                Debug.LogWarning("IsPartOfPrefabInstance toPrefab " + toPrefab.name);
                 UnityEditor.PrefabUtility.UnpackPrefabInstance(toPrefab, UnityEditor.PrefabUnpackMode.Completely, UnityEditor.InteractionMode.AutomatedAction);
-            }
-            else
-            {
-                //Debug.LogWarning("Is NOT PartOfPrefabInstance toPrefab " + toPrefab.name);
             }
 #if UNITY_POST_PROCESSING_3_1_1
             if (CameraProxyType == null)
@@ -2049,21 +2052,15 @@ namespace Reallusion.Import
                 var camProxy = toPrefab.GetComponentInChildren(CameraProxyType);
                 if (camProxy != null)
                 {
-                    Debug.LogWarning("toPrefab has a camProxy " + toPrefab.name);
+                    // clean up the camera related components in an orderly fashion
                     Object.DestroyImmediate(toPrefab.GetComponentInChildren(typeof(PostProcessLayer)), true);
                     Object.DestroyImmediate(toPrefab.GetComponentInChildren(typeof(Camera)), true);
                     camProxy.gameObject.SendMessage("OnDisable");
                     Object.DestroyImmediate(camProxy, true);
-
-                }
-                else
-                {
-                    Debug.LogWarning("toPrefab does not have a camProxy " + toPrefab.name);
                 }
             }
 #endif
-            GameObject.DestroyImmediate(toPrefab, true);
-            
+            GameObject.DestroyImmediate(toPrefab, true);            
             return prefab;
         }
 
