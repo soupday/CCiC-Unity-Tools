@@ -133,6 +133,8 @@ namespace Reallusion.Import
         public bool fov_delta = false;
 
         PackageType packageType = PackageType.NONE;
+
+        private static Dictionary<string, Transform> map;  // prefab map editorcurve binding path -> transform 
         #endregion
 
         #region Import Preparation
@@ -2249,6 +2251,8 @@ namespace Reallusion.Import
 
         public static GameObject UpdateCharacterPrefabTransform(CharacterInfo charInfo, GameObject characterPrefab, List<AnimationClip> clips)
         {
+            bool updateRequired = false;
+
             if (clips != null)
             {
                 if (clips.Count == 0) return null;
@@ -2304,8 +2308,6 @@ namespace Reallusion.Import
                                         string[] strings = binding.propertyName.Split('.');
                                         if (strings.Length != 2) continue;
 
-                                        // Not checking for differences here just updating everything
-
                                         if (strings[0].iEndsWith("LocalPosition"))
                                         {
                                             if (strings[1].iEquals("x")) position.x = curve.keys[0].value;
@@ -2328,22 +2330,28 @@ namespace Reallusion.Import
                                             if (strings[1].iEquals("z")) scale.z = curve.keys[0].value;
                                         }
                                     }
-                                    t.localPosition = position;
-                                    t.localRotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
-                                    t.localScale = scale;                                                                       
+                                    
+                                    Quaternion q = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+
+                                    if (t.localPosition != position || t.localRotation != q || t.localScale != scale)
+                                    {
+                                        t.localPosition = position;
+                                        t.localRotation = q;
+                                        t.localScale = scale;
+                                        updateRequired = true;
+                                    }                                                                 
                                 }
                             }
                         }
                         catch (Exception e) { Debug.Log(e.Message); }
                     }
+
                     // will purge the existing object in the scene and reinstatiate the modified prefab
-                    UnityLinkSceneManagement.AddToScene(characterPrefab, charInfo.linkId);
+                    if (updateRequired) UnityLinkSceneManagement.AddToScene(characterPrefab, charInfo.linkId);
                 }
             }
             return characterPrefab;
         }
-
-        static Dictionary<string, Transform> map;
 
         public static void IterateOverHierarchy(Transform transform, string fullPath = "")
         {
