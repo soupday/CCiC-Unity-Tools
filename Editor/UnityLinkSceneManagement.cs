@@ -243,7 +243,7 @@ namespace Reallusion.Import
                 {
                     return;
                 }
-                Debug.LogWarning($"SceneObject Found: {sceneObject.name} - LinkId: {linkId} - Has animation track: {hasTrack}");
+                
                 if (!hasTrack && animatedStatus.HasFlag(AnimatedStatus.Animation))
                 {
                     AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
@@ -252,7 +252,6 @@ namespace Reallusion.Import
 
             if (trackType.HasFlag(TrackType.AnimationTrack) || trackType.HasFlag(TrackType.AnimationTrackUpdate)) // AnimationTrack permitted for this object
             {
-                //Debug.LogWarning("TrackType.AnimationTrack | TrackType.AnimationTrackUpdate");
                 if (animatedStatus.HasFlag(AnimatedStatus.Animation)) // Has detected animation data
                 {
                     AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
@@ -261,7 +260,6 @@ namespace Reallusion.Import
             
             if (trackType.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
             {
-                //Debug.LogWarning("TrackType.ActivationTrack");
                 if (animatedStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
                 {
                     AddActivationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
@@ -282,7 +280,6 @@ namespace Reallusion.Import
             sceneObject = null;
             hasTrack = false;
 
-            //Debug.LogWarning("TrackType.AnimationTrackUpdate");
             AnimationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();
@@ -332,8 +329,6 @@ namespace Reallusion.Import
         public static void AddAnimationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
         {
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
-
-            //Debug.LogWarning("AnimatedStatus.Animation");
             AnimationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();
@@ -342,7 +337,6 @@ namespace Reallusion.Import
                 if (track.name.Contains(linkId) && track.GetType().Equals(typeof(AnimationTrack)))
                 {
                     workingtrack = track as AnimationTrack;
-                    //Debug.LogWarning("workingtrack matched");
                     break;
                 }
             }
@@ -382,7 +376,6 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    //Debug.LogWarning("clipToUse " + animClip.name);
                     clipToUse = animClip;
                 }
             }
@@ -399,8 +392,6 @@ namespace Reallusion.Import
         public static void AddActivationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
         {
             TimelineAsset timeline = director.playableAsset as TimelineAsset;
-
-            //Debug.LogWarning("AnimatedStatus.Activation");
             ActivationTrack workingtrack = null;
 
             var tracks = timeline.GetOutputTracks();

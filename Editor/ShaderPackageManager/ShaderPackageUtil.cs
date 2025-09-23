@@ -1951,7 +1951,7 @@ namespace Reallusion.Import
         {
             string datapath = Application.dataPath;
             string result = datapath.Remove(datapath.Length - 6, 6) + str;
-            return result.Replace("\\", "/").Replace('/', Path.DirectorySeparatorChar); // untested
+            return result.Replace("\\", "/").Replace('/', Path.DirectorySeparatorChar);
         }
     }
 
@@ -1959,7 +1959,17 @@ namespace Reallusion.Import
     {
         public static string FullPathToUnityAssetPath(this string str)
         {
-            return str.Remove(0, Application.dataPath.Length - 6).Replace("\\", "/");
+            string input = str.Replace("\\", "/");
+            string datapath = Application.dataPath.Replace("\\", "/");
+            
+            if (input.iContains(datapath))
+            {
+                return input.Remove(0, Application.dataPath.Length - 6).Replace("\\", "/");
+            }                
+            else
+            {
+                return string.Empty;
+            }
         }
     }
     #endregion STRING EXTENSION

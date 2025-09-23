@@ -1169,8 +1169,11 @@ namespace Reallusion.Import
         static void RespondToSceneRequest(QueueItem item)
         {
             // Examine current scene contents
+#if UNITY_2023_OR_NEWER
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else       
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-
+#endif
             JsonSceneRequest reply = new JsonSceneRequest();
 
             if (item.SceneRequest != null && item.SceneRequest.Actors != null)
@@ -2618,8 +2621,7 @@ namespace Reallusion.Import
 
             string beautifiedJson = string.Empty;
             if (!string.IsNullOrEmpty(dataString))
-            {
-                
+            {                
                 try
                 {
                     JToken parsedJson = JToken.Parse(dataString);
@@ -2650,11 +2652,17 @@ namespace Reallusion.Import
             {
                 if (!File.Exists(fullSystemFilePath))
                 {
+                    //WriteOnUpdate(fullSystemFilePath, fullText, true);
+
                     File.WriteAllText(fullSystemFilePath, fullText);
-                    RefreshAssetDatabase();
+                    //RefreshAssetDatabase();
                 }
                 else
+                {
+                    //WriteOnUpdate(fullSystemFilePath, fullText, false);
+
                     File.AppendAllText(fullSystemFilePath, fullText);
+                }
             }
             catch (Exception ex)
             {
@@ -2694,6 +2702,43 @@ namespace Reallusion.Import
             AssetDatabase.Refresh();
         }
 
+        // Import Error Code(4) being thrown after modifying the log file
+        //https://discussions.unity.com/t/onwillcreateasset-always-raise-a-import-error-code-4-warning-after-modifying-the-file/943283
+
+        private static string fullPathToWrite = string.Empty;
+        private static string contentsToWrite = string.Empty;
+        private static bool createFile = false;
+                
+        private static void WriteOnUpdate(string path, string text, bool create = false)
+        {
+            EditorApplication.update -= WriterDelegate;
+            EditorApplication.update += WriterDelegate;
+            fullPathToWrite = path;
+            contentsToWrite += text;
+            createFile = create;
+        }
+
+        private static void WriterDelegate()
+        {
+            EditorApplication.update -= WriterDelegate;
+
+            string importPath = fullPathToWrite.FullPathToUnityAssetPath();
+
+            if (createFile)
+            {
+                File.WriteAllText(fullPathToWrite, contentsToWrite);
+                if (!string.IsNullOrEmpty(importPath)) AssetDatabase.ImportAsset(importPath);
+            }
+            else
+            {
+                File.AppendAllText(fullPathToWrite, contentsToWrite);
+                if (!string.IsNullOrEmpty(importPath)) AssetDatabase.ImportAsset(importPath);
+            }
+
+            fullPathToWrite = string.Empty;
+            contentsToWrite = string.Empty;
+            createFile = false;
+        }
         #endregion Update worker
     }
 }
