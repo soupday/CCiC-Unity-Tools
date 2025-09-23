@@ -441,7 +441,7 @@ float invLerp(float a, float b, float v)
 
 
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLChannelPackLinear(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -456,7 +456,7 @@ void RLChannelPackLinear(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLChannelPackSymmetryLinear(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -491,7 +491,7 @@ void RLChannelPackSymmetryLinear(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLGradient(uint3 id : SV_DispatchThreadID)
 {
     int w, h;
@@ -502,7 +502,7 @@ void RLGradient(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = float4(v, v, v, 1);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLMagicaWeightMap(uint3 id : SV_DispatchThreadID)
 {
     int w, h;
@@ -524,7 +524,7 @@ void RLMagicaWeightMap(uint3 id : SV_DispatchThreadID)
 
 // Generic Bake kernels
 //
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLDiffuseBlend(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -537,7 +537,7 @@ void RLDiffuseBlend(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(ob);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -553,7 +553,7 @@ void RLMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLDiffuseAlpha(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -565,7 +565,7 @@ void RLDiffuseAlpha(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(packed);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHDRPMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -581,7 +581,7 @@ void RLHDRPMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLURPMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -595,7 +595,7 @@ void RLURPMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLNormalBlend(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -611,7 +611,7 @@ void RLNormalBlend(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = PackNormal(on);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLNormal(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -625,7 +625,7 @@ void RLNormal(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = PackNormal(mn);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLDetail(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -639,7 +639,7 @@ void RLDetail(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLDetailMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -652,7 +652,7 @@ void RLDetailMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSubsurface(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -664,7 +664,7 @@ void RLSubsurface(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = subsurface;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLThickness(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -779,7 +779,7 @@ float2 HeadCavityAO(float2 uv)
     return float2(saturate(mask.y * mask.z * mask.w), cavityAO.r);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -796,7 +796,7 @@ void RLHeadDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(cavityBlend);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadWrinkleFlowPack(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -810,7 +810,7 @@ void RLHeadWrinkleFlowPack(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadWrinkleSmoothnessPack(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -835,7 +835,7 @@ void RLHeadWrinkleSmoothnessPack(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -859,7 +859,7 @@ void RLHeadMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSkinMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -882,7 +882,7 @@ void RLSkinMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -906,7 +906,7 @@ void RLHeadMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSkinMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -929,7 +929,7 @@ void RLSkinMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -940,7 +940,7 @@ void RLHeadAO(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSkinAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -950,7 +950,7 @@ void RLSkinAO(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadSubsurface(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -963,7 +963,7 @@ void RLHeadSubsurface(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = saturate(subsurface);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSkinSubsurface(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -976,7 +976,7 @@ void RLSkinSubsurface(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = saturate(subsurface);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHeadNormal(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -992,7 +992,7 @@ void RLHeadNormal(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = PackNormal(on);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLSkinNormal(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1007,7 +1007,7 @@ void RLSkinNormal(uint3 id : SV_DispatchThreadID)
 
 // Teeth and Tongue Bake Kernels
 //
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1026,7 +1026,7 @@ void RLTeethDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(baseColor);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1048,7 +1048,7 @@ void RLTeethMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1070,7 +1070,7 @@ void RLTeethMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1092,7 +1092,7 @@ void RLTeethAO(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethSubsurface(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1105,7 +1105,7 @@ void RLTeethSubsurface(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = subsurface;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTeethThickness(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1118,7 +1118,7 @@ void RLTeethThickness(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = thickness;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1134,7 +1134,7 @@ void RLTongueDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(baseColor);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1156,7 +1156,7 @@ void RLTongueMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1178,7 +1178,7 @@ void RLTongueMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1200,7 +1200,7 @@ void RLTongueAO(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueSubsurface(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1210,7 +1210,7 @@ void RLTongueSubsurface(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = subsurface;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLTongueThickness(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1278,7 +1278,7 @@ float EyeShadowMask(float radial)
 
 // Eye Bake Kernels
 //
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1299,7 +1299,7 @@ void RLCorneaDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(color);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1325,7 +1325,7 @@ void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(color);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaSingleDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1359,7 +1359,7 @@ void RLCorneaSingleDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = LinearTosRGB(color);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1377,7 +1377,7 @@ void RLCorneaMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaDetailMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1397,7 +1397,7 @@ void RLCorneaDetailMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLEyeMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1416,7 +1416,7 @@ void RLEyeMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1434,7 +1434,7 @@ void RLCorneaMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1452,7 +1452,7 @@ void RLCorneaAO(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaThickness(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1466,7 +1466,7 @@ void RLCorneaThickness(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = thickness;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLCorneaSubsurfaceMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1502,7 +1502,7 @@ float4 HighlightBlend(float4 color, float idMap, float rootMask, float4 highligh
     return lerp(color, sRGBToLinearApprox(highlightColor), highlightMask);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairColoredDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1532,7 +1532,7 @@ void RLHairColoredDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = color;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairColoredDiffuseOnly(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1555,7 +1555,7 @@ void RLHairColoredDiffuseOnly(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = color;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1577,7 +1577,7 @@ void RLHairDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = color;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1595,7 +1595,7 @@ void RLHairMask(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairMetallicGloss(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1611,7 +1611,7 @@ void RLHairMetallicGloss(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = packed;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHairAO(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1641,7 +1641,7 @@ float EyeOcclusionGradient(float2 uv)
     return pow(saturate(max(alpha1, alpha2) * tearDuctMask), eoOcclusionPower);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLEyeOcclusionDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1654,7 +1654,7 @@ void RLEyeOcclusionDiffuse(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = color;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLFlowToNormal(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
@@ -1671,7 +1671,7 @@ void RLFlowToNormal(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = color;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void RLHDRPCorrected(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);

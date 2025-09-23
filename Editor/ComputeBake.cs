@@ -2073,7 +2073,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "GreenChannel", greenChannel);
                 bakeShader.SetTexture(kernel, "BlueChannel", blueChannel);
                 bakeShader.SetTexture(kernel, "AlphaChannel", alphaChannel);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);                
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2122,7 +2122,7 @@ namespace Reallusion.Import
                 bakeShader.SetVector("greenMaskR", greenMaskR);
                 bakeShader.SetVector("blueMaskR", blueMaskR);
                 bakeShader.SetVector("alphaMaskR", alphaMaskR);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2140,7 +2140,7 @@ namespace Reallusion.Import
             {
                 int kernel = bakeShader.FindKernel("RLGradient");
                 bakeTarget.Create(bakeShader, kernel);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2161,7 +2161,7 @@ namespace Reallusion.Import
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "WeightMap", physXWeightMap);
                 bakeShader.SetFloat("threshold", threshold);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2184,7 +2184,7 @@ namespace Reallusion.Import
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "Diffuse", diffuse);
                 bakeShader.SetTexture(kernel, "Alpha", alpha);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2216,7 +2216,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Roughness", roughness);
                 bakeShader.SetTexture(kernel, "MicroNormalMask", microNormalMask);
                 bakeShader.SetTexture(kernel, "SmoothnessLUT", smoothnessLUT);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2243,7 +2243,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Metallic", metallic);
                 bakeShader.SetTexture(kernel, "Roughness", roughness);
                 bakeShader.SetTexture(kernel, "SmoothnessLUT", smoothnessLUT);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2271,7 +2271,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Diffuse", diffuse);
                 bakeShader.SetTexture(kernel, "ColorBlend", blend);
                 bakeShader.SetFloat("colorBlendStrength", blendStrength);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2300,7 +2300,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("smoothnessMax", smoothnessMax);
                 bakeShader.SetFloat("smoothnessContrast", smoothnessContrast);
                 bakeShader.SetFloat("microNormalStrength", microNormalStrength);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2324,7 +2324,7 @@ namespace Reallusion.Import
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "Mask", mask);
                 bakeShader.SetFloat("microNormalStrength", 1f);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2357,7 +2357,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("mouthAOPower", mouthAOPower);
                 bakeShader.SetFloat("nostrilAOPower", nostrilAOPower);
                 bakeShader.SetFloat("lipsAOPower", lipsAOPower);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2430,7 +2430,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("chinSS", chinSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
                 bakeShader.SetFloat("sssNormalSoften", sssNormalSoften);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2479,7 +2479,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("aSS", aSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
                 bakeShader.SetFloat("sssNormalSoften", sssNormalSoften);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2536,7 +2536,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("upperLipMSM", upperLipMSM);
                 bakeShader.SetFloat("chinMSM", chinMSM);
                 bakeShader.SetFloat("unmaskedMSM", unmaskedMSM);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2562,7 +2562,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Flow1", flow1);
                 bakeShader.SetTexture(kernel, "Flow2", flow2);
                 bakeShader.SetTexture(kernel, "Flow3", flow3);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2618,7 +2618,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("thicknessScaleMin", thicknessScaleMin);
                 bakeShader.SetFloat("invertMap", invertMap ? 1.0f : 0.0f);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2669,7 +2669,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("upperLipSS", upperLipSS);
                 bakeShader.SetFloat("chinSS", chinSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2712,7 +2712,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("thicknessScaleMin", thicknessScaleMin);
                 bakeShader.SetFloat("invertMap", invertMap ? 1.0f : 0.0f);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2752,7 +2752,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("bSS", bSS);
                 bakeShader.SetFloat("aSS", aSS);
                 bakeShader.SetFloat("unmaskedSS", unmaskedSS);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2778,7 +2778,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Normal", normal);
                 bakeShader.SetTexture(kernel, "NormalBlend", normalBlend);
                 bakeShader.SetFloat("normalBlendStrength", normalBlendStrength);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2800,7 +2800,7 @@ namespace Reallusion.Import
                 int kernel = bakeShader.FindKernel("RLDetail");
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "MicroNormal", microNormal);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2833,7 +2833,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "BaseMap", baseMap);
                 bakeShader.SetFloat("subsurfaceScale", subsurfaceScale);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2867,7 +2867,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("thicknessScaleMin", thicknessScaleMin);
                 bakeShader.SetFloat("invertMap", invertMap ? 1.0f : 0.0f);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2902,7 +2902,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("gumsBrightness", gumsBrightness);
                 bakeShader.SetFloat("teethSaturation", teethSaturation);
                 bakeShader.SetFloat("teethBrightness", teethBrightness);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2935,7 +2935,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("smoothnessContrast", smoothnessContrast);
                 bakeShader.SetFloat("microNormalStrength", microNormalStrength);
                 bakeShader.SetFloat("isUpperTeeth", isUpperTeeth);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2963,7 +2963,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("gumsSSS", gumsSSS);
                 bakeShader.SetFloat("teethSSS", teethSSS);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -2990,7 +2990,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("gumsThickness", gumsThickness);
                 bakeShader.SetFloat("teethThickness", teethThickness);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3020,7 +3020,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("rearAO", rearAO);
                 bakeShader.SetFloat("tongueSaturation", tongueSaturation);
                 bakeShader.SetFloat("tongueBrightness", tongueBrightness);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3052,7 +3052,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("smoothnessMax", smoothnessMax);
                 bakeShader.SetFloat("smoothnessContrast", smoothnessContrast);
                 bakeShader.SetFloat("microNormalStrength", microNormalStrength);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3106,7 +3106,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
                 bakeShader.SetVector("limbusColor", limbusColor);
                 bakeShader.SetVector("cornerShadowColor", cornerShadowColor);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3148,7 +3148,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("limbusContrast", limbusContrast);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
                 bakeShader.SetVector("limbusColor", limbusColor);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3178,7 +3178,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("microNormalStrength", microNormalStrength);
                 bakeShader.SetFloat("irisRadius", irisRadius);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3209,7 +3209,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
                 bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
                 bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3240,7 +3240,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
                 bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
                 bakeShader.SetFloat("irisRadius", irisRadius);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3263,7 +3263,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
                 bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
                 bakeShader.SetFloat("thicknessScale", thicknessScale);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3294,7 +3294,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("irisSubsurfaceScale", irisSubsurfaceScale);
                 bakeShader.SetFloat("thicknessScale", thicknessScale);
                 bakeShader.SetVector("subsurfaceFalloff", subsurfaceFalloff);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3361,7 +3361,7 @@ namespace Reallusion.Import
                 bakeShader.SetVector("vertexBaseColor", vertexBaseColor);
                 bakeShader.SetVector("highlightADistribution", highlightADistribution);
                 bakeShader.SetVector("highlightBDistribution", highlightBDistribution);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3400,7 +3400,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("colorBlendStrength", blendStrength);
                 bakeShader.SetFloat("vertexColorStrength", vertexColorStrength);
                 bakeShader.SetVector("vertexBaseColor", vertexBaseColor);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3430,7 +3430,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("smoothnessMin", smoothnessMin);
                 bakeShader.SetFloat("smoothnessMax", smoothnessMax);
                 bakeShader.SetFloat("smoothnessContrast", smoothnessContrast);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3471,7 +3471,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("eoTearDuctPosition", tearDuctPosition);
                 bakeShader.SetFloat("eoTearDuctWidth", tearDuctWidth);
                 bakeShader.SetVector("eoEyeOcclusionColor", occlusionColor);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3513,7 +3513,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "Flow", flowMap);
                 bakeShader.SetFloat("tangentFlipY", tangentFlipY ? 1f : 0f);
                 bakeShader.SetVector("tangentVector", tangentVector);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3537,11 +3537,18 @@ namespace Reallusion.Import
                 bakeTarget.Create(bakeShader, kernel);
                 bakeShader.SetTexture(kernel, "Mask", mask);
                 bakeShader.SetTexture(kernel, "Detail", detail);
-                bakeShader.Dispatch(kernel, bakeTarget.width, bakeTarget.height, 1);
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
             return null;
+        }
+
+        public static void Dispatch(ComputeShader bakeShader, int kernel, ComputeBakeTexture bakeTarget)
+        {
+            int x = (int)Math.Ceiling((float)bakeTarget.width / 16f);
+            int y = (int)Math.Ceiling((float)bakeTarget.height / 16f);
+            bakeShader.Dispatch(kernel, x, y, 1);
         }
 
         public static Texture2DArray CreateTextureArray(Texture2D[] textures, string path, bool linear)
