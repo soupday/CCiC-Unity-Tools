@@ -1062,10 +1062,10 @@ namespace Reallusion.Import
         [Flags]
         public enum AnimatedStatus
         {
-            NotAnimated,
-            Animation,
-            Activation,
-
+            None = 0,
+            NotAnimated = 1,
+            Animation = 2,
+            Activation = 4,
         }
 #endregion Enum
     }

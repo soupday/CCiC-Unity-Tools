@@ -557,8 +557,8 @@ namespace Reallusion.Import
                         string folderName = Path.GetFileNameWithoutExtension(projectAssetPath);
                         if (propExt.Equals(".fbx", System.StringComparison.InvariantCultureIgnoreCase))
                         {
-                            string rejectName = folderName + Path.DirectorySeparatorChar + "Previous_Imports";
-                            if (!propName.iContains(rejectName))
+                            string rejectName = (folderName + Path.DirectorySeparatorChar + "Previous_Imports").Replace('\\', '/');
+                            if (!projectAssetPath.Replace('\\', '/').iContains(rejectName))
                             {
                                 inProjectAssetPath = AssetDatabase.GUIDToAssetPath(g);
                                 break;
@@ -710,8 +710,13 @@ namespace Reallusion.Import
 
                     if (charInfo.exportType == CharacterInfo.ExportType.PROP)
                     {
+                        // check for SkinnedMeshRenderer
+                        bool isSkinned = false;
+                        var smr = characterPrefab.GetComponentInChildren<SkinnedMeshRenderer>();
+                        if (smr != null) isSkinned = true;
+
                         animatedStatus = GetAnimatedStatus(clipListForTimeLine);
-                        if (animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.NotAnimated))
+                        if (animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.NotAnimated) && !isSkinned)
                         {
                             UpdateCharacterPrefabTransform(charInfo, characterPrefab, clipListForTimeLine);
                         }
@@ -2163,7 +2168,7 @@ namespace Reallusion.Import
         #region Util
         public UnityLinkSceneManagement.AnimatedStatus GetAnimatedStatus(List<AnimationClip> clips)
         {
-            bool cleanupRedundantAnimationCurves = true; // toggle for redundant curve removal - will allow Unity users to animate/change properties that would otherwise be held static by the anim clip
+            bool cleanupRedundantAnimationCurves = false; // toggle for redundant curve removal - will allow Unity users to animate/change properties that would otherwise be held static by the anim clip
 
             UnityLinkSceneManagement.AnimatedStatus animatedStatus = UnityLinkSceneManagement.AnimatedStatus.NotAnimated; // if there are no changing animation data, we can avoid adding static props to the TimeLine
             float threshold = 0.0001f;
@@ -2185,6 +2190,7 @@ namespace Reallusion.Import
                     else
                     {
                         clipToUse = animClip;
+                        Debug.Log($"Animation Clip: {animClip}");
                         break;
                     }
                 }
@@ -2202,6 +2208,7 @@ namespace Reallusion.Import
                     {
                         if (Math.Abs(key.value - keys[0].value) > threshold)
                         {
+                            animatedStatus ^= UnityLinkSceneManagement.AnimatedStatus.NotAnimated;
                             animatedStatus |= UnityLinkSceneManagement.AnimatedStatus.Animation;
                             animatedBindings.Add(binding);
                             bindingIsAnimated = true;
@@ -2240,7 +2247,7 @@ namespace Reallusion.Import
                     {
                         foreach (var binding in staticBindings)
                         {
-                            Debug.Log("Animation curve: " + binding.path + "  " + binding.propertyName + " in clip: " + clipToUse.name + " is redundant and will be removed.");
+                            Debug.Log("Animation curve: " + binding.path + "  " + binding.propertyName + " in clip: " + clipToUse.name + " is redundant and will be removed.  Type: " + binding.type.ToString());
                             AnimationUtility.SetEditorCurve(clipToUse, binding, null);
                         }
                     }

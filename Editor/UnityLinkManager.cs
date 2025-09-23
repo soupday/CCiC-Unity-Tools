@@ -1168,6 +1168,8 @@ namespace Reallusion.Import
 
         static void RespondToSceneRequest(QueueItem item)
         {
+            bool importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
+
             // Examine current scene contents
 #if UNITY_2023_OR_NEWER
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -1181,29 +1183,35 @@ namespace Reallusion.Import
                 //Debug.Log("Listing iClone scene contents");
                 foreach (var actor in item.SceneRequest.Actors)
                 {
-                    bool isPresentInScene = false;
+                    bool isPresent = false;
+                    bool isSkinned = false;
+
                     try
                     {
                         var presentInScene = linkedSceneObjects.FirstOrDefault(x => x.linkId == actor.LinkId);
-                        isPresentInScene = presentInScene != null;
+                        isPresent = presentInScene != null;
+                        if (isPresent) isSkinned = IsSkinned(presentInScene.gameObject);
                     }
                     catch { }
-                        
+
                     //Debug.Log($"Name: {actor.Name}, Type: {actor.Type}, LinkID: {actor.LinkId} , Present in scene: {isPresentInScene}");
 
                     if (actor.Type == "AVATAR" || actor.Type == "PROP")
                     {
                         GameObject go = null;
-                        if (!isPresentInScene) { 
+                        if (!isPresent)
+                        {
                             go = GetPrefabFromLinkId(actor.LinkId);
                             if (go != null)
                             {
-                                UnityLinkSceneManagement.AddToScene(go, actor.LinkId);
-                                isPresentInScene = true;
+                                if (importIntoScene) UnityLinkSceneManagement.AddToScene(go, actor.LinkId);
+                                isPresent = true;
+                                if (isPresent) isSkinned = IsSkinned(go);
                             }
                         }
                     }
-                    actor.Confirm = isPresentInScene;
+                    actor.Confirm = isPresent;
+                    actor.Skinned = isSkinned;
                     reply.Actors.Add(actor);
                 }
 
@@ -1217,6 +1225,12 @@ namespace Reallusion.Import
                     Debug.Log("Cannot format scene request reply");
                 }
             }
+        }
+
+        static bool IsSkinned(GameObject go)
+        {
+            var smr = go.GetComponent<SkinnedMeshRenderer>();
+            return smr != null;
         }
 
         static GameObject GetPrefabFromLinkId(string linkId)
@@ -2304,12 +2318,16 @@ namespace Reallusion.Import
             [JsonProperty("confirm")]
             public bool Confirm { get; set; }
 
-            public JsonSceneRequestActors(string name, string type, string linkId, bool confirm)
+            [JsonProperty("skinned")]
+            public bool Skinned { get; set; }
+
+            public JsonSceneRequestActors(string name, string type, string linkId, bool confirm, bool skinned)
             {
                 Name = name;
                 Type = type;
                 LinkId = linkId;
                 Confirm = confirm;
+                Skinned = skinned;
             }
         }
 
