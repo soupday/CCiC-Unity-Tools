@@ -1060,6 +1060,7 @@ namespace Reallusion.Import
                     }
                 case OpCodes.FRAME_SYNC:
                     {
+                        FrameSync(next);
                         //Debug.Log(next.FrameSync.ToString());
                         break;
                     }
@@ -1151,7 +1152,12 @@ namespace Reallusion.Import
             //SceneView.lastActiveSceneView.Repaint();
             //EditorApplication.ExecuteMenuItem("Window/General/Scene");
         }
-                
+        
+        static void FrameSync(QueueItem item)
+        {
+            UnityLinkSceneManagement.SetTimelineTimeIndex(item.FrameSync.CurrentTime / (item.FrameSync.Fps * 100f));
+        }
+
         static void ImportItem(QueueItem item)
         {
             try

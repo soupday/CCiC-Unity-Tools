@@ -243,10 +243,14 @@ namespace Reallusion.Import
                 {
                     return;
                 }
-                
-                if (!hasTrack && animatedStatus.HasFlag(AnimatedStatus.Animation))
+
+                if (animatedStatus.HasFlag(AnimatedStatus.Animation))
                 {
                     AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
+                }
+                else if (hasTrack && !animatedStatus.HasFlag(AnimatedStatus.Animation))
+                {
+                    ClearTrackFromTimelineByLinkId<AnimationTrack>(director, linkId, sceneObject);
                 }
             }
 
@@ -256,6 +260,10 @@ namespace Reallusion.Import
                 {
                     AddAnimationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
                 }
+                else
+                {
+                    ClearTrackFromTimelineByLinkId<AnimationTrack>(director, linkId, sceneObject);
+                }
             }
             
             if (trackType.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
@@ -263,6 +271,10 @@ namespace Reallusion.Import
                 if (animatedStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
                 {
                     AddActivationTrackToTimelineByLinkId(director, linkId, sceneObject, animClipList);
+                }
+                else
+                {
+                    ClearTrackFromTimelineByLinkId<ActivationTrack>(director, linkId, sceneObject);
                 }
             }
 
@@ -387,6 +399,31 @@ namespace Reallusion.Import
                 clip.duration = clip.duration / clip.timeScale;
             }
             director.SetGenericBinding(workingtrack, sceneObject);
+
+            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+        }
+
+        public static void ClearTrackFromTimelineByLinkId<T>(PlayableDirector director, string linkId, GameObject sceneObject)
+        {
+            TimelineAsset timeline = director.playableAsset as TimelineAsset;
+            TrackAsset workingtrack = null;
+
+            var tracks = timeline.GetOutputTracks();
+            foreach (TrackAsset track in tracks)
+            {
+                if (track.name.Contains(linkId) && track.GetType().Equals(typeof(T)))
+                {
+                    workingtrack = track;
+                    break;
+                }
+            }
+
+            if (workingtrack != null)
+            {
+                timeline.DeleteTrack(workingtrack);
+            }
+
+            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
         }
 
         public static void AddActivationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
@@ -528,6 +565,33 @@ namespace Reallusion.Import
             var scene = SceneManager.GetActiveScene();
             EditorSceneManager.MarkSceneDirty(scene);
         }
+
+        public static void SetTimelineTimeIndex(float time)
+        {
+            PlayableDirector director = null;
+
+            if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
+            {
+                if (!TryGetSceneTimeLine(out director))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                director = UnityLinkManager.SCENE_TIMELINE_ASSET;
+            }
+
+            if (director != null)
+            {
+                Selection.activeGameObject = director.gameObject;
+                var tl = TimelineEditor.GetOrCreateWindow();
+                tl.Focus();
+                TimelineEditor.inspectedDirector.time = time;
+                TimelineEditor.inspectedDirector.Evaluate();
+            }
+        }
+
 
 #endregion Add To Scene and Timeline
 
