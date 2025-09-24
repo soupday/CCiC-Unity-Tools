@@ -280,7 +280,7 @@ namespace Reallusion.Import
 
             if (!trackType.HasFlag(TrackType.NoTrack))
             {
-                TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+                RefreshCurrentTimeline(director);
                 ShowTimeLineWindow(director);
                 MarkSceneAsDirty();
             }
@@ -400,7 +400,7 @@ namespace Reallusion.Import
             }
             director.SetGenericBinding(workingtrack, sceneObject);
 
-            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+            RefreshCurrentTimeline(director);
         }
 
         public static void ClearTrackFromTimelineByLinkId<T>(PlayableDirector director, string linkId, GameObject sceneObject)
@@ -423,7 +423,7 @@ namespace Reallusion.Import
                 timeline.DeleteTrack(workingtrack);
             }
 
-            TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+            RefreshCurrentTimeline(director);
         }
 
         public static void AddActivationTrackToTimelineByLinkId(PlayableDirector director, string linkId, GameObject sceneObject, List<AnimationClip> animClipList)
@@ -503,6 +503,8 @@ namespace Reallusion.Import
                 }
             }
             director.SetGenericBinding(workingtrack, sceneObject);
+
+            RefreshCurrentTimeline(director);
         }
 
         public static void PurgeLinkedSceneObject(string linkId)
@@ -587,12 +589,25 @@ namespace Reallusion.Import
                 Selection.activeGameObject = director.gameObject;
                 var tl = TimelineEditor.GetOrCreateWindow();
                 tl.Focus();
-                TimelineEditor.inspectedDirector.time = time;
-                TimelineEditor.inspectedDirector.Evaluate();
+                if (TimelineEditor.inspectedDirector != null)
+                {
+                    TimelineEditor.inspectedDirector.time = time;
+                    TimelineEditor.inspectedDirector.Evaluate();
+                }
             }
         }
 
-
+        static void RefreshCurrentTimeline(PlayableDirector director)
+        {
+            Selection.activeGameObject = director.gameObject;
+            if (TimelineEditor.inspectedDirector != null)
+            {
+                double timestamp = TimelineEditor.inspectedDirector.time;
+                TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
+                TimelineEditor.inspectedDirector.time = timestamp;
+                TimelineEditor.inspectedDirector.Evaluate();
+            }
+        }
 #endregion Add To Scene and Timeline
 
 #region Scene Dependencies 
