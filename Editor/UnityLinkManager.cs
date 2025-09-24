@@ -871,7 +871,7 @@ namespace Reallusion.Import
                     }
                 case OpCodes.REQUEST:
                     {
-                        try { qItem.SceneRequest = JsonConvert.DeserializeObject<JsonSceneRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; } 
+                        try { qItem.Request = JsonConvert.DeserializeObject<JsonRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; } 
                         break;
                     }
             }
@@ -1176,12 +1176,12 @@ namespace Reallusion.Import
 #else       
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
-            JsonSceneRequest reply = new JsonSceneRequest();
-
-            if (item.SceneRequest != null && item.SceneRequest.Actors != null)
+            JsonRequest reply = new JsonRequest(item.Request.Type);
+            
+            if (item.Request != null && item.Request.Actors != null)
             {
                 //Debug.Log("Listing iClone scene contents");
-                foreach (var actor in item.SceneRequest.Actors)
+                foreach (var actor in item.Request.Actors)
                 {
                     bool isPresent = false;
                     bool isSkinned = false;
@@ -2273,7 +2273,7 @@ namespace Reallusion.Import
             }
         }
 
-        public class JsonSceneRequest
+        public class JsonRequest
         {
             /*
              "type": "SCENE",
@@ -2295,16 +2295,16 @@ namespace Reallusion.Import
             public string Type { get; set; }
 
             [JsonProperty("actors")]
-            public List<JsonSceneRequestActors> Actors { get; set; }
+            public List<JsonRequestActors> Actors { get; set; }
 
-            public JsonSceneRequest()
+            public JsonRequest(string type)
             {
-                Type = "SCENE";
-                Actors = new List<JsonSceneRequestActors>();
+                Type = type;
+                Actors = new List<JsonRequestActors>();
             }
         }
 
-        public class JsonSceneRequestActors
+        public class JsonRequestActors
         {
             [JsonProperty("name")]
             public string Name { get; set; }
@@ -2321,7 +2321,7 @@ namespace Reallusion.Import
             [JsonProperty("skinned")]
             public bool Skinned { get; set; }
 
-            public JsonSceneRequestActors(string name, string type, string linkId, bool confirm, bool skinned)
+            public JsonRequestActors(string name, string type, string linkId, bool confirm, bool skinned)
             {
                 Name = name;
                 Type = type;
@@ -2351,7 +2351,7 @@ namespace Reallusion.Import
             public JsonLighting Lighting { get; set; }
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
-            public JsonSceneRequest SceneRequest { get; set; }
+            public JsonRequest Request { get; set; }
             public string RemoteId {  get; set; }
 
             public QueueItem(OpCodes opCode, Exchange direction)
