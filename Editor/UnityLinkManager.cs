@@ -1229,7 +1229,7 @@ namespace Reallusion.Import
 
         static bool IsSkinned(GameObject go)
         {
-            var smr = go.GetComponent<SkinnedMeshRenderer>();
+            var smr = go.GetComponentInChildren<SkinnedMeshRenderer>();
             return smr != null;
         }
 
