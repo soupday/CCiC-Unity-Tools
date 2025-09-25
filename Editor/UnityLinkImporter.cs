@@ -610,7 +610,7 @@ namespace Reallusion.Import
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error copying file {f.FullName}: {ex.Message}");
+                    Debug.LogWarning($"Error copying file {f.FullName}: {ex.Message}");
                 }
             }
 

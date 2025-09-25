@@ -1049,6 +1049,7 @@ namespace Reallusion.Import
                     }
                 case OpCodes.LIGHTING:
                     {
+                        next.Processed = true;
                         //Debug.Log(next.Lighting.ToString());
                         break;
                     }
