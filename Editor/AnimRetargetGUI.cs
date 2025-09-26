@@ -1102,7 +1102,7 @@ namespace Reallusion.Import
             return false;
         }
 
-        static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip, 
+        public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip, 
             GameObject targetCharacterModel, bool log = true)
         {
             if (!(originalClip && workingClip)) return;
@@ -1321,7 +1321,7 @@ namespace Reallusion.Import
             return assetPath;
         }
 
-        static AnimationClip WriteAnimationToAssetDatabase(AnimationClip workingClip, string assetPath, bool originalSettings = false)
+        public static AnimationClip WriteAnimationToAssetDatabase(AnimationClip workingClip, string assetPath, bool originalSettings = false)
         {            
             if (string.IsNullOrEmpty(assetPath)) return null;
 
@@ -1376,7 +1376,7 @@ namespace Reallusion.Import
             return asset;
         }
 
-        static string NameAnimation(string characterName, string clipName, string prefix)
+        public static string NameAnimation(string characterName, string clipName, string prefix)
         {
             string animName;
             if (string.IsNullOrEmpty(prefix))
@@ -1505,13 +1505,15 @@ namespace Reallusion.Import
             System.IO.File.WriteAllText(path, pathString);
         }
 
-        public static void GenerateCharacterTargetedAnimations(string motionAssetPath, 
-            GameObject targetCharacterModel, bool replaceIfExists)
+        public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath, 
+            GameObject targetCharacterModel, bool replaceIfExists, string motionPrefix = null)
         {
+            List<AnimationClip> animationClips = new List<AnimationClip>();
+
             AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);            
 
             if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
-            if (!targetCharacterModel) return;
+            if (!targetCharacterModel) return null;
 
             string firstPath = null;
 
@@ -1520,12 +1522,18 @@ namespace Reallusion.Import
                 int index = 0;
                 foreach (AnimationClip clip in clips)
                 {
-                    string assetPath = GenerateClipAssetPath(clip, motionAssetPath, RETARGET_SOURCE_PREFIX, true);
+                    string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
+                    string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
-                    if (File.Exists(assetPath) && !replaceIfExists) continue;
+                    if (File.Exists(assetPath) && !replaceIfExists)
+                    {
+                        //Debug.Log("FAIL CASE");
+                        continue;
+                    }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
                     RetargetBlendShapes(clip, workingClip, targetCharacterModel, false);
                     AnimationClip asset = WriteAnimationToAssetDatabase(workingClip, assetPath, false);
+                    animationClips.Add(asset);
                     index++;
                 }
 
@@ -1533,6 +1541,12 @@ namespace Reallusion.Import
                     AnimPlayerGUI.UpdateAnimatorClip(CharacterAnimator, 
                                                      AssetDatabase.LoadAssetAtPath<AnimationClip>(firstPath));
             }
+            else
+            {
+                Util.LogInfo("No animation clips found.");
+            }
+            
+            return animationClips;
         }
 
         /// <summary>
@@ -1546,11 +1560,25 @@ namespace Reallusion.Import
                 if (clip)
                 {
                     string fbxPath = AssetDatabase.GetAssetPath(fbxAsset);
+                    string fbxGuid = AssetDatabase.AssetPathToGUID(fbxPath);
+
+                    string prefix = RETARGET_SOURCE_PREFIX;
+                    try
+                    {
+                        CharacterInfo characterInfo = WindowManager.ValidImports.FirstOrDefault(x => x.guid == fbxGuid);
+                        if (characterInfo != null)
+                        {
+                            if (!string.IsNullOrEmpty(characterInfo.motionPrefix))
+                                prefix = characterInfo.motionPrefix;
+                        }
+                    }
+                    catch (Exception ex) { Util.LogError(ex.Message); }
+
                     string characterName = Path.GetFileNameWithoutExtension(fbxPath);
                     string fbxFolder = Path.GetDirectoryName(fbxPath);
                     string animFolder = Path.Combine(fbxFolder, ANIM_FOLDER_NAME, characterName);
 
-                    string animName = NameAnimation(characterName, clip.name, RETARGET_SOURCE_PREFIX);
+                    string animName = NameAnimation(characterName, clip.name, prefix);
                     string assetPath = Path.Combine(animFolder, animName + ".anim");
                     AnimationClip retargetedClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
                     if (retargetedClip) return retargetedClip;

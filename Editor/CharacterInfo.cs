@@ -20,6 +20,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Reallusion.Import
 {
@@ -28,6 +29,9 @@ namespace Reallusion.Import
         public enum ProcessingType { None, Basic, HighQuality }
         public enum EyeQuality { None, Basic, Parallax, Refractive }
         public enum HairQuality { None, Default, TwoPass, Coverage }
+        public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, MaxTextureSize }
+        public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality, MaxTextureQuality }
+
         public enum ShaderFeatureFlags 
         { 
             NoFeatures = 0, 
@@ -41,8 +45,31 @@ namespace Reallusion.Import
             UnityClothPhysics = 128, // Unity Cloth for clothing items 
             UnityClothHairPhysics = 256, // Unity Cloth for hair items
             MagicaClothHairPhysics = 512, // Magica Mesh Cloth for hair items
-            SpringBonePhysics = 1024  // group flag to allow selection between SpringBoneHair & MagicaBone
+            SpringBonePhysics = 1024,  // group flag to allow selection between SpringBoneHair & MagicaBone
+            Displacement = 2048,
+            TexturePacking = 4096,
+            DualSpecularSkin = 8192,
+            AmplifyShaders = 16384,
         }
+
+        public enum ExportType
+        {
+            NONE = 0,
+            AVATAR = 1,
+            PROP = 2,
+            LIGHT = 3,
+            CAMERA = 4,
+            UNKNOWN = 999
+        }
+
+        // Note: Modified refers to 2-pass hair meshes that need animations retargeted to them.
+        public enum AnimationTargetLevel { None, Unmodified, Modified }
+
+        public string linkId = string.Empty;
+        public bool isLinked { get {  return linkId != string.Empty; } }
+
+        public string motionPrefix = string.Empty;
+        public ExportType exportType = ExportType.NONE;
 
         // 'radio groups' of mutually exclusive settings
         public static ShaderFeatureFlags[] clothGroup =
@@ -70,13 +97,14 @@ namespace Reallusion.Import
         public string infoFilepath;
         public string jsonFilepath;
         public string name;
-        public string folder;                
+        public string folder;
           
         public bool isLOD = false;
         public bool bakeIsBaked = false;
         public bool tempHairBake = false;
         public bool animationSetup = false;
-        public int animationRetargeted = 0;
+        // 0 - not set, 1 - targeted to unmodified character, 2 - targeted to modified character (2-pass hair)
+        public AnimationTargetLevel animationRetargeted = AnimationTargetLevel.None;
 
         public bool selectedInList;
         public bool settingsChanged;
@@ -85,11 +113,12 @@ namespace Reallusion.Import
         private ProcessingType logType = ProcessingType.None;
         private EyeQuality qualEyes = EyeQuality.Parallax;
         private HairQuality qualHair = HairQuality.TwoPass;
+        private TexSizeQuality qualTexSize = TexSizeQuality.HighTextureSize;
+        private TexCompressionQuality qualTexCompress = TexCompressionQuality.HighTextureQuality;
         public RigOverride UnknownRigType { get; set; }
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
-        private GameObject prefabAsset;
-
+        
         public struct GUIDRemap
         {
             public string from;
@@ -170,6 +199,18 @@ namespace Reallusion.Import
             RemoveGUIDRemap(null, null);
         }
 
+        public bool AnimationNeedsRetargeting()
+        {
+            AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
+            return animationRetargeted != neededTargetLevel;
+        }
+
+        public void UpdateAnimationRetargeting()
+        {
+            AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
+            animationRetargeted = neededTargetLevel;
+        }
+
         public ProcessingType BuildType { get { return logType; } set { logType = value; } }
         public MaterialQuality BuildQuality
         {
@@ -193,6 +234,11 @@ namespace Reallusion.Import
         public bool FeatureUseTessellation => (ShaderFlags & ShaderFeatureFlags.Tessellation) > 0;
         public bool FeatureUseClothPhysics => (ShaderFlags & ShaderFeatureFlags.ClothPhysics) > 0;
         public bool FeatureUseHairPhysics => (ShaderFlags & ShaderFeatureFlags.HairPhysics) > 0;
+        public bool FeatureUseDisplacement => (ShaderFlags & ShaderFeatureFlags.Displacement) > 0;
+        public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
+        public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
+        public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;
+
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -206,6 +252,8 @@ namespace Reallusion.Import
         public bool DefaultHair { get { return qualHair == HairQuality.Default; } }
         public bool BakeCustomShaders { get { return bakeCustomShaders; } set { bakeCustomShaders = value; } }
         public bool BakeSeparatePrefab { get { return bakeSeparatePrefab; } set { bakeSeparatePrefab = value; } }        
+        public TexSizeQuality QualTexSize { get { return qualTexSize; } set { qualTexSize = value; } }
+        public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
         // these are the settings the character has been built to.  
         private ProcessingType builtLogType = ProcessingType.None;
@@ -340,10 +388,10 @@ namespace Reallusion.Import
             List<string> motionGuids = new List<string>();
             DirectoryInfo di = new DirectoryInfo(folder);
             string prefix = name + "_";
-            string suffix = "_Motion.fbx";
+            string suffix = "_Motion";
             foreach (FileInfo fi in di.GetFiles("*.fbx"))
             {
-                if (fi.Name.iStartsWith(prefix) && fi.Name.iEndsWith(suffix))
+                if (fi.Name.iStartsWith(prefix) && fi.Name.iContains(suffix))
                 {
                     string path = Path.Combine(folder, fi.Name);
                     string guid = AssetDatabase.AssetPathToGUID(path);
@@ -363,8 +411,7 @@ namespace Reallusion.Import
         {
             get
             {
-                if (!prefabAsset) prefabAsset = Util.FindCharacterPrefabAsset(Fbx);
-                return prefabAsset;
+                return Util.FindCharacterPrefabAsset(Fbx);
             }
         }
 
@@ -374,6 +421,21 @@ namespace Reallusion.Import
             {
                 return Util.FindCharacterPrefabAsset(Fbx, true);
             }
+        }
+
+        public GameObject GetDraggablePrefab()
+        {
+            // initially try a processed + baked prefab
+            GameObject bakedPrefabAsset = Util.FindCharacterPrefabAsset(Fbx, true);
+            if (bakedPrefabAsset != null) return bakedPrefabAsset;
+
+            // otherwise try a processed prefab
+            GameObject prefabAsset = Util.FindCharacterPrefabAsset(Fbx);
+            if (prefabAsset != null) return prefabAsset;
+
+            // fall back to the (unprocessed) fbx
+            GameObject fbx = Fbx;            
+            return fbx;            
         }
 
         public GameObject GetPrefabInstance(bool baked = false)
@@ -498,117 +560,156 @@ namespace Reallusion.Import
             }
         }
 
-        public QuickJSON GetMatJson(GameObject obj, string sourceName)
+        public QuickJSON GetObjJson(GameObject obj)
         {
+            QuickJSON objectsData = ObjectsJsonData;
+            string objName = obj.name;            
+            List<string> tryObjectNames = new List<string>();            
+
+            if (objName.iContains("_Extracted"))
+            {
+                objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            tryObjectNames.Add(objName);
+
+            // there is a bug where a space in name causes the name to be truncated on export from CC3/4
+            if (objName.Contains(" "))
+            {
+                Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
+                tryObjectNames.Add(objName.Split(' ')[0]);
+            }
+
+            // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
+            // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
+            // (seems to happen mostly on accessories)
+            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            {
+                Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realObjName = objectsData.FindKeyName(specObjName);
+            }            
+
+            // search for the material json directly from the possible object and material names
+            foreach (string objectName in tryObjectNames)
+            {
+                if (objectsData.PathExists(objectName))
+                {
+                    return objectsData.GetObjectAtPath(objectName);                    
+                }
+            }
+
+            // finally search for an object and material names in the mesh json whose name starts with the truncted source names
+            foreach (string objectName in tryObjectNames)
+            {
+                string findObjectName = objectName;
+                if (!objectsData.PathExists(findObjectName))
+                    findObjectName = objectsData.FindKeyName(objectName);
+                if (!string.IsNullOrEmpty(findObjectName) && objectsData.PathExists(findObjectName))
+                {
+                    return objectsData.GetObjectAtPath(findObjectName);
+                }
+            }
+
+            return null;
+        }
+
+        public QuickJSON GetMatJson(GameObject obj, string sourceName)
+        {            
             QuickJSON objectsData = ObjectsJsonData;
             QuickJSON matJson = null;
             string objName = obj.name;
             string jsonPath = "";
-            if (objectsData != null)
+            List<string> tryMaterialNames = new List<string>();
+            List<string> tryObjectNames = new List<string>();
+            tryMaterialNames.Add(sourceName);
+            
+            if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
             {
-                jsonPath = ObjectsMatJsonPath(objName, sourceName);
-                matJson = objectsData.GetObjectAtPath(jsonPath);
-                                
-                if (matJson == null)
-                {
-                    if (objName.iContains("_Extracted"))
-                    {
-                        objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
-
-                        jsonPath = ObjectsMatJsonPath(objName, sourceName);                        
-                        matJson = objectsData.GetObjectAtPath(jsonPath);
-                    }
-                }
-
-                if (matJson == null)
-                {
-                    // there is a bug where a space in name causes the name to be truncated on export from CC3/4
-                    if (objName.Contains(" "))
-                    {
-                        Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
-                        string[] split = objName.Split(' ');
-                        jsonPath = ObjectsMatJsonPath(split[0], sourceName);                        
-                        if (objectsData.PathExists(jsonPath))
-                        {
-                            matJson = objectsData.GetObjectAtPath(jsonPath);
-                            Util.LogWarn(" - Found matching object/material data for: " + split[0] + "/" + sourceName);
-                        }
-                    }
-                }                
-                    
-                if (matJson == null)
-                {
-                    // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
-                    // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
-                    // (seems to happen mostly on accessories)
-
-                    string realObjName = null;                    
-
-                    if (objectsData.PathExists(objName))
-                    {
-                        realObjName = objName;
-                    }
-
-                    if (realObjName == null)
-                    {
-                        // remove instalod suffix and attempt to find object name in json again
-                        if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
-                        {
-                            Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
-                            string specObjName = objName.Substring(0, objName.Length - 2);
-                            if (objectsData.PathExists(specObjName))
-                            {
-                                realObjName = specObjName;
-                            }                            
-                            else
-                            {
-                                // finally search for an object name in the mesh json whose name starts with the truncted source name
-                                realObjName = objectsData.FindKeyName(specObjName);                                
-                            }
-                        }
-                    }
-
-                    if (realObjName != null)
-                    {
-                        string realMatName = null;                        
-
-                        if (objectsData.PathExists(ObjectsMatJsonPath(realObjName, sourceName)))
-                        {
-                            realMatName = sourceName;
-                        }
-
-                        if (realMatName == null)
-                        {                            
-                            if (sourceName[sourceName.Length - 2] == '_' && char.IsDigit(sourceName[sourceName.Length - 1]))
-                            {
-                                Util.LogWarn("Material name " + sourceName + " may by suffixed by InstaLod exporter. Attempting to untangle...");
-                                string specMatName = sourceName.Substring(0, sourceName.Length - 2);
-                                if (objectsData.PathExists(ObjectsMatJsonPath(realObjName, specMatName)))
-                                {
-                                    realMatName = specMatName;
-                                }
-                                else
-                                {
-                                    // finally search for an object name in the mesh json whose name starts with the truncted source name
-                                    realMatName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(realObjName), specMatName);
-                                }
-                            }
-                        }
-
-                        if (realObjName != null && realMatName != null &&
-                            objectsData.PathExists(ObjectsMatJsonPath(realObjName, realMatName)))
-                        {
-                            matJson = objectsData.GetObjectAtPath(ObjectsMatJsonPath(realObjName, realMatName));
-                            if (matJson != null)
-                            {
-                                Util.LogWarn(" - Found matching object/material data for: " + realObjName + "/" + realMatName);
-                            }
-                        }
-                    }
-                }
-                
+                Util.LogWarn("Material name has a Unity duplication suffix, there may be more than one material with this name in the character.");
+                tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));
             }
-            if (matJson == null) Util.LogError("Unable to find json material data: " + jsonPath);
+
+            if (objName.iContains("_Extracted"))
+            {
+                objName = objName.Substring(0, objName.IndexOf("_Extracted", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            tryObjectNames.Add(objName);
+
+            // there is a bug where a space in name causes the name to be truncated on export from CC3/4
+            if (objName.Contains(" "))
+            {
+                Util.LogWarn("Object name " + objName + " contains a space, this can cause the materials to setup incorrectly...");
+                tryObjectNames.Add(objName.Split(' ')[0]);
+            }
+
+            // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
+            // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
+            // (seems to happen mostly on accessories)
+            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            {
+                Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));                
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realObjName = objectsData.FindKeyName(specObjName);
+            }
+
+            if (sourceName[sourceName.Length - 2] == '_' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            {
+                Util.LogWarn("Material name " + sourceName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
+                tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));
+                // finally search for an object name in the mesh json whose name starts with the truncted source name
+                //realMatName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(realObjName), specMatName);
+            }
+            
+            // search for the material json directly from the possible object and material names
+            foreach (string objectName in tryObjectNames) 
+            { 
+                if (objectsData.PathExists(objectName))
+                {
+                    foreach (string materialName in tryMaterialNames)
+                    {                        
+                        jsonPath = ObjectsMatJsonPath(objectName, materialName);
+                        matJson = objectsData.GetObjectAtPath(jsonPath);
+                        if (matJson != null) return matJson;
+                    }
+                }
+            }
+
+            // finally search for an object and material names in the mesh json whose name starts with the truncted source names
+            foreach (string objectName in tryObjectNames)
+            {
+                string findObjectName = objectName;
+                if (!objectsData.PathExists(findObjectName))
+                    findObjectName = objectsData.FindKeyName(objectName);
+                if (!string.IsNullOrEmpty(findObjectName) && objectsData.PathExists(findObjectName))
+                {
+                    foreach (string materialName in tryMaterialNames)
+                    {
+                        jsonPath = ObjectsMatJsonPath(findObjectName, materialName);
+                        matJson = objectsData.GetObjectAtPath(jsonPath);
+                        if (matJson != null) return matJson;
+                    }
+
+                    foreach (string materialName in tryMaterialNames)
+                    {
+                        string realMaterialName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(findObjectName), materialName);
+                        if (!string.IsNullOrEmpty(realMaterialName))
+                        {
+                            jsonPath = ObjectsMatJsonPath(objectName, realMaterialName);
+                            matJson = objectsData.GetObjectAtPath(jsonPath);
+                            if (matJson != null) return matJson;
+                        }
+                    }
+                }
+            }
+
+            if (matJson == null)
+            {
+                Util.LogError("Unable to find json material data: " + jsonPath);
+            }
 
             return matJson;
         }
@@ -676,6 +777,7 @@ namespace Reallusion.Import
 
         public void CheckGeneration()
         {
+            Util.LogInfo("CheckGeneration: " + name);
             BaseGeneration oldGen = generation;
             string gen = "";
 
@@ -692,6 +794,7 @@ namespace Reallusion.Import
             if (oldGen == BaseGeneration.None)
             {
                 InitSettings();
+                InitPhysics();
             }
 
             if (generation != oldGen)
@@ -703,6 +806,7 @@ namespace Reallusion.Import
 
         public void CheckGenerationQuick()
         {
+            Debug.Log("CheckGenerationQuick: " + name);
             BaseGeneration oldGen = generation;
             string gen = Util.GetJsonGenerationString(jsonFilepath);
             generation = RL.GetCharacterGeneration(Fbx, gen);
@@ -725,19 +829,118 @@ namespace Reallusion.Import
 
         public void InitSettings()
         {
+            //Debug.Log("InitSettings: " + name);
+
             // if wrinkle map data present, enable wrinkle maps.
             if (HasWrinkleMaps())
             {
                 ShaderFlags |= ShaderFeatureFlags.WrinkleMaps;
             }
+
+            if (HasDisplacement())
+            {
+                ShaderFlags |= ShaderFeatureFlags.Displacement;
+            }            
+        }
+
+        public void InitPhysics()
+        {
+            string jsonPath = name + "/Object/" + name + "/Physics/Soft Physics";
+            bool hasPhysics = JsonData.PathExists(jsonPath);
+
+            if (hasPhysics)
+            {
+                bool isHair = false;
+                bool isCloth = false;
+
+                QuickJSON softPhysicsJson = PhysicsJsonData.GetObjectAtPath("Soft Physics/Meshes");
+                if (softPhysicsJson != null)
+                {
+                    foreach (MultiValue meshJson in softPhysicsJson.values)
+                    {
+                        string meshName = meshJson.Key;
+                        QuickJSON physicsMeshJson = softPhysicsJson.GetObjectAtPath(meshName + "/Materials");
+                        if (physicsMeshJson != null)
+                        {
+                            foreach (MultiValue pmJson in physicsMeshJson.values)
+                            {
+                                string matName = pmJson.Key;
+                                QuickJSON objectMaterialJson = CharacterJsonData.GetObjectAtPath("Meshes/" + meshName + "/Materials/" + matName);
+                                if (objectMaterialJson != null &&
+                                    objectMaterialJson.PathExists("Custom Shader/Shader Name") &&
+                                    objectMaterialJson.GetStringValue("Custom Shader/Shader Name") == "RLHair")
+                                    isHair = true;
+                                else
+                                    isCloth = true;
+                            }
+                        }
+                    }
+                }
+
+                if (isCloth)
+                {
+                    if (!ShaderFlags.HasFlag(ShaderFeatureFlags.ClothPhysics))
+                        ShaderFlags |= ShaderFeatureFlags.ClothPhysics;
+
+                    if (Physics.MagicaCloth2IsAvailable())
+                    {
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaCloth))
+                            ShaderFlags |= ShaderFeatureFlags.MagicaCloth;
+
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.UnityClothPhysics;
+                    }
+                    else
+                    {
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaCloth))
+                            ShaderFlags ^= ShaderFeatureFlags.MagicaCloth;
+
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.UnityClothPhysics;
+                    }
+                }
+
+                if (isHair)
+                {
+                    if (!ShaderFlags.HasFlag(ShaderFeatureFlags.HairPhysics))
+                        ShaderFlags |= ShaderFeatureFlags.HairPhysics;
+
+                    if (Physics.MagicaCloth2IsAvailable())
+                    {
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaClothHairPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.MagicaClothHairPhysics;
+
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothHairPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.UnityClothHairPhysics;
+                    }
+                    else
+                    {
+                        if (ShaderFlags.HasFlag(ShaderFeatureFlags.MagicaClothHairPhysics))
+                            ShaderFlags ^= ShaderFeatureFlags.MagicaClothHairPhysics;
+
+                        if (!ShaderFlags.HasFlag(ShaderFeatureFlags.UnityClothHairPhysics))
+                            ShaderFlags |= ShaderFeatureFlags.UnityClothHairPhysics;
+                    }
+                }
+            }
         }
 
         public bool HasWrinkleMaps()
         {
-            return AnyJsonMaterialPathExists("Wrinkle/Textures");            
+            return AnyJsonMaterialPathExists("Wrinkle/Textures");
         }
 
-        public bool AnyJsonMaterialPathExists(string path)
+        public bool HasDisplacement()
+        {
+            return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
+        }
+        
+        public bool HasWrinkleDisplacement()
+        {
+            return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);
+        }
+
+        public bool AnyJsonMaterialPathExists(string path, bool requireValue=false)
         {
             QuickJSON objectsJson = ObjectsJsonData;
 
@@ -756,7 +959,17 @@ namespace Reallusion.Import
                             if (mvMat.Type == MultiType.Object)
                             {
                                 QuickJSON matjson = mvMat.ObjectValue;
-                                if (matjson.PathExists(path)) return true;
+                                if (matjson.PathExists(path))
+                                {
+                                    if (requireValue)
+                                    {
+                                        return matjson.GetMultiValue(path).HasValue();
+                                    }
+                                    else
+                                    {
+                                        return true;
+                                    }
+                                }
                             }
                         }
                     }
@@ -861,7 +1074,7 @@ namespace Reallusion.Import
                         animationSetup = value == "true" ? true : false;
                         break;
                     case "animationRetargeted":
-                        animationRetargeted = int.Parse(value);
+                        animationRetargeted = (AnimationTargetLevel)int.Parse(value);
                         break;
                     case "rigOverride":
                         UnknownRigType = (RigOverride)System.Enum.Parse(typeof(RigOverride), value);
@@ -873,6 +1086,31 @@ namespace Reallusion.Import
                             guidRemaps.Add(new GUIDRemap(guids[0], guids[1]));
                         }
                         break;
+                    case "linkId":
+                        {
+                            linkId = value;
+                            break;
+                        }
+                    case "motionPrefix":
+                        {
+                            motionPrefix = value;
+                            break;
+                        }
+                    case "exportType":
+                        {
+                            exportType = (ExportType)System.Enum.Parse(typeof (ExportType), value);
+                            break;
+                        }
+                    case "qualTexSize":
+                        {
+                            qualTexSize = (TexSizeQuality)System.Enum.Parse(typeof(TexSizeQuality), value);
+                            break;
+                        }
+                    case "qualTexCompress":
+                        {
+                            qualTexCompress = (TexCompressionQuality)System.Enum.Parse(typeof(TexCompressionQuality), value);
+                            break;
+                        }
                 }
             }
             ApplySettings();
@@ -893,8 +1131,13 @@ namespace Reallusion.Import
             writer.WriteLine("bakeSeparatePrefab=" + (builtBakeSeparatePrefab ? "true" : "false"));
             writer.WriteLine("shaderFlags=" + (int)BuiltShaderFlags);
             writer.WriteLine("animationSetup=" + (animationSetup ? "true" : "false"));
-            writer.WriteLine("animationRetargeted=" + animationRetargeted.ToString());
+            writer.WriteLine("animationRetargeted=" + ((int)animationRetargeted).ToString());
             writer.WriteLine("rigOverride=" + UnknownRigType.ToString());
+            writer.WriteLine("linkId=" + linkId);
+            writer.WriteLine("motionPrefix=" + motionPrefix);
+            writer.WriteLine("exportType=" + exportType.ToString());
+            writer.WriteLine("qualTexSize=" + qualTexSize.ToString());
+            writer.WriteLine("qualTexCompress=" + qualTexCompress.ToString());
             foreach (GUIDRemap gr in guidRemaps)
             {
                 writer.WriteLine("GUIDRemap=" + gr.from + "|" + gr.to);
@@ -1021,5 +1264,52 @@ namespace Reallusion.Import
             }
             return false;
         }
+
+        public bool UsePackedTextures(MaterialType materialType)
+        {
+            return true;
+            /*
+            return FeatureUseTexturePacking ||
+                   (FeatureUseDualSpecularSkin && (materialType == MaterialType.Skin ||
+                                                   materialType == MaterialType.Head));
+            */
+        }
+
+        public bool UseTessellation(MaterialType materialType, QuickJSON matJson)
+        {
+            bool useDisplacement = false;
+            if (matJson.PathExists("Textures/Displacement/Texture Path") && 
+                !string.IsNullOrEmpty(matJson.GetStringValue("Textures/Displacement/Texture Path")))
+            {
+                useDisplacement = FeatureUseDisplacement;
+            }
+
+            // always try to tessellate with displacement maps
+            if (FeatureUseTessellation && useDisplacement) return true;
+
+            // try tessellate skin and teeth if requested
+            if (FeatureUseTessellation && 
+                (materialType == MaterialType.Skin ||
+                 materialType == MaterialType.Head ||
+                 materialType == MaterialType.Teeth)) return true;
+
+            return false;
+        }
+
+        public float GetBoneScale()
+        {
+            Animator animator = fbx.GetComponentInChildren<Animator>();
+            if (animator)
+            {
+                Avatar avatar = animator.avatar;
+                if (avatar.isHuman && avatar.humanDescription.skeleton.Length > 0)
+                {
+                    return avatar.humanDescription.skeleton[0].scale.y;
+                }
+            }           
+
+            return 1f;
+        }
+
     }
 }

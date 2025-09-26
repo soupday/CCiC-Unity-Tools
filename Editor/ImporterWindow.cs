@@ -25,6 +25,7 @@ using System;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using Object = UnityEngine.Object;
+using System.Linq;
 
 namespace Reallusion.Import
 {
@@ -37,13 +38,19 @@ namespace Reallusion.Import
 
         public static RLSettingsObject GeneralSettings
         {
-           get { return generalSettings; }
+            get { return generalSettings; }
         }
         public static void SetGeneralSettings(RLSettingsObject settingsObj, bool save)
         {
             generalSettings = settingsObj;
             if (save) RLSettings.SaveRLSettingsObject(generalSettings);
-        }        
+        }
+
+        private static void SaveSettings()
+        {
+            RLSettings.SaveRLSettingsObject(generalSettings);
+        }
+
         // Settings end
 
         [SerializeField]
@@ -59,12 +66,12 @@ namespace Reallusion.Import
 
         private static readonly string windowTitle = "CC/iC Importer " + Pipeline.FULL_VERSION;
         private static CharacterInfo contextCharacter;
-        private static List<CharacterInfo> validCharacters;
+        public static List<CharacterInfo> CharacterList { get; set; }
+        private static bool showProps = true;
         private static string backScenePath;
-        private static Mode mode;        
-        public static ImporterWindow Current { get; private set; }        
-        public CharacterInfo Character { get { return contextCharacter; } }
-        public static List<CharacterInfo> ValidCharacters => validCharacters;
+        private static Mode mode;
+        public static ImporterWindow Current { get; private set; }
+        public CharacterInfo Character { get { return contextCharacter; } }        
 
         private Vector2 iconScrollView;
         private bool previewCharacterAfterGUI;
@@ -80,7 +87,7 @@ namespace Reallusion.Import
 
         const float ICON_SIZE = 64f;
         const float WINDOW_MARGIN = 4f;
-        const float TOP_PADDING = 16f;
+        const float TOP_PADDING = 6f; //16f;
         const float ACTION_BUTTON_SIZE = 40f;
         const float WEE_BUTTON_SIZE = 32f;
         const float ACTION_BUTTON_SPACE = 4f;
@@ -96,7 +103,7 @@ namespace Reallusion.Import
 
         // additions for draggable width icon area
         const float DRAG_BAR_WIDTH = 2f;
-        const float DRAG_HANDLE_PADDING = 4f;        
+        const float DRAG_HANDLE_PADDING = 4f;
         const float ICON_WIDTH_MIN = 100f;
         const float ICON_WIDTH_DETAIL = 140f;
         const float ICON_SIZE_SMALL = 25f;
@@ -106,18 +113,22 @@ namespace Reallusion.Import
         private bool dragging = false;
         private bool repaintDelegated = false;
 
-        private Styles importerStyles;        
-        //GUIStyle dragBarStyle;
-        //GUIStyle nameTextStyle;
-        //GUIStyle fakeButton;
-        //GUIStyle fakeButtonContext;
-
-        //private GUIStyle logStyle, mainStyle, buttonStyle, labelStyle, boldStyle, iconStyle;
+        private Styles importerStyles;
+        
         private Texture2D iconUnprocessed;
+        private Texture2D iconBlenderUnprocessed;
         private Texture2D iconBasic;
+        private Texture2D iconLinkedBasic;
+        private Texture2D iconBlenderBasic;
         private Texture2D iconHQ;
+        private Texture2D iconLinkedHQ;
+        private Texture2D iconBlenderHQ;
         private Texture2D iconBaked;
+        private Texture2D iconLinkedBaked;
+        private Texture2D iconBlenderBaked;
         private Texture2D iconMixed;
+        private Texture2D iconLinkedMixed;
+        private Texture2D iconBlenderMixed;
         private Texture2D iconActionBake;
         private Texture2D iconActionBakeOn;
         private Texture2D iconActionBakeHair;
@@ -138,12 +149,22 @@ namespace Reallusion.Import
         private Texture2D iconSettingsOn;
         private Texture2D iconLighting;
         private Texture2D iconCamera;
-        private Texture2D iconBuildMaterials;        
+        private Texture2D iconBuildMaterials;
+        private Texture2D iconProp;
+        private Texture2D iconLinkedProp;
+        private Texture2D iconBlenderProp;
+        private Texture2D iconPropG;
+        private Texture2D iconLinkedPropG;
+        private Texture2D iconBlenderPropG;
 
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
         // is not closed. If the attribute is omitted then the state is still serialized/deserialized.
+#if UNITY_6000_2_OR_NEWER
+        [SerializeField] TreeViewState<int> treeViewState;
+#else
         [SerializeField] TreeViewState treeViewState;
+#endif
 
         //The TreeView is not serializable, so it should be reconstructed from the tree data.
         CharacterTreeView characterTreeView;
@@ -157,7 +178,7 @@ namespace Reallusion.Import
         public static float ICON_AREA_WIDTH
         {
             get
-            {                
+            {
                 if (EditorPrefs.HasKey("RL_Importer_IconAreaWidth"))
                     return EditorPrefs.GetFloat("RL_Importer_IconAreaWidth");
                 return ICON_WIDTH;
@@ -188,9 +209,9 @@ namespace Reallusion.Import
         {
             Scene currentScene = SceneManager.GetActiveScene();
             if (currentScene.IsValid() && !string.IsNullOrEmpty(currentScene.path))
-            {                
+            {
                 backScenePath = currentScene.path;
-            }            
+            }
         }
 
         public static void GoBackScene()
@@ -223,12 +244,12 @@ namespace Reallusion.Import
                 if (Pipeline.isHDRP && contextCharacter.BuiltDualMaterialHair) characterTreeView.EnableMultiPass();
                 else characterTreeView.DisableMultiPass();
 
-                EditorPrefs.SetString("RL_Importer_Context_Path", contextCharacter.path);
-            }            
-        }        
+                EditorPrefs.SetString("RL_Importer_Context_GUID", contextCharacter.guid);
+            }
+        }
 
         public static ImporterWindow Init(Mode windowMode, UnityEngine.Object characterObject)
-        {                        
+        {
             Type hwt = Type.GetType("UnityEditor.SceneHierarchyWindow, UnityEditor.dll");
             ImporterWindow window = GetWindow<ImporterWindow>(windowTitle, hwt);
             window.minSize = new Vector2(ACTION_WIDTH + ICON_WIDTH + MIN_SETTING_WIDTH + WINDOW_MARGIN, 500f);
@@ -236,35 +257,65 @@ namespace Reallusion.Import
 
             ClearAllData();
             window.SetActiveCharacter(characterObject, windowMode);
-            window.InitData();                                
-            window.Show();            
+            window.InitData();
+            window.Show();
 
             return window;
-        }        
+        }
 
         public void SetActiveCharacter(UnityEngine.Object obj, Mode mode)
         {
             if (Util.IsCC3Character(obj))
             {
-                EditorPrefs.SetString("RL_Importer_Context_Path", AssetDatabase.GetAssetPath(obj));
+                EditorPrefs.SetString("RL_Importer_Context_GUID", AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(obj)));
             }
 
             ImporterWindow.mode = mode;
             EditorPrefs.SetString("RL_Importer_Mode", mode.ToString());
         }
 
+        public static void RemoteInit()
+        {
+            Debug.LogWarning("**** DOING REMOTEINIT ***");
+            ImporterWindow window;
+            if (!EditorWindow.HasOpenInstances<EditorWindow>())
+            {
+                window = ScriptableObject.CreateInstance<ImporterWindow>();
+            }
+            else
+            {                
+                window = EditorWindow.GetWindow<ImporterWindow>();
+            }
+            window.name = windowTitle;
+            Current = window;
+
+            ClearAllData();
+            window.SetActiveCharacter(Selection.activeObject, Mode.multi);
+            window.InitData();
+        }
+
         private void InitData()
         {
+            MonitorConnection();
             SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
             UpdateManager.TryPerformUpdateChecks();
             CheckAvailableAddons();
 
             string[] folders = new string[] { "Assets", "Packages" };
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
+            iconBlenderUnprocessed = Util.FindTexture(folders, "RLICon_Blender_UnprocessedChar");            
             iconBasic = Util.FindTexture(folders, "RLIcon_BasicChar");
+            iconLinkedBasic = Util.FindTexture(folders, "RLIcon_Linked_BasicChar");
+            iconBlenderBasic = Util.FindTexture(folders, "RLIcon_Blender_BasicChar");
             iconHQ = Util.FindTexture(folders, "RLIcon_HQChar");
+            iconLinkedHQ = Util.FindTexture(folders, "RLIcon_Linked_HQChar");
+            iconBlenderHQ = Util.FindTexture(folders, "RLIcon_Blender_HQChar");
             iconBaked = Util.FindTexture(folders, "RLIcon_BakedChar");
+            iconLinkedBaked = Util.FindTexture(folders, "RLIcon_Linked_BakedChar");
+            iconBlenderBaked = Util.FindTexture(folders, "RLIcon_Blender_BakedChar");
             iconMixed = Util.FindTexture(folders, "RLIcon_MixedChar");
+            iconLinkedMixed = Util.FindTexture(folders, "RLIcon_Linked_MixedChar");
+            iconBlenderMixed = Util.FindTexture(folders, "RLIcon_Blender_MixedChar");
             iconActionBake = Util.FindTexture(folders, "RLIcon_ActionBake");
             iconActionBakeOn = Util.FindTexture(folders, "RLIcon_ActionBake_Sel");
             iconActionBakeHair = Util.FindTexture(folders, "RLIcon_ActionBakeHair");
@@ -286,10 +337,19 @@ namespace Reallusion.Import
             iconLighting = Util.FindTexture(folders, "RLIcon_Lighting");
             iconCamera = Util.FindTexture(folders, "RLIcon_Camera");
             iconBuildMaterials = Util.FindTexture(folders, "RLIcon_ActionBuildMaterials");
+            iconProp = Util.FindTexture(folders, "RLIcon-Prop_W");
+            iconLinkedProp = Util.FindTexture(folders, "RLIcon_Linked_Prop_W");
+            iconBlenderProp = Util.FindTexture(folders, "RLIcon_Blender_Prop_W");
+            iconPropG = Util.FindTexture(folders, "RLIcon-Prop_G");
+            iconLinkedPropG = Util.FindTexture(folders, "RLIcon_Linked_Prop_G");
+            iconBlenderPropG = Util.FindTexture(folders, "RLIcon_Blender_Prop_G");
+            mode = Mode.multi;
+
             Current = this;
 
+            showProps = generalSettings.showProps;
             RefreshCharacterList();
-            
+
             if (titleContent.text != windowTitle) titleContent.text = windowTitle;
         }
 
@@ -349,90 +409,60 @@ namespace Reallusion.Import
 
         public void RefreshCharacterList()
         {
-            if (validCharacters == null)
-                validCharacters = new List<CharacterInfo>();
-            else
-                validCharacters.Clear();
+            WindowManager.UpdateImportList();
 
-            if (mode == Mode.none)
-            {
-                mode = Mode.multi;
-                string modeValue = EditorPrefs.GetString("RL_Importer_Mode");                
-                if (!string.IsNullOrEmpty(modeValue))
-                    mode = (Mode)Enum.Parse(typeof(Mode), modeValue);                    
-            }
+            string guidFilter = null;
+            if (mode == Mode.single) guidFilter = EditorPrefs.GetString("RL_Importer_Context_GUID");
 
-            if (mode == Mode.single)
-            {
-                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_Path");
-                if (!string.IsNullOrEmpty(editorPrefsContextPath) &&
-                    File.Exists(editorPrefsContextPath))
-                {
-                    string guid = AssetDatabase.AssetPathToGUID(editorPrefsContextPath);
-                    if (!string.IsNullOrEmpty(guid))
-                        validCharacters.Add(new CharacterInfo(guid));
-                }
-
-                // fallback to multi mode
-                if (validCharacters.Count == 0) mode = Mode.multi;
-            }
-
-            if (mode == Mode.multi)
-            {
-                List<string> validCharacterGUIDs = Util.GetValidCharacterGUIDS();
-                foreach (string validGUID in validCharacterGUIDs)
-                {
-                    validCharacters.Add(new CharacterInfo(validGUID));
-                }
-            }
+            CharacterList = WindowManager.GetCharacterList(true, showProps, null, guidFilter);     
         }
 
         private void RestoreData()
         {
-            if (validCharacters == null)
+            if (CharacterList == null)
             {
-                InitData();                
+                InitData();
             }
         }
 
         private void RestoreSelection()
         {
-            if (contextCharacter == null && validCharacters.Count > 0)
+            if (contextCharacter == null && CharacterList.Count > 0)
             {
-                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_Path");
+                string editorPrefsContextPath = EditorPrefs.GetString("RL_Importer_Context_GUID");
                 if (!string.IsNullOrEmpty(editorPrefsContextPath))
                 {
-                    for (int i = 0; i < validCharacters.Count; i++)
+                    for (int i = 0; i < CharacterList.Count; i++)
                     {
-                        if (validCharacters[i].path == editorPrefsContextPath)
-                            SetContextCharacter(validCharacters[i].guid);
+                        if (CharacterList[i].path == editorPrefsContextPath)
+                            SetContextCharacter(CharacterList[i].guid);
                     }
                 }
 
                 if (Selection.activeGameObject)
                 {
                     string selectionPath = AssetDatabase.GetAssetPath(Selection.activeGameObject);
-                    for (int i = 0; i < validCharacters.Count; i++)
+                    for (int i = 0; i < CharacterList.Count; i++)
                     {
-                        if (validCharacters[i].path == selectionPath)
-                            SetContextCharacter(validCharacters[i].guid);
-                    }               
+                        if (CharacterList[i].path == selectionPath)
+                            SetContextCharacter(CharacterList[i].guid);
+                    }
                 }
 
                 if (contextCharacter == null)
-                    SetContextCharacter(validCharacters[0].guid);                
-            }            
+                    SetContextCharacter(CharacterList[0].guid);
+            }
         }
 
         private CharacterInfo GetCharacterState(string guid)
-        {            
-            foreach (CharacterInfo s in validCharacters)
+        {
+            foreach (CharacterInfo s in CharacterList)
             {
                 if (s.guid.Equals(guid)) return s;
             }
 
             return null;
-        }        
+        }
 
         private void CreateTreeView(bool clearSelection = false)
         {
@@ -442,7 +472,11 @@ namespace Reallusion.Import
                 // that survived assembly reloading)
                 if (treeViewState == null)
                 {
+#if UNITY_6000_2_OR_NEWER
+                    treeViewState = new TreeViewState<int>();
+#else
                     treeViewState = new TreeViewState();
+#endif
                 }
                 characterTreeView = new CharacterTreeView(treeViewState, contextCharacter.Fbx);
 
@@ -450,69 +484,157 @@ namespace Reallusion.Import
                 if (clearSelection) characterTreeView.ClearSelection();
             }
         }
-        
+        public int activeTab = 0;
+        public UnityLinkManagerWindow linkModule;
+        public float TAB_HEIGHT = 26f;
+
         private void OnGUI()
         {
             if (importerStyles == null) importerStyles = new Styles();
 
             RestoreData();
-            RestoreSelection();
+            //RestoreSelection();  // currently suppressed to avoid auto char selection due to CC5 char size
+
+            if (tabStyles == null) tabStyles = new TabStyles();
+            if (tabCont == null) tabCont = new TabContents();
+
+            tabStyles.FixMeh();
+
+            Rect areaRect = new Rect(0f, 0f, position.width, position.height);
+            
+            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, datalinkActive, RectHandler);
+            
+            Rect contentRect = new Rect(0, TAB_HEIGHT, position.width, position.height - TAB_HEIGHT);
+                        
+            GUILayout.BeginArea(contentRect);
+
+            switch (activeTab)
+            {
+                case 0:
+                    {
+                        ImporterOnGUI(contentRect);
+                        break;
+
+                    }
+                case 1:
+                    {
+                        if (EditorApplication.isPlaying) break;
+                        if (linkModule == null)
+                        {
+                            linkModule = ScriptableObject.CreateInstance<UnityLinkManagerWindow>();
+                        }
+                        linkModule.ShowGUI(contentRect);
+                        break;
+                    }
+                case 2:
+                    {                        
+                        break;
+                    }
+                case 3:
+                    {
+                        break;
+                    }
+            }
+
+            GUILayout.EndArea();
+        }
+
+        public enum RefreshMessage
+        {
+            NoneDetected,
+            NoneSelected
+        }
+
+        private void RefreshGUI(RefreshMessage message, Rect rect)
+        {
+            string title = string.Empty;
+            string msg = string.Empty;
+
+            switch (message)
+            {
+                case RefreshMessage.NoneDetected:
+                    {
+                        title = "No CC/iClone Characters detected!";
+                        msg = "Reload the character list, after adding or removing characters.";
+
+                        break;
+                    }
+                case RefreshMessage.NoneSelected:
+                    {
+                        title = "No Character selected.";
+                        msg = "Reload the character list, after adding or removing characters.";
+
+                        break;
+                    }
+            }
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
-            if (validCharacters == null || validCharacters.Count == 0)            
+            GUILayout.BeginArea(rect);
+            GUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(title);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(20f);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent(iconActionRefresh, msg),
+                GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
             {
-                GUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("No CC/iClone Characters detected!");                                
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                GUILayout.Space(20f);
-
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(iconActionRefresh, "Reload the character list, for after adding or removing characters."),
-                    GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
-                {
-                    EditorApplication.delayCall += RefreshCharacterList;
-                }
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                GUILayout.FlexibleSpace();
-                GUILayout.EndVertical();                
-                return;
+                EditorApplication.delayCall += RefreshCharacterList;
             }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
             EditorGUI.EndDisabledGroup();
+        }
+
+        private void ImporterOnGUI(Rect contentRect)
+        {                        
+            if (CharacterList == null || CharacterList.Count == 0)
+            {
+                RefreshGUI(RefreshMessage.NoneDetected, contentRect);
+                return;
+            }            
 
             float width = position.width - WINDOW_MARGIN;
-            float height = position.height - WINDOW_MARGIN;
+            float height = position.height - WINDOW_MARGIN - TAB_HEIGHT;
             float innerHeight = height - TOP_PADDING;
             float optionHeight = OPTION_HEIGHT;
             //if (Pipeline.isHDRP12) optionHeight += 14f;
-            if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
+            if (contextCharacter != null)
+            {
+                if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
+            }
             optionHeight += 14f;
-            
+
             if (width - ICON_AREA_WIDTH - ACTION_WIDTH < MIN_SETTING_WIDTH)
             {
                 ICON_AREA_WIDTH = Mathf.Max(ICON_WIDTH, width - ACTION_WIDTH - MIN_SETTING_WIDTH);
-            }            
+            }
 
             if (ICON_AREA_WIDTH > width - 51f) ICON_AREA_WIDTH = Mathf.Max(ICON_WIDTH, width - 51f);
 
-            Rect iconBlock = new Rect(0f, TOP_PADDING, ICON_AREA_WIDTH, innerHeight);
+            Rect iconBlock = new Rect(0f, TOP_PADDING, ICON_AREA_WIDTH, innerHeight - 16f); // -16f to accomodate temporary show props toggle
 
             // additions for draggable width icon area
             Rect dragBar = new Rect(iconBlock.xMax, TOP_PADDING, DRAG_BAR_WIDTH, innerHeight);
 
             Rect infoBlock = new Rect(dragBar.xMax, TOP_PADDING, width - ICON_AREA_WIDTH - ACTION_WIDTH, INFO_HEIGHT);
             CURRENT_INFO_WIDTH = infoBlock.width;
-            
+
+            Rect refreshBlock = new Rect(dragBar.xMax, TOP_PADDING, width - dragBar.xMax, height);
+
             Rect optionBlock = new Rect(dragBar.xMax, infoBlock.yMax, infoBlock.width, optionHeight);
-            Rect actionBlock = new Rect(dragBar.xMax + infoBlock.width, TOP_PADDING, ACTION_WIDTH, innerHeight);            
+            Rect actionBlock = new Rect(dragBar.xMax + infoBlock.width, TOP_PADDING, ACTION_WIDTH, innerHeight);
             Rect treeviewBlock = new Rect(dragBar.xMax, optionBlock.yMax, infoBlock.width, height - optionBlock.yMax);
             Rect settingsBlock = new Rect(dragBar.xMax, TOP_PADDING, width - ICON_AREA_WIDTH - ACTION_WIDTH, innerHeight);
 
@@ -525,7 +647,7 @@ namespace Reallusion.Import
             physicsAfterGUI = false;
             processAnimationsAfterGUI = false;
 
-            CheckDragAndDrop();
+            //CheckDragAndDrop();
 
             //OnGUIIconArea(iconBlock);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
@@ -533,19 +655,26 @@ namespace Reallusion.Import
             OnGUIDragBarArea(dragBar);
             EditorGUI.EndDisabledGroup();
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUIInfoArea(infoBlock);
+            if (contextCharacter != null)
+            {
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUIInfoArea(infoBlock);
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUIOptionArea(optionBlock);
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUIOptionArea(optionBlock);
 
-            if (windowMode == ImporterWindowMode.Settings)
-                OnGUISettingsArea(settingsBlock);
+                if (windowMode == ImporterWindowMode.Settings)
+                    OnGUISettingsArea(settingsBlock);
 
-            OnGUIActionArea(actionBlock);
+                OnGUIActionArea(actionBlock);
 
-            if (windowMode == ImporterWindowMode.Build)
-                OnGUITreeViewArea(treeviewBlock);
+                if (windowMode == ImporterWindowMode.Build)
+                    OnGUITreeViewArea(treeviewBlock);
+            }
+            else
+            {
+                RefreshGUI(RefreshMessage.NoneSelected, refreshBlock);
+            }
 
             // functions to run after the GUI has finished...             
             if (previewCharacterAfterGUI)
@@ -583,9 +712,9 @@ namespace Reallusion.Import
         }
 
         bool doubleClick = false;
-                
+
         private void OnGUIInfoArea(Rect infoBlock)
-        {            
+        {
             string importType = "Unprocessed";
             if (contextCharacter.BuiltBasicMaterials)
                 importType = "Default Materials";
@@ -628,34 +757,55 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            GUILayout.FlexibleSpace();            
+            //if (!string.IsNullOrEmpty(contextCharacter.linkId))
+            if(contextCharacter.isLinked)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Link ID: ", importerStyles.boldStyle);
+                GUILayout.Label(contextCharacter.linkId, importerStyles.linkStyle);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+            else if (contextCharacter.IsBlenderProject)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Source: ", importerStyles.boldStyle);
+                GUILayout.Label("Blender Project", importerStyles.blenderStyle);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+
+                GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            GUILayout.EndArea();            
+            GUILayout.EndArea();
         }
         Rect prev = new Rect();
         private void OnGUIOptionArea(Rect optionBlock)
-        {            
+        {
             GUILayout.BeginArea(optionBlock);
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
             GUILayout.BeginVertical();
+
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (contextCharacter.Generation == BaseGeneration.Unknown)
-            {                
+            {
                 if (EditorGUILayout.DropdownButton(
                     content: new GUIContent("Rig Type: " + contextCharacter.UnknownRigType.ToString()),
                     focusType: FocusType.Passive))
                 {
                     GenericMenu menu = new GenericMenu();
                     menu.AddItem(new GUIContent("Rig Type: None"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.None, RigOptionSelected, CharacterInfo.RigOverride.None);
-                    menu.AddItem(new GUIContent("Rig Type: Humanoid"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.Humanoid, RigOptionSelected, CharacterInfo.RigOverride.Humanoid);                    
+                    menu.AddItem(new GUIContent("Rig Type: Humanoid"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.Humanoid, RigOptionSelected, CharacterInfo.RigOverride.Humanoid);
                     menu.AddItem(new GUIContent("Rig Type: Generic"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.Generic, RigOptionSelected, CharacterInfo.RigOverride.Generic);
                     menu.ShowAsContext();
                 }
@@ -663,6 +813,7 @@ namespace Reallusion.Import
                 GUILayout.Space(1f);
             }
 
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.BasicMaterials ? "Basic Materials" : "High Quality Materials"),
                 focusType: FocusType.Passive))
@@ -673,13 +824,35 @@ namespace Reallusion.Import
                     menu.AddItem(new GUIContent("High Quality Materials"), contextCharacter.HQMaterials, MaterialOptionSelected, false);
                 menu.ShowAsContext();
             }
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.BeginVertical();
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexSize.ToString())),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+
+                string[] itemNames = Enum.GetNames(typeof(CharacterInfo.TexSizeQuality));
+                CharacterInfo.TexSizeQuality[] itemValues = Enum.GetValues(typeof(CharacterInfo.TexSizeQuality)).Cast<CharacterInfo.TexSizeQuality>().ToArray();
+                for (int i = 0; i < itemNames.Length; i++)
+                {
+                    menu.AddItem(new GUIContent(Util.CamelCaseToSpaces(itemNames[i])),
+                                                contextCharacter.QualTexSize == itemValues[i], 
+                                                TexSizeOptionSelect, 
+                                                itemValues[i]);
+                }
+                menu.ShowAsContext();
+            }
             EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
 
-            //if (contextCharacter.BasicMaterials) GUI.enabled = false;
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
-            if (EditorGUILayout.DropdownButton(                
+            if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.QualEyes.ToString() + " Eyes"),
                 focusType: FocusType.Passive))
             {
@@ -690,10 +863,36 @@ namespace Reallusion.Import
                     menu.AddItem(new GUIContent("Refractive (SSR) Eyes"), contextCharacter.RefractiveEyes, EyeOptionSelected, CharacterInfo.EyeQuality.Refractive);
                 menu.ShowAsContext();
             }
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical();
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexCompress.ToString())),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+
+                string[] itemNames = Enum.GetNames(typeof(CharacterInfo.TexCompressionQuality));
+                CharacterInfo.TexCompressionQuality[] itemValues = Enum.GetValues(typeof(CharacterInfo.TexCompressionQuality)).Cast<CharacterInfo.TexCompressionQuality>().ToArray();
+                for (int i = 0; i < itemNames.Length; i++)
+                {
+                    menu.AddItem(new GUIContent(Util.CamelCaseToSpaces(itemNames[i])),
+                                                contextCharacter.QualTexCompress == itemValues[i], 
+                                                TexCompressOptionSelect, 
+                                                itemValues[i]);
+                }
+                menu.ShowAsContext();
+            }
+            EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
+
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
             string hairType;
-            switch(contextCharacter.QualHair)
+            switch (contextCharacter.QualHair)
             {
                 case CharacterInfo.HairQuality.TwoPass: hairType = "Two Pass Hair"; break;
                 case CharacterInfo.HairQuality.Coverage: hairType = "MSAA Coverage Hair"; break;
@@ -707,10 +906,15 @@ namespace Reallusion.Import
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Single Pass Hair"), contextCharacter.DefaultHair, HairOptionSelected, CharacterInfo.HairQuality.Default);
                 menu.AddItem(new GUIContent("Two Pass Hair"), contextCharacter.DualMaterialHair, HairOptionSelected, CharacterInfo.HairQuality.TwoPass);
-                if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
-                    menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
+                //if (Importer.USE_AMPLIFY_SHADER && !Pipeline.isHDRP)
+                //    menu.AddItem(new GUIContent("MSAA Coverage Hair"), contextCharacter.CoverageHair, HairOptionSelected, CharacterInfo.HairQuality.Coverage);
                 menu.ShowAsContext();
             }
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
 
             // /*
             bool showDebugEnumPopup = false;
@@ -743,7 +947,7 @@ namespace Reallusion.Import
             //GUI.enabled = true;
 
             //////////////
-            
+
             if (Event.current.type == EventType.Repaint)
                 prev = GUILayoutUtility.GetLastRect();
 
@@ -753,7 +957,7 @@ namespace Reallusion.Import
             {
                 ImporterFeaturesWindow.ShowAtPosition(new Rect(prev.x, prev.y + 20f, prev.width, prev.height));
             }
-            
+
             //////////////
 
             GUILayout.Space(8f);
@@ -761,12 +965,12 @@ namespace Reallusion.Import
             //if (contextCharacter.BuiltBasicMaterials) GUI.enabled = false;
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BuiltBasicMaterials);
             if (EditorGUILayout.DropdownButton(
-                content: new GUIContent(contextCharacter.BakeCustomShaders ? "Bake Custom Shaders":"Bake Default Shaders"),
+                content: new GUIContent(contextCharacter.BakeCustomShaders ? "Bake Custom Shaders" : "Bake Default Shaders"),
                 focusType: FocusType.Passive))
             {
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Default Shaders"), !contextCharacter.BakeCustomShaders, BakeShadersOptionSelected, false);
-                menu.AddItem(new GUIContent("Custom Shaders"), contextCharacter.BakeCustomShaders, BakeShadersOptionSelected, true);                
+                menu.AddItem(new GUIContent("Custom Shaders"), contextCharacter.BakeCustomShaders, BakeShadersOptionSelected, true);
                 menu.ShowAsContext();
             }
 
@@ -774,7 +978,7 @@ namespace Reallusion.Import
 
             if (EditorGUILayout.DropdownButton(
                 new GUIContent(contextCharacter.BakeSeparatePrefab ? "Bake Separate Prefab" : "Bake Overwrite Prefab"),
-                FocusType.Passive                
+                FocusType.Passive
                 ))
             {
                 GenericMenu menu = new GenericMenu();
@@ -799,7 +1003,7 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
-            if (GUILayout.Button(buildContent,                
+            if (GUILayout.Button(buildContent,
                 GUILayout.Height(BUTTON_HEIGHT), GUILayout.Width(160f)))
             {
                 buildAfterGUI = true;
@@ -808,17 +1012,17 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            
+
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
-            GUILayout.EndArea();            
+            GUILayout.EndArea();
         }
-        
+
         private void OnGUIActionArea(Rect actionBlock)
-        {            
+        {
             GUILayout.BeginArea(actionBlock);
 
             GUILayout.BeginHorizontal();
@@ -828,18 +1032,18 @@ namespace Reallusion.Import
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (false && !string.IsNullOrEmpty(backScenePath) && File.Exists(backScenePath))
-            {               
-                if (GUILayout.Button(new GUIContent("<", "Go back to the last valid scene."), 
+            {
+                if (GUILayout.Button(new GUIContent("<", "Go back to the last valid scene."),
                     GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
                 {
                     GoBackScene();
                 }
 
                 GUILayout.Space(ACTION_BUTTON_SPACE);
-            }                        
+            }
 
 
-            if (GUILayout.Button(new GUIContent(WindowManager.IsPreviewScene ? iconActionPreviewOn : iconActionPreview, "View the current character in a preview scene."), 
+            if (GUILayout.Button(new GUIContent(WindowManager.IsPreviewScene ? iconActionPreviewOn : iconActionPreview, "View the current character in a preview scene."),
                 GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
             {
                 previewCharacterAfterGUI = true;
@@ -849,7 +1053,7 @@ namespace Reallusion.Import
 
             if (mode == Mode.multi)
             {
-                if (GUILayout.Button(new GUIContent(iconActionRefresh, "Reload the character list, for after adding or removing characters."), 
+                if (GUILayout.Button(new GUIContent(iconActionRefresh, "Reload the character list, for after adding or removing characters."),
                     GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
                 {
                     refreshAfterGUI = true;
@@ -873,7 +1077,7 @@ namespace Reallusion.Import
 
             GUILayout.Space(ACTION_BUTTON_SPACE);
 
-            
+
             if (contextCharacter.tempHairBake)
             {
                 EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
@@ -904,7 +1108,7 @@ namespace Reallusion.Import
             if (GUILayout.Button(new GUIContent(iconActionAnims, "Process, extract and rename character animations and create a default animtor controller."),
                 GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
             {
-                processAnimationsAfterGUI = true;                
+                processAnimationsAfterGUI = true;
             }
             EditorGUI.EndDisabledGroup();
             //
@@ -973,13 +1177,13 @@ namespace Reallusion.Import
                 if (AnimPlayerGUI.IsPlayerShown())
                 {
                     GameObject characterPrefab = WindowManager.GetSelectedOrPreviewCharacter();
-                    WindowManager.HideAnimationPlayer(true);                                        
+                    WindowManager.HideAnimationPlayer(true);
                     ResetAllSceneViewCamera(characterPrefab);
                 }
                 else
                 {
                     GameObject characterPrefab = WindowManager.GetSelectedOrPreviewCharacter();
-                    WindowManager.ShowAnimationPlayer();                                        
+                    WindowManager.ShowAnimationPlayer();
                     ResetAllSceneViewCamera(characterPrefab);
                 }
             }
@@ -995,7 +1199,7 @@ namespace Reallusion.Import
             {
                 if (AnimRetargetGUI.IsPlayerShown())
                 {
-                    WindowManager.HideAnimationRetargeter(true);                    
+                    WindowManager.HideAnimationRetargeter(true);
                 }
                 else
                 {
@@ -1034,7 +1238,7 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            
+
 
             GUILayout.Space(ACTION_BUTTON_SPACE);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
@@ -1043,7 +1247,7 @@ namespace Reallusion.Import
                 settingsIconGC = new GUIContent(iconSettings, "Settings.");
             else
                 settingsIconGC = new GUIContent(iconSettingsOn, "Back.");
-            if (GUILayout.Button(settingsIconGC, 
+            if (GUILayout.Button(settingsIconGC,
                 GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
             {
                 if (windowMode != ImporterWindowMode.Settings)
@@ -1058,11 +1262,11 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            GUILayout.EndArea();            
+            GUILayout.EndArea();
         }
-        
+
         private void OnGUITreeViewArea(Rect treeviewBlock)
-        {            
+        {
             GUILayout.BeginArea(treeviewBlock);
 
             GUILayout.BeginVertical();
@@ -1070,7 +1274,7 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
             if (contextCharacter != null)
             {
-                characterTreeView.OnGUI(new Rect(0, 0, treeviewBlock.width, treeviewBlock.height - 16f));                
+                characterTreeView.OnGUI(new Rect(0, 0, treeviewBlock.width, treeviewBlock.height - 16f));
             }
             GUILayout.EndHorizontal();
 
@@ -1079,14 +1283,27 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
 
             GUILayout.FlexibleSpace();
-            SELECT_LINKED = GUILayout.Toggle(SELECT_LINKED, "Select Linked");            
+            SELECT_LINKED = GUILayout.Toggle(SELECT_LINKED, "Select Linked");
             GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
 
-            GUILayout.EndArea();            
+            GUILayout.EndArea();
+        }
+
+        private void DropDownBox(string[] options, int value, GenericMenu.MenuFunction2 func)
+        {                           
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent(options[value]),
+                focusType: FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+                for (int i = 0; i < options.Length; i++)
+                    menu.AddItem(new GUIContent(options[i]), value == i, func, i);
+                menu.ShowAsContext();
+            }
         }
 
         private void OnGUISettingsArea(Rect settingsBlock)
@@ -1105,27 +1322,30 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical();
 
-            GUILayout.BeginHorizontal();            
+            GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             GUILayout.Label("Settings", importerStyles.boldStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             GUILayout.Space(TITLE_SPACE);
 
-            if (Pipeline.isHDRP)
-            {
-                Importer.USE_DIGITAL_HUMAN_SHADER = GUILayout.Toggle(Importer.USE_DIGITAL_HUMAN_SHADER,
-                    new GUIContent("Use Dual Specular Shaders", "Use Dual Specular shaders where possible. Dual specular shaders use the stack lit master node which is forward only. "+
-                    "The dual specular shader setups are based principles used in the Heretic digital human shaders."));
-                GUILayout.Space(ROW_SPACE);
-            }
-            else
+            /*
+            if (!Pipeline.isHDRP)
             {
                 Importer.USE_AMPLIFY_SHADER = GUILayout.Toggle(Importer.USE_AMPLIFY_SHADER,
                     new GUIContent("Use Amplify Shaders", "Use the more advanced Amplify shaders where possible. " +
                     "Amplify shaders are capable of subsurface scattering effects, and anisotropic hair lighting in the URP and Build-in 3D pipelines."));
                 GUILayout.Space(ROW_SPACE);
-            }
+            }*/
+            
+            string[] options = new string[] { "Import Normals", "Calculate Normals" };
+            void UpdateBuildNormalsMode(object value) { Importer.BUILD_NORMALS_MODE = (int)value; }
+            DropDownBox(options, Importer.BUILD_NORMALS_MODE, UpdateBuildNormalsMode);
+            GUILayout.Space(ROW_SPACE);
+
+            Importer.BUILD_MODE = GUILayout.Toggle(Importer.BUILD_MODE,
+                new GUIContent("Automatically Build Animations", "Always build animations when building materials."));            
+            GUILayout.Space(ROW_SPACE);
 
             Importer.RECONSTRUCT_FLOW_NORMALS = GUILayout.Toggle(Importer.RECONSTRUCT_FLOW_NORMALS,
                 new GUIContent("Reconstruct Flow Map Normals", "Rebuild missing Normal maps from Flow Maps in hair materials. " +
@@ -1134,6 +1354,11 @@ namespace Reallusion.Import
 
             Importer.REBAKE_BLENDER_UNITY_MAPS = GUILayout.Toggle(Importer.REBAKE_BLENDER_UNITY_MAPS,
                 new GUIContent("Rebake Blender Unity Maps", "Always re-bake the blender to unity Diffuse+Alpha, HDRP Mask and Metallic+Gloss maps. " +
+                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
+            GUILayout.Space(ROW_SPACE);
+
+            Importer.REBAKE_PACKED_TEXTURE_MAPS = GUILayout.Toggle(Importer.REBAKE_PACKED_TEXTURE_MAPS,
+                new GUIContent("Rebake Packed Texture Maps", "Always re-bake the packed texture maps. " +
                 "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
             GUILayout.Space(ROW_SPACE);
 
@@ -1150,7 +1375,7 @@ namespace Reallusion.Import
             GUILayout.Space(ROW_SPACE);
 
             Importer.USE_SELF_COLLISION = GUILayout.Toggle(Importer.USE_SELF_COLLISION,
-                    new GUIContent("Use self collision", "Use the self collision distances from the Character Creator export."));
+                    new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export."));
             GUILayout.Space(ROW_SPACE);
 
             GUILayout.Space(10f);
@@ -1162,6 +1387,12 @@ namespace Reallusion.Import
             GUILayout.Label(Importer.MIPMAP_BIAS.ToString("0.00"),
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
+            GUILayout.Label("Hair Mip-map Bias");
+            GUILayout.BeginHorizontal();
+            Importer.MIPMAP_BIAS_HAIR = GUILayout.HorizontalSlider(Importer.MIPMAP_BIAS_HAIR, -1f, 1f, GUILayout.Width(160f));
+            GUILayout.Label(Importer.MIPMAP_BIAS_HAIR.ToString("0.00"),
+                            GUILayout.Width(40f));
+            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             GUILayout.Space(ROW_SPACE);
 
@@ -1171,7 +1402,7 @@ namespace Reallusion.Import
             GUILayout.Space(ROW_SPACE);
             GUILayout.BeginHorizontal();
             Physics.PHYSICS_SHRINK_COLLIDER_RADIUS = GUILayout.HorizontalSlider(Physics.PHYSICS_SHRINK_COLLIDER_RADIUS, -2, 2f, GUILayout.Width(160f));
-            GUILayout.Label(Physics.PHYSICS_SHRINK_COLLIDER_RADIUS.ToString("0.00"), 
+            GUILayout.Label(Physics.PHYSICS_SHRINK_COLLIDER_RADIUS.ToString("0.00"),
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -1252,21 +1483,9 @@ namespace Reallusion.Import
             */
 
             GUILayout.Space(10f);
-            string label = "Log Everything";
-            if (Util.LOG_LEVEL == 0) label = "Log Errors Only";
-            if (Util.LOG_LEVEL == 1) label = "Log Warnings and Errors";
-            if (Util.LOG_LEVEL == 2) label = "Log Messages";
-            if (EditorGUILayout.DropdownButton(
-                content: new GUIContent(label),
-                focusType: FocusType.Passive))
-            {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Log Errors Only"), Util.LOG_LEVEL == 0, LogOptionSelected, 0);
-                menu.AddItem(new GUIContent("Log Warnings and Errors"), Util.LOG_LEVEL == 1, LogOptionSelected, 1);
-                menu.AddItem(new GUIContent("Log Messages"), Util.LOG_LEVEL == 2, LogOptionSelected, 2);
-                menu.AddItem(new GUIContent("Log Everything"), Util.LOG_LEVEL == 3, LogOptionSelected, 3);
-                menu.ShowAsContext();
-            }
+            options = new string[] { "Log Errors Only", "Log Warnings and Errors", "Log Messages", "Log Everything" };
+            void UpdateLogLevel(object value) { Util.LOG_LEVEL = (int)value; }
+            DropDownBox(options, Util.LOG_LEVEL, UpdateLogLevel);            
             GUILayout.Space(ROW_SPACE);
 
             GUILayout.Space(10f);
@@ -1294,10 +1513,10 @@ namespace Reallusion.Import
         private void LogOptionSelected(object sel)
         {
             Util.LOG_LEVEL = (int)sel;
-        }
+        }        
 
         private void EyeOptionSelected(object sel)
-        {            
+        {
             contextCharacter.QualEyes = (CharacterInfo.EyeQuality)sel;
         }
 
@@ -1309,6 +1528,16 @@ namespace Reallusion.Import
         private void HairOptionSelected(object sel)
         {
             contextCharacter.QualHair = (CharacterInfo.HairQuality)sel;
+        }
+
+        private void TexSizeOptionSelect(object sel)
+        {
+            contextCharacter.QualTexSize = (CharacterInfo.TexSizeQuality)sel;
+        }
+
+        private void TexCompressOptionSelect(object sel)
+        {
+            contextCharacter.QualTexCompress = (CharacterInfo.TexCompressionQuality)sel;
         }
 
         private void MaterialOptionSelected(object sel)
@@ -1345,7 +1574,7 @@ namespace Reallusion.Import
                 }
 
                 window.characterTreeView.DisableMultiPass();
-            }                       
+            }
         }
 
 
@@ -1356,20 +1585,20 @@ namespace Reallusion.Import
             info.Write();
             return prefab;
         }
-        
+
         private static void ClearAllData()
         {
             if (contextCharacter != null) contextCharacter.Release();
             contextCharacter = null;
-            
-            if (validCharacters != null)
+
+            if (CharacterList != null)
             {
-                foreach (CharacterInfo ci in validCharacters)
+                foreach (CharacterInfo ci in CharacterList)
                 {
                     ci.Release();
                 }
-                validCharacters.Clear();
-                validCharacters = null;
+                CharacterList.Clear();
+                CharacterList = null;
             }
 
             if (Current && Current.characterTreeView != null)
@@ -1378,22 +1607,22 @@ namespace Reallusion.Import
                 window.characterTreeView.Release();
             }
 
-            Current = null;            
+            Current = null;
         }
-
+        
         private void OnDestroy()
-        {            
-            ClearAllData();            
-        }           
+        {
+            ClearAllData();
+        }
 
         public void CheckDragAndDrop()
         {
             switch (Event.current.type)
-            {               
+            {
                 case EventType.DragUpdated:
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;                    
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                     break;
-                    
+
                 case EventType.DragPerform:
 
                     UnityEngine.Object[] refs = DragAndDrop.objectReferences;
@@ -1401,26 +1630,26 @@ namespace Reallusion.Import
                     {
                         UnityEngine.Object obj = DragAndDrop.objectReferences[0];
                         if (Util.IsCC3Character(obj))
-                            SetContextCharacter(obj);                        
+                            SetContextCharacter(obj);
                     }
-                    DragAndDrop.AcceptDrag();                    
-                    break;                    
+                    DragAndDrop.AcceptDrag();
+                    break;
             }
-        }        
+        }
 
         public bool UpdatePreviewCharacter(GameObject prefabAsset)
         {
             if (WindowManager.IsPreviewScene)
             {
                 WindowManager.GetPreviewScene().UpdatePreviewCharacter(prefabAsset);
-            }            
+            }
 
             return WindowManager.IsPreviewScene;
         }
 
         private void BuildCharacter()
         {
-            Util.LogInfo("Building materials:");            
+            Util.LogInfo("Building materials:");
 
             // refresh the character info for any Json changes
             contextCharacter.Refresh();
@@ -1430,7 +1659,7 @@ namespace Reallusion.Import
                 contextCharacter.BuildQuality = MaterialQuality.High;
 
             // import and build the materials from the Json data
-            GameObject prefabAsset = ImportCharacter(contextCharacter);            
+            GameObject prefabAsset = ImportCharacter(contextCharacter);
 
             // refresh the tree view with the new data
             CreateTreeView(true);
@@ -1444,12 +1673,12 @@ namespace Reallusion.Import
             {
                 if (UpdatePreviewCharacter(prefabAsset))
                 {
-                    if (WindowManager.showPlayer) 
+                    if (WindowManager.showPlayer)
                         WindowManager.ShowAnimationPlayer();
                 }
             }
 
-            Repaint();            
+            Repaint();
         }
 
         private void BakeCharacter()
@@ -1511,11 +1740,11 @@ namespace Reallusion.Import
             if (WindowManager.IsPreviewScene)
             {
                 WindowManager.GetPreviewScene().ShowBakedCharacter(bakedAsset);
-            }            
+            }
 
             return WindowManager.IsPreviewScene;
-        } 
-        
+        }
+
         void RebuildCharacterPhysics()
         {
             WindowManager.HideAnimationPlayer(true);
@@ -1556,18 +1785,17 @@ namespace Reallusion.Import
                     AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionPath, characterPrefab, true);
                 }
             }
-            int animationRetargeted = contextCharacter.DualMaterialHair ? 2 : 1;
-            contextCharacter.animationRetargeted = animationRetargeted;
+            contextCharacter.UpdateAnimationRetargeting();
             contextCharacter.Write();
         }
 
         public static void ResetAllSceneViewCamera(GameObject targetOverride = null)
         {
-            if (WindowManager.IsPreviewScene) 
+            if (WindowManager.IsPreviewScene)
             {
                 GameObject obj;
                 if (targetOverride) obj = targetOverride;
-                else obj = WindowManager.GetPreviewScene().GetPreviewCharacter();                
+                else obj = WindowManager.GetPreviewScene().GetPreviewCharacter();
 
                 if (obj)
                 {
@@ -1605,15 +1833,15 @@ namespace Reallusion.Import
         public static void ResetOptions()
         {
             Importer.MIPMAP_BIAS = 0f;
+            Importer.MIPMAP_BIAS_HAIR = -0.65f;
             Importer.RECONSTRUCT_FLOW_NORMALS = false;
             Importer.REBAKE_BLENDER_UNITY_MAPS = false;
+            Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
             Importer.ANIMPLAYER_ON_BY_DEFAULT = false;
-            Importer.USE_SELF_COLLISION = false;
-            Importer.USE_AMPLIFY_SHADER = true;
-            Importer.USE_DIGITAL_HUMAN_SHADER = false;
+            Importer.USE_SELF_COLLISION = false;            
             Physics.PHYSICS_SHRINK_COLLIDER_RADIUS = 0.5f;
             Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD = 0.25f;
-            
+
             Physics.CLOTHSIMPLEDISTANCE = Physics.CLOTHSHAPEDISTANCE_DEFAULT;
             Physics.CLOTHSHAPEDISTANCE = Physics.CLOTHSHAPEDISTANCE_DEFAULT;
             Physics.HAIRSIMPLEDISTANCE = Physics.HAIRSIMPLEDISTANCE_DEFAULT;
@@ -1640,7 +1868,7 @@ namespace Reallusion.Import
         }
 
         private void OnGUIFlexibleIconArea(Rect iconBlock)
-        {            
+        {
             if (ICON_AREA_WIDTH > ICON_WIDTH_DETAIL)
             {
                 OnGUIDetailIconArea(iconBlock); // detail view icon area layout
@@ -1648,29 +1876,47 @@ namespace Reallusion.Import
             else
             {
                 OnGUILargeIconArea(iconBlock); // adapted original icon area layaout
-            }            
-        }
+            }
 
+            Rect toggleRect = new Rect(iconBlock.x, iconBlock.yMax + 1f, iconBlock.width, 22f);
+            GUILayout.BeginArea(toggleRect);
+            GUILayout.BeginHorizontal();
+
+            GUILayout.FlexibleSpace();
+            EditorGUI.BeginChangeCheck();
+            showProps = GUILayout.Toggle(showProps, "Show Props");
+            if (EditorGUI.EndChangeCheck())
+            {
+                generalSettings.showProps = showProps;
+                RefreshCharacterList();                
+                SaveSettings();
+            }
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+        
         // adapted original icon area layaout
-        private void OnGUILargeIconArea(Rect iconBlock)
+        private void OnGUIOriginalIconArea(Rect iconBlock)
         {
             GUILayout.BeginArea(iconBlock);
-
+            
             Event e = Event.current;
             if (e.isMouse && e.type == EventType.MouseDown)
             {
                 if (e.clickCount == 2) doubleClick = true;
                 else doubleClick = false;
             }
-
+            
             using (var iconScrollViewScope = new EditorGUILayout.ScrollViewScope(iconScrollView, GUILayout.Width(iconBlock.width - 1f), GUILayout.Height(iconBlock.height - 10f)))
             {
                 iconScrollView = iconScrollViewScope.scrollPosition;
                 GUILayout.BeginVertical();
 
-                for (int idx = 0; idx < validCharacters.Count; idx++)
+                for (int idx = 0; idx < CharacterList.Count; idx++)
                 {
-                    CharacterInfo info = validCharacters[idx];                    
+                    CharacterInfo info = CharacterList[idx];
                     Texture2D iconTexture = iconUnprocessed;
                     string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
                     if (info.bakeIsBaked)
@@ -1694,6 +1940,11 @@ namespace Reallusion.Import
                     GUILayout.FlexibleSpace();
 
                     GUILayout.BeginVertical();
+
+                    GUILayout.Box(iconTexture, GUI.skin.button,
+                    GUILayout.Width(ICON_SIZE),
+                    GUILayout.Height(ICON_SIZE));
+                    
                     if (GUILayout.Button(iconTexture,
                         GUILayout.Width(ICON_SIZE),
                         GUILayout.Height(ICON_SIZE)))
@@ -1703,7 +1954,7 @@ namespace Reallusion.Import
                         {
                             previewCharacterAfterGUI = true;
                         }
-                    }
+                    }                    
 
                     GUI.backgroundColor = background;
 
@@ -1721,6 +1972,123 @@ namespace Reallusion.Import
             GUILayout.EndArea();
         }
 
+        private void OnGUILargeIconArea(Rect iconBlock)
+        {
+            GUILayout.Space(TOP_PADDING);
+
+            float rowHeight = ICON_SIZE + 24;
+
+            Rect boxRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 4f, rowHeight);
+            Rect posRect = new Rect(iconBlock);
+            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * CharacterList.Count);
+
+            iconScrollView = GUI.BeginScrollView(posRect, iconScrollView, viewRect, false, false);
+
+            for (int idx = 0; idx < CharacterList.Count; idx++)
+            {
+                CharacterInfo info = CharacterList[idx];
+                string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
+
+                Texture2D iconTexture = GetLargeIconTexture(info);
+
+                Color background = GUI.backgroundColor;
+                Color tint = background;
+                if (contextCharacter == info)
+                    tint = Color.green;
+                GUI.backgroundColor = Color.Lerp(background, tint, 0.25f);
+
+                boxRect.y = idx * rowHeight;
+
+                GUILayout.BeginArea(boxRect);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+
+                GUILayout.BeginVertical();
+
+                GUILayout.Box(iconTexture, GUI.skin.button,
+                GUILayout.Width(ICON_SIZE),
+                GUILayout.Height(ICON_SIZE));
+
+                GUI.backgroundColor = background;
+
+                GUILayout.Space(2f);
+
+                GUILayout.Box(name, importerStyles.iconStyle, GUILayout.Width(ICON_SIZE));
+                GUILayout.Space(2f);
+                GUILayout.EndVertical();
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.EndArea();
+
+                if (HandleListClick(boxRect))
+                {
+                    //RepaintOnUpdate();
+                    SetContextCharacter(info.guid);
+                    if (fakeButtonDoubleClick)
+                    {
+                        previewCharacterAfterGUI = true;
+                    }
+                }
+
+                HandleDrag(boxRect, info);
+            }
+            GUI.EndScrollView();
+        }
+
+        private Texture2D GetLargeIconTexture(CharacterInfo info)
+        {
+            Texture2D iconTexture = info.IsBlenderProject ? iconBlenderUnprocessed : iconUnprocessed;
+
+            if (info.exportType == CharacterInfo.ExportType.PROP)
+            {
+                if (info.IsBlenderProject)
+                    iconTexture = iconBlenderProp;
+                else
+                    iconTexture = info.isLinked ? iconLinkedProp : iconProp;
+            }
+            else
+            {
+                if (info.bakeIsBaked)
+                {
+                    if (info.BuiltBasicMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderMixed;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedMixed : iconMixed;
+                    }
+                    else if (info.BuiltHQMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderBaked;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedBaked : iconBaked;
+                    }
+                }
+                else
+                {
+                    if (info.BuiltBasicMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderBasic;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedBasic : iconBasic;
+                    }
+                    else if (info.BuiltHQMaterials)
+                    {
+                        if (info.IsBlenderProject)
+                            iconTexture = iconBlenderHQ;
+                        else
+                            iconTexture = info.isLinked ? iconLinkedHQ : iconHQ;
+                    }
+                }
+            }
+            return iconTexture;
+        }
+
         // detail view icon area layout
         private void OnGUIDetailIconArea(Rect iconBlock)
         {
@@ -1732,30 +2100,38 @@ namespace Reallusion.Import
 
             Rect boxRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 4f, rowHeight);
             Rect posRect = new Rect(iconBlock);
-            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * validCharacters.Count);
+            Rect viewRect = new Rect(0f, 0f, ICON_AREA_WIDTH - 14f, rowHeight * CharacterList.Count);
 
             iconScrollView = GUI.BeginScrollView(posRect, iconScrollView, viewRect, false, false);
-            for (int idx = 0; idx < validCharacters.Count; idx++)
+            for (int idx = 0; idx < CharacterList.Count; idx++)
             {
-                CharacterInfo info = validCharacters[idx];
+                CharacterInfo info = CharacterList[idx];
+                
                 Texture2D iconTexture = iconUnprocessed;
                 string name = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(info.guid));
-                if (info.bakeIsBaked)
+                if (info.exportType == CharacterInfo.ExportType.PROP)
                 {
-                    if (info.BuiltBasicMaterials) iconTexture = iconMixed;
-                    else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                    iconTexture = iconProp;
                 }
                 else
                 {
-                    if (info.BuiltBasicMaterials) iconTexture = iconBasic;
-                    else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                    if (info.bakeIsBaked)
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconMixed;
+                        else if (info.BuiltHQMaterials) iconTexture = iconBaked;
+                    }
+                    else
+                    {
+                        if (info.BuiltBasicMaterials) iconTexture = iconBasic;
+                        else if (info.BuiltHQMaterials) iconTexture = iconHQ;
+                    }
                 }
-                
+
                 float heightDelta = ICON_SIZE_SMALL + 2 * ICON_DETAIL_MARGIN;
                 boxRect.y = idx * heightDelta;
 
                 GUILayout.BeginArea(boxRect);
-                                
+
                 GUILayout.BeginVertical(contextCharacter == info ? importerStyles.fakeButtonContext : importerStyles.fakeButton);
                 GUILayout.FlexibleSpace();
 
@@ -1771,8 +2147,16 @@ namespace Reallusion.Import
                 GUILayout.EndVertical(); // vertical container for image
 
                 GUILayout.BeginVertical(); // vertical container for label
-                GUILayout.FlexibleSpace();                
-                GUILayout.Label(name, importerStyles.nameTextStyle);
+                GUILayout.FlexibleSpace();
+
+                GUIStyle nameTextStyle = GUIStyle.none;
+
+                if (info.IsBlenderProject)
+                    nameTextStyle = importerStyles.nameTextBlenderStyle;
+                else
+                    nameTextStyle = info.isLinked ? importerStyles.nameTextLinkedStyle : importerStyles.nameTextStyle;
+
+                GUILayout.Label(name, nameTextStyle);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndVertical(); // vertical container for label
 
@@ -1787,13 +2171,15 @@ namespace Reallusion.Import
 
                 if (HandleListClick(boxRect))
                 {
-                    RepaintOnUpdate();
+                    //RepaintOnUpdate();
                     SetContextCharacter(info.guid);
                     if (fakeButtonDoubleClick)
                     {
                         previewCharacterAfterGUI = true;
                     }
-                }                
+                }
+                                
+                HandleDrag(boxRect, info);
             }
             GUI.EndScrollView();
         }
@@ -1804,7 +2190,7 @@ namespace Reallusion.Import
             if (container.Contains(mouseEvent.mousePosition) || dragging)
             {
                 if (mouseEvent.type == EventType.MouseDrag)
-                {                    
+                {
                     dragging = true;
                     ICON_AREA_WIDTH += mouseEvent.delta.x;
                     if (ICON_AREA_WIDTH < ICON_WIDTH_MIN)
@@ -1818,18 +2204,18 @@ namespace Reallusion.Import
                 }
 
                 if (mouseEvent.type == EventType.MouseUp)
-                {                    
+                {
                     dragging = false;
 
                     RepaintOnUpdate();
                 }
             }
-        }        
+        }
 
         private bool fakeButtonDoubleClick = false;
 
         private bool HandleListClick(Rect container)
-        {            
+        {
             Event mouseEvent = Event.current;
             if (container.Contains(mouseEvent.mousePosition))
             {
@@ -1841,8 +2227,9 @@ namespace Reallusion.Import
                     }
                     else
                         fakeButtonDoubleClick = false;
+                    //mouseEvent.Use();
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -1856,7 +2243,7 @@ namespace Reallusion.Import
                 EditorApplication.update += RepaintOnceOnUpdate;
             }
         }
-        
+
         void RepaintOnceOnUpdate()
         {
             Repaint();
@@ -1878,8 +2265,6 @@ namespace Reallusion.Import
             return texture;
         }
 
-
-
         public class Styles
         {
             public GUIStyle logStyle;
@@ -1887,9 +2272,13 @@ namespace Reallusion.Import
             public GUIStyle buttonStyle;
             public GUIStyle labelStyle;
             public GUIStyle boldStyle;
+            public GUIStyle linkStyle;
+            public GUIStyle blenderStyle;
             public GUIStyle iconStyle;
             public GUIStyle dragBarStyle;
             public GUIStyle nameTextStyle;
+            public GUIStyle nameTextLinkedStyle;
+            public GUIStyle nameTextBlenderStyle;
             public GUIStyle fakeButton;
             public GUIStyle fakeButtonContext;
             public Texture2D dragTex, contextTex;
@@ -1918,6 +2307,18 @@ namespace Reallusion.Import
                 boldStyle.fontStyle = FontStyle.Bold;
                 boldStyle.normal.textColor = Color.white;
 
+                linkStyle = new GUIStyle();
+                linkStyle.alignment = TextAnchor.UpperLeft;
+                linkStyle.wordWrap = false;
+                linkStyle.fontStyle = FontStyle.Bold;
+                linkStyle.normal.textColor = new Color(0.82f, 1.0f, 0.48f);
+
+                blenderStyle = new GUIStyle();
+                blenderStyle.alignment = TextAnchor.UpperLeft;
+                blenderStyle.wordWrap = false;
+                blenderStyle.fontStyle = FontStyle.Bold;
+                blenderStyle.normal.textColor = new Color(0.91f, 0.46f, 0f);
+
                 labelStyle = new GUIStyle();
                 labelStyle.alignment = TextAnchor.UpperLeft;
                 labelStyle.wordWrap = false;
@@ -1931,7 +2332,7 @@ namespace Reallusion.Import
                 buttonStyle.alignment = TextAnchor.MiddleCenter;
 
                 //color textures for the area styling
-                               
+
 
                 dragBarStyle = new GUIStyle();
                 dragBarStyle.normal.background = dragTex;
@@ -1943,6 +2344,18 @@ namespace Reallusion.Import
                 nameTextStyle.wordWrap = false;
                 nameTextStyle.fontStyle = FontStyle.Normal;
                 nameTextStyle.normal.textColor = Color.white;
+
+                nameTextLinkedStyle = new GUIStyle();
+                nameTextLinkedStyle.alignment = TextAnchor.MiddleLeft;
+                nameTextLinkedStyle.wordWrap = false;
+                nameTextLinkedStyle.fontStyle = FontStyle.Normal;
+                nameTextLinkedStyle.normal.textColor = new Color(0.82f, 1.0f, 0.48f);
+
+                nameTextBlenderStyle = new GUIStyle();
+                nameTextBlenderStyle.alignment = TextAnchor.MiddleLeft;
+                nameTextBlenderStyle.wordWrap = false;
+                nameTextBlenderStyle.fontStyle = FontStyle.Normal;
+                nameTextBlenderStyle.normal.textColor = new Color(0.91f, 0.46f, 0f);
 
                 fakeButton = new GUIStyle();
                 //fakeButton.normal.background = nonContextTex;
@@ -1963,12 +2376,12 @@ namespace Reallusion.Import
             public void FixMeh()
             {
                 if (!dragTex)
-                {                    
-                    dragTex = TextureColor(new Color(0f,0f,0f,0.25f));
-                    dragBarStyle.normal.background = dragTex;                    
+                {
+                    dragTex = TextureColor(new Color(0f, 0f, 0f, 0.25f));
+                    dragBarStyle.normal.background = dragTex;
                 }
                 if (!contextTex)
-                {                    
+                {
                     contextTex = TextureColor(new Color(0.259f, 0.345f, 0.259f));
                     fakeButtonContext.normal.background = contextTex;
                 }
@@ -1983,5 +2396,266 @@ namespace Reallusion.Import
             magicaCloth2Available = Physics.MagicaCloth2IsAvailable();
         }
 
+
+        public TabStyles tabStyles;
+        public TabContents tabCont;
+
+        public class TabStyles
+        {
+            public Vector4 activeBorder;
+            public Vector4 inactiveBorder;
+            public Vector4 ghostBorder;
+            public Vector4 contentBorder;
+
+            public Color outline;
+            public Color ghost;
+
+            public Texture2D activeTex;
+            public Texture2D inactiveTex;
+
+            public GUIStyle iconStyle;
+
+            public TabStyles()
+            {
+                outline = Color.black;
+                ghost = Color.gray * 0.4f;
+
+                activeBorder = new Vector4(1, 1, 1, 0);
+                inactiveBorder = new Vector4(0, 0, 0, 1);
+                ghostBorder = new Vector4(1, 1, 1, 0);
+                contentBorder = new Vector4(1, 0, 1, 1);
+
+                activeTex = TexCol(Color.gray * 0.55f);
+                inactiveTex = TexCol(Color.gray * 0.35f);
+                
+                iconStyle = new GUIStyle();
+
+                FixMeh();
+            }
+
+            private Texture2D TexCol(Color color)
+            {
+                const int size = 32;
+                Texture2D texture = new Texture2D(size, size);
+                Color[] pixels = texture.GetPixels();
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    pixels[i] = color;
+                }
+                texture.SetPixels(pixels);
+                texture.Apply(true);
+                return texture;
+            }
+
+            public void FixMeh()
+            {
+                if (!activeTex)
+                {
+                    activeTex = TexCol(Color.gray * 0.55f);
+                }
+                if (!inactiveTex)
+                {
+                    inactiveTex = TexCol(Color.gray * 0.35f);
+                }
+            }
+        }
+
+        public class TabContents
+        {
+            private Texture2D iconAvatarTab;
+            private Texture2D iconPropTab;
+            private Texture2D iconLinkTab;
+            private Texture2D iconLinkConnected;
+            private Texture2D iconLinkDisconnected;
+            private Texture2D iconSettingsTab;
+
+            public int tabCount;
+            public string[] toolTips;
+            public Texture[] icons;
+            public int overrideTab;
+            public Texture[] overrideIcons;
+            
+            public TabContents()
+            {
+                string[] folders = new string[] { "Assets", "Packages" };
+                
+                iconAvatarTab = Util.FindTexture(folders, "RLIcon-Avatar_G");
+                iconPropTab = Util.FindTexture(folders, "RLIcon-Prop_G");
+                iconLinkTab = Util.FindTexture(folders, "RLIcon-Link_G");
+                iconLinkConnected = Util.FindTexture(folders, "RLIcon-Link_CON_G");
+                iconLinkDisconnected = Util.FindTexture(folders, "RLIcon-Link_DIS_G");
+                iconSettingsTab = Util.FindTexture(folders, "RLIcon_Camera");
+
+                tabCount = 2; // was 4
+                toolTips = new string[] { "Characters", "Props", "Live Link to Character Creator or iClone", "Settings" };
+                icons = new Texture[]
+                {
+                    iconAvatarTab,
+                    //iconPropTab,
+                    iconLinkTab,
+                    //iconSettingsTab
+                };
+                overrideTab = 1; // was 2
+                overrideIcons = new Texture[]
+                {
+                    iconLinkConnected,
+                    iconLinkDisconnected
+                };
+            }
+        }
+        // can override a single tab with icons based on a bool
+        public int TabbedArea(int TabId, Rect area, int tabCount, float tabHeight, string[] toolTips, Texture[] icons, float iconWidth, float iconHeight, bool fullWindow, int overrideTab = -1, Texture[] overrideIcons = null, bool overrideBool = false, Func<Rect, int, bool> RectHandler = null)
+        {
+            if (tabStyles == null) tabStyles = new TabStyles();
+            Rect areaRect;
+            if (!fullWindow)
+            {
+                // round width down to an integer multiple of tabCount
+                float width = (float)Math.Round(area.width / tabCount, MidpointRounding.AwayFromZero) * tabCount;
+
+                areaRect = new Rect(area.x, area.y, width, area.height);
+            }
+            else
+            {
+                areaRect = area;
+            }
+
+            Rect[] tabRects = new Rect[tabCount];
+            float tabWidth = (float)Math.Round (areaRect.width / tabCount, mode: MidpointRounding.AwayFromZero);
+            for (int i = 0; i < tabCount; i++)
+            {
+                tabRects[i] = new Rect(tabWidth * i, 0f, tabWidth, tabHeight);
+                if (RectHandler != null) RectHandler(tabRects[i], i); // callback to handle interaction with the tab rect, used for drag and drop
+            }
+
+            int TAB_ID = TabId;
+            GUILayout.BeginArea(areaRect, GUI.skin.box);
+            for (int i = 0; i < tabCount; i++)
+            {
+                Rect rect = tabRects[i];
+                Rect centre = new Rect(rect.x + ((rect.width / 2) - (iconWidth / 2)), rect.y + ((rect.height / 2) - (iconHeight / 2)), iconWidth, iconHeight);
+
+                Texture icon = i == overrideTab ? (overrideBool ? overrideIcons[0] : overrideIcons[1]) : icons[i];
+                // if we arent overriding the icons on a single tab, then the default is icon = icons[i]
+                if (i == TAB_ID)
+                {
+                    GUI.DrawTexture(rect, tabStyles.activeTex);
+                    GUI.DrawTexture(rect, tabStyles.activeTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.activeBorder, Vector4.zero);
+                    GUI.Box(centre, new GUIContent(icon, toolTips[i]), tabStyles.iconStyle);
+                }
+                else
+                {
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex);
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.inactiveBorder, Vector4.zero);
+                    GUI.DrawTexture(rect, tabStyles.inactiveTex, ScaleMode.StretchToFill, false, 1f, tabStyles.ghost, tabStyles.ghostBorder, Vector4.zero);
+                    GUI.Box(centre, new GUIContent(icon, toolTips[i]), tabStyles.iconStyle);
+                }
+
+                Event mouseEvent = Event.current;
+                if (rect.Contains(mouseEvent.mousePosition))
+                {
+                    if (mouseEvent.type == EventType.MouseDown && mouseEvent.clickCount == 1)
+                    {
+                        TAB_ID = i;
+                        Repaint();
+                    }
+                }
+            }
+            Rect contentRect = new Rect(0, tabHeight, areaRect.width, areaRect.height - tabHeight);
+            GUI.DrawTexture(contentRect, tabStyles.activeTex);
+            if (!fullWindow)
+                GUI.DrawTexture(contentRect, tabStyles.activeTex, ScaleMode.StretchToFill, false, 1f, tabStyles.outline, tabStyles.contentBorder, Vector4.zero);
+
+            GUILayout.EndArea();
+            return TAB_ID;
+        }
+
+        public bool RectHandler(Rect rect, int TabId)
+        {
+            Event e = Event.current;
+            if (rect.Contains(e.mousePosition))
+            {
+                switch (e.type)
+                {
+                    case EventType.DragUpdated:
+
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+                        break;
+
+                    case EventType.DragPerform:
+
+                        UnityEngine.Object[] refs = DragAndDrop.objectReferences;
+                        if (DragAndDrop.objectReferences.Length > 0)
+                        {
+                            Debug.Log("Tab Id: " + TabId);
+                            //CharacterInfo obj = (CharacterInfo)DragAndDrop.GetGenericData("DragTypeExampleString");
+                            //Debug.Log("Tab Id: " + TabId +  " Character Name: " + obj.CharacterName);
+                            //Debug.Log(refs[0].name);
+                        }
+                        DragAndDrop.AcceptDrag();
+                        break;
+                }
+            }
+            return false;
+        }
+
+        public void HandleDrag(Rect rect, CharacterInfo data)
+        {
+            Event e = Event.current;
+            if (rect.Contains(e.mousePosition) && !dragging)
+            {
+                EditorGUIUtility.AddCursorRect(rect, MouseCursor.MoveArrow);
+            }
+            
+            if (e.isMouse)
+            {
+                if (rect.Contains(e.mousePosition) && e.type == EventType.MouseDrag && !dragging)
+                {
+                    GameObject obj = data.GetDraggablePrefab();
+                    GUIUtility.hotControl = 0;
+                    StartDrag(obj, data);
+                    e.Use();
+                }
+            }
+        }
+
+        public const string DRAG_TYPE = "DragTypeExampleString";
+        public const string DRAG_TITLE = "DragTitleString";
+
+        public void StartDrag(GameObject obj, CharacterInfo data)
+        {
+            DragAndDrop.PrepareStartDrag();
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+
+            DragAndDrop.SetGenericData(DRAG_TYPE, data);
+            DragAndDrop.paths = null;
+            DragAndDrop.objectReferences = new UnityEngine.Object[] { obj };
+
+            DragAndDrop.StartDrag(DRAG_TITLE);
+        }
+
+        public void MonitorConnection()
+        {
+            UnityLinkManager.ClientConnected -= ConnectedToserver;
+            UnityLinkManager.ClientConnected += ConnectedToserver;
+            UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            UnityLinkManager.ClientDisconnected += DisconnectedFromServer;
+        }
+
+        public bool datalinkActive = false;
+
+        public void ConnectedToserver(object Sender, EventArgs e)
+        {
+            datalinkActive = true;
+            //UnityLinkManager.ClientConnected -= ConnectedToserver;
+            //Repaint();
+        }
+
+        public void DisconnectedFromServer(object Sender, EventArgs e)
+        {
+            datalinkActive = false;
+            //UnityLinkManager.ClientDisconnected -= DisconnectedFromServer;
+            //Repaint();
+        }
     }
 }

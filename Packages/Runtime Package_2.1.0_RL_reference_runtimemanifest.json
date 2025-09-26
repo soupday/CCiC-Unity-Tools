@@ -1,0 +1,56 @@
+{
+  "FileName": "Runtime Package",
+  "Pipeline": 0,
+  "Version": "2.1.0",
+  "SourcePackageName": "Runtime Package_2.1.0_RL_runtimepackage.unitypackage",
+  "VersionEdit": false,
+  "ManifestPath": "",
+  "Validated": false,
+  "Visible": false,
+  "referenceMainfestPath": "",
+  "referenceShaderPackagePath": "",
+  "Items": [
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Editor/CameraProxyEditor.cs",
+      "GUID": "d63a16df56d17df4c8fa6d7b682aa1ad",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Editor/LightProxyEditor.cs",
+      "GUID": "e0ca5a049f48ab146b12b1dc589abbce",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Editor/WrinkleManagerEditor.cs",
+      "GUID": "1b2dc8e6f1367e04185f3fa2816e426a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/CameraProxy.cs",
+      "GUID": "9fc1aeddd4271294195bbcb4920be178",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/com.soupday.cc3_unity_tools.runtime.asmdef",
+      "GUID": "bfae2271ff854174bbbebc3e94236317",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/LightProxy.cs",
+      "GUID": "5e4f75c9d8477914dbe829347659f892",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/WrinkleManager.cs",
+      "GUID": "6b5cb24c253b98b4e9afc39d87056d5c",
+      "InstalledGUID": "",
+      "Validated": false
+    }
+  ]
+}

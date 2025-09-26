@@ -1,5 +1,6 @@
 {
     "name": "soupday.cc3_unity_tools.editor",
+    "rootNamespace": "",
     "references": [
         "GUID:3eae0364be2026648bf74846acb8a731",
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",
@@ -15,7 +16,9 @@
         "GUID:a35efad8797223d499f8c68b1f545dbc",
         "GUID:d60799ab2a985554ea1a39cd38695018",
         "GUID:f68ff95cd5433b640840728c8ffe0f9d",
-        "GUID:3932ccc3044a255448b1c8bfffe8d0c1"
+        "GUID:3932ccc3044a255448b1c8bfffe8d0c1",
+        "GUID:f06555f75b070af458a003d92f9efb00",
+        "GUID:02f771204943f4a40949438e873e3eff"
     ],
     "includePlatforms": [
         "Editor"
@@ -91,13 +94,18 @@
         },
         {
             "name": "Unity",
+            "expression": "2020.3.0",
+            "define": "UNITY_2020_3_OR_NEWER"
+        },
+        {
+            "name": "Unity",
             "expression": "2021.2.0",
             "define": "UNITY_2021_2_OR_NEWER"
         },
         {
             "name": "Unity",
-            "expression": "2020.3.0",
-            "define": "UNITY_2020_3_OR_NEWER"
+            "expression": "2022.2.0",
+            "define": "UNITY_2022_2_OR_NEWER"
         },
         {
             "name": "Unity",
@@ -113,6 +121,16 @@
             "name": "com.unity.collab-proxy",
             "expression": "1.14.12",
             "define": "PLASTIC_NEWTONSOFT_AVAILABLE"
+        },
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "17.0.0",
+            "define": "HDRP_17_0_0_OR_NEWER"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "17.0.0",
+            "define": "URP_17_0_0_OR_NEWER"
         }
     ],
     "noEngineReferences": false

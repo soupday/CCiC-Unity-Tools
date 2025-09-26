@@ -99,7 +99,7 @@ namespace Reallusion.Import
             if (contextChar != null)
             {
                 contextCharacter = contextChar;
-                originalCharacter = ImporterWindow.ValidCharacters.Where(x => x.guid == contextChar.guid).FirstOrDefault();
+                originalCharacter = ImporterWindow.CharacterList.Where(x => x.guid == contextChar.guid).FirstOrDefault();
                 massProcessingValidate = true;
             }
             else
@@ -151,14 +151,41 @@ namespace Reallusion.Import
             // much more flexible than EditorGUILayout.EnumFlagsField
 
             DrawLabelLine(line++, "Material Shader Features:");
-            
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
+
+            if (Pipeline.isHDRP12 || Pipeline.is3D)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
+                    flagChanged = true;
+            }
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
                 flagChanged = true;
 
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "", SECTION_INDENT))
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
                 flagChanged = true;
-            
-            DrawLabelLine(line++, "Character Physics:");
+
+            if (Pipeline.isHDRP)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.DualSpecularSkin, "Dual Specular Skin", SECTION_INDENT))
+                    flagChanged = true;
+            }
+            else if (Pipeline.isURP)
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.AmplifyShaders, "Amplify Shaders", SECTION_INDENT))
+                    flagChanged = true;
+                if (contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.AmplifyShaders))
+                {
+                    if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Tessellation, "", SECTION_INDENT))
+                        flagChanged = true;
+                }
+            }
+
+                /*
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
+                    flagChanged = true;
+                */
+
+                DrawLabelLine(line++, "Character Physics:");
 
             // Cloth Physics
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ClothPhysics, "Enable Cloth Physics", SECTION_INDENT))
@@ -240,6 +267,15 @@ namespace Reallusion.Import
             {
                 MassProcessingWindowValidate();
             }
+
+            DrawOutline(new Rect(0f, 0f, this.position.width, this.position.height), Color.gray);
+        }
+
+        private void DrawOutline(Rect container, Color color)
+        {
+            Vector4 border = new Vector4(1f, 1f, 1f, 1f);
+
+            GUI.DrawTexture(container, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, color, border, Vector4.zero);
         }
 
         private bool DrawFlagSelectionLine(int line, CharacterInfo.ShaderFeatureFlags flag, string overrideLabel = "", float indent = 0f, CharacterInfo.ShaderFeatureFlags [] radioGroup = null)

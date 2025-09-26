@@ -1,3 +1,21 @@
+/* 
+ * Copyright (C) 2025 Victor Soupday
+ * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
+ * 
+ * CC_Unity_Tools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * CC_Unity_Tools is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 using System;
 using System.IO;
 using System.Linq;
@@ -111,7 +129,7 @@ namespace Reallusion.Import
         #endregion SETUP
 
         #region GUI
-        private const string titleString = "Shader Package Updater";
+        private const string titleString = "CC/iC Importer - Shader Package Updater";
         public Styles guiStyles;
         private float VERT_INDENT = 2f;
         private float HORIZ_INDENT = 5f;
@@ -124,6 +142,7 @@ namespace Reallusion.Import
             public GUIStyle SectionHeader;
             public GUIStyle SubSectionTitle;
             public GUIStyle InactiveLabel;
+            public GUIStyle InactiveHighlighLabel;
             public GUIStyle ActiveLabel;
             public GUIStyle VersionLabel;
             public GUIStyle shCurrentLabel;
@@ -132,6 +151,7 @@ namespace Reallusion.Import
             public GUIStyle shMismatchLabel;
             public GUIStyle FoldoutTitleLabel;
             public GUIStyle FoldoutTitleErrorLabel;
+            public GUIStyle FoldoutTitleStopLabel;
             public GUIStyle WrappedInfoLabel;
             public GUIStyle WrappedInfoLabelColor;
 
@@ -160,6 +180,12 @@ namespace Reallusion.Import
                 SubSectionTitle.normal.textColor = Color.gray;
 
                 InactiveLabel = new GUIStyle(GUI.skin.label);
+                InactiveLabel.wordWrap = true;
+
+                InactiveHighlighLabel = new GUIStyle(GUI.skin.label);
+                InactiveHighlighLabel.wordWrap = true;
+                InactiveHighlighLabel.normal.textColor = colYellow;
+                InactiveHighlighLabel.hover.textColor = colYellow;
 
                 ActiveLabel = new GUIStyle(GUI.skin.label);
                 ActiveLabel.normal.textColor = activeColor;
@@ -182,12 +208,22 @@ namespace Reallusion.Import
 
                 FoldoutTitleLabel = new GUIStyle(EditorStyles.foldout);
                 FoldoutTitleLabel.fontSize = 14;
+                Color ftlcol = EditorStyles.foldout.normal.textColor;
                 FoldoutTitleLabel.fontStyle = FontStyle.BoldAndItalic;
+                //FoldoutTitleLabel.active.textColor = ftlc;
+                //FoldoutTitleLabel.onActive.textColor = ftlc;
+                FoldoutTitleLabel.focused.textColor = ftlcol;
+                FoldoutTitleLabel.onFocused.textColor = ftlcol;
 
                 FoldoutTitleErrorLabel = new GUIStyle(EditorStyles.foldout);
                 FoldoutTitleErrorLabel.onNormal.textColor = colYellow;
                 FoldoutTitleErrorLabel.fontSize = 14;
                 FoldoutTitleErrorLabel.fontStyle = FontStyle.BoldAndItalic;
+
+                FoldoutTitleStopLabel = new GUIStyle(EditorStyles.foldout);
+                FoldoutTitleStopLabel.onNormal.textColor = colRed;
+                FoldoutTitleStopLabel.fontSize = 14;
+                FoldoutTitleStopLabel.fontStyle = FontStyle.BoldAndItalic;
 
                 WrappedInfoLabel = new GUIStyle(GUI.skin.label);
                 WrappedInfoLabel.wordWrap = true;
@@ -239,15 +275,24 @@ namespace Reallusion.Import
         private Texture2D iconInstallShaderG;
         private Texture2D iconInstallShaderY;
         private Texture2D iconInstallShaderR;
+        private Texture2D iconInstallRuntimeG;
+        private Texture2D iconInstallRuntimeY;
+        private Texture2D iconInstallRuntimeR;
         private Texture2D iconUpgradePipelineY;
+        private Texture2D iconInstallLegacyW;
 
         public void InitGUI()
         {
             string[] folders = new string[] { "Assets", "Packages" };
-            iconInstallShaderG = Util.FindTexture(folders, "RLIcon_Install_Shader_G");
-            iconInstallShaderY = Util.FindTexture(folders, "RLIcon_Install_Shader_Y");
-            iconInstallShaderR = Util.FindTexture(folders, "RLIcon_Install_Shader_R");
-            iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");            
+            iconInstallShaderG = Util.FindTexture(folders, "RLIcon-ShaderStatus-G");
+            iconInstallShaderY = Util.FindTexture(folders, "RLIcon-ShaderStatus-Y");
+            iconInstallShaderR = Util.FindTexture(folders, "RLIcon-ShaderStatus-R");
+            iconInstallRuntimeG = Util.FindTexture(folders, "RLIcon-RuntimeStatus-G");
+            iconInstallRuntimeY = Util.FindTexture(folders, "RLIcon-RuntimeStatus-Y");
+            iconInstallRuntimeR = Util.FindTexture(folders, "RLIcon-RuntimeStatus-R");
+            iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");
+            iconInstallLegacyW = Util.FindTexture(folders, "RLIcon_Install_Shader_W");
+            
             initGUI = false;
         }
 
@@ -257,6 +302,13 @@ namespace Reallusion.Import
             //UpdateManager.TryPerformUpdateChecks();
         }
 
+        public bool softwareActionRequired = false;
+        bool currentSoftwareVersionFoldout = false;
+        public bool pipeLineActionRequired = false;
+        public bool shaderGraphActionRequired = false;
+        bool allInstPipeFoldout = false;
+        public bool instShaderFoldout = false;
+        public bool instRuntimeFoldout = false;
         Vector2 mainScrollPos;
 
         private void OnGUI()
@@ -290,10 +342,22 @@ namespace Reallusion.Import
 
             GUILayout.Space(SECTION_SPACER);
 
+            ShaderGraphGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
+            LegacyShaderGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
             InstalledShaderFoldoutGUI();
 
             GUILayout.Space(SECTION_SPACER);
-                        
+
+            InstalledRuntimeFoldoutGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
             ActionToFollowFoldoutGUI();
 
             GUILayout.FlexibleSpace();
@@ -354,9 +418,6 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        public bool softwareActionRequired = false;
-        bool currentSoftwareVersionFoldout = false;
-
         private void CurrentSoftwareVersionFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
@@ -413,11 +474,8 @@ namespace Reallusion.Import
         [SerializeField]
         DateTime gitHubPublishedDateTime;
         //bool linkClicked = false;
-
-
         //[SerializeField]
         public static List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
-
         Vector2 swVerPos;
 
         private void InitInfo()
@@ -522,8 +580,6 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        public bool pipeLineActionRequired = false;
-        bool allInstPipeFoldout = false;
         private void AllInstalledPipelinesFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
@@ -611,6 +667,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // current target build platform
         }
 
+
         private void CurrentBuildDetailsGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // current target build platform details
@@ -657,11 +714,258 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // current target build platform details
         }
 
-        bool instShaderFoldout = false;
+
+        bool shaderGraphFoldout = false;
+        private void ShaderGraphGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // current target build platform
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            bool error = shaderGraphActionRequired;
+            if (error)
+            {
+                shaderGraphFoldout = true;
+            }
+
+            string foldoutLabel = "Shader Graph Settings";
+            shaderGraphFoldout = EditorGUILayout.Foldout(shaderGraphFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see shortcuts to the project settings and preferences for Shader Graph - with more complex shaders it is important to have a Shader Variant limit of 2048.  This has to be done manually (it can be sticky to set - move focus away from the int field to update the value)."), true, error ? guiStyles.FoldoutTitleStopLabel : guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+            
+            if (shaderGraphFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                ShaderGraphSettingsGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical(); // current target build platform
+        }
+
+        private void ShaderGraphSettingsGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // current target build platform details
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.BeginVertical();
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Shader Variant Limit", guiStyles.ActiveLabel);
+
+            GUILayout.Label("should be at least", guiStyles.InactiveLabel);
+
+            GUILayout.Label("2048", guiStyles.ActiveLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+
+#if UNITY_6000_0_OR_NEWER
+            bool hasProjectSettings = true;
+#elif UNITY_2023_1_OR_NEWER
+            bool hasProjectSettings = false;
+#elif UNITY_2022_1_OR_NEWER
+            bool hasProjectSettings = true;
+#else
+            bool hasProjectSettings = false;
+#endif
+            string prefProjString = "You must manually set this value in 'Preferences'" + (hasProjectSettings ? " AND 'Project Settings'" : ".");
+
+            GUILayout.Label(prefProjString, guiStyles.InactiveLabel);
+
+            GUILayout.Label("After changing the value(s), use the 'Recompile Shaders' button below.");
+
+            //GUILayout.FlexibleSpace();
+
+            GUILayout.Space(VERT_INDENT);
+            
+            //EditorGUI.BeginDisabledGroup(UpdateManager.IsShaderVariantLimitTooLow());
+            if (GUILayout.Button(new GUIContent("Recompile Shaders", "After correcting the variant limit, use this button to force all the shaders to recompile - any characters built using a broken shader will need to be rebuilt."), GUILayout.Width(120f)))
+            {
+                ShaderPackageUtil.RecompileShaders();
+            }
+            //EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndVertical();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginVertical();
+
+            //GUILayout.FlexibleSpace();
+
+            GUILayout.Space(VERT_INDENT);
+
+            if (hasProjectSettings)
+            {
+                if (GUILayout.Button("Open Project Settings"))
+                {
+#if UNITY_6000_0_OR_NEWER
+                    string psPathString = "Project/Shader Graph";
+#else
+                    string psPathString = "Project/ShaderGraph";
+#endif
+                    SettingsService.OpenProjectSettings(psPathString);
+                }
+            }
+
+            GUILayout.Space(12f);
+
+            if (GUILayout.Button("Open Preferences"))
+            {
+                SettingsService.OpenUserPreferences("Preferences/Shader Graph");
+            }
+                        
+            //GUILayout.FlexibleSpace();
+
+            GUILayout.EndVertical();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical(); // current target build platform details
+        }
+
+        bool legacyShaderFoldout = false;
+        private void LegacyShaderGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box);
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            string foldoutLabel = "Legacy Shaders (Optional Extra)";
+            legacyShaderFoldout = EditorGUILayout.Foldout(legacyShaderFoldout, new GUIContent(foldoutLabel, "If characters have been built using older versions of this tool, then the shader packages here will enable their use."), true, guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (legacyShaderFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                LegacyShaderInstallGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+        }
+
+        private void LegacyShaderInstallGUI()
+        {
+            bool disabled = UpdateManager.currentLegacyPackageManifest == null;
+            EditorGUI.BeginDisabledGroup(disabled);
+            GUILayout.BeginVertical(GUI.skin.box);
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.Label("If characters have been built using older versions of this tool, then the shader packages here will enable their continued use.", guiStyles.InactiveLabel);
+
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            if (Pipeline.isURP)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUIStyle urpNoteStyle = disabled ? guiStyles.InactiveHighlighLabel : guiStyles.InactiveLabel;
+
+                GUILayout.Label("For the 'Universal Render Pipeline', the legacy shaders are ONLY compatible with URP version 17.1.0 and BELOW.", urpNoteStyle);
+
+                GUILayout.Space(HORIZ_INDENT);
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(VERT_INDENT);
+            }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.Label("Required Legacy Shader Version:  ", guiStyles.InactiveLabel);
+            GUILayout.Label(new GUIContent(UpdateManager.activeLegacyPipelineVersion.ToString(), "The current active render pipeline requires the legacy version " + UpdateManager.activeLegacyPipelineVersion.ToString() + ""), guiStyles.ActiveLabel);
+            GUILayout.FlexibleSpace();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT);
+            if (GUILayout.Button(iconInstallLegacyW, GUILayout.Width(50f), GUILayout.Height(50f)))
+            {
+                ShaderPackageUtil.GUIPerformLegacyShaderInstall();
+            }
+            GUILayout.BeginVertical();
+            GUILayout.Space(19f);
+            GUIStyle instNoteStyle = disabled ? guiStyles.InactiveHighlighLabel : guiStyles.InactiveLabel;
+            string installLabel = disabled ? "No legacy shader is available for this pipeline." : "Install Legacy Shader for this pipeline.";
+            GUILayout.Label(installLabel, instNoteStyle);
+            GUILayout.EndVertical();
+            GUILayout.Space(HORIZ_INDENT);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+            EditorGUI.EndDisabledGroup();
+        }
+
         private string GetShaderLabel()
         {
-            string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (" v" + UpdateManager.installedShaderVersion.ToString()) : "";
-            return UpdateManager.installedShaderPipelineVersion.ToString() + shaderVersion;
+            string shaderVersion = UpdateManager.installedShaderPipelineVersion != ShaderPackageUtil.PipelineVersion.None ? (UpdateManager.installedShaderPipelineVersion.ToString() + " v" + UpdateManager.installedShaderVersion.ToString()) : "Not installed";
+            return shaderVersion;
+        }
+
+        private string GetRuntimeLabel()
+        {
+            if (UpdateManager.installedRuntimeVersion == new Version(0, 0, 0))
+                return "Not installed";
+            else
+                return " v" + UpdateManager.installedRuntimeVersion.ToString();
         }
 
         private void InstalledShaderFoldoutGUI()
@@ -709,6 +1013,53 @@ namespace Reallusion.Import
 
             GUILayout.EndVertical();
         }
+
+        private void InstalledRuntimeFoldoutGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            bool error = UpdateManager.runtimePackageValid == ShaderPackageUtil.PackageVailidity.Invalid;
+            if (error)
+            {
+                instRuntimeFoldout = true;
+            }
+
+            string foldoutLabel = "Current Runtime Package: " + GetRuntimeLabel();
+            instRuntimeFoldout = EditorGUILayout.Foldout(instRuntimeFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see details of the available runtime packages."), true, error ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (instRuntimeFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.BeginVertical();
+                InstalledRuntimePackageGUI();
+                ValidateRuntimePackageGUI();
+                GUILayout.EndVertical();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+        }
+
 
         private void InstalledPipelineGUI()
         {
@@ -847,6 +1198,10 @@ namespace Reallusion.Import
             string shaderLabelTooltip = "";
             switch (UpdateManager.installedPackageStatus)
             {
+                case ShaderPackageUtil.InstalledPackageStatus.Absent:
+                    shaderLabelStyle = guiStyles.shMismatchLabel;
+                    shaderLabelTooltip = "Not Installed";
+                    break;
                 case ShaderPackageUtil.InstalledPackageStatus.Mismatch:
                     shaderLabelStyle = guiStyles.shMismatchLabel;
                     shaderLabelTooltip = "Installed shaders are for a different pipeline.";
@@ -880,6 +1235,72 @@ namespace Reallusion.Import
 
             string result = string.Empty;
             result = UpdateManager.determinedShaderAction.ResultString + "(" + UpdateManager.installedPackageStatus + " :: " + UpdateManager.shaderPackageValid + ")";
+
+            GUILayout.Label(result, guiStyles.WrappedInfoLabel);
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical(); // current shader package
+        }
+
+        private void InstalledRuntimePackageGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // current shader package
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.Label("Currently Installed Runtime Package:  ");
+            GUIStyle shaderLabelStyle = GUI.skin.label;            
+            string version = string.Empty;
+
+            switch (UpdateManager.installedRuntimeStatus)
+            {
+                case ShaderPackageUtil.InstalledPackageStatus.Absent:
+                    shaderLabelStyle = guiStyles.shMismatchLabel;
+                    version = "Not Installed";
+                    break;
+                case ShaderPackageUtil.InstalledPackageStatus.Current:
+                    if (UpdateManager.currentRuntimePackageManifest != null)
+                    {
+                        version = "v" + UpdateManager.currentRuntimePackageManifest.Version;
+                        shaderLabelStyle = guiStyles.shCurrentLabel;
+                    }
+                    else
+                    {
+                        version = "Unknown or not correctly installed";
+                        shaderLabelStyle = guiStyles.shMismatchLabel;
+                    }
+                    break;
+            }
+            GUILayout.Label(version, shaderLabelStyle);
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Check Status"))
+            {
+                UpdateGUI();
+                ShaderPackageUtil.UpdaterWindowCheckStatus();
+            }
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(VERT_INDENT * 3);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            string result = string.Empty;
+            if (UpdateManager.determinedRuntimeAction != null)
+                result = UpdateManager.determinedRuntimeAction.ResultString + "(" + UpdateManager.installedRuntimeStatus + " :: " + UpdateManager.runtimePackageValid + ")";
+            else result = "No action determined for the runtime package (" + UpdateManager.installedRuntimeStatus + " :: " + UpdateManager.runtimePackageValid + ")";
 
             GUILayout.Label(result, guiStyles.WrappedInfoLabel);
 
@@ -947,6 +1368,64 @@ namespace Reallusion.Import
             GUILayout.EndVertical(); // validate shader package
         }
 
+        Vector2 scrollPosRuntimePackage = new Vector2();
+        private void ValidateRuntimePackageGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // validate shader package
+
+            GUILayout.Space(VERT_INDENT);
+
+            if (UpdateManager.missingRuntimePackageItems.Count > 0)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.Label("Some Shader Files Invalid:  ", guiStyles.shTooHighLabel);
+
+                GUILayout.FlexibleSpace();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(VERT_INDENT);
+
+                float lineHeight = 17f;
+                float scrollHeight = 0f;
+
+                if (UpdateManager.missingRuntimePackageItems.Count < 6)
+                    scrollHeight = lineHeight * UpdateManager.missingRuntimePackageItems.Count + 27f;
+                else
+                    scrollHeight = 112f;
+
+                scrollPosRuntimePackage = GUILayout.BeginScrollView(scrollPosRuntimePackage, GUILayout.Height(scrollHeight));
+                foreach (ShaderPackageUtil.ShaderPackageItem item in UpdateManager.missingRuntimePackageItems)
+                {
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.Space(HORIZ_INDENT);
+
+                    if (!item.Validated)
+                    {
+                        GUILayout.Label("Missing file ...  ", guiStyles.shMismatchLabel);  // extend to missing file invalid file size or hash?
+                        GUILayout.Label(item.ItemName, guiStyles.InactiveLabel);
+                        GUILayout.FlexibleSpace();
+                    }
+
+                    GUILayout.Space(HORIZ_INDENT);
+
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndScrollView();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical(); // validate shader package
+        }
+
+
         public void AvailableShaderPackagesGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // available shader package
@@ -1001,7 +1480,9 @@ namespace Reallusion.Import
         }
 
         public bool shaderActionRequired = false;
+        public bool runtimeActionRequired = false;
         bool actionToFollowFoldout = false;
+
         private void ActionToFollowFoldoutGUI()
         {
             GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
@@ -1012,7 +1493,7 @@ namespace Reallusion.Import
 
             GUILayout.Space(HORIZ_INDENT);
 
-            if (shaderActionRequired)
+            if (shaderActionRequired || runtimeActionRequired)
                 actionToFollowFoldout = true;
 
             string actionString = shaderActionRequired ? "Action required..." : "No action required...";
@@ -1032,7 +1513,7 @@ namespace Reallusion.Import
 
                 GUILayout.Space(HORIZ_INDENT);
 
-                actionToFollowDialogGUI();
+                ActionGUI();
 
                 GUILayout.Space(HORIZ_INDENT);
 
@@ -1044,82 +1525,194 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        private void actionToFollowDialogGUI()
+        private void ActionGUI()
         {
-            GUILayout.BeginVertical(GUI.skin.box); // available shader package
+            float actionwidth = (Instance.position.width - (HORIZ_INDENT * 10)) / 2;
 
+            GUILayout.BeginVertical(GUI.skin.box);
+            
             GUILayout.Space(VERT_INDENT);
 
             GUILayout.BeginHorizontal();
 
             GUILayout.Space(HORIZ_INDENT);
 
-            //GUILayout.Label("Content...");
-            if (UpdateManager.determinedShaderAction != null)
-            {
-                ShaderPackageUtil.DeterminedShaderAction action = UpdateManager.determinedShaderAction.DeterminedAction;
-                Texture2D picture = null;
-                switch (action)
-                {
-                    case ShaderPackageUtil.DeterminedShaderAction.None:
-                        {
-                            picture = iconInstallShaderY;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.CurrentValid:
-                        {
-                            picture = iconInstallShaderG;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.Error:
-                        {
-                            picture = iconInstallShaderR;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_optional:
-                        {
-                            picture = iconInstallShaderY;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.UninstallReinstall_force:
-                        {
-                            picture = iconInstallShaderY;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.NothingInstalled_Install_force:
-                        {
-                            picture = iconInstallShaderY;
-                            break;
-                        }
-                    case ShaderPackageUtil.DeterminedShaderAction.Incompatible:
-                        {
-                            picture = iconUpgradePipelineY;
-                            break;
-                        }
-                }
-                if (GUILayout.Button(picture, GUILayout.Width(100f), GUILayout.Height(100f)))
-                {
-                    ShaderPackageUtil.GUIPerformShaderAction(action);
-                }
-                GUILayout.BeginVertical();
-                GUILayout.Label(UpdateManager.determinedShaderAction.ResultString, guiStyles.WrappedInfoLabel);
-                /*
-                string currentRelease = "No currentPackageManifest found";
-                if (UpdateManager.currentPackageManifest != null)
-                {
-                    currentRelease = "Current version: " + UpdateManager.currentPackageManifest.Pipeline + " " + UpdateManager.currentPackageManifest.Version + " ";
-                }
-                GUILayout.Label(currentRelease, guiStyles.WrappedInfoLabel);
-                */
-            }            
-            GUILayout.FlexibleSpace();
+            ShaderActionGUI(actionwidth);
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            RuntimeActionGUI(actionwidth);
 
             GUILayout.Space(HORIZ_INDENT);
 
             GUILayout.EndHorizontal();
 
             GUILayout.Space(VERT_INDENT);
-            
+
+            GUILayout.EndVertical();
+        }
+
+        private void ShaderActionGUI(float actionwidth)
+        {
+            GUILayout.BeginVertical(GUILayout.Width(actionwidth));// GUI.skin.box);
+            bool incompatible = false;
+            if (UpdateManager.determinedShaderAction != null)
+            {
+                ShaderPackageUtil.DeterminedAction action = UpdateManager.determinedShaderAction.DeterminedShaderAction;
+                Texture2D picture = null;
+                switch (action)
+                {
+                    case ShaderPackageUtil.DeterminedAction.None:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.CurrentValid:
+                        {
+                            picture = iconInstallShaderG;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.Error:
+                        {
+                            picture = iconInstallShaderR;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.UninstallReinstall_force:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force:
+                        {
+                            picture = iconInstallShaderY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.Incompatible:
+                        {
+                            picture = iconUpgradePipelineY;
+                            break;
+                        }
+                }
+                GUILayout.BeginHorizontal();
+                
+                if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Incompatible) incompatible = true;
+                if (GUILayout.Button(picture, GUILayout.Width(50f), GUILayout.Height(50f)))
+                {
+                    if (incompatible)
+                    {
+                        SettingsService.OpenProjectSettings("Project/Graphics");
+                    }
+                    else
+                    {
+                        ShaderPackageUtil.GUIPerformShaderAction(action);
+                    }
+                }
+                GUILayout.BeginVertical();
+                GUILayout.Space(6f);
+                GUILayout.Label(UpdateManager.determinedShaderAction.ResultString, guiStyles.WrappedInfoLabel);
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                GUILayout.Label("No action properly determined");
+            }
+
+            GUILayout.BeginHorizontal();
+
+            string infoString = string.Empty;
+
+            if (incompatible)
+            {
+                infoString = "Click the above icon to change the graphics pipeline settings";
+            }
+            else
+            {
+                infoString = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.None ? "No action required" : "Please click the above icon to update/fix the shader files installation";
+            }
+
+            EditorGUILayout.HelpBox(infoString, MessageType.Info, true);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+        }
+
+        private void RuntimeActionGUI(float actionwidth)
+        {
+            GUILayout.BeginVertical(GUILayout.Width(actionwidth));// GUI.skin.box);
+
+            if (UpdateManager.determinedRuntimeAction != null)
+            {
+                ShaderPackageUtil.DeterminedAction action = UpdateManager.determinedRuntimeAction.DeterminedShaderAction;
+                Texture2D picture = null;
+                switch (action)
+                {
+                    case ShaderPackageUtil.DeterminedAction.None:
+                        {
+                            picture = iconInstallRuntimeY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.CurrentValid:
+                        {
+                            picture = iconInstallRuntimeG;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.Error:
+                        {
+                            picture = iconInstallRuntimeR;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.UninstallReinstall_optional:
+                        {
+                            picture = iconInstallRuntimeY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.UninstallReinstall_force:
+                        {
+                            picture = iconInstallRuntimeY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force:
+                        {
+                            picture = iconInstallRuntimeY;
+                            break;
+                        }
+                    case ShaderPackageUtil.DeterminedAction.Incompatible:
+                        {
+                            picture = iconUpgradePipelineY;
+                            break;
+                        }
+                }
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button(picture, GUILayout.Width(50f), GUILayout.Height(50f)))
+                {
+                    ShaderPackageUtil.GUIPerformRuntimeAction(action);
+                }
+                GUILayout.BeginVertical();
+                GUILayout.Space(6f);
+                GUILayout.Label(UpdateManager.determinedRuntimeAction.ResultString, guiStyles.WrappedInfoLabel);
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                GUILayout.Label("No action properly determined");
+            }
+
+            GUILayout.BeginHorizontal();
+
+            string infoString = UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.None ? "No action required" : "Please click the above icon to update/fix the runtime files installation";
+
+            EditorGUILayout.HelpBox(infoString, MessageType.Info, true);
+
+            GUILayout.EndHorizontal();
+
             GUILayout.EndVertical();
         }
 
@@ -1189,7 +1782,7 @@ namespace Reallusion.Import
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_P4_DeletedLocal").image, "UnInstall"), GUILayout.Width(24f)))
                 {
-                    ShaderPackageUtil.UnInstallPackage();
+                    ShaderPackageUtil.UnInstallShaderPackage();
                     UpdateGUI();
                 }
                 string shaderLabel = UpdateManager.installedShaderPipelineVersion.ToString() + " v" + UpdateManager.installedShaderVersion.ToString();
@@ -1212,7 +1805,7 @@ namespace Reallusion.Import
                     if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_P4_AddedRemote").image, "Install " + Path.GetFileNameWithoutExtension(manifest.SourcePackageName)), GUILayout.Width(24f)))
                     {
                         Debug.Log("Installing Package: " + manifest.SourcePackageName);
-                        ShaderPackageUtil.InstallPackage(manifest);
+                        ShaderPackageUtil.InstallShaderPackage(manifest);
                         UpdateGUI();
                     }
                     GUILayout.Label(manifest.SourcePackageName, EditorStyles.largeLabel);
@@ -1231,7 +1824,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-        #endregion GUI
+#endregion GUI
 
         #region UTIL
         public string emptyVersion = "0.0.0";

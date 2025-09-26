@@ -23,7 +23,7 @@ using UnityEditor;
 
 namespace Reallusion.Import
 {
-    public enum ExpressionProfile { None, Std, ExPlus, Ext }
+    public enum ExpressionProfile { None, Std, ExPlus, Ext, MH }
     public enum VisemeProfile { None, PairsCC3, PairsCC4, Direct }
 
     public struct FacialProfile
@@ -330,6 +330,14 @@ namespace Reallusion.Import
 
                     switch (blendShapeName)
                     {
+                        case "Mouth_Funnel_UL":
+                        case "Mouth_Funnel_UR":
+                        case "Eye_Look_Up_L":
+                        case "Eye_Look_Up_R":
+                        case "Jaw_Clench_L":
+                        case "Jaw_Clench_R":
+                            expressionProfile = ExpressionProfile.MH;
+                            break;
                         case "A01_Brow_Inner_Up":
                         case "A06_Eye_Look_Up_Left":
                         case "A15_Eye_Blink_Right":
@@ -412,7 +420,17 @@ namespace Reallusion.Import
 
                     if (mesh.blendShapeCount > 0)
                     {
-                        if (mesh.HasShape("A01_Brow_Inner_Up") ||
+                        if (mesh.HasShape("Mouth_Funnel_UL") ||
+                            mesh.HasShape("Mouth_Funnel_UR") ||
+                            mesh.HasShape("Eye_Look_Up_L") ||
+                            mesh.HasShape("Eye_Look_Up_R") ||
+                            mesh.HasShape("Jaw_Clench_L") ||
+                            mesh.HasShape("Jaw_Clench_R"))
+                            expressionProfile = ExpressionProfile.MH;
+
+                        if (mesh.HasShape("Move_Jaw_Down") ||
+                            mesh.HasShape("Turn_Jaw_Down") ||
+                            mesh.HasShape("A01_Brow_Inner_Up") ||
                             mesh.HasShape("A06_Eye_Look_Up_Left") ||
                             mesh.HasShape("A15_Eye_Blink_Right") ||
                             mesh.HasShape("A25_Jaw_Open") ||
@@ -464,7 +482,7 @@ namespace Reallusion.Import
                             mesh.HasShape("Brow_Raise_Outer_Left") ||
                             mesh.HasShape("Brow_Drop_Left") ||
                             mesh.HasShape("Brow_Raise_Right"))
-                            corrections = true;                        
+                            corrections = true;
                     }
                 }
             }

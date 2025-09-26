@@ -17,7 +17,9 @@
  */
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace Reallusion.Import
@@ -302,6 +304,27 @@ namespace Reallusion.Import
             return GetObjectAtPath(paths);
         }
 
+        public MultiValue GetMultiValue(string path)
+        {
+            string[] paths = path.Split('/');
+
+            return GetMultiValue(paths);
+        }
+
+        public MultiValue GetMultiValue(string[] paths)
+        {
+            if (paths.Length > 0)
+            {
+                MultiValue mv = GetValue(paths[0]);
+                if (paths.Length > 1 && mv.Type == MultiType.Object)
+                    return mv.ObjectValue.GetMultiValue(paths.Skip(1).ToArray());
+                else if (mv.Type == MultiType.Bool)
+                    return mv;
+            }
+
+            return default;
+        }
+
         public QuickJSON GetObjectAtPath(string[] paths)
         {
             if (paths.Length > 0)
@@ -339,77 +362,77 @@ namespace Reallusion.Import
             return false;
         }
 
-        public int GetIntValue(string path)
+        public int GetIntValue(string path, int defaultValue=0)
         {
             string[] paths = path.Split('/');
 
-            return GetIntValue(paths);
+            return GetIntValue(paths, defaultValue);
         }
 
-        public int GetIntValue(string[] paths)
+        public int GetIntValue(string[] paths, int defaultValue=0)
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetIntValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetIntValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.Integer)
                     return mv.IntValue;
             }
 
-            return 0;
+            return defaultValue;
         }
 
-        public float GetFloatValue(string path)
+        public float GetFloatValue(string path, float defaultValue=0.0f)
         {
             string[] paths = path.Split('/');
 
-            return GetFloatValue(paths);
+            return GetFloatValue(paths, defaultValue);
         }
 
-        public float GetFloatValue(string[] paths)
+        public float GetFloatValue(string[] paths, float defaultValue=0.0f)
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetFloatValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetFloatValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.Float)
                     return mv.FloatValue;
             }
 
-            return 0.0f;
+            return defaultValue;
         }
 
-        public string GetStringValue(string path)
+        public string GetStringValue(string path, string defaultValue="")
         {
             string[] paths = path.Split('/');
 
-            return GetStringValue(paths);
+            return GetStringValue(paths, defaultValue);
         }
 
-        public string GetStringValue(string[] paths)
+        public string GetStringValue(string[] paths, string defaultValue="")
         {
             if (paths.Length > 0)
             {
                 MultiValue mv = GetValue(paths[0]);
                 if (paths.Length > 1 && mv.Type == MultiType.Object)
-                    return mv.ObjectValue.GetStringValue(paths.Skip(1).ToArray());
+                    return mv.ObjectValue.GetStringValue(paths.Skip(1).ToArray(), defaultValue);
                 else if (mv.Type == MultiType.String)
                     return mv.StringValue;
             }
 
-            return "";
+            return defaultValue;
         }
 
-        public Color GetColorValue(string path)
+        public Color GetColorValue(string path, Color defaultValue = default)
         {
             string[] paths = path.Split('/');
 
-            return GetColorValue(paths);
+            return GetColorValue(paths, defaultValue);
         }
 
-        public Color GetColorValue(string[] paths)
+        public Color GetColorValue(string[] paths, Color defaultValue = default)
         {
             if (paths.Length > 0)
             {
@@ -420,7 +443,7 @@ namespace Reallusion.Import
                     return mv.ObjectValue.ColorValue;
             }
 
-            return Color.white;
+            return defaultValue;
         }
 
 
@@ -634,7 +657,7 @@ namespace Reallusion.Import
                 return Type == MultiType.Object ? 
                     (QuickJSON)objectValue : null; 
             } 
-        }
+        }        
 
         public MultiValue(string name)
         {
@@ -676,6 +699,38 @@ namespace Reallusion.Import
             Key = name;
             Type = MultiType.Object;
             objectValue = value;
+        }
+
+        public bool IsNullorEmpty()
+        {
+            switch (Type)
+            {
+                case MultiType.Object:
+                    return ObjectValue == null;                    
+                case MultiType.Bool:                    
+                case MultiType.Integer:                    
+                case MultiType.Float:                
+                    return false;
+                case MultiType.String:
+                    return string.IsNullOrEmpty(StringValue);
+            }
+            return false;
+        }
+
+        public bool HasValue()
+        {
+            switch (Type)
+            {
+                case MultiType.Object:
+                    return ObjectValue != null;
+                case MultiType.Bool:
+                case MultiType.Integer:
+                case MultiType.Float:
+                    return true;
+                case MultiType.String:
+                    return !string.IsNullOrEmpty(StringValue);
+            }
+            return false;
         }
     }
 

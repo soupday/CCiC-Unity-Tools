@@ -22,6 +22,7 @@ using UnityEditor.SceneManagement;
 using System;
 using System.Collections.Generic;
 using Scene = UnityEngine.SceneManagement.Scene;
+using UnityEngine.Playables;
 
 namespace Reallusion.Import
 {
@@ -36,12 +37,26 @@ namespace Reallusion.Import
         public static bool showRetarget = false;
         public static bool batchProcess = false;
         private static bool eventsAdded = false;
-        private static bool showPlayerAfterPlayMode = false;
-        private static bool showRetargetAfterPlayMode = false;
+        //private static bool showPlayerAfterPlayMode = false;
+        //private static bool showRetargetAfterPlayMode = false;
 
         public delegate void OnTimer();
         public static OnTimer onTimer;
         private static float timer = 0f;
+
+        // stable valid import list
+        public static List<CharacterInfo> validImports;
+        public static List<CharacterInfo> ValidImports {
+            get 
+            {
+                if (validImports == null)
+                {
+                    validImports = new List<CharacterInfo>();
+                    UpdateImportList();
+                }
+                return validImports;
+            }            
+        }
 
         //unique editorprefs key names
         public const string sceneFocus = "RL_Scene_Focus_Key_0000";
@@ -104,23 +119,42 @@ namespace Reallusion.Import
             {
                 case PlayModeStateChange.ExitingEditMode:
                     {
+                        //Debug.Log("ExitingEditMode");
+
+                        ReenableTimelinesFromRecord(); // ensure the states are reset before play mode - any changes in play mode are thrown after exiting play mode, so will revert to the state immediately prior to entering play mode
+
+                        RLSettingsObject currentSettings = null;
+                        if (ImporterWindow.Current != null)
+                        {
+                            if (ImporterWindow.GeneralSettings != null)
+                            {
+                                currentSettings = ImporterWindow.GeneralSettings;
+
+                                currentSettings.showPlayerAfterPlayMode = showPlayer;
+                                currentSettings.showRetargetAfterPlayMode = showRetarget;
+                            }
+                        }
                         break;
                     }
                 case PlayModeStateChange.EnteredPlayMode:
                     {
-                        showPlayerAfterPlayMode = showPlayer;
-                        showRetargetAfterPlayMode = showRetarget;
-                        showPlayer = false;
-                        showRetarget = false;
+                        //Debug.Log("EnteredPlayMode");
+
+                        //showPlayerAfterPlayMode = showPlayer;
+                        //showRetargetAfterPlayMode = showRetarget;
+                        //showPlayer = false;
+                        //showRetarget = false;
+                        
                         AnimPlayerGUI.ClosePlayer();
                         AnimRetargetGUI.CloseRetargeter();                        
-
+                        
                         if (Util.TryDeSerializeBoolFromEditorPrefs(out bool val, WindowManager.sceneFocus))
                         {
                             if (val)
                             {
                                 //GrabLastSceneFocus();                                
                                 Util.SerializeBoolToEditorPrefs(false, WindowManager.sceneFocus);
+                                
                                 ShowAnimationPlayer();                                
                                 if (Util.TryDeSerializeFloatFromEditorPrefs(out float timeCode, WindowManager.timeKey))
                                 {
@@ -155,18 +189,37 @@ namespace Reallusion.Import
                     }
                 case PlayModeStateChange.ExitingPlayMode:
                     {
+                        //Debug.Log("ExitingPlayMode");
+                        AnimPlayerGUI.ClosePlayer();
+                        AnimRetargetGUI.CloseRetargeter();
 
                         break;
                     }
                 case PlayModeStateChange.EnteredEditMode:
                     {
+                        //Debug.Log("EnteredEditMode");
+
                         if (ImporterWindow.Current != null)
                         {
                             UpdateManager.TryPerformUpdateChecks();
                         }
 
-                        showPlayer = showPlayerAfterPlayMode;
-                        showRetarget = showRetargetAfterPlayMode;
+                        RLSettingsObject currentSettings = null;
+                        if (ImporterWindow.Current != null)
+                        {
+                            if (ImporterWindow.GeneralSettings != null)
+                            {
+                                currentSettings = ImporterWindow.GeneralSettings;
+
+                                showPlayer = currentSettings.showPlayerAfterPlayMode;
+                                showRetarget = currentSettings.showRetargetAfterPlayMode;
+                            }
+                        }
+
+                        if (showPlayer) ShowAnimationPlayer();
+
+                        //showPlayer = showPlayerAfterPlayMode;
+                        //showRetarget = showRetargetAfterPlayMode;
 
                         break;
                     }
@@ -207,7 +260,7 @@ namespace Reallusion.Import
             previewScene.ShowPreviewCharacter(prefab);
             
             return previewScene;
-        }        
+        }
 
         public static bool IsPreviewScene
         {
@@ -449,13 +502,89 @@ namespace Reallusion.Import
             SceneView.lastActiveSceneView.Focus();
         }
 
+        public static void RecordAndDisableTimelines()
+        { 
+#if UNITY_2023_OR_NEWER
+            PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+#else
+            PlayableDirector[] timelines = GameObject.FindObjectsOfType<PlayableDirector>();
+#endif
+
+            if (timelines.Length > 0)
+            {
+                RLSettingsObject currentSettings = null;
+                if (ImporterWindow.Current != null)
+                {
+                    if (ImporterWindow.GeneralSettings != null)
+                    {
+                        currentSettings = ImporterWindow.GeneralSettings;
+                        if (currentSettings.activeTimeLines == null)
+                            currentSettings.activeTimeLines = new List<UnityEngine.Object>();
+                        else
+                            currentSettings.activeTimeLines.Clear();
+                    }
+                    else { return; }
+                }
+                else { return; }
+                
+                Util.LogInfo("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");
+                
+                foreach (PlayableDirector dir in timelines)
+                {
+                    if (dir.enabled)
+                    {
+                        currentSettings.activeTimeLines.Add(dir);
+                        dir.enabled = false;
+                    }
+                }
+            }
+        }
+
+        public static void ReenableTimelinesFromRecord()
+        {
+            RLSettingsObject currentSettings = null;
+            if (ImporterWindow.Current != null)
+            {
+                if (ImporterWindow.GeneralSettings != null)
+                {
+                    currentSettings = ImporterWindow.GeneralSettings;
+                    if (currentSettings.activeTimeLines == null)
+                        return;
+                    else
+                    {
+                        Util.LogInfo("Animation Preview Player: Re-enabling any previously active timeline objects.");
+                        foreach (var item in currentSettings.activeTimeLines)
+                        {
+                            if (item != null)
+                            {
+                                PlayableDirector dir = (PlayableDirector)item;
+                                dir.enabled = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         public static void ShowAnimationPlayer()
         {
             GameObject scenePrefab = GetSelectedOrPreviewCharacter();
 
+            if (EditorApplication.isPlaying)
+            {
+                if (!scenePrefab)
+                {
+                    GameObject obj = Selection.activeGameObject;
+                    if (obj.GetComponent<Animator>() != null)
+                        scenePrefab = obj;
+                }
+            }
+
             if (scenePrefab)
             {
+                // Debug.Log("ShowAnimationPlayer");
+                RecordAndDisableTimelines();
+
                 AnimPlayerGUI.OpenPlayer(scenePrefab);
                 openedInPreviewScene = IsPreviewScene;
 
@@ -469,12 +598,18 @@ namespace Reallusion.Import
             }
             else
             {
-                Util.LogWarn("No compatible animated character!");
+                Util.LogWarn("Animation Preview Player: No compatible animated character can be automatically determined.");
+
+                // always show for user convenience.
+                Debug.LogWarning("Animation Preview Player: Please select the character in the scene that you wish to animate.");
             }
         }
 
         public static void HideAnimationPlayer(bool updateShowPlayer)
         {
+            //Debug.Log("HideAnimationPlayer");
+            ReenableTimelinesFromRecord();
+
             if (AnimPlayerGUI.IsPlayerShown())
             {
                 AnimPlayerGUI.ResetFace();
@@ -507,6 +642,107 @@ namespace Reallusion.Import
         public static void StartTimer(float delay)
         {
             timer = delay;
-        }        
+        }
+
+
+        
+
+        public static CharacterInfo FindCharacterByGUID(string GUID)
+        {
+            if (ValidImports != null)
+            {
+                foreach (CharacterInfo character in ValidImports)
+                {
+                    if (character.guid == GUID) return character;
+                }
+            }
+            return null;
+        }
+
+        public static CharacterInfo FindCharacterByLinkIDAndName(string linkID, string name, bool allowJustName =false)
+        {
+            if (ValidImports != null)
+            {
+                CharacterInfo nameResult = null;
+                CharacterInfo linkIDResult = null;
+
+                foreach (CharacterInfo character in ValidImports)
+                {
+                    if (character.name.iEquals(name)) nameResult = character;
+                    if (character.linkId == linkID) linkIDResult = character;
+
+                    // both name and linkID match, GOOD result
+                    if (nameResult != null && nameResult == linkIDResult) return linkIDResult;
+                }
+
+                // just linkID matches, OK result
+                if (linkIDResult != null) return linkIDResult;
+
+                // just name matches, BAD result (optional)
+                if (nameResult != null && allowJustName) return nameResult;
+            }
+
+            // no matches
+            return null;
+        }            
+
+        public static void UpdateImportList()
+        {
+            if (validImports == null) validImports = new List<CharacterInfo>();
+            
+            List<string> validCharacterGUIDs = Util.GetValidCharacterGUIDS();
+
+            // remove any valid imports not found in the valid character GUIDs
+            for (int i = ValidImports.Count - 1; i >= 0; i--)
+            {
+                if (!validCharacterGUIDs.Contains(ValidImports[i].guid))
+                {
+                    ValidImports.RemoveAt(i);                    
+                }
+            }
+
+            // add valid character GUIDs not found in the valid imports
+            foreach (string validGUID in validCharacterGUIDs)
+            {
+                if (FindCharacterByGUID(validGUID) == null)
+                {
+                    CharacterInfo info = new CharacterInfo(validGUID);
+                    ValidImports.Add(info);
+                }
+            }
+        }
+
+        public static List<CharacterInfo> GetCharacterList(bool includeAvatars, bool includeProps, string nameFilter = null, string GUIDFilter = null)
+        {
+            List<CharacterInfo> result = new List<CharacterInfo>();            
+
+            if (includeAvatars)
+            {
+                foreach (CharacterInfo info in ValidImports)
+                {
+                    if (info.exportType == CharacterInfo.ExportType.AVATAR || 
+                        info.exportType == CharacterInfo.ExportType.NONE || 
+                        info.exportType == CharacterInfo.ExportType.UNKNOWN)
+                    {
+                        if (Util.Filter(info.name, nameFilter) &&
+                            Util.Filter(info.guid, GUIDFilter)) result.Add(info);
+                    }
+                }
+            }
+
+            if (includeProps)
+            {
+                foreach (CharacterInfo info in ValidImports)
+                {
+                    if (info.exportType == CharacterInfo.ExportType.PROP)
+                    {
+                        if (Util.Filter(info.name, nameFilter) &&
+                            Util.Filter(info.guid, GUIDFilter)) result.Add(info);
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }

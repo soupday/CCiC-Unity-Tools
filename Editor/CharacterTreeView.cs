@@ -23,7 +23,12 @@ using UnityEngine;
 
 namespace Reallusion.Import
 {
-    public class CharacterTreeView : UnityEditor.IMGUI.Controls.TreeView
+#if UNITY_6000_2_OR_NEWER
+    // 'TreeViewItem' is obsolete: 'TreeViewItem is now deprecated. You can likely now use TreeViewItem<int> instead and not think more about it. But if you were using that identifier to store InstanceID data, you should instead opt to upgrade your TreeViews to use TreeViewItem<InstanceID> to get the proper typing.'
+    public class CharacterTreeView : TreeView<int>
+#else
+    public class CharacterTreeView : TreeView
+#endif
     {
         public GameObject objectInContext;
         private string assetPath;
@@ -39,9 +44,13 @@ namespace Reallusion.Import
         public const int LINKED_INDEX_TEARLINE = 3;
         public const int LINKED_INDEX_TEETH = 4;
         public const int LINKED_INDEX_HAIR = 5;
-        public const int LINKED_INDEX_EYE = 6;        
+        public const int LINKED_INDEX_EYE = 6;
 
+#if UNITY_6000_2_OR_NEWER
+        public CharacterTreeView(TreeViewState<int> treeViewState, GameObject obj) : base(treeViewState)
+#else
         public CharacterTreeView(TreeViewState treeViewState, GameObject obj) : base(treeViewState)
+#endif
         {
             //Force Treeview to reload its data (will force BuildRoot and BuildRows to be called)
             objectInContext = obj;
@@ -50,7 +59,11 @@ namespace Reallusion.Import
             Reload();
         }
 
+#if UNITY_6000_2_OR_NEWER
+        protected override TreeViewItem<int> BuildRoot()
+#else
         protected override TreeViewItem BuildRoot()
+#endif
         {
             //indicies
             int mDepth = -1;//root level
@@ -58,10 +71,13 @@ namespace Reallusion.Import
             
             objList.Clear();
             objList.Add(null);
+#if UNITY_6000_2_OR_NEWER
+            var root = new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = "Root" };
+            var allItems = new List<TreeViewItem<int>>();
+#else
             var root = new TreeViewItem { id = mId++, depth = mDepth, displayName = "Root" };
-
             var allItems = new List<TreeViewItem>();
-
+#endif
             linkedIndices = new List<int>[NUM_LINKED_INDICES];
             for (int i = 0; i < linkedIndices.Length; i++)
                 linkedIndices[i] = new List<int>();            
@@ -69,8 +85,12 @@ namespace Reallusion.Import
             mDepth = 0;//base level        
 
             objList.Add(objectInContext);
-            allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = objectInContext.name, icon = (Texture2D)EditorGUIUtility.IconContent("Avatar Icon").image });
 
+#if UNITY_6000_2_OR_NEWER
+            allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = objectInContext.name, icon = (Texture2D)EditorGUIUtility.IconContent("Avatar Icon").image });
+#else
+            allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = objectInContext.name, icon = (Texture2D)EditorGUIUtility.IconContent("Avatar Icon").image });
+#endif
             //applicable objects
             DoThing(objectInContext.transform, allItems, ref mId);
 
@@ -78,7 +98,11 @@ namespace Reallusion.Import
             return root;
         }
 
+#if UNITY_6000_2_OR_NEWER
+        void DoThing(Transform transform, List<TreeViewItem<int>> allItems, ref int mId)
+#else
         void DoThing(Transform transform, List<TreeViewItem> allItems, ref int mId)
+#endif
         {
             int mDepth = 0;
 
@@ -92,7 +116,11 @@ namespace Reallusion.Import
                 mDepth = 1;//1st tier
 
                 objList.Add(child);
+#if UNITY_6000_2_OR_NEWER
+                allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = child.name, icon = (Texture2D)EditorGUIUtility.IconContent("Mesh Icon").image });
+#else
                 allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = child.name, icon = (Texture2D)EditorGUIUtility.IconContent("Mesh Icon").image });
+#endif
 
                 foreach (Material m in child.gameObject.GetComponent<Renderer>().sharedMaterials)
                 {
@@ -107,7 +135,11 @@ namespace Reallusion.Import
                         linkedIndices[linkedIndex].Add(mId);
 
                     objList.Add(m);
+#if UNITY_6000_2_OR_NEWER
+                    allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = m.name, icon = (Texture2D)EditorGUIUtility.IconContent("Material Icon").image });
+#else
                     allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = m.name, icon = (Texture2D)EditorGUIUtility.IconContent("Material Icon").image });
+#endif
 
                     int props = m.shader.GetPropertyCount();
                     for (int i = 0; i < props; i++)
@@ -123,7 +155,11 @@ namespace Reallusion.Import
                                 mDepth = 3;//3rd tier  
 
                                 objList.Add(m.GetTexture(m.shader.GetPropertyName(i)));
+#if UNITY_6000_2_OR_NEWER
+                                allItems.Add(new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = m.shader.GetPropertyDescription(i), icon = (Texture2D)EditorGUIUtility.IconContent("Image Icon").image });
+#else
                                 allItems.Add(new TreeViewItem { id = mId++, depth = mDepth, displayName = m.shader.GetPropertyDescription(i), icon = (Texture2D)EditorGUIUtility.IconContent("Image Icon").image });
+#endif
                             }
                         }
                     }
@@ -221,8 +257,11 @@ namespace Reallusion.Import
                 }
             }
         }
-
+#if UNITY_6000_2_OR_NEWER
+        private void ExpandToDepth(TreeViewItem<int> item, int depth, int maxDepth)
+#else
         private void ExpandToDepth(TreeViewItem item, int depth, int maxDepth)
+#endif
         {
             if (depth <= maxDepth)
                 SetExpanded(item.id, true);
@@ -231,7 +270,11 @@ namespace Reallusion.Import
 
             if (item.children != null)
             {
+#if UNITY_6000_2_OR_NEWER
+                foreach (TreeViewItem<int> child in item.children)
+#else
                 foreach (TreeViewItem child in item.children)
+#endif
                 {
                     ExpandToDepth(child, depth + 1, maxDepth);
                 }

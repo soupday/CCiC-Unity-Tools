@@ -1,0 +1,758 @@
+{
+  "FileName": "Shader Package",
+  "Pipeline": 114,
+  "Version": "2.1.0",
+  "SourcePackageName": "Shader Package_2.1.0_URP14_RL_shaderpackage.unitypackage",
+  "VersionEdit": false,
+  "ManifestPath": "",
+  "Validated": false,
+  "Visible": false,
+  "referenceMainfestPath": "",
+  "referenceShaderPackagePath": "",
+  "Items": [
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_CC3_Plus_EyeTearlineNormal.TGA",
+      "GUID": "d475e5e74d8c6364097c4343c521117b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_Default_EyeOcclusion.png",
+      "GUID": "de8717c950fc50a4a837155e7e31cae2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_DummyTex_Diffuse.png",
+      "GUID": "2e6930762defd9149a4115ecb5f1a3f8",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_DummyTex_Flow.png",
+      "GUID": "5a64e3ddb10bbe34193f8307639ee61b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_DummyTex_Map.png",
+      "GUID": "fba38fae484e7574a946d1527940b2b2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_DummyTex_Normal.png",
+      "GUID": "924fb7f1705312d48b04eb5be69569ec",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_EyeOcclusion.png",
+      "GUID": "230860268a3447e4580272984b20846a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Arm_SSS_Mask.png",
+      "GUID": "3be3a74c5ab09424ab2ab3a8bc46877b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Arm_Thickness.png",
+      "GUID": "2149d7ee9d02c834eb5c36caa11c22f7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Arm_Transmission.png",
+      "GUID": "5e86db9598ef3e74cb80b70958f47293",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Body_SSS_Mask.png",
+      "GUID": "088d3a0e290606a4682cc5bd5eef282a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Body_Thickness.png",
+      "GUID": "7e3bba854aed4e8439eaca0042580e14",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Body_Transmission.png",
+      "GUID": "c693eb0d4051a4641896ce2ae92c92d7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Head_SSS_Mask.png",
+      "GUID": "a01f7254adf5efe4f94c8665ceb77921",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Head_Thickness.png",
+      "GUID": "765390119c994904696dc31282dddad7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Head_Transmission.png",
+      "GUID": "62872029cca16e443beb786bf6cb73d9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Leg_SSS_Mask.png",
+      "GUID": "301b787bf8126ee4393817fa2f2c2a30",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Leg_Thickness.png",
+      "GUID": "10c649b9a7332174587894fde225da77",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseMulti_Leg_Transmission.png",
+      "GUID": "1ece82666ff3667409b56cdb4f267972",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseSingle_Body_SSS_Mask.png",
+      "GUID": "c5172ffe28b474a4b89ddd5e0082bc45",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GamebaseSingle_Body_Thickness.png",
+      "GUID": "8476eee60a9754547ac559a34b601344",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_GameBaseSingle_Body_Transmission.png",
+      "GUID": "295f1d78edb42484d9dc0111d7930336",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_IrisDisplacement.hdr",
+      "GUID": "4809c10b14c13fe4c88679de3360b290",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_RoughnessToSmoothness.png",
+      "GUID": "bc1252fead182e847ab4ce24c9b29553",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_SkinMicroCavityMap.png",
+      "GUID": "87f14e2b52f83e646a8168875ec6afb5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_SkinSpecDetail.png",
+      "GUID": "725163539542b7143948df1f4ebb4df3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set123.png",
+      "GUID": "962e1e9706fca7641b82edde27aa4110",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set1A.png",
+      "GUID": "4f58cb93c013e59488863ac348237355",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set1B.png",
+      "GUID": "e56acaa506c01db4e912564a65eff007",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set2.png",
+      "GUID": "537f29ee83525df428770f9d4b22ac8f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set3.png",
+      "GUID": "58c20b71f3ae7d44188826e3f92f6e93",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set_TextureArray.asset",
+      "GUID": "a08a219be7b2e9a43a6a8e892cea096f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Textures/RL_WrinkleMask_Set_TextureArray_info.txt",
+      "GUID": "abc98d2ac3af3d940aa1b824d1365193",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/notes.txt",
+      "GUID": "08f237d6f28473240a551c3f1f43e86a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_CorneaBasicCustom_URP.mat",
+      "GUID": "a3cfab7cefc54b04f9f73f02c4ac70f9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_CorneaBasic_URP.mat",
+      "GUID": "1ae482d318b3c4f43a42088e5ded1f79",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_CorneaParallaxCustom_URP.mat",
+      "GUID": "2752ee49087c24d4d99f9ff7f74e0490",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_CorneaRefractiveCustom_Dummy_URP.mat",
+      "GUID": "d11394a532c98f64498d4663d572112e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_EyeBasic_Dumy_URP.mat",
+      "GUID": "74102fedbd61341489b45eecb86f3679",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_EyeOcclusionCustom_URP.mat",
+      "GUID": "3ff21a3a3960d854eac83f17fe1e7589",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_EyeOcclusion_URP.mat",
+      "GUID": "7cf2949a06159a44282c89e99e4ffd23",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_EyeRefractiveCustom_Dummy_URP.mat",
+      "GUID": "dff5342cafd18f44d88b6fa79d9125f1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_HairCustom_1st_Pass_URP.mat",
+      "GUID": "53a1bd2212670a04d8da836ac293660a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_HairCustom_2nd_Pass_URP.mat",
+      "GUID": "918e7007be27f2d4f8c2cea167469cae",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_HairCustom_URP.mat",
+      "GUID": "db3191961a9aba742bc708ec13361ede",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_Hair_1st_Pass_URP.mat",
+      "GUID": "29553832a9a76ab4884e60c6c9022c49",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_Hair_2nd_Pass_URP.mat",
+      "GUID": "5f3ae3e543ec459479c544d6effeeeca",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_Hair_URP.mat",
+      "GUID": "952ccaa9dba8a2147a3013e689fe7d79",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_HeadCustom_URP.mat",
+      "GUID": "fb7519087bb25b44aa47d573c8391d45",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_HeadWrinkleCustom_URP.mat",
+      "GUID": "c74891598d7750c4da001508d955b1f9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_SkinCustom_URP.mat",
+      "GUID": "cb0f2ca6e98be0c4d922ad076b63f01c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Baked/RL5_Template_Baked_Skin_URP.mat",
+      "GUID": "5f88b4876faa4b64bbf44f81cbe4c18c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_AlphaBlend_URP.mat",
+      "GUID": "dd86aba767887d843a4e3e4cf37b0a4b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_AlphaClip_URP.mat",
+      "GUID": "b3d26261babf1794ca575eaa1ce0d312",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Eyelash_URP.mat",
+      "GUID": "3ccb430019c0be2478a1d9ff7ee341f1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_EyeOcclusion_URP.mat",
+      "GUID": "3c3f5b385f058944bae3daf2486550a0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Hair_URP.mat",
+      "GUID": "7758b7368a4951b4594bb45f13e4f714",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Opaque_URP.mat",
+      "GUID": "79f9159475dd9be47b6df28995776d55",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_ScalpBase_URP.mat",
+      "GUID": "26535c500d71a7246a8285c7c223e1f0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_SingleMaterial_URP.mat",
+      "GUID": "13ccc6e2abe10b14284e983ff8c7b873",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Skin_URP.mat",
+      "GUID": "4c694026726ee084e9b13274b54bd1ab",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Tearline_URP.mat",
+      "GUID": "25d03194cee810545bb98131ee4c024c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_TraditionalAlpha_URP.mat",
+      "GUID": "d743bc7dabf8f7247874f48bed918aa6",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/Default/RL5_Template_Default_Traditional_URP.mat",
+      "GUID": "a0110d4667909b9498cd0f3c23811817",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_CorneaBasic_URP.mat",
+      "GUID": "c4dc1011fc2e9e045a72b0ede049d33f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_CorneaParallax_URP.mat",
+      "GUID": "ab682a96cd2fa5c46bfae3f876cf3f45",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_CorneaRefractive_Dummy_URP.mat",
+      "GUID": "209818384c659914a9dfb538d3810d64",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_EyeBasic_Dummy_URP.mat",
+      "GUID": "560de042afe8bca4899d68b4fb415617",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_EyeOcclusionPlus_URP.mat",
+      "GUID": "d332a65cbce0b2347ae8ba3f692f7225",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_EyeOcclusion_URP.mat",
+      "GUID": "81267b6652f138a43935017509b2884e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_EyeParallax_Dummy_URP.mat",
+      "GUID": "c9ae3f357e98a774b9e69465f9ab4e77",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_EyeRefractive_Dummy_URP.mat",
+      "GUID": "6e7b1bbd244363949af006a262b26e47",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Hair_1st_Pass_URP.mat",
+      "GUID": "19614125b5e455040a642dd85103db22",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Hair_2nd_Pass_URP.mat",
+      "GUID": "ecf6e81e231f1984eac9b975df43568c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Hair_URP.mat",
+      "GUID": "77fb31c9042c72543ba9737568351776",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_HeadWrinkle_URP.mat",
+      "GUID": "3387187572cf8b54f8865934ee9a2c5d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Head_URP.mat",
+      "GUID": "ffb8d697c0ecae9458fcee1db185330e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Skin_URP.mat",
+      "GUID": "6d0d27dd468221349930d7c00bab7c10",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_TearlinePlus_URP.mat",
+      "GUID": "36f3f67eb47d32c4ab9c86205c8bf272",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Tearline_URP.mat",
+      "GUID": "384f371665fdc5b40b32253e52d546ef",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Teeth_URP.mat",
+      "GUID": "362205edf9c3bf245b9f83229cc14ade",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Material Templates/HQ/RL5_Template_HQ_Tongue_URP.mat",
+      "GUID": "00c2104f8d14ad248b1f9729963ffd69",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL Preview Gradient Skybox.mat",
+      "GUID": "dd962f7eb5e733b4797bcdc234b07a90",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_Amplify_PreviewGradientSkyboxShader.shader",
+      "GUID": "c0935f24a9b8ec24ca18e569232236b3",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_FloorSpot.mat",
+      "GUID": "4ce5021a1900ab745a10e11db4f67b32",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_FloorSpot.png",
+      "GUID": "94004008529895e4bbbc36e65043c8b0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_PreviewScene.unity",
+      "GUID": "b805cc6c24f39ef4a9cb8f2c9a4ce4ce",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_PreviewScenePrefab.prefab",
+      "GUID": "d68c18d6affcb744a9e2642485d8fe1e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_ReflectionProbePreviewScene.exr",
+      "GUID": "0b93c66b9c385ea4ea734dc76601ff3e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Preview Scene/RL_URP Post Processing Profile.asset",
+      "GUID": "bb7426ed81a881d4d9a1415b13531086",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Baked/RL5_Amplify_SkinShader_Baked_3D.shader",
+      "GUID": "b9fab8ecd41f338448a052c80d9483b5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Baked/Tessellation/RL5_Amplify_SkinShader_Baked_3D_Tessellation.shader",
+      "GUID": "bb01208b7b5d66540b52f064b944159f",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_Function_Skin_SSS.asset",
+      "GUID": "3a15041bfe742e24d9003ae8b3e9eee0",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_WrinkleMapSystem.asset",
+      "GUID": "ada0dcb2336c5f74995ee8fbcf5e9cf2",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/Function/RL5_Amplify_WrinkleMaskBlend.asset",
+      "GUID": "d95dd752eb0dee340b5d885eef184dc7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/HQ/RL5_Amplify_SkinShader_Variants_URP.shader",
+      "GUID": "71e7f1aa896f68145b92a9e015469807",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Amplify/HQ/Tessellation/RL5_Amplify_SkinShader_Variants_URP_Tessellation.shader",
+      "GUID": "0e116b395c389534bb14bd9b9c52355b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_CorneaShaderParallax_Baked_URP.shadergraph",
+      "GUID": "6af0342b967924e43b2deb1f413aee00",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_EyeOcclusionShader_Baked_URP.shadergraph",
+      "GUID": "79aeaa476ee89ba40abcdf3800466a75",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_HairShader_1st_Pass_Baked_URP.shadergraph",
+      "GUID": "d2c307d7e75aa40478e9cb58322e4278",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_HairShader_2nd_Pass_Baked_URP.shadergraph",
+      "GUID": "2e0b53fbb68155b44998eeb53c4c30e7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_HairShader_Baked_URP.shadergraph",
+      "GUID": "a981fde55a370f7428b109d696c2d0e5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Baked/RL5_SkinShader_Baked_URP.shadergraph",
+      "GUID": "c6cd5f7f7edfe1e458f23ad8760e876c",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Basic/RL5_EyeShaderBasic_Dummy_URP.shadergraph",
+      "GUID": "7ff8087207513ba49abd14144fd5f39a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Basic/RL5_EyeShaderParallax_Dummy_URP.shadergraph",
+      "GUID": "d1242887402161c44b3363b797b66738",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Basic/RL5_EyeShaderRefractive_Variants_Dummy_URP.shadergraph",
+      "GUID": "f2ee25739be01db4ba5ca18c5fa48118",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Basic/__DUMMY_SHADER_URP.shadergraph",
+      "GUID": "025c7c4a2cd05b143bc3b4ab1a45dd1b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_CorneaShaderParallax_URP.shadergraph",
+      "GUID": "28d12b9b79962d04fb6b50a9ccf15d3b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_EyeOcclusionPlusShader_URP.shadergraph",
+      "GUID": "9414d1056562f16428fcafecfe1cf795",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_EyeOcclusionShader_URP.shadergraph",
+      "GUID": "946e49bedb299b84ab4e1b9299d2427e",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_HairShader_1st_Pass_Variants_URP.shadergraph",
+      "GUID": "30e7a19fd529b964e971986815fac8d1",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_HairShader_2nd_Pass_Variants_URP.shadergraph",
+      "GUID": "09058b4f0b424df4bb82ecfe7f590865",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_HairShader_Variants_URP.shadergraph",
+      "GUID": "4a53d44f5c79f134a8b99e39994b6970",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_SkinShader_Variants_URP.shadergraph",
+      "GUID": "93e6d915c8e66ea4782e9402aaf9a8de",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_TearlinePlusShader_URP.shadergraph",
+      "GUID": "c2e954369775dac45a09cfe18b4fb3d9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_TearlineShader_URP.shadergraph",
+      "GUID": "8acb6733d5bb0f74bb0b60b40775460b",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_TeethShader_URP.shadergraph",
+      "GUID": "ba5f9e5f41cc6d047b3b171d5eba9167",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/HQ/RL5_TongueShader_URP.shadergraph",
+      "GUID": "4ff292228cf2e114ead19d62fe48192a",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_SSSMain.shadersubgraph",
+      "GUID": "a5d5626b26317bb4da5b2cf1ab86bd12",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_WrinkleMaskBlend.shadersubgraph",
+      "GUID": "58f87cc05391d014e8fa62e5df499d00",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_WrinkleMaskBlend_Vertex.shadersubgraph",
+      "GUID": "7123d118fcb080046b4a5e001c03b73d",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_WrinkleSystem.shadersubgraph",
+      "GUID": "87477746d3d3f494a879aeb814f9a486",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL5_Function_WrinkleSystem_Vertex.shadersubgraph",
+      "GUID": "48a863a9afcdc704cbcc43e66f589054",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/URP/Shaders/Shader Graph/Subgraph/RL_Function_Eevee_Anisotropic_Highlights.shadersubgraph",
+      "GUID": "236bf16c777154140aa8e3516958c847",
+      "InstalledGUID": "",
+      "Validated": false
+    }
+  ]
+}

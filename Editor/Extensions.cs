@@ -197,5 +197,40 @@ namespace Reallusion.Import
             }
             return defaultValue;
         }
+
+        public static void SetBooleanKeyword(this Material mat, string shaderRef, bool value)
+        {
+            if (shaderRef.EndsWith("_ON")) shaderRef = shaderRef.Substring(0, shaderRef.Length - 3);
+            if (value)
+            {
+                mat.EnableKeyword(shaderRef + "_ON");
+                mat.SetFloatIf(shaderRef, 1f);
+            }
+            else
+            {
+                mat.DisableKeyword(shaderRef + "_ON");
+                mat.SetFloatIf(shaderRef, 0f);
+            }
+        }
+        
+        public static void SetEnumKeyword(this Material mat, string shaderRef, float value, Dictionary<float, string> enumSet)
+        {
+            mat.SetFloatIf(shaderRef, value);
+            foreach(KeyValuePair<float, string> kvp in enumSet)
+            {
+                if (kvp.Key == value)
+                    mat.EnableKeyword(kvp.Value);
+                else
+                    mat.DisableKeyword(kvp.Value);
+            }
+        }
+
+        public static bool GetBooleanKeyword(this Material mat, string shaderRef)
+        {
+            if (shaderRef.EndsWith("_ON")) shaderRef = shaderRef.Substring(0, shaderRef.Length - 3);
+            float valueFloat = mat.GetFloatIf(shaderRef, 0f);
+            bool hasKeyword = mat.IsKeywordEnabled(shaderRef + "_ON");
+            return hasKeyword || valueFloat > 0f;
+        }
     }
 }
