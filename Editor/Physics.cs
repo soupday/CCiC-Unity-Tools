@@ -1131,7 +1131,7 @@ namespace Reallusion.Import
             }
 
             return canAddMagicaCloth;
-        }
+        }        
 
         private void SetMagicaParameters(Object cloth, bool isHair=false)
         {
