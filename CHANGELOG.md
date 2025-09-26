@@ -1,6 +1,22 @@
 Changelog
 =========
 
+### 2.1.0
+- Shader update for CC5 HD characters.
+    - Eye shader updates
+    - Skin shader updates:
+        - Cavity maps.
+        - Displacement maps.
+        - Wrinkle displacement maps.
+        - Wrinkle system update.
+- DataLink
+    - Import Characters, Props, Lights, Cameras and their animations into project and Timeline.
+    - ...
+- TBD:
+    - URP Anisotropic hair.
+    - Tessellation shaders for URP (Skin only for now)
+    - Retarget expressions to/from CC5 HD profile.
+
 ### 2.0.0
 - Unified version, for all versions of Unity and pipelines.
     - Automatically installs and updates run time shaders and scripts.
