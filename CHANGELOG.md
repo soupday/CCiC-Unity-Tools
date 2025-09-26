@@ -10,12 +10,17 @@ Changelog
         - Wrinkle displacement maps.
         - Wrinkle system update.
 - DataLink
-    - Import Characters, Props, Lights, Cameras and their animations into project and Timeline.
-    - ...
+    - Uses the 'CCIC Unity Pipeline Plugin' (https://github.com/soupday/CCIC-Unity-Pipeline-Plugin) for both Character Creator (versions 4 & 5).
+    - Allows the direct import of Characters, props cameras, lights and full iClone scenes into a Unity project with a single button click.
+    - All exports can automatically be placed directly into a Unity scene and added to a Unity Timeline to allow direct replication of an iClone scene in Unity.
+    - Animated cameras (positions, camera tracking and switching [using the switcher track], depth of field, focus distance) and lights (positions, color, intensity, ranges, angles and activation state) can also be automatically set up in a Unity Timeline.
+    - Datalink is not limited to a local machine, a remote host using iClone/Character Creator can be connected to (Unity 2021 and above).
 - TBD:
     - URP Anisotropic hair.
     - Tessellation shaders for URP (Skin only for now)
     - Retarget expressions to/from CC5 HD profile.
+    - Simultaneous datalink connection to Character Creator and iClone.
+    - Sending meshes from the Unity scene to iClone to aid scene specific animation. 
 
 ### 2.0.0
 - Unified version, for all versions of Unity and pipelines.
