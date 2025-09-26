@@ -973,9 +973,7 @@ namespace Reallusion.Import
                 {
                     UpdateManager.platformRestriction = PlatformRestriction.URPWebGL;
                     return PipelineVersion.URP12;
-                }
-
-                if (major >= 17 && minor >= 1) return PipelineVersion.URP171;
+                }                
 
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
@@ -1003,8 +1001,6 @@ namespace Reallusion.Import
 
             if (pipe == InstalledPipeline.HDRP)
             {
-                if (major >= 17 && minor >= 1) return PipelineVersion.HDRP171;
-
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
                     Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
@@ -1029,8 +1025,7 @@ namespace Reallusion.Import
         }
 
         public static void TestVersionResponse()
-        {
-            int minor = 0;
+        {            
             for (int i = 10; i < 18; i++)
             {
                 for (int j = 0; j < 3; j++)
