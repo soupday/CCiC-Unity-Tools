@@ -3246,7 +3246,7 @@ namespace Reallusion.Import
             System.Type WrinklePropType = Physics.GetTypeInAssemblies("Reallusion.Runtime.WrinkleProp");
             if (matJson != null && WrinklePropType != null)
             {
-                Debug.Log("matJson != null && WrinklePropType != null");
+                //Debug.Log("matJson != null && WrinklePropType != null");
                 var wrinkleProps = new GenericDictionary();
 
                 QuickJSON wrinkleRulesJson = matJson.GetObjectAtPath("Wrinkle/WrinkleRules");

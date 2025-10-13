@@ -647,9 +647,6 @@ namespace Reallusion.Import
             physicsAfterGUI = false;
             processAnimationsAfterGUI = false;
 
-            //CheckDragAndDrop();
-
-            //OnGUIIconArea(iconBlock);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             OnGUIFlexibleIconArea(iconBlock);
             OnGUIDragBarArea(dragBar);
@@ -1856,6 +1853,8 @@ namespace Reallusion.Import
 
         private void OnGUIDragBarArea(Rect dragBar)
         {
+            if (CharacterList == null) { return; }
+
             //Rect dragHandle = new Rect(dragBar.x - DRAG_HANDLE_PADDING, dragBar.y, 2 * DRAG_HANDLE_PADDING, dragBar.height);
             Rect dragHandle = new Rect(dragBar.x, dragBar.y, DRAG_BAR_WIDTH + DRAG_HANDLE_PADDING, dragBar.height);
             EditorGUIUtility.AddCursorRect(dragHandle, MouseCursor.ResizeHorizontal);
@@ -1869,6 +1868,9 @@ namespace Reallusion.Import
 
         private void OnGUIFlexibleIconArea(Rect iconBlock)
         {
+            if (CharacterList == null) { return; }
+
+
             if (ICON_AREA_WIDTH > ICON_WIDTH_DETAIL)
             {
                 OnGUIDetailIconArea(iconBlock); // detail view icon area layout

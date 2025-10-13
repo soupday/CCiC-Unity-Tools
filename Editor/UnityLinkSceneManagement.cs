@@ -587,8 +587,10 @@ namespace Reallusion.Import
             if (director != null)
             {
                 Selection.activeGameObject = director.gameObject;
+#if UNITY_2021_3_OR_NEWER
                 var tl = TimelineEditor.GetOrCreateWindow();
                 tl.Focus();
+#endif
                 if (TimelineEditor.inspectedDirector != null)
                 {
                     TimelineEditor.inspectedDirector.time = time;

@@ -281,7 +281,20 @@ namespace Reallusion.Import
 
         public string CharacterName => name;
 
-        public bool IsBlenderProject { get { return JsonData.GetBoolValue(CharacterName + "/Blender_Project"); } }
+        public bool IsBlenderProject
+        {
+            get
+            {
+                if (jsonData != null)
+                {
+                    return JsonData.GetBoolValue(CharacterName + "/Blender_Project");
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
 
         private BaseGeneration generation = BaseGeneration.None;
         private GameObject fbx;
