@@ -1041,6 +1041,31 @@ namespace Reallusion.Import
                 camera.focalLength = jsonCameraObject.FocalLength;
                 //Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
                 camera.sensorSize = new Vector2(jsonCameraObject.Width, jsonCameraObject.Height);
+
+                const string horizontal = "HORIZONTAL";
+                const string vertical = "VERTICAL";
+                Camera.GateFitMode mode = Camera.GateFitMode.None;
+
+                switch (jsonCameraObject.Fit)
+                {
+                    case horizontal:
+                        {
+                            mode = Camera.GateFitMode.Horizontal;
+                            break;
+                        }
+                    case vertical:
+                        {
+                            mode = Camera.GateFitMode.Vertical;
+                            break;
+                        }
+                    default:
+                        {
+                            mode = Camera.GateFitMode.Vertical;
+                            break;
+                        }
+                }
+
+                camera.gateFit = mode;
             }
             else
             {
