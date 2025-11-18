@@ -660,11 +660,11 @@ namespace Reallusion.Import
 
             foreach (Renderer renderer in renderers)
             {
-                ProcessObjectPostPass(renderer);
+                ProcessObjectPostPass(renderer, obj);
             }
         }
 
-        private void ProcessObjectPostPass(Renderer renderer)
+        private void ProcessObjectPostPass(Renderer renderer, GameObject sourceObj)
         {
             GameObject obj = renderer.gameObject;
 
@@ -689,13 +689,24 @@ namespace Reallusion.Import
                     // Fix ray tracing and shadow casting
                     FixRayTracing(obj, sharedMat, materialType);
 
-                    if (materialType == MaterialType.Head && characterInfo.FeatureUseWrinkleMaps)
+                    if (materialType == MaterialType.Head)
                     {
-                        if (renderer.GetType() == typeof(SkinnedMeshRenderer))
+                        if (characterInfo.FeatureUseWrinkleMaps)
                         {
-                            //AddWrinkleManager(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
-                            AddWrinkleManagerReflection(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
-                        }   
+                            if (renderer.GetType() == typeof(SkinnedMeshRenderer))
+                            {
+                                //AddWrinkleManager(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
+                                AddWrinkleManagerReflection(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
+                            }
+                        }
+
+                        if (characterInfo.FeatureUseWrinkleMaps) //FeatureUseBoneDriver)
+                        {
+                            if (renderer.GetType() == typeof(SkinnedMeshRenderer))
+                            {
+                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj);
+                            }
+                        }
                     }
                 }
             }
