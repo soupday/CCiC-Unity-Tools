@@ -90,7 +90,7 @@ namespace Reallusion.Import
             string path = AssetDatabase.GetAssetPath(parentObject);
             Debug.Log("prefab path:" + path);
 
-            SetupBoneDriverReflection(cCBaseBody, smr, AssetDatabase.GetAssetPath(jsonObject), model);
+            SetupBoneDriverReflection(cCBaseBody, smr, AssetDatabase.GetAssetPath(jsonObject), model, true, true);
         }
 
         void TestFindExtraShapes()
@@ -147,7 +147,7 @@ namespace Reallusion.Import
         #endregion Test UI
 
         #region Utils
-        public static void SetupBoneDriverReflection(GameObject obj, SkinnedMeshRenderer smr, string jsonPath, GameObject sourceObject)
+        public static void SetupBoneDriverReflection(GameObject obj, SkinnedMeshRenderer smr, string jsonPath, GameObject sourceObject, bool bonesEnable, bool expressionEnable)
         {
             TextAsset jsonAsset = null;
 
@@ -158,7 +158,7 @@ namespace Reallusion.Import
             ExpressionGlossary glossary = BuildExpressionGlossary(sourceObject, smr, jsonAsset.text);
             string jsonSetupString = JsonConvert.SerializeObject(glossary);
 
-            SetupBoneDriver(AddBoneDriver(obj), jsonSetupString);
+            SetupBoneDriver(AddBoneDriver(obj), jsonSetupString, bonesEnable, expressionEnable);
         }
 
         private static Component AddBoneDriver(GameObject obj)
@@ -183,7 +183,7 @@ namespace Reallusion.Import
             return boneDriver;
         }
 
-        private static void SetupBoneDriver(Component boneDriver, string jsonSetupString)
+        private static void SetupBoneDriver(Component boneDriver, string jsonSetupString, bool bonesEnable, bool expressionEnable)
         {
             MethodInfo SetupBoneDriver = null;
             if (boneDriver != null)
@@ -192,7 +192,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(string) },
+                                    new Type[] { typeof(string), typeof(bool), typeof(bool) },
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -207,7 +207,7 @@ namespace Reallusion.Import
                 return;
             }
 
-            SetupBoneDriver.Invoke(boneDriver, new object[] { jsonSetupString });
+            SetupBoneDriver.Invoke(boneDriver, new object[] { jsonSetupString, bonesEnable, expressionEnable });
         }
 
         public static string[] RetrieveBoneArray(GameObject obj)
@@ -337,12 +337,16 @@ namespace Reallusion.Import
             {
                 foreach (var bone in expression.Value)
                 {
-                    Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
-                    Quaternion skeletonRotation = skeleton.FirstOrDefault(x => x.name == bone.Key).rotation;
+                    try
+                    {
+                        Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
+                        Quaternion skeletonRotation = skeleton.FirstOrDefault(x => x.name == bone.Key).rotation;
 
-                    var matches = glossary.ExpressionsByBone.Where(p => p.BoneName == bone.Key);
-                    if (matches.Count() == 0)
-                        glossary.ExpressionsByBone.Add(new ExpressionByBone(bone.Key, skeletonPosition, skeletonRotation));
+                        var matches = glossary.ExpressionsByBone.Where(p => p.BoneName == bone.Key);
+                        if (matches.Count() == 0)
+                            glossary.ExpressionsByBone.Add(new ExpressionByBone(bone.Key, skeletonPosition, skeletonRotation));
+                    }
+                    catch { Debug.Log("Error building ExpressionGlossary"); }
                 }
             }
 
@@ -355,8 +359,9 @@ namespace Reallusion.Import
                     {
                         if (ebb.BoneName == bone.Key)
                         {
+                            bool isViseme = expression.Key.StartsWith("V_");
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
-                            ebb.Expressions.Add(new Expression(expression.Key, index, bone.Value.Translate, bone.Value.Rotation));
+                            ebb.Expressions.Add(new Expression(expression.Key, index, isViseme, bone.Value.Translate, bone.Value.Rotation));
                         }
                     }
                 }
@@ -465,20 +470,21 @@ namespace Reallusion.Import
         {
             public string ExpressionName;
             public int BlendShapeIndex;
+            public bool isViseme;
 
             public float[] TranslateArr;
             public float[] RotationArr;
-
 
             [JsonIgnore]
             public Vector3 Translate;
             [JsonIgnore]
             public Quaternion Rotation;
 
-            public Expression(string name, int index, Vector3 translate, Vector4 rotation)
+            public Expression(string name, int index, bool viseme, Vector3 translate, Vector4 rotation)
             {
                 ExpressionName = name;
                 BlendShapeIndex = index;
+                isViseme = viseme;
                 TranslateArr = new float[] { translate.x, translate.y, translate.z };
                 RotationArr = new float[] { rotation.x, rotation.y, rotation.z, rotation.w };
             }

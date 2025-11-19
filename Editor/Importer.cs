@@ -700,11 +700,11 @@ namespace Reallusion.Import
                             }
                         }
 
-                        if (characterInfo.FeatureUseWrinkleMaps) //FeatureUseBoneDriver)
+                        if (characterInfo.FeatureUseBoneDriver || characterInfo.FeatureUseExpressionTranspose)
                         {
                             if (renderer.GetType() == typeof(SkinnedMeshRenderer))
                             {
-                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj);
+                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj, characterInfo.FeatureUseBoneDriver, characterInfo.FeatureUseExpressionTranspose);
                             }
                         }
                     }

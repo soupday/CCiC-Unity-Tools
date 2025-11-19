@@ -50,6 +50,8 @@ namespace Reallusion.Import
             TexturePacking = 4096,
             DualSpecularSkin = 8192,
             AmplifyShaders = 16384,
+            BoneDriver = 32768,
+            ExpressionTranspose = 65536,
         }
 
         public enum ExportType
@@ -238,7 +240,8 @@ namespace Reallusion.Import
         public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
         public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
         public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;
-
+        public bool FeatureUseBoneDriver => (ShaderFlags & ShaderFeatureFlags.BoneDriver) > 0;
+        public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -853,7 +856,13 @@ namespace Reallusion.Import
             if (HasDisplacement())
             {
                 ShaderFlags |= ShaderFeatureFlags.Displacement;
-            }            
+            }
+            
+            if (HasExpressionBones())
+            {
+                ShaderFlags |= ShaderFeatureFlags.BoneDriver;
+                ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
+            }
         }
 
         public void InitPhysics()
@@ -946,6 +955,12 @@ namespace Reallusion.Import
         public bool HasDisplacement()
         {
             return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
+        }
+
+        public bool HasExpressionBones()
+        {
+            string jsonPath = name + "/Object/" + name + "/Expression";
+            return JsonData.PathExists(jsonPath);
         }
         
         public bool HasWrinkleDisplacement()
