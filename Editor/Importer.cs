@@ -427,7 +427,7 @@ namespace Reallusion.Import
                 if (replace) Util.LogInfo("Retargeting all imported animations.");
 
                 // clipListForTimeLine provides a reference to be used by UnityLinkImporter to assemble a timeline object from the prefabAsset
-                clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, replace, motionPrefix);                
+                clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(fbxPath, prefabInstance, characterInfo, replace, motionPrefix);                
 
                 // create default animator if there isn't one:
                 //  commenting out due to a unity bug in 2022+,
@@ -3589,7 +3589,7 @@ namespace Reallusion.Import
                 // extract and retarget animations if needed.                
                 bool replace = characterInfo.AnimationNeedsRetargeting();
                 if (replace) Util.LogInfo("Retargeting all imported animations: " + motionAssetPath);
-                AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionAssetPath, targetCharacterModel, replace);
+                AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionAssetPath, targetCharacterModel, characterInfo, replace);
                 characterInfo.UpdateAnimationRetargeting();
             }            
         }

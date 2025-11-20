@@ -1771,7 +1771,7 @@ namespace Reallusion.Import
                 characterPrefab = contextCharacter.Fbx;
             }
 
-            AnimRetargetGUI.GenerateCharacterTargetedAnimations(contextCharacter.path, characterPrefab, true);
+            AnimRetargetGUI.GenerateCharacterTargetedAnimations(contextCharacter.path, characterPrefab, contextCharacter, true);
             List<string> motionGuids = contextCharacter.GetMotionGuids();
             if (motionGuids.Count > 0)
             {
@@ -1779,7 +1779,7 @@ namespace Reallusion.Import
                 foreach (string motionGuid in motionGuids)
                 {
                     string motionPath = AssetDatabase.GUIDToAssetPath(motionGuid);
-                    AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionPath, characterPrefab, true);
+                    AnimRetargetGUI.GenerateCharacterTargetedAnimations(motionPath, characterPrefab, contextCharacter, true);
                 }
             }
             contextCharacter.UpdateAnimationRetargeting();

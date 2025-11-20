@@ -269,6 +269,31 @@ namespace Reallusion.Import
             return strings;
         }
 
+        public static GameObject GetBoneDriverGameObjectReflection(GameObject obj)
+        {
+            Type BoneDriver = null;
+            if (BoneDriver == null)
+            {
+                BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
+                if (BoneDriver == null)
+                {
+                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class.");
+                    return null;
+                }
+                else
+                {
+                    Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                }
+            }
+
+            Component boneDriver = obj.GetComponentInChildren(BoneDriver);
+            if (boneDriver != null)
+            {
+                return boneDriver.gameObject;
+            }
+            return null;
+        }
+
         public static Dictionary<string, Dictionary<string, BoneData>> ExtractExpressionData(string jsonString)
         {
             var result = new Dictionary<string, Dictionary<string, BoneData>>();
@@ -370,7 +395,7 @@ namespace Reallusion.Import
         }
 
         public static Dictionary<string, List<string>> FindExcessBlendShapes(GameObject obj)
-        {
+        {            
             Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
 
             SkinnedMeshRenderer[] renderers = obj.transform.parent.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();

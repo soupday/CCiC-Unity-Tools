@@ -1092,7 +1092,7 @@ namespace Reallusion.Import
 
             if (curve != null)
             {
-                if (curve.length > 2) return true;
+                //if (curve.length > 2) return true;
                 for (int i = 0; i < curve.length; i++)
                 {
                     if (Mathf.Abs(curve.keys[i].value) > 0.001f) return true;
@@ -1102,14 +1102,11 @@ namespace Reallusion.Import
             return false;
         }
 
-        public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip, 
-            GameObject targetCharacterModel, bool log = true)
+        public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip,
+            GameObject targetCharacterModel, CharacterInfo info = null, bool log = true)
         {
             if (!(originalClip && workingClip)) return;
 
-            const string blendShapePrefix = "blendShape."; 
-            
-            Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
             FacialProfile meshProfile = FacialProfileMapper.GetMeshFacialProfile(targetCharacterModel);
             if (!meshProfile.HasFacialShapes)
             {
@@ -1137,7 +1134,99 @@ namespace Reallusion.Import
                 }
             }
 
+            if (info != null && info.FeatureUseBoneDriver)
+            {
+                PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel);
+            }
+
+            if (info != null && info.FeatureUseExpressionTranspose)
+            {
+                PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+            }
+            else
+            {
+                RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+            }
+        }
+
+        public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel)
+        {
+            // needs a set up bonedriver component to interrogate for the expression glossary
+            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
+            if (bd == null) return;
+
+            BoneEditor.ExpressionGlossary glossary;
+        }
+
+        public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile)
+        {
+            const string blendShapePrefix = "blendShape.";
+
             EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
+            // Data looks like this:
+            // path: "Circle_Sparse"  propertyName: "blendShape.Tongue_Twist_R"  for blendshapes on a mesh
+            // path: "" propertyName: "Jaw Close"
+            // path: "" propertyName: "Jaw Left-Right" for mechanim tracks
+
+
+            // get a dictionary of blend shapes that are not contained in the CC_Base_Body or CC_Base_Tongue meshes
+            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
+            if (bd == null) return;
+
+            Dictionary <string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
+            // this is a list to keep
+                        
+            List<(string, string)> keepMe = new List<(string, string)> ();
+            foreach (var path in excessBlendhsapes)
+            {
+                foreach (string prop in path.Value)
+                {
+                    (string, string) entry = (path.Key, prop);
+                    keepMe.Add(entry);
+                }
+            }
+
+            // Get a list of EditorCurveBindings in the animation clip that should be kept
+            List<EditorCurveBinding> bindingFilter = new List<EditorCurveBinding>();
+            foreach (var entry in keepMe)
+            {
+                EditorCurveBinding bindingToKeep = sourceCurveBindings.FirstOrDefault(p => p.path == entry.Item1 && p.propertyName == blendShapePrefix + entry.Item2);
+                if (!string.IsNullOrEmpty(bindingToKeep.path) && !string.IsNullOrEmpty(bindingToKeep.propertyName))
+                {
+                    //Debug.Log($"Do Not purge: {bindingToKeep.path} {bindingToKeep.propertyName}  ----  {entry.Item1} {blendShapePrefix + entry.Item2}");
+                    bindingFilter.Add(bindingToKeep);
+                }
+            }
+
+            foreach (EditorCurveBinding binding in sourceCurveBindings)
+            {
+                bool purge = false;
+                purge = !CurveHasData(binding, workingClip);
+
+                if (binding.path != "CC_Base_Body" && binding.path != "CC_Base_Tongue")
+                {
+                    if (binding.propertyName.StartsWith(blendShapePrefix))
+                    {
+                        if (!bindingFilter.Contains(binding))
+                        {
+                            Debug.Log($"Pruging {binding.path} {binding.propertyName}");
+                            purge = true;
+                        }
+                    }
+                }
+                if (purge) AnimationUtility.SetEditorCurve(workingClip, binding, null);
+            }
+
+            // Need to transpose any blendhapes from the animations facial profile to the mesh's profile
+
+        }
+
+        public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
+        {
+            EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
+            Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
+
+            const string blendShapePrefix = "blendShape.";
 
             // Find all of the blendshape relevant binding paths that are not needed in the target animation        
             List<string> uniqueSourcePaths = new List<string>();
@@ -1176,14 +1265,14 @@ namespace Reallusion.Import
             string report = "";
 
             // build a cache of the blend shape names and their curve bindings:
-            Dictionary<string, EditorCurveBinding> cache = new Dictionary<string, EditorCurveBinding>();            
+            Dictionary<string, EditorCurveBinding> cache = new Dictionary<string, EditorCurveBinding>();
             for (int i = 0; i < sourceCurveBindings.Length; i++)
             {
-                if (CurveHasData(sourceCurveBindings[i], workingClip) && 
+                if (CurveHasData(sourceCurveBindings[i], workingClip) &&
                     sourceCurveBindings[i].propertyName.StartsWith(blendShapePrefix))
                 {
                     string blendShapeName = sourceCurveBindings[i].propertyName.Substring(blendShapePrefix.Length);
-                    string profileBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);                    
+                    string profileBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
                     if (!string.IsNullOrEmpty(profileBlendShapeName))
                     {
                         List<string> multiProfileName = FacialProfileMapper.GetMultiShapeNames(profileBlendShapeName);
@@ -1222,10 +1311,10 @@ namespace Reallusion.Import
                     for (int j = 0; j < smr.sharedMesh.blendShapeCount; j++)
                     {
                         string blendShapeName = smr.sharedMesh.GetBlendShapeName(j);
-                        string targetPropertyName = blendShapePrefix + blendShapeName;                        
+                        string targetPropertyName = blendShapePrefix + blendShapeName;
 
                         if (cache.TryGetValue(blendShapeName, out EditorCurveBinding sourceCurveBinding))
-                        {                            
+                        {
                             CopyCurve(originalClip, workingClip, go.name, targetPropertyName, sourceCurveBinding);
 
                             if (!mappedBlendShapes.Contains(blendShapeName))
@@ -1242,12 +1331,12 @@ namespace Reallusion.Import
             report += "\n";
             int curvesFailedToMap = 0;
             foreach (string shape in cache.Keys)
-            {                
+            {
                 if (!mappedBlendShapes.Contains(shape))
                 {
                     curvesFailedToMap++;
                     report += "Could not find BlendShape: " + shape + " in target character.\n";
-                }                
+                }
             }
 
             string reportHeader = "Blendshape Mapping report:\n";
@@ -1256,7 +1345,7 @@ namespace Reallusion.Import
 
             if (log) Util.LogAlways(reportHeader + report);
 
-            bool PURGE = true; 
+            bool PURGE = true;
             // Purge all curves from the animation that dont have a valid path in the target object                    
             if (PURGE)
             {
@@ -1279,10 +1368,10 @@ namespace Reallusion.Import
                             }
                         }
                     }
-                }                
+                }
             }
         }
-
+        
         static string GenerateClipAssetPath(AnimationClip originalClip, string characterFbxPath, string prefix = "", bool overwrite = false)
         {
             if (!originalClip || string.IsNullOrEmpty(characterFbxPath)) return null;
@@ -1506,8 +1595,9 @@ namespace Reallusion.Import
         }
 
         public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath, 
-            GameObject targetCharacterModel, bool replaceIfExists, string motionPrefix = null)
+            GameObject targetCharacterModel, CharacterInfo info, bool replaceIfExists, string motionPrefix = null)
         {
+
             List<AnimationClip> animationClips = new List<AnimationClip>();
 
             AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);            
@@ -1531,7 +1621,7 @@ namespace Reallusion.Import
                         continue;
                     }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
-                    RetargetBlendShapes(clip, workingClip, targetCharacterModel, false);
+                    RetargetBlendShapes(clip, workingClip, targetCharacterModel, info, false);
                     AnimationClip asset = WriteAnimationToAssetDatabase(workingClip, assetPath, false);
                     animationClips.Add(asset);
                     index++;
