@@ -27,6 +27,14 @@ using System.Linq;
 
 namespace Reallusion.Import
 {
+    public enum MaterialNodeType
+    {
+        None,
+        Hair,
+        Beard,
+        Brow,
+        Eyelash,
+    }
     public enum BaseGeneration
     {
         None,
@@ -172,7 +180,7 @@ namespace Reallusion.Import
             switch(importSet)
             {
                 case 0: // From CC3/4
-                    if (Importer.BUILD_NORMALS_MODE == 0)
+                    if (Importer.BUILD_NORMALS_MODE == 1)
                     {
                         importer.importNormals = ModelImporterNormals.Import;
                         importer.importBlendShapes = true;
@@ -180,7 +188,7 @@ namespace Reallusion.Import
                         importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
                         importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
                         importer.normalSmoothingAngle = 120f;
-                        ForceLegacyBlendshapeNormals(importer, false);
+                        ForceLegacyBlendshapeNormals(importer, true);
                     }
                     else
                     {
@@ -194,7 +202,7 @@ namespace Reallusion.Import
                     }
                     break;
                 case 1: // From Blender
-                    if (Importer.BUILD_NORMALS_MODE == 0)
+                    if (Importer.BUILD_NORMALS_MODE == 1)
                     {
                         importer.importNormals = ModelImporterNormals.Import;
                         importer.importBlendShapes = true;

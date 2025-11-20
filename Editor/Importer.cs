@@ -193,12 +193,12 @@ namespace Reallusion.Import
         {
             get
             {
-                return EditorPrefs.GetInt("RL_Build_Normals_Mode", 0);
+                return EditorPrefs.GetInt("RL_Build_Normals_Mode_V2", 0);
             }
 
             set
             {
-                EditorPrefs.SetInt("RL_Build_Normals_Mode", value);
+                EditorPrefs.SetInt("RL_Build_Normals_Mode_V2", value);
             }
         }
 
@@ -720,17 +720,33 @@ namespace Reallusion.Import
                 string customShader = matJson?.GetStringValue("Custom Shader/Shader Name", defaultType);                
                 bool hasOpacity = false;
                 bool blendOpacity = false;
-                if (Util.NameContainsKeywords(sourceName, "Transparency", "Alpha", "Opacity", "Lenses", "Lens", "Glass", "Glasses", "Blend"))
+                bool diffuseHasAlpha = false;
+
+                string jsonTexturePath = matJson.GetStringValue("Textures/Base Color/Texture Path");
+                if (!string.IsNullOrEmpty(jsonTexturePath))
                 {
-                    hasOpacity = true;
-                    blendOpacity = true;
+                    string assetPath = Util.CombineJsonTexPath(fbxFolder, jsonTexturePath);
+                    TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+                    if (textureImporter != null)
+                    {
+                        diffuseHasAlpha = textureImporter.DoesSourceTextureHaveAlpha();
+                    }
                 }
 
-                if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap") ||
-                    Util.NameContainsKeywords(obj.name, "Eyelash_"))
+                if (diffuseHasAlpha)
                 {
-                    hasOpacity = true;
-                    blendOpacity = true;
+                    if (Util.NameContainsKeywords(sourceName, "Transparency", "Alpha", "Opacity", "Lenses", "Lens", "Glass", "Glasses", "Blend"))
+                    {
+                        hasOpacity = true;
+                        blendOpacity = true;
+                    }
+
+                    if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap") ||
+                        Util.NameContainsKeywords(obj.name, "Eyelash_"))
+                    {
+                        hasOpacity = true;
+                        blendOpacity = true;
+                    }
                 }
 
                 if (matJson != null)
@@ -743,7 +759,7 @@ namespace Reallusion.Import
                         hasOpacity = true;
                         blendOpacity = true;
                     }
-                }                
+                }
 
                 if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R"))
                 {
@@ -1418,6 +1434,18 @@ namespace Reallusion.Import
             }
         }
 
+        private MaterialNodeType GetMaterialNodeType(QuickJSON matJson)
+        {
+            try
+            {
+                return (MaterialNodeType)Enum.Parse(typeof(MaterialNodeType), matJson.GetStringValue("Node Type", "None"));
+            }
+            catch             
+            { 
+                return MaterialNodeType.None;
+            }
+        }
+
         private void ConnectDefaultMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
             MaterialType materialType, QuickJSON matJson)
         {
@@ -1425,7 +1453,8 @@ namespace Reallusion.Import
             string jsonMaterialType = matJson?.GetStringValue("Material Type");
             bool isGameBaseSkin = sourceName.iContains("Ga_Skin_");
             int numGameBaseSkinMaterials = CountMaterials(obj, "Ga_Skin_");
-            bool allowSpecular = customShader != "Reflection Surface";            
+            bool allowSpecular = customShader != "Reflection Surface";
+            MaterialNodeType nodeType = GetMaterialNodeType(matJson);
 
             if (jsonMaterialType == "Tra")
             {
@@ -1888,6 +1917,25 @@ namespace Reallusion.Import
                     }
                 }
             }
+
+            if (nodeType == MaterialNodeType.Hair || 
+                nodeType == MaterialNodeType.Brow || 
+                nodeType == MaterialNodeType.Eyelash || 
+                nodeType == MaterialNodeType.Beard)
+            {
+                if (RP == RenderPipeline.HDRP)
+                {
+                    mat.SetFloatIf("_EnableBlendModePreserveSpecularLighting", 0f);
+                }
+                else if (RP == RenderPipeline.URP)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
         }
 
         private void ConnectSSSMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
@@ -2118,7 +2166,7 @@ namespace Reallusion.Import
                 float smoothnessMin = Mathf.Clamp01(1.0f - matJson.GetFloatValue("Custom Shader/Variable/Original Roughness Strength", 1.0f));
                 mat.SetFloatIf("_SmoothnessMin", smoothnessMin);
                 mat.SetFloatIf("_SmoothnessMax", smoothnessMax);
-                mat.SetFloat("_SmoothnessContrast", 1.0f);
+                mat.SetFloat("_SmoothnessContrast", 1.35f);
                 mat.SetFloatIf("_SecondarySmoothness", 0.5f);
                 mat.SetFloatIf("_SubsurfaceScale", 1.65f * matJson.GetFloatValue("Subsurface Scatter/Lerp"));                
                 mat.SetColorIf("_SubsurfaceFalloff", sssFalloff);
@@ -2459,18 +2507,12 @@ namespace Reallusion.Import
                 }
 
                 mat.SetFloatIf("_IrisSmoothness", 0f); // 1f - matJson.GetFloatValue("Custom Shader/Variable/_Iris Roughness"));
-                mat.SetFloatIf("_IrisBrightness", 1.5f * matJson.GetFloatValue("Custom Shader/Variable/Iris Color Brightness"));
+                mat.SetFloatIf("_IrisBrightness", 1.0f * matJson.GetFloatValue("Custom Shader/Variable/Iris Color Brightness"));
+                mat.SetFloatIf("_IrisInnerBrightness", 2.0f);
                 mat.SetFloatIf("_IOR", matJson.GetFloatValue("Custom Shader/Variable/_IoR"));
                 mat.SetFloatIf("_IrisRadius", matJson.GetFloatValue("Custom Shader/Variable/Iris UV Radius"));                
                 mat.SetFloatIf("_LimbusWidth", matJson.GetFloatValue("Custom Shader/Variable/Limbus UV Width Color"));                
-                /*
-                float ds = Mathf.Pow(0.01f, 0.2f) / limbusDarkScale;
-                float dm = Mathf.Pow(0.5f, 0.2f) / limbusDarkScale;                
-                mat.SetFloatIf("_LimbusDarkRadius", ds);
-                //mat.SetFloatIf("_LimbusDarkWidth", 2f * (dm - ds));
-                mat.SetFloatIf("_LimbusDarkWidth", Mathf.Max(0.05f, 0.14f - ds));
-                */                                          
-                mat.SetFloatIf("_LimbusContrast", 1.1f);
+                mat.SetFloatIf("_LimbusContrast", 1.0f);
                 float scleraBrightnessPower = 0.65f;
                 float scleraBrightness = Mathf.Pow(matJson.GetFloatValue("Custom Shader/Variable/ScleraBrightness"), scleraBrightnessPower);
                 if (Pipeline.isHDRP) scleraBrightnessPower = 0.75f;
@@ -2478,24 +2520,22 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_ScleraSaturation", 1f);
                 mat.SetFloatIf("_ScleraHue", 0.51f);
                 mat.SetFloatIf("_ScleraSmoothness", MAX_SMOOTHNESS - MAX_SMOOTHNESS * matJson.GetFloatValue("Custom Shader/Variable/Sclera Roughness"));
-                mat.SetFloatIf("_CorneaSmoothness", MAX_SMOOTHNESS);
+                mat.SetFloatIf("_CorneaSmoothness", characterInfo.RefractiveEyes ? 1.0f : MAX_SMOOTHNESS);
                 mat.SetFloatIf("_ScleraScale", matJson.GetFloatValue("Custom Shader/Variable/Sclera UV Radius"));
                 mat.SetFloatIf("_ScleraNormalStrength", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Flatten Normal"));
                 mat.SetFloatIf("_ScleraNormalTiling", 1f / Mathf.Clamp(matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 5f));
-                mat.SetFloatIf("_IsLeftEye", isLeftEye ? 1f : 0f);
-
-                mat.SetFloatIf("_LimbusDarkRadius", 0.085f);
-                mat.SetFloatIf("_LimbusDarkWidth", 0.04f);
+                mat.SetFloatIf("_IsLeftEye", isLeftEye ? 1f : 0f);                
                 float limbusDarkScale = Mathf.Max(0f, matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale"));
-                float limbusColorDark = Mathf.Pow(1f - (limbusDarkScale / 10f), 0.2f);
-                float lc = Mathf.Lerp(0.2f, scleraBrightness, limbusColorDark);
-                mat.SetColorIf("_LimbusColor", new Color(lc, lc, lc));
+                mat.SetFloatIf("_LimbusDarkScale", limbusDarkScale);
+                mat.SetColorIf("_LimbusColor", Color.black);
             }
         }
 
         private void ConnectHQHairMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,
             MaterialType materialType, QuickJSON matJson)
-        {                                    
+        {
+            MaterialNodeType nodeType = GetMaterialNodeType(matJson);
+
             if (!ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",
                     TexCategory.HighDetail,
@@ -2571,24 +2611,13 @@ namespace Reallusion.Import
             float specularMin = ValueByPipeline(0.05f, 0f, 0f);
             float specularMax = ValueByPipeline(0.5f, 0.4f, 0.65f);
 
-            bool isFacialHair = MeshUtil.MeshIsFacialHair(obj);
-            if (isFacialHair)
-            {
-                // make facial hair thinner and rougher  
-                smoothnessContrast = ValueByPipeline(1.25f, 1.25f, 1.25f);
-                specularPowerMod = ValueByPipeline(1f, 1f, 1f);
-                mat.SetFloatIf("_DepthPrepass", 0.75f);                
-                mat.SetFloatIf("_AlphaContrast", 1.25f);
-                mat.SetFloatIf("_AlphaStrength", 1.0f);
-                mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
-            }
-
-            bool isEyeBrow = MeshUtil.MeshIsEyebrow(obj);
-            bool isEyelash = MeshUtil.MeshIsEyelash(obj);
-            if (isEyelash || isEyeBrow)
-            {
-                mat.SetFloatIf("_ShadowClip", 1.0f);
-            }
+            bool isFacialHair = MeshUtil.MeshIsFacialHair(obj) ||
+                                nodeType == MaterialNodeType.Beard ||
+                                nodeType == MaterialNodeType.Eyelash ||
+                                nodeType == MaterialNodeType.Brow;
+            bool isEyeBrow = MeshUtil.MeshIsEyebrow(obj) || nodeType == MaterialNodeType.Brow;
+            bool isEyelash = MeshUtil.MeshIsEyelash(obj) || nodeType == MaterialNodeType.Eyelash;
+            bool isBeard = !isEyeBrow && !isEyelash && (MeshUtil.MeshIsFacialHair(obj) || nodeType == MaterialNodeType.Beard);            
 
             Color diffuseColor = Color.white;
 
@@ -2710,6 +2739,23 @@ namespace Reallusion.Import
             }
 
             mat.SetFloatIf("_Displace", 1f / 4000f);
+
+            // node type overrides
+            if (isFacialHair)
+            {
+                // make facial hair thinner and rougher  
+                smoothnessContrast = ValueByPipeline(1.25f, 1.25f, 1.25f);
+                specularPowerMod = ValueByPipeline(1f, 1f, 1f);
+                mat.SetFloatIf("_DepthPrepass", 0.75f);
+                //mat.SetFloatIf("_AlphaContrast", 1.25f);
+                //mat.SetFloatIf("_AlphaStrength", 1.0f);
+                mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
+            }
+
+            if (isEyelash || isEyeBrow)
+            {
+                mat.SetFloatIf("_ShadowClip", 1.0f);
+            }
         }
 
         private void ConnectHQEyeOcclusionMaterial(GameObject obj, string sourceName, Material sharedMat, Material mat,

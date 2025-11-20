@@ -1335,7 +1335,7 @@ namespace Reallusion.Import
                 GUILayout.Space(ROW_SPACE);
             }*/
             
-            string[] options = new string[] { "Import Normals", "Calculate Normals" };
+            string[] options = new string[] { "Calculate Normals", "Import Normals" };
             void UpdateBuildNormalsMode(object value) { Importer.BUILD_NORMALS_MODE = (int)value; }
             DropDownBox(options, Importer.BUILD_NORMALS_MODE, UpdateBuildNormalsMode);
             GUILayout.Space(ROW_SPACE);

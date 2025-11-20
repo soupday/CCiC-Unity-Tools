@@ -1157,6 +1157,7 @@ namespace Reallusion.Import
             {
                 bool hasHairMaterial = false;                
                 bool hasScalpMaterial = false;
+                int countScalpMaterials = 0;
                 int subMeshCount = 0;
                 int hairMeshCount = 0;
                 foreach (Material m in r.sharedMaterials)
@@ -1172,6 +1173,7 @@ namespace Reallusion.Import
                     else if (Util.NameContainsKeywords(m.name, "scalp", "base", "clap"))
                     {
                         hasScalpMaterial = true;
+                        countScalpMaterials++;
                     }
                 }
 
@@ -1338,10 +1340,11 @@ namespace Reallusion.Import
 
                         // if the hair mesh has a scalp or base then what remains should be the scalp/base
                         // in HDRP ray tracing this should be set to not ray trace.
-                        // but only if there is only the scalp material left:
-                        if (hasScalpMaterial && oldSmr.sharedMaterials.Length == 1)
+                        // but only if there is only the scalp materials left:
+                        if (hasScalpMaterial && oldSmr.sharedMaterials.Length == countScalpMaterials)
                         {
                             Pipeline.DisableRayTracing(oldSmr);
+                            oldSmr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                         }                        
 
                         processCount++;
