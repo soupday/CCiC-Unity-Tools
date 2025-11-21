@@ -1137,7 +1137,7 @@ namespace Reallusion.Import
             if (info != null && info.FeatureUseBoneDriver)
             {
                 PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel);
-            }
+            } 
 
             if (info != null && info.FeatureUseExpressionTranspose)
             {
@@ -1155,7 +1155,307 @@ namespace Reallusion.Import
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null) return;
 
-            BoneEditor.ExpressionGlossary glossary;
+            SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
+            if (smr == null) return;
+
+            Dictionary<string, List<string>> dict = BoneEditor.RetrieveBoneDictionary(bd);
+            // check CC_Base_Body (implicitly the bonedriver bearing gameobject) for blendshapes -  if 
+            // all blendshapes are present which influence a bone then purge the mechanim tracks
+            // associated with that bone - to allow only the expression to deform the bone
+
+            EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
+
+#if EXTRACT_NAMES
+            // temp name extraction
+            string report1 = "";
+            foreach (var dictEntry in dict)
+            {
+                report1 += $"{dictEntry.Key},\n";                
+            }
+            Debug.Log(report1);
+
+            /*
+            CC_Base_JawRoot,
+            CC_Base_Teeth02,
+            CC_Base_L_Eye,
+            CC_Base_R_Eye,
+            CC_Base_Tongue01,
+            CC_Base_UpperJaw,
+            CC_Base_Teeth01,
+            CC_Base_Head,
+            */
+
+            
+            string report2 = "";
+            foreach (var sourceCurveBinding in sourceCurveBindings)
+            {
+                if (string.IsNullOrEmpty(sourceCurveBinding.path))
+                    report2 += $"{sourceCurveBinding.propertyName},\n";
+            }
+            Debug.Log(report2);
+
+            /*
+            Left Eye Down - Up,
+            Left Eye In - Out,
+            Right Eye Down - Up,
+            Right Eye In - Out,
+            Jaw Close,
+            Jaw Left - Right,
+            Head Nod Down - Up,
+            Head Tilt Left - Right,
+            Head Turn Left - Right,
+            */
+
+            /*
+            RootT.x,
+            RootT.y,
+            RootT.z,
+            RootQ.x,
+            RootQ.y,
+            RootQ.z,
+            RootQ.w,
+            LeftFootT.x,
+            LeftFootT.y,
+            LeftFootT.z,
+            LeftFootQ.x,
+            LeftFootQ.y,
+            LeftFootQ.z,
+            LeftFootQ.w,
+            RightFootT.x,
+            RightFootT.y,
+            RightFootT.z,
+            RightFootQ.x,
+            RightFootQ.y,
+            RightFootQ.z,
+            RightFootQ.w,
+            LeftHandT.x,
+            LeftHandT.y,
+            LeftHandT.z,
+            LeftHandQ.x,
+            LeftHandQ.y,
+            LeftHandQ.z,
+            LeftHandQ.w,
+            RightHandT.x,
+            RightHandT.y,
+            RightHandT.z,
+            RightHandQ.x,
+            RightHandQ.y,
+            RightHandQ.z,
+            RightHandQ.w,
+            Spine Front-Back,
+            Spine Left-Right,
+            Spine Twist Left - Right,
+            Chest Front-Back,
+            Chest Left-Right,
+            Chest Twist Left - Right,
+            UpperChest Front-Back,
+            UpperChest Left-Right,
+            UpperChest Twist Left - Right,
+            Neck Nod Down - Up,
+            Neck Tilt Left - Right,
+            Neck Turn Left - Right,
+            Head Nod Down - Up,
+            Head Tilt Left - Right,
+            Head Turn Left - Right,
+            Left Eye Down - Up,
+            Left Eye In - Out,
+            Right Eye Down - Up,
+            Right Eye In - Out,
+            Jaw Close,
+            Jaw Left - Right,
+            Left Upper Leg Front-Back,
+            Left Upper Leg In-Out,
+            Left Upper Leg Twist In - Out,
+            Left Lower Leg Stretch,
+            Left Lower Leg Twist In-Out,
+            Left Foot Up - Down,
+            Left Foot Twist In-Out,
+            Left Toes Up - Down,
+            Right Upper Leg Front-Back,
+            Right Upper Leg In-Out,
+            Right Upper Leg Twist In - Out,
+            Right Lower Leg Stretch,
+            Right Lower Leg Twist In-Out,
+            Right Foot Up - Down,
+            Right Foot Twist In-Out,
+            Right Toes Up - Down,
+            Left Shoulder Down - Up,
+            Left Shoulder Front - Back,
+            Left Arm Down - Up,
+            Left Arm Front - Back,
+            Left Arm Twist In-Out,
+            Left Forearm Stretch,
+            Left Forearm Twist In-Out,
+            Left Hand Down - Up,
+            Left Hand In - Out,
+            Right Shoulder Down - Up,
+            Right Shoulder Front - Back,
+            Right Arm Down - Up,
+            Right Arm Front - Back,
+            Right Arm Twist In-Out,
+            Right Forearm Stretch,
+            Right Forearm Twist In-Out,
+            Right Hand Down - Up,
+            Right Hand In - Out,
+            LeftHand.Thumb.1 Stretched,
+            LeftHand.Thumb.Spread,
+            LeftHand.Thumb.2 Stretched,
+            LeftHand.Thumb.3 Stretched,
+            LeftHand.Index.1 Stretched,
+            LeftHand.Index.Spread,
+            LeftHand.Index.2 Stretched,
+            LeftHand.Index.3 Stretched,
+            LeftHand.Middle.1 Stretched,
+            LeftHand.Middle.Spread,
+            LeftHand.Middle.2 Stretched,
+            LeftHand.Middle.3 Stretched,
+            LeftHand.Ring.1 Stretched,
+            LeftHand.Ring.Spread,
+            LeftHand.Ring.2 Stretched,
+            LeftHand.Ring.3 Stretched,
+            LeftHand.Little.1 Stretched,
+            LeftHand.Little.Spread,
+            LeftHand.Little.2 Stretched,
+            LeftHand.Little.3 Stretched,
+            RightHand.Thumb.1 Stretched,
+            RightHand.Thumb.Spread,
+            RightHand.Thumb.2 Stretched,
+            RightHand.Thumb.3 Stretched,
+            RightHand.Index.1 Stretched,
+            RightHand.Index.Spread,
+            RightHand.Index.2 Stretched,
+            RightHand.Index.3 Stretched,
+            RightHand.Middle.1 Stretched,
+            RightHand.Middle.Spread,
+            RightHand.Middle.2 Stretched,
+            RightHand.Middle.3 Stretched,
+            RightHand.Ring.1 Stretched,
+            RightHand.Ring.Spread,
+            RightHand.Ring.2 Stretched,
+            RightHand.Ring.3 Stretched,
+            RightHand.Little.1 Stretched,
+            RightHand.Little.Spread,
+            RightHand.Little.2 Stretched,
+            RightHand.Little.3 Stretched,
+            HeadTDOF.x,
+            HeadTDOF.y,
+            HeadTDOF.z,
+            LeftFootTDOF.x,
+            LeftFootTDOF.y,
+            LeftFootTDOF.z,
+            LeftToesTDOF.x,
+            LeftToesTDOF.y,
+            LeftToesTDOF.z,
+            RightFootTDOF.x,
+            RightFootTDOF.y,
+            RightFootTDOF.z,
+            RightToesTDOF.x,
+            RightToesTDOF.y,
+            RightToesTDOF.z,
+            LeftHandTDOF.y,
+            LeftHandTDOF.z,
+            RightHandTDOF.y,
+            RightHandTDOF.z,
+            */
+
+            /*
+            CC_Base_JawRoot,
+            CC_Base_Teeth02,
+            CC_Base_L_Eye,
+            CC_Base_R_Eye,
+            CC_Base_Tongue01,
+            CC_Base_UpperJaw,
+            CC_Base_Teeth01,
+            CC_Base_Head,
+            */
+            /*
+            string[] targetBindings = new string[]
+            {
+                "Left Eye Down - Up",
+                "Left Eye In - Out",
+                "Right Eye Down - Up",
+                "Right Eye In - Out",
+                "Jaw Close",
+                "Jaw Left - Right",
+                "Head Nod Down - Up",
+                "Head Tilt Left - Right",
+                "Head Turn Left - Right",
+            };
+            */
+#endif
+
+            string[] bonesToEvaluate = new string[] { "CC_Base_JawRoot", "CC_Base_L_Eye", "CC_Base_R_Eye", "CC_Base_Head" };
+
+            string[] jawCurves = new string[] { "Jaw Close", "Jaw Left-Right" };
+            string[] lEyeCurves = new string[] { "Left Eye Down-Up", "Left Eye In-Out" };
+            string[] rEyeCurves = new string[] { "Right Eye Down-Up", "Right Eye In-Out" };
+            string[] headCurves = new string[] { "Head Nod Down-Up", "Head Tilt Left-Right", "Head Turn Left-Right" };
+
+            foreach (var boneToEvaluate in bonesToEvaluate)
+            {
+                Debug.Log($"boneToEvaluate {boneToEvaluate}");
+                bool complete = true;
+                dict.TryGetValue(boneToEvaluate, out List<string> blendShapes);
+                if (blendShapes != null)
+                {
+                    foreach (var blendShape in blendShapes)
+                    {
+                        //Debug.Log($"testing blendShape = {blendShape}");
+                        if (smr.sharedMesh.GetBlendShapeIndex(blendShape) == -1) complete = false;
+                    }
+                }
+                //Debug.Log($"boneToEvaluate {boneToEvaluate} complete = {complete}");
+                if (complete)
+                {
+                    switch(boneToEvaluate)
+                    {
+                        case "CC_Base_JawRoot":
+                            {
+                                PurgeBindings(sourceCurveBindings, jawCurves, workingClip);
+                                break;
+                            }
+                        case "CC_Base_L_Eye":
+                            {
+                                PurgeBindings(sourceCurveBindings, lEyeCurves, workingClip);
+                                break;
+                            }
+                        case "CC_Base_R_Eye":
+                            {
+                                PurgeBindings(sourceCurveBindings, rEyeCurves, workingClip);
+                                break;
+                            }
+                        case "CC_Base_Head":
+                            {
+                                PurgeBindings(sourceCurveBindings, headCurves, workingClip);
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+
+        public static void PurgeBindings(EditorCurveBinding[] sourceCurveBindings, string[] bindings, AnimationClip clip)
+        {
+            foreach (string binding in bindings)
+            {
+                try
+                {
+                    EditorCurveBinding target = sourceCurveBindings.FirstOrDefault(x => x.propertyName == binding);
+                    if (!string.IsNullOrEmpty(target.propertyName))
+                    {
+                        //Debug.Log($"Purging {target.propertyName}");
+                        AnimationUtility.SetEditorCurve(clip, target, null);
+                    }
+                    else
+                    {
+                        Debug.Log($"Cannot Find {binding}");
+                    }
+                }
+                catch(Exception e)
+                {
+                    Debug.Log($"Purging Error {e.Message}");
+                }
+            }
         }
 
         public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile)
@@ -1209,16 +1509,14 @@ namespace Reallusion.Import
                     {
                         if (!bindingFilter.Contains(binding))
                         {
-                            Debug.Log($"Pruging {binding.path} {binding.propertyName}");
+                            //Debug.Log($"Pruging {binding.path} {binding.propertyName}");
                             purge = true;
                         }
                     }
                 }
                 if (purge) AnimationUtility.SetEditorCurve(workingClip, binding, null);
             }
-
             // Need to transpose any blendhapes from the animations facial profile to the mesh's profile
-
         }
 
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)

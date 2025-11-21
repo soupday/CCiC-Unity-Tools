@@ -269,6 +269,65 @@ namespace Reallusion.Import
             return strings;
         }
 
+        public static Dictionary<string, List<string>> RetrieveBoneDictionary(GameObject obj)
+        {
+            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+
+            Type BoneDriver = null;
+            if (BoneDriver == null)
+            {
+                BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
+                if (BoneDriver == null)
+                {
+                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class.");
+                    return dict;
+                }
+                else
+                {
+                    Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                }
+            }
+
+            Component boneDriver = obj.GetComponent(BoneDriver);
+            if (boneDriver != null)
+            {
+                MethodInfo QueryBoneDriver = null;
+                if (boneDriver != null)
+                {
+                    QueryBoneDriver = boneDriver.GetType().GetMethod("RetrieveBoneDictionary",
+                                        BindingFlags.Public | BindingFlags.Instance,
+                                        null,
+                                        CallingConventions.Any,
+                                        new Type[] { },
+                                        null);
+
+                    if (QueryBoneDriver == null)
+                    {
+                        Debug.LogWarning("QueryBoneDriver MethodInfo cannot be determined");
+                        return dict;
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component.");
+                    return dict;
+                }
+
+
+                var result = QueryBoneDriver.Invoke(boneDriver, new object[] { });
+                if (result != null)
+                {
+                    dict = (Dictionary<string, List<string>>)result;
+                    return dict;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body.");
+            }
+            return dict;
+        }
+
         public static GameObject GetBoneDriverGameObjectReflection(GameObject obj)
         {
             Type BoneDriver = null;
