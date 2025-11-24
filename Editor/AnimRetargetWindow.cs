@@ -24,7 +24,8 @@ namespace Reallusion.Import
     public class AnimRetargetWindow
     {
         public static bool isShown = false;
-        
+        public static Rect pos;
+
         public static void OnSceneGUI(SceneView sceneView)
         {
             float ypadding = 1f;
@@ -39,7 +40,7 @@ namespace Reallusion.Import
             var windowOverlayRect = new Rect(x, y, width, height);
             GUIStyle window = new GUIStyle("window");
             
-            GUILayout.Window("Animation Retarget".GetHashCode(), windowOverlayRect, DoWindow, "Animation Retarget Tools", window);
+            pos = GUILayout.Window("Animation Retarget".GetHashCode(), windowOverlayRect, DoWindow, "Animation Retarget Tools", window);
         }
 
         public static void ShowPlayer()
@@ -62,7 +63,7 @@ namespace Reallusion.Import
 
         public static void DoWindow(int id)
         {            
-            AnimRetargetGUI.DrawRetargeter();
+            AnimRetargetGUI.DrawRetargeter(pos);
         }
     }
 }

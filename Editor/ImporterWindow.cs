@@ -2482,22 +2482,18 @@ namespace Reallusion.Import
                 string[] folders = new string[] { "Assets", "Packages" };
                 
                 iconAvatarTab = Util.FindTexture(folders, "RLIcon-Avatar_G");
-                iconPropTab = Util.FindTexture(folders, "RLIcon-Prop_G");
                 iconLinkTab = Util.FindTexture(folders, "RLIcon-Link_G");
                 iconLinkConnected = Util.FindTexture(folders, "RLIcon-Link_CON_G");
                 iconLinkDisconnected = Util.FindTexture(folders, "RLIcon-Link_DIS_G");
-                iconSettingsTab = Util.FindTexture(folders, "RLIcon_Camera");
 
-                tabCount = 2; // was 4
-                toolTips = new string[] { "Characters", "Props", "Live Link to Character Creator or iClone", "Settings" };
+                tabCount = 2;
+                toolTips = new string[] { "Characters", "Data Link to Character Creator or iClone" };
                 icons = new Texture[]
                 {
                     iconAvatarTab,
-                    //iconPropTab,
                     iconLinkTab,
-                    //iconSettingsTab
                 };
-                overrideTab = 1; // was 2
+                overrideTab = 1;
                 overrideIcons = new Texture[]
                 {
                     iconLinkConnected,

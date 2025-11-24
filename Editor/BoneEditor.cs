@@ -161,7 +161,56 @@ namespace Reallusion.Import
             SetupBoneDriver(AddBoneDriver(obj), jsonSetupString, bonesEnable, expressionEnable);
         }
 
-        private static Component AddBoneDriver(GameObject obj)
+        public static Component AddBoneDriverToBaseBody(GameObject rootObject, bool drive, bool transpose)
+        {
+            // check that the object is a prefab
+            GameObject instanceRoot = Util.GetScenePrefabInstanceRoot(rootObject);
+            GameObject prefabSource = PrefabUtility.GetCorrespondingObjectFromSource(instanceRoot);
+            if (prefabSource)
+                if (!AssetDatabase.GetAssetPath(prefabSource).iEndsWith(".prefab")) return null;
+
+            // find the json file
+            string folder = Util.GetCharacterFolder(prefabSource, out string name);
+
+            TextAsset jsonAsset = null;
+            if (Util.HasJSONAsset(folder, name))
+            {
+                string jsonPath = Path.Combine(folder, name + ".json");                
+                jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
+            }
+
+            // find the base body
+            Component boneDriver = null;
+            SkinnedMeshRenderer smr = null;
+            GameObject go = FindNamedObjectInHierarchy(rootObject, "CC_Base_Body");
+            if (go != null)
+            {
+                boneDriver = AddBoneDriver(go);
+                smr = go.GetComponent<SkinnedMeshRenderer>();
+            }
+
+            if (boneDriver && smr && jsonAsset && go)
+            {
+                ExpressionGlossary glossary = BuildExpressionGlossary(rootObject, smr, jsonAsset.text);
+                string jsonSetupString = JsonConvert.SerializeObject(glossary);
+
+                SetupBoneDriver(boneDriver, jsonSetupString, drive, transpose);
+            }
+
+            return boneDriver;
+        }
+
+        public static GameObject FindNamedObjectInHierarchy(GameObject rootObject, string search)
+        {
+            Transform[] objs = rootObject.GetComponentsInChildren<Transform>();
+            foreach (var o in objs)
+            {
+                if (o.name.ToLower() == search.ToLower()) return o.gameObject;
+            }
+            return null;
+        }
+
+        public static Component AddBoneDriver(GameObject obj)
         {
             Component boneDriver = null;
 
@@ -208,6 +257,50 @@ namespace Reallusion.Import
             }
 
             SetupBoneDriver.Invoke(boneDriver, new object[] { jsonSetupString, bonesEnable, expressionEnable });
+        }
+
+        public static void SetupBoneDriverFlags(GameObject boneDriverObject, bool bonesEnable, bool expressionEnable)
+        {
+            Debug.Log("SetupBoneDriverFlags");
+
+            Component boneDriver = null;
+
+            Type BoneDriver = null;
+            if (BoneDriver == null)
+            {
+                BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
+                if (BoneDriver == null)
+                {
+                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class.");
+                    return;
+                }
+            }
+
+            boneDriver = boneDriverObject.GetComponent(BoneDriver);
+
+            MethodInfo SetupBoneDriver = null;
+            if (boneDriver != null)
+            {
+                SetupBoneDriver = boneDriver.GetType().GetMethod("SetupFlags",
+                                    BindingFlags.Public | BindingFlags.Instance,
+                                    null,
+                                    CallingConventions.Any,
+                                    new Type[] { typeof(bool), typeof(bool) },
+                                    null);
+
+                if (SetupBoneDriver == null)
+                {
+                    Debug.LogWarning("SetupBoneDriverFlags MethodInfo cannot be determined");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component.");
+                return;
+            }
+
+            SetupBoneDriver.Invoke(boneDriver, new object[] { bonesEnable, expressionEnable });
         }
 
         public static string[] RetrieveBoneArray(GameObject obj)
