@@ -220,7 +220,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> class.");
+                    Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return boneDriver;
                 }
             }
@@ -252,7 +252,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> component.");
+                Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;
             }
 
@@ -261,8 +261,6 @@ namespace Reallusion.Import
 
         public static void SetupBoneDriverFlags(GameObject boneDriverObject, bool bonesEnable, bool expressionEnable)
         {
-            Debug.Log("SetupBoneDriverFlags");
-
             Component boneDriver = null;
 
             Type BoneDriver = null;
@@ -271,7 +269,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class.");
+                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;
                 }
             }
@@ -296,7 +294,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component.");
+                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;
             }
 
@@ -313,7 +311,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class.");
+                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return strings;
                 }
                 else
@@ -343,7 +341,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component.");
+                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return strings;
                 }
 
@@ -357,7 +355,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body.");
+                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
             }
             return strings;
         }
@@ -372,7 +370,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class.");
+                    Debug.LogWarning("RetrieveBoneDictionary cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return dict;
                 }
                 else
@@ -402,7 +400,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component.");
+                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return dict;
                 }
 
@@ -416,7 +414,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body.");
+                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
             }
             return dict;
         }
@@ -429,7 +427,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class.");
+                    Debug.LogWarning("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return null;
                 }
                 else

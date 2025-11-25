@@ -1281,10 +1281,7 @@ namespace Reallusion.Import
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
                 PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
             }
-
-            Debug.Log("Hello PruneTargettedMechanimTracks");
             if (bd == null) return;
-            Debug.Log("Bye PruneTargettedMechanimTracks");
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
 
@@ -1526,7 +1523,7 @@ namespace Reallusion.Import
 
             foreach (var boneToEvaluate in bonesToEvaluate)
             {
-                Debug.Log($"boneToEvaluate {boneToEvaluate}");
+                //Debug.Log($"boneToEvaluate {boneToEvaluate}");
                 bool complete = true;
                 dict.TryGetValue(boneToEvaluate, out List<string> blendShapes);
                 if (blendShapes != null)
@@ -1609,10 +1606,7 @@ namespace Reallusion.Import
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
                 PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
             }
-
-            Debug.Log("Hello PruneBlendShapeTargets");
             if (bd == null) return;
-            Debug.Log("Bye PruneBlendShapeTargets");
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
 

@@ -1358,7 +1358,7 @@ namespace Reallusion.Import
                 CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
                 if (CameraProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class.");
+                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
                 else
@@ -1389,7 +1389,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 
@@ -1825,7 +1825,7 @@ namespace Reallusion.Import
                 LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
                 if (LightProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class - is the runtime package installed correctly?");
+                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
             }
@@ -1848,7 +1848,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 
