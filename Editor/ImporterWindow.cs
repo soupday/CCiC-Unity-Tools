@@ -527,7 +527,8 @@ namespace Reallusion.Import
                         break;
                     }
                 case 2:
-                    {                        
+                    {
+                        OnGUISettingsArea(new Rect(0f, 14f, position.width, position.height));
                         break;
                     }
                 case 3:
@@ -1236,7 +1237,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
 
 
-
+            /*
             GUILayout.Space(ACTION_BUTTON_SPACE);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             GUIContent settingsIconGC;
@@ -1253,6 +1254,7 @@ namespace Reallusion.Import
                     windowMode = ImporterWindowMode.Build;
             }
             EditorGUI.EndDisabledGroup();
+            */
 
             GUILayout.EndVertical();
 
@@ -2485,13 +2487,15 @@ namespace Reallusion.Import
                 iconLinkTab = Util.FindTexture(folders, "RLIcon-Link_G");
                 iconLinkConnected = Util.FindTexture(folders, "RLIcon-Link_CON_G");
                 iconLinkDisconnected = Util.FindTexture(folders, "RLIcon-Link_DIS_G");
+                iconSettingsTab = Util.FindTexture(folders, "RLIcon_SettingsTab");
 
-                tabCount = 2;
-                toolTips = new string[] { "Characters", "Data Link to Character Creator or iClone" };
+                tabCount = 3;
+                toolTips = new string[] { "Characters", "Data Link to Character Creator or iClone", "General Settings" };
                 icons = new Texture[]
                 {
                     iconAvatarTab,
                     iconLinkTab,
+                    iconSettingsTab
                 };
                 overrideTab = 1;
                 overrideIcons = new Texture[]

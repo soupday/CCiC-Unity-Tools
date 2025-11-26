@@ -39,6 +39,8 @@ namespace Reallusion.Import
         private static Texture2D unlockedImage;
         private static Texture2D lockedImage;
 
+        private static float height = 313f;
+        private static float width = 248f;
         private static float baseControlWidth = 168f;
         private static float sliderWidth = 295f;
         private static float textWidth = 66f;
@@ -67,8 +69,10 @@ namespace Reallusion.Import
         private static float heelOffset = 0f;
         private static float heightOffset = 0f;
 
-        private static bool expressionDrivenBones = false;
-        private static bool expressionBlendShapeTranspose = false;
+        private static Styles styles;
+        private static bool expressionDrivenBones = true;
+        private static bool expressionBlendShapeTranspose = true;
+        private static bool createFullAnimationTrack = false;
 
         private static AnimationClip OriginalClip => AnimPlayerGUI.OriginalClip;
         private static AnimationClip WorkingClip => AnimPlayerGUI.WorkingClip;
@@ -268,22 +272,37 @@ namespace Reallusion.Import
             OffsetALL();
         }
 
+        public class Styles
+        {
+            public GUIStyle textFieldStyle;
+            public GUIStyle smallTitleLabel;
+
+            public Styles()
+            {
+                textFieldStyle = new GUIStyle(EditorStyles.textField);
+                textFieldStyle.wordWrap = true;
+
+                smallTitleLabel = new GUIStyle(GUI.skin.label);
+                smallTitleLabel.fontStyle = FontStyle.BoldAndItalic;
+            }
+        }
+
         public static void DrawRetargeter(Rect position)
         {
             if (!(OriginalClip && WorkingClip)) GUI.enabled = false;
             else if (!AnimPlayerGUI.CharacterAnimator) GUI.enabled = false;
             else GUI.enabled = true;
 
+            if (styles == null) styles = new Styles();
             if (tabStyles == null) tabStyles = new TabStyles();
             if (tabCont == null) tabCont = new TabContents();
-            // (x:0.00, y:0.00, width:313.00, height:248.00 -> 270.00)
 
-            Rect areaRect = new Rect(0f, 0f, 313f, 248f);
-            Rect contentRect = new Rect(0, 0f, areaRect.width, areaRect.height);
+            // original rect (x:0.00, y:0.00, width:313.00, height:248.00)
+            Rect areaRect = new Rect(0f, 0f, height, width);
 
             GUILayout.BeginVertical(); // full window in vertical
 
-            activeTab = TabbedArea(activeTab, contentRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, false);
+            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, false);
 
             GUILayout.Space(TAB_HEIGHT);
 
@@ -305,7 +324,6 @@ namespace Reallusion.Import
                     {
                         DrawAnimationadjustmentControls();
                         break;
-
                     }
                 case 1:
                     {
@@ -328,18 +346,73 @@ namespace Reallusion.Import
             GUILayout.BeginVertical();
 
             // Content
-            GUILayout.Label("Character Expression Controls");
-            expressionDrivenBones = GUILayout.Toggle(expressionDrivenBones, new GUIContent("Expressions Animate Facial Bones", "Tooltip"));
-            expressionBlendShapeTranspose = GUILayout.Toggle(expressionBlendShapeTranspose, new GUIContent("Expression Blendshapes Transposed at Runtime", "Tooltip"));
-            
-            
+            GUILayout.Label("Character Expression Controls", styles.smallTitleLabel);
+            EditorGUI.BeginChangeCheck();
+            expressionDrivenBones = GUILayout.Toggle(expressionDrivenBones, new GUIContent("Expressions Animate Facial Bones", "Use expression blend shapes to to displace the bones of all face parts (The mechanim animation system otherwise won't animate all of them)"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (expressionDrivenBones)
+                {
+                    createFullAnimationTrack = false;
+                    SceneView.RepaintAll();
+                }
+            }
+            EditorGUI.BeginChangeCheck();
+            expressionBlendShapeTranspose = GUILayout.Toggle(expressionBlendShapeTranspose, new GUIContent("Expression Blendshapes Transposed at Runtime", "Instead of using a very large number of animation tracks to animate the blend shapes on face objects (e.g. eyebrows, beards etc), the blend shape values on the head are instead copied to all of the applicable objects on the model. This has a lower performance overhead and means that the animations are considerably smaller."));
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (expressionBlendShapeTranspose)
+                {
+                    createFullAnimationTrack = false;
+                    SceneView.RepaintAll();
+                }
+            }
+
+            GUILayout.Space(10f);
+
+            GUILayout.Label("Legacy Method", styles.smallTitleLabel);
+            EditorGUI.BeginChangeCheck();
+            createFullAnimationTrack = GUILayout.Toggle(createFullAnimationTrack, new GUIContent("Animate all face objects individually", "This will construct animation tracks for every blend shape on every applicable face object (e.g. eyebrows, beards etc). This reults in a very large animation with a higher performance overhead than the runtime transpose method."));
+            if (EditorGUI.EndChangeCheck())
+            {                
+                if (createFullAnimationTrack)
+                {
+                    expressionDrivenBones = false;
+                    expressionBlendShapeTranspose = false;
+                    SceneView.RepaintAll();
+                }
+            }
+
+            GUILayout.Space(18f);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.BeginVertical();
+            string message = string.Empty;
+            int lines = 0;
+            message += expressionDrivenBones ? "- Expressions will directly control all face bones at runtime.\n" : string.Empty;
+            lines += expressionDrivenBones ? 2 : 0;
+            message += expressionBlendShapeTranspose ? "- Expressions will be copied to all face parts at runtime.\n" : string.Empty;
+            lines += expressionBlendShapeTranspose ? 2 : 0;
+            message += createFullAnimationTrack ? "- Animation tracks will be created for each blendshape on each face part (legacy method)." : "";
+            lines += createFullAnimationTrack ? 4 : 0;
+            bool noSelection = !expressionDrivenBones && !expressionBlendShapeTranspose && !createFullAnimationTrack;
+            if (noSelection)
+            {
+                message += "No action selected, please select Blend Shape retargetting method";
+                lines += 2;
+            }    
+
+            EditorGUILayout.SelectableLabel(message, styles.textFieldStyle, GUILayout.Width(220f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));
+
+            GUILayout.EndVertical();
 
             GUILayout.BeginVertical("box"); // Blendshapes control box
             Color backgroundColor = GUI.backgroundColor;
             Color tint = Color.green;
             FacialProfile mfp = AnimPlayerGUI.MeshFacialProfile;
             FacialProfile cfp = AnimPlayerGUI.ClipFacialProfile;
-            if (!mfp.HasFacialShapes || !cfp.HasFacialShapes)
+            if (!mfp.HasFacialShapes || !cfp.HasFacialShapes || noSelection)
             {
                 GUI.enabled = false;
                 tint = backgroundColor;
@@ -380,6 +453,10 @@ namespace Reallusion.Import
             GUI.enabled = true;
 
             GUILayout.EndVertical();
+
+            GUILayout.Space(10f);
+
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
         }
