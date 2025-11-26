@@ -669,7 +669,8 @@ namespace Reallusion.Import
                 return CharacterTreeView.LINKED_INDEX_SKIN;            
             if (sourceName.iContains("_Eye_Occlusion_")) return CharacterTreeView.LINKED_INDEX_EYE_OCCLUSION;
             if (sourceName.iContains("_Tearline_")) return CharacterTreeView.LINKED_INDEX_TEARLINE;
-            if (sourceName.iContains("_Eye_") || sourceName.iContains("_Cornea_")) return CharacterTreeView.LINKED_INDEX_CORNEA;            
+            if (sourceName.iContains("_Eye_")) return CharacterTreeView.LINKED_INDEX_EYE;
+            if (sourceName.iContains("_Cornea_")) return CharacterTreeView.LINKED_INDEX_CORNEA;
             if (sourceName.iContains("_Upper_Teeth") || sourceName.iContains("_Lower_Teeth")) return CharacterTreeView.LINKED_INDEX_TEETH;
 
             return -1;

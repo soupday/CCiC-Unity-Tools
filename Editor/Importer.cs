@@ -2410,7 +2410,7 @@ namespace Reallusion.Import
                 }
             }
 
-            if (matJson != null) isLeftEye = matJson.GetFloatValue("Custom Shader/Variable/Is Left Eye") > 0f ? true : false;
+            if (matJson != null) isLeftEye = matJson.GetFloatValue("Custom Shader/Variable/Is Left Eye") > 0f;
 
             ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
                 matJson, "Textures/Glow",
@@ -2495,7 +2495,7 @@ namespace Reallusion.Import
                 }
                 else if (characterInfo.ParallaxEyes)
                 {
-                    float depth = Mathf.Clamp(0.333f * matJson.GetFloatValue("Custom Shader/Variable/Iris Depth Scale"), 0.1f, 1.0f);                    
+                    float depth = Mathf.Clamp(0.5f * matJson.GetFloatValue("Custom Shader/Variable/Iris Depth Scale"), 0f, 1.0f);
                     //float pupilScale = Mathf.Clamp(1f / Mathf.Pow((depth * 2f + 1f), 2f), 0.1f, 2.0f);                    
                     mat.SetFloatIf("_IrisDepth", depth);
                     //mat.SetFloat("_PupilScale", pupilScale);
@@ -2524,7 +2524,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_ScleraScale", matJson.GetFloatValue("Custom Shader/Variable/Sclera UV Radius"));
                 mat.SetFloatIf("_ScleraNormalStrength", 1f - matJson.GetFloatValue("Custom Shader/Variable/Sclera Flatten Normal"));
                 mat.SetFloatIf("_ScleraNormalTiling", 1f / Mathf.Clamp(matJson.GetFloatValue("Custom Shader/Variable/Sclera Normal UV Scale"), 0.1f, 5f));
-                mat.SetFloatIf("_IsLeftEye", isLeftEye ? 1f : 0f);                
+                mat.SetBoolIf("_IsLeftEye", isLeftEye);
                 float limbusDarkScale = Mathf.Max(0f, matJson.GetFloatValue("Custom Shader/Variable/Limbus Dark Scale"));
                 mat.SetFloatIf("_LimbusDarkScale", limbusDarkScale);
                 mat.SetColorIf("_LimbusColor", Color.black);
@@ -3053,7 +3053,7 @@ namespace Reallusion.Import
 
                         // custom shader graph / ASE displacement
                         mat.SetFloatIf("_DisplacementStrength", displacementStrength * tessellationMultiplier * 0.01f);
-                        mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * ValueByPipeline(0.01f, 0.1f, 0.1f));
+                        mat.SetFloatIf("_BumpStrength", displacementStrength * tessellationMultiplier * ValueByPipeline(0.01f, 0.01f, 0.1f));
                         mat.SetFloatIf("_DisplacementLevel", displacementLevel);
                     }
                 }

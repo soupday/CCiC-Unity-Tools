@@ -970,6 +970,10 @@ namespace Reallusion.Import
                     mat.EnableKeyword("_TESSELLATION_PHONG");
                     // HDRP custom
                     // URP/AMP custom
+                    mat.SetFloatIf("_TessMax", 0f);
+                    mat.SetFloatIf("_TessMin", 1f);
+                    mat.SetFloatIf("_TessPhongStrength", 0.75f);
+                    mat.SetFloatIf("_TessValue", 3f);                    
                 }
             }
 

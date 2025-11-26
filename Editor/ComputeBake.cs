@@ -656,11 +656,15 @@ namespace Reallusion.Import
         private void CopyAdditionalSettings(Material source, Material dest)
         {
             string[] refs = new string[] {
-                // Tessellation (HDRP 12+)
-                // Custom Tessellation (URP 17+)
+                // Tessellation (HDRP 12+)                
+                "_TessellationBackFaceCullEpsilon", "_TessellationFactor", 
+                "_TessellationFactorMaxDistance", "_TessellationFactorMinDistance",
+                "_TessellationFactorTriangleSize", "_TessellationMaxDisplacement", 
+                "_TessellationMode", "_TessellationShapeFactor",
+                // ???
                 "_SSSBlend", "_SSSDistortion", "_SSSTransmission",
-                // AMP Tessellation (3D)
-                // Custom Subsurface (URP 10+)
+                // AMP Tessellation (3D/URP)
+                "_TessMin", "_TessMax", "_TessPhongStrength", "_TessValue",
                 // AMP Subsurface (3D)
                 "_TransStrength", "_TransNormal", "_TransScattering",
                 "_TransAmbient", "_TransDirect", "_TransShadow",
@@ -1457,7 +1461,7 @@ namespace Reallusion.Import
             Color irisCloudyColor = mat.GetColorIf("_IrisCloudyColor", Color.black);
             Color limbusColor = mat.GetColorIf("_LimbusColor", Color.black);
             bool isCornea = sourceName.iContains("Cornea");
-            bool isLeftEye = mat.GetFloatIf("_IsLeftEye") > 0f;
+            bool isLeftEye = mat.GetBoolIf("_IsLeftEye");
             Texture2D emission = GetMaterialTexture(mat, "_EmissionMap");
             Color emissiveColor = mat.GetColorIf("_EmissiveColor", Color.black);
             Color subsurfaceFalloff = mat.GetColorIf("_SubsurfaceFalloff", Color.white);
@@ -1578,6 +1582,7 @@ namespace Reallusion.Import
             if (bakedSecondaryMap != null)
                 result.SetTextureIf("_SecondaryColorMap", bakedSecondaryMap);
 
+            result.SetBoolIf("_IsLeftEye", isLeftEye);
             result.SetColorIf("_LimbusColor", limbusColor);
             result.SetVectorIf("_DepthVector", depthVector);
 
@@ -1597,6 +1602,7 @@ namespace Reallusion.Import
                 else
                 {
                     result.SetFloatIf("_IrisDepth", irisDepth);
+                    result.SetFloatIf("_IrisScale", irisRadius * scleraScale * 6.81f);
                     result.SetFloatIf("_PupilScale", pupilScale);
                     result.SetTextureIf("_ScleraNormalMap", microNormal);
                     result.SetFloatIf("_ScleraNormalTiling", microNormalTiling);
@@ -1825,12 +1831,16 @@ namespace Reallusion.Import
                         Pipeline.GetUpgradedTemplateMaterial(sourceName, Pipeline.MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS,
                             MaterialQuality.Baked, useDigitalHuman));
 
+                    CopyAdditionalSettings(mat, firstPass);
+
                     secondPass = CreateBakedMaterial(mat, bakedBaseMap, bakedMaskMap, bakedMetallicGlossMap, bakedAOMap, bakedNormalMap,
                         null, null, null, null, emissionMap, null,
                         normalStrength, 1f, 1f, 0f, 0.5f, emissiveColor,
                         sourceName + "_2nd_Pass",
                         Pipeline.GetUpgradedTemplateMaterial(sourceName, Pipeline.MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS,
                             MaterialQuality.Baked, useDigitalHuman));
+
+                    CopyAdditionalSettings(mat, secondPass);
 
                     // multi material pass hair is custom baked shader only:
                     SetCustom(firstPass);
@@ -1849,6 +1859,8 @@ namespace Reallusion.Import
                         Pipeline.GetTemplateMaterial(sourceName, MaterialType.Hair,
                                     MaterialQuality.Baked, characterInfo,
                                     useDigitalHuman));
+
+                    CopyAdditionalSettings(mat, result);
 
                     SetCustom(result);
                     return result;
@@ -3102,7 +3114,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("shadowRadius", shadowRadius);
                 bakeShader.SetFloat("shadowHardness", shadowHardness);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
-                bakeShader.SetFloat("isLeftEye", isLeftEye ? 1.0f : 0.0f);
+                bakeShader.SetBool("isLeftEye", isLeftEye);
                 bakeShader.SetVector("limbusColor", limbusColor);
                 bakeShader.SetVector("cornerShadowColor", cornerShadowColor);
                 Dispatch(bakeShader, kernel, bakeTarget);
@@ -3145,7 +3157,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                                
                 bakeShader.SetFloat("limbusContrast", limbusContrast);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
-                bakeShader.SetFloat("isLeftEye", isLeftEye ? 1.0f : 0.0f);
+                bakeShader.SetBool("isLeftEye", isLeftEye);
                 bakeShader.SetVector("limbusColor", limbusColor);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();

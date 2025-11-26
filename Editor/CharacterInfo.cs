@@ -1319,6 +1319,8 @@ namespace Reallusion.Import
             if (FeatureUseTessellation && 
                 (materialType == MaterialType.Skin ||
                  materialType == MaterialType.Head ||
+                 materialType == MaterialType.Cornea ||
+                 materialType == MaterialType.Eye ||
                  materialType == MaterialType.Teeth)) return true;
 
             return false;
