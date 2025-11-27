@@ -1733,6 +1733,107 @@ namespace Reallusion.Import
                 if (purge) AnimationUtility.SetEditorCurve(workingClip, binding, null);
             }
             // Need to transpose any blendhapes from the animations facial profile to the mesh's profile
+
+            // build a cache of remapped (from the anim profile to the mesh profile) blend shape names in the animation and their original curve bindings:
+            EditorCurveBinding[] workingCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
+            string report = "";
+            
+            Dictionary<string, EditorCurveBinding> cache = new Dictionary<string, EditorCurveBinding>();
+            for (int i = 0; i < workingCurveBindings.Length; i++)
+            {
+                if (CurveHasData(workingCurveBindings[i], workingClip) &&
+                    workingCurveBindings[i].propertyName.StartsWith(blendShapePrefix))
+                {
+                    string animBlendShapeName = workingCurveBindings[i].propertyName.Substring(blendShapePrefix.Length);
+                    string meshProfileBlendShapeName = meshProfile.GetMappingFrom(animBlendShapeName, animProfile);
+                    if (!string.IsNullOrEmpty(meshProfileBlendShapeName))
+                    {
+                        List<string> multiProfileName = FacialProfileMapper.GetMultiShapeNames(meshProfileBlendShapeName);
+                        if (multiProfileName.Count == 1)
+                        {
+                            if (!cache.ContainsKey(meshProfileBlendShapeName))
+                            {
+                                cache.Add(meshProfileBlendShapeName, workingCurveBindings[i]);
+                                
+                                report += "Mapping: " + meshProfileBlendShapeName + " from " + animBlendShapeName + "\n";
+                            }
+                        }
+                        else
+                        {
+                            foreach (string multiShapeName in multiProfileName)
+                            {
+                                if (!cache.ContainsKey(multiShapeName))
+                                {
+                                    cache.Add(multiShapeName, workingCurveBindings[i]);
+                                    
+                                    report += "Mapping (multi): " + multiShapeName + " from " + animBlendShapeName + "\n";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            List<string> uniqueAnimPaths = new List<string>();
+            foreach (EditorCurveBinding binding in workingCurveBindings)
+            {
+                if (!uniqueAnimPaths.Contains(binding.path))
+                {
+                    uniqueAnimPaths.Add(binding.path);
+                }
+            }
+
+            List<string> mappedBlendShapes = new List<string>();
+
+            Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
+
+            foreach (string path in uniqueAnimPaths)
+            {
+                SkinnedMeshRenderer smr = null;
+                Transform t = targetAssetData.FirstOrDefault(t => t.name == path);
+                if (t != null)
+                    smr = t.gameObject.GetComponent<SkinnedMeshRenderer>();
+                
+                if (smr && smr.sharedMesh && smr.sharedMesh.blendShapeCount > 0)
+                {
+                    for (int j = 0; j < smr.sharedMesh.blendShapeCount; j++)
+                    {
+                        string blendShapeName = smr.sharedMesh.GetBlendShapeName(j);
+                        string targetPropertyName = blendShapePrefix + blendShapeName;
+
+                        if (cache.TryGetValue(blendShapeName, out EditorCurveBinding sourceCurveBinding))
+                        {
+                            report += $"Copying curve for {blendShapeName} to {targetPropertyName}\n";
+                            CopyCurve(originalClip, workingClip, path, targetPropertyName, sourceCurveBinding);
+
+                            if (!mappedBlendShapes.Contains(blendShapeName))
+                                mappedBlendShapes.Add(blendShapeName);
+                        }
+                        else
+                        {
+                            //report += "Could not map blendshape: " + blendShapeName + " in object: " + go.name + "\n";
+                        }
+                    }
+                }
+            }
+                        
+            report += "\n";
+            int curvesFailedToMap = 0;
+            foreach (string shape in cache.Keys)
+            {
+                if (!mappedBlendShapes.Contains(shape))
+                {
+                    curvesFailedToMap++;
+                    report += "Could not find BlendShape: " + shape + " in target character.\n";
+                }
+            }
+
+            string reportHeader = "Blendshape Mapping report:\n";
+            if (curvesFailedToMap == 0) reportHeader += "All " + cache.Count + " BlendShape curves retargeted!\n\n";
+            else reportHeader += curvesFailedToMap + " out of " + cache.Count + " BlendShape curves could not be retargeted!\n\n";
+            
+            bool log = true;
+            if (log) Util.LogAlways(reportHeader + report);
         }
 
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
@@ -2445,6 +2546,7 @@ namespace Reallusion.Import
         public static int TabbedArea(int TabId, Rect area, int tabCount, float tabHeight, string[] toolTips, Texture[] icons, float iconWidth, float iconHeight, bool fullWindow, int overrideTab = -1, Texture[] overrideIcons = null, bool overrideBool = false, Func<Rect, int, bool> RectHandler = null)
         {
             if (tabStyles == null) tabStyles = new TabStyles();
+            if (tabStyles.activeTex == null || tabStyles.inactiveTex == null) tabStyles = new TabStyles();
             Rect areaRect;
             if (!fullWindow)
             {

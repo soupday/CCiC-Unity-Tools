@@ -546,18 +546,20 @@ namespace Reallusion.Import
 
         public static Dictionary<string, List<string>> FindExcessBlendShapes(GameObject obj)
         {            
-            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>(); // dict is a map of the non driven blendshapes that are not common to the body or tongue and so must be kept            
 
             SkinnedMeshRenderer[] renderers = obj.transform.parent.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-            List<string> drivenBlendShapes = new List<string>();
+            List<string> drivenBlendShapeFilter = new List<string>();
+            
             string[] drivers = new string[] { "CC_Base_Body", "CC_Base_Tongue" };
             foreach (string driver in drivers)
             {
+                List<string> coreBlendShapes = new List<string>();
                 var smr = renderers.First(r => r.name == driver);
                 for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                 {
-                    drivenBlendShapes.Add(smr.sharedMesh.GetBlendShapeName(i));                    
+                    drivenBlendShapeFilter.Add(smr.sharedMesh.GetBlendShapeName(i));                    
                 }
             }
                         
@@ -566,7 +568,7 @@ namespace Reallusion.Import
                 List<string> extraBlendShapes = new List<string>();
                 for (int i = 0; i < renderer.sharedMesh.blendShapeCount; i++)
                 {
-                    if (!drivenBlendShapes.Contains(renderer.sharedMesh.GetBlendShapeName(i)))
+                    if (!drivenBlendShapeFilter.Contains(renderer.sharedMesh.GetBlendShapeName(i)))
                     {
                         extraBlendShapes.Add(renderer.sharedMesh.GetBlendShapeName(i));
                     }
