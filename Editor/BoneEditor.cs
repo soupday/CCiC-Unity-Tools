@@ -573,6 +573,16 @@ namespace Reallusion.Import
                 }
                 dict.Add(renderer.name, extraBlendShapes);
             }
+            /*
+            foreach (var d in dict)
+            {
+                Debug.Log(d.Key);
+                foreach (var k in d.Value)
+                {
+                    Debug.Log($"    {k}");
+                }
+            }
+            */
             return dict;
         }
 

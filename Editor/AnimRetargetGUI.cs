@@ -39,8 +39,8 @@ namespace Reallusion.Import
         private static Texture2D unlockedImage;
         private static Texture2D lockedImage;
 
-        private static float height = 313f;
-        private static float width = 248f;
+        private static float width = 313f;
+        private static float height = 240f;
         private static float baseControlWidth = 168f;
         private static float sliderWidth = 295f;
         private static float textWidth = 66f;
@@ -73,6 +73,7 @@ namespace Reallusion.Import
         private static bool expressionDrivenBones = true;
         private static bool expressionBlendShapeTranspose = true;
         private static bool createFullAnimationTrack = false;
+        private static bool logOnce = false;
 
         private static AnimationClip OriginalClip => AnimPlayerGUI.OriginalClip;
         private static AnimationClip WorkingClip => AnimPlayerGUI.WorkingClip;
@@ -298,7 +299,7 @@ namespace Reallusion.Import
             if (tabCont == null) tabCont = new TabContents();
 
             // original rect (x:0.00, y:0.00, width:313.00, height:248.00)
-            Rect areaRect = new Rect(0f, 0f, height, width);
+            Rect areaRect = new Rect(0f, 0f, width, height);
 
             GUILayout.BeginVertical(); // full window in vertical
 
@@ -444,9 +445,10 @@ namespace Reallusion.Import
             }
                         
             GUI.backgroundColor = Color.Lerp(backgroundColor, tint, 0.25f);
-            if (GUILayout.Button(new GUIContent(blendshapeImage, "Copy all BlendShape animations from the selected animation clip to all of the relevant objects (e.g. facial hair) in the selected Scene Model."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
+            if (GUILayout.Button(new GUIContent(blendshapeImage, "Retarget Blendshapes."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
-                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose);
+                logOnce = true;
+                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, createFullAnimationTrack);
                 AnimPlayerGUI.UpdateAnimator();
             }
             GUI.backgroundColor = backgroundColor;
@@ -462,9 +464,8 @@ namespace Reallusion.Import
         }
 
         public static void DrawAnimationadjustmentControls()
-        {      
-            // All retarget controls
-            GUILayout.BeginVertical();
+        {                  
+            GUILayout.BeginVertical();// All retarget controls
             GUILayout.Space(4f);
             // Horizontal Group of 3 controls `Hand` `Jaw` and `Blendshapes`
             GUILayout.BeginHorizontal();
@@ -576,45 +577,7 @@ namespace Reallusion.Import
             }
             GUILayout.EndVertical(); // End of animation curve adjustment sliders
 
-            /*
-            // Lower close, reset and save controls
-            GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical("box");  // close button
-            if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_clear").image, "Close this window."), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
-            {
-                CloseRetargeter();
-            }
-            GUILayout.EndVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginVertical("box");  // hold button
-            if (GUILayout.Button(new GUIContent(holdValues ? lockedImage : unlockedImage, string.Format("STATUS: " + (holdValues ? "LOCKED VALUES : slider settings are retained when animation is changed." : "UNLOCKED VALUES : slider settings are reset when animation is changed."))), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
-            {
-                holdValues = !holdValues;
-            }
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical("box");  // reset button
-            if (GUILayout.Button(new GUIContent(resetImage, "Reset all slider settings and applied modifications."), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
-            {                
-                ResetClip();
-            }
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical("box"); // save button
-            if (GUILayout.Button(new GUIContent(saveImage, "Save the modified animation to the 'Project Assets'.  This will create a new animation in the 'Home Directory' of the selected model named <Model Name>_<Animation Name>.anim"), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
-            {
-                GameObject scenePrefab = AnimPlayerGUI.CharacterAnimator.gameObject;
-                GameObject fbxAsset = Util.FindRootPrefabAssetFromSceneObject(scenePrefab);
-                if (fbxAsset)
-                {
-                    string characterFbxPath = AssetDatabase.GetAssetPath(fbxAsset);
-                    string assetPath = GenerateClipAssetPath(OriginalClip, characterFbxPath);
-                    WriteAnimationToAssetDatabase(WorkingClip, assetPath, true);
-                }
-            }
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal(); // End of reset and save controls
-            */
-            //LowerControlGUI();
-            GUILayout.EndVertical();
+            GUILayout.EndVertical(); // All retarget controls
             // End of retarget controls
         }
 
@@ -622,26 +585,41 @@ namespace Reallusion.Import
         {
             // Lower close, reset and save controls
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical("box");  // close button
+            GUILayout.BeginVertical();
+            GUILayout.Space(36f);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();// ("box");  // close button
+            GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_clear").image, "Close this window."), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
             {
                 CloseRetargeter();
             }
-            GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
-            GUILayout.BeginVertical("box");  // hold button
+            GUILayout.EndVertical();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginVertical();// ("box");  // hold button
+            GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent(holdValues ? lockedImage : unlockedImage, string.Format("STATUS: " + (holdValues ? "LOCKED VALUES : slider settings are retained when animation is changed." : "UNLOCKED VALUES : slider settings are reset when animation is changed."))), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
             {
                 holdValues = !holdValues;
             }
+            GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
-            GUILayout.BeginVertical("box");  // reset button
+
+            GUILayout.BeginVertical();// ("box");  // reset button
+            GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent(resetImage, "Reset all slider settings and applied modifications."), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
             {
                 ResetClip();
             }
+            GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
-            GUILayout.BeginVertical("box"); // save button
+
+            GUILayout.BeginVertical();// ("box"); // save button
+            GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent(saveImage, "Save the modified animation to the 'Project Assets'.  This will create a new animation in the 'Home Directory' of the selected model named <Model Name>_<Animation Name>.anim"), GUILayout.Width(smallIconDim), GUILayout.Height(smallIconDim)))
             {
                 GameObject scenePrefab = AnimPlayerGUI.CharacterAnimator.gameObject;
@@ -653,10 +631,25 @@ namespace Reallusion.Import
                     WriteAnimationToAssetDatabase(WorkingClip, assetPath, true);
                 }
             }
+            GUILayout.FlexibleSpace();
             GUILayout.EndVertical();
+
             GUILayout.EndHorizontal(); // End of reset and save controls
         } 
 
+        private static void LogBoneDriverSettingsChanges(GameObject root, GameObject bd, bool drive, bool transpose, bool legacy)
+        {
+            if (logOnce)
+            {
+                string conj = drive && transpose ? " and " : string.Empty;
+                string driveStr = drive ? "'Expressions Drive Face Bones' is ENABLED" : string.Empty;
+                string transposeStr = transpose ? "'Expressions are copied to all face parts' is ENABLED" : string.Empty;
+                string legacyStr = legacy ? "Both 'Expressions Drive Face Bones' and Expressions are copied to all face parts' are now DISABLED in the existing BoneDriver" : string.Empty;
+                string text = $"Settings in the BoneDriver on {bd.name} in the {root.name} prefab will be changed and applied to the prefab.\n{driveStr}{conj}{transposeStr}{legacyStr}";
+                Debug.Log(text);
+                logOnce = false;
+            }
+        }
 
         public static bool CanClipLoop(AnimationClip clip)
         {
@@ -1259,8 +1252,7 @@ namespace Reallusion.Import
 
         static float logtime = 0f;
 
-        public static void CopyCurve(AnimationClip originalClip, AnimationClip workingClip, string goName, 
-                                     string targetPropertyName, EditorCurveBinding sourceCurveBinding)
+        public static void CopyCurve(AnimationClip originalClip, AnimationClip workingClip, string goName, string targetPropertyName, EditorCurveBinding sourceCurveBinding)
         {
             float time = Time.realtimeSinceStartup;
 
@@ -1298,7 +1290,7 @@ namespace Reallusion.Import
         }
 
         public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip,
-            GameObject targetCharacterModel, CharacterInfo info = null, bool log = true, bool FeatureUseBoneDriver = false, bool FeatureUseExpressionTranspose = false)
+            GameObject targetCharacterModel, CharacterInfo info = null, bool log = true, bool FeatureUseBoneDriver = false, bool FeatureUseExpressionTranspose = false, bool legacyFeatureOverride = false)
         {
             if (!(originalClip && workingClip)) return;
 
@@ -1332,20 +1324,28 @@ namespace Reallusion.Import
             bool useBoneDriver = (info != null && info.FeatureUseBoneDriver) || FeatureUseBoneDriver;
             bool useBlendTranspose = (info != null && info.FeatureUseExpressionTranspose) || FeatureUseExpressionTranspose;
 
-            if (useBoneDriver)
-            {
-                PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose);
-            } 
-
-            if (useBlendTranspose)
-            {
-                PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose);
-            }
-            
-            if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
+            if (legacyFeatureOverride)
             {
                 RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
             }
+            else
+            {
+                if (useBoneDriver)
+                {
+                    PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose);
+                }
+
+                if (useBlendTranspose)
+                {
+                    PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose);
+                }
+
+                if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
+                {
+                    RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+                }
+            }
+            logOnce = false;
         }
 
         public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false)
@@ -1353,14 +1353,14 @@ namespace Reallusion.Import
             // needs a set up bonedriver component to interrogate for the expression glossary
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null)
-            {
-                Debug.Log("Hello PruneTargettedMechanimTracks bd == null");
+            {                
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-                PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
             }
             if (bd == null) return;
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
+            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, false);
+            PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
 
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
@@ -1681,11 +1681,13 @@ namespace Reallusion.Import
             if (bd == null)
             {
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-                PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
+                
             }
             if (bd == null) return;
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
+            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, false);
+            PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
 
             Dictionary <string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
             // this is a list to keep
@@ -1735,6 +1737,15 @@ namespace Reallusion.Import
 
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
         {
+            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
+            if (bd != null)
+            {
+                BoneEditor.SetupBoneDriverFlags(bd, false, false);
+                LogBoneDriverSettingsChanges(targetCharacterModel, bd, false, false, true);
+                PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
+            }
+            else { Debug.Log("No Bonedriver found"); }
+
             EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
             Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
 
