@@ -265,6 +265,9 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExpressionTranspose, "Expression Transpose", SECTION_INDENT))
                 flagChanged = true;
 
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ConstraintData, "Use Constraints", SECTION_INDENT))
+                flagChanged = true;
+
             DrawLabelLine(line++, "");
 
             if (Event.current.type == EventType.Repaint)

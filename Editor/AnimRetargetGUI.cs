@@ -72,6 +72,7 @@ namespace Reallusion.Import
         private static Styles styles;
         private static bool expressionDrivenBones = true;
         private static bool expressionBlendShapeTranspose = true;
+        private static bool expressionConstrain = true;
         private static bool createFullAnimationTrack = false;
         private static bool logOnce = false;
 
@@ -368,8 +369,18 @@ namespace Reallusion.Import
                     SceneView.RepaintAll();
                 }
             }
+            EditorGUI.BeginChangeCheck();
+            expressionConstrain = GUILayout.Toggle(expressionConstrain, new GUIContent("Constraint Blendshapes Calculated at Runtime", "The constraint blendshapes (those beginning with 'C_') will be calculated from the values of the corresponding source blend shapes. Limits will also be applied to certain blend shapes based on the limit definitions in the CC5 facial profile editor."));
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (expressionBlendShapeTranspose)
+                {
+                    createFullAnimationTrack = false;
+                    SceneView.RepaintAll();
+                }
+            }
 
-            GUILayout.Space(10f);
+            GUILayout.Space(4f);
 
             GUILayout.Label("Legacy Method", styles.smallTitleLabel);
             EditorGUI.BeginChangeCheck();
@@ -380,11 +391,12 @@ namespace Reallusion.Import
                 {
                     expressionDrivenBones = false;
                     expressionBlendShapeTranspose = false;
+                    expressionConstrain = false;
                     SceneView.RepaintAll();
                 }
             }
 
-            GUILayout.Space(18f);
+            GUILayout.Space(4f);
 
             GUILayout.BeginHorizontal();
 
@@ -395,16 +407,18 @@ namespace Reallusion.Import
             lines += expressionDrivenBones ? 2 : 0;
             message += expressionBlendShapeTranspose ? "- Expressions will be copied to all face parts at runtime.\n" : string.Empty;
             lines += expressionBlendShapeTranspose ? 2 : 0;
+            message += expressionConstrain ? "- Expression Constraints will be calculated at runtime." : string.Empty;
+            lines += expressionConstrain ? 2 : 0;
             message += createFullAnimationTrack ? "- Animation tracks will be created for each blendshape on each face part (legacy method)." : "";
-            lines += createFullAnimationTrack ? 4 : 0;
+            lines += createFullAnimationTrack ? 5 : 0;
             bool noSelection = !expressionDrivenBones && !expressionBlendShapeTranspose && !createFullAnimationTrack;
             if (noSelection)
             {
                 message += "No action selected, please select Blend Shape retargetting method";
                 lines += 2;
-            }    
+            }
 
-            EditorGUILayout.SelectableLabel(message, styles.textFieldStyle, GUILayout.Width(220f), GUILayout.Height(EditorGUIUtility.singleLineHeight * lines));
+            EditorGUILayout.SelectableLabel(message, styles.textFieldStyle, GUILayout.Width(220f), GUILayout.Height(15f * lines));//(EditorGUIUtility.singleLineHeight * lines));
 
             GUILayout.EndVertical();
 
@@ -448,7 +462,7 @@ namespace Reallusion.Import
             if (GUILayout.Button(new GUIContent(blendshapeImage, "Retarget Blendshapes."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
                 logOnce = true;
-                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, createFullAnimationTrack);
+                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, expressionConstrain, createFullAnimationTrack);
                 AnimPlayerGUI.UpdateAnimator();
             }
             GUI.backgroundColor = backgroundColor;
@@ -637,7 +651,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal(); // End of reset and save controls
         } 
 
-        private static void LogBoneDriverSettingsChanges(GameObject root, GameObject bd, bool drive, bool transpose, bool legacy)
+        private static void LogBoneDriverSettingsChanges(GameObject root, GameObject bd, bool drive, bool transpose, bool constrain, bool legacy)
         {
             if (logOnce)
             {
@@ -645,7 +659,8 @@ namespace Reallusion.Import
                 string driveStr = drive ? "'Expressions Drive Face Bones' is ENABLED" : string.Empty;
                 string transposeStr = transpose ? "'Expressions are copied to all face parts' is ENABLED" : string.Empty;
                 string legacyStr = legacy ? "Both 'Expressions Drive Face Bones' and Expressions are copied to all face parts' are now DISABLED in the existing BoneDriver" : string.Empty;
-                string text = $"Settings in the BoneDriver on {bd.name} in the {root.name} prefab will be changed and applied to the prefab.\n{driveStr}{conj}{transposeStr}{legacyStr}";
+                string constrainStr = constrain ? "\nExpression 'Constraints' and 'Limits' will be applied." : string.Empty;
+                string text = $"Settings in the BoneDriver on {bd.name} in the {root.name} prefab will be changed and applied to the prefab.\n{driveStr}{conj}{transposeStr}{legacyStr}{constrainStr}";
                 Debug.Log(text);
                 logOnce = false;
             }
@@ -1290,7 +1305,7 @@ namespace Reallusion.Import
         }
 
         public static void RetargetBlendShapes(AnimationClip originalClip, AnimationClip workingClip,
-            GameObject targetCharacterModel, CharacterInfo info = null, bool log = true, bool FeatureUseBoneDriver = false, bool FeatureUseExpressionTranspose = false, bool legacyFeatureOverride = false)
+            GameObject targetCharacterModel, CharacterInfo info = null, bool log = true, bool FeatureUseBoneDriver = false, bool FeatureUseExpressionTranspose = false, bool FeatureUseConstraintData = false, bool legacyFeatureOverride = false)
         {
             if (!(originalClip && workingClip)) return;
 
@@ -1323,6 +1338,7 @@ namespace Reallusion.Import
 
             bool useBoneDriver = (info != null && info.FeatureUseBoneDriver) || FeatureUseBoneDriver;
             bool useBlendTranspose = (info != null && info.FeatureUseExpressionTranspose) || FeatureUseExpressionTranspose;
+            bool useConstraintData = (info != null && info.FeatureUseConstraintData) || FeatureUseConstraintData;
 
             if (legacyFeatureOverride)
             {
@@ -1332,12 +1348,12 @@ namespace Reallusion.Import
             {
                 if (useBoneDriver)
                 {
-                    PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose);
+                    PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
 
                 if (useBlendTranspose)
                 {
-                    PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose);
+                    PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
 
                 if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
@@ -1348,7 +1364,7 @@ namespace Reallusion.Import
             logOnce = false;
         }
 
-        public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false)
+        public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false, bool constrain = false)
         {
             // needs a set up bonedriver component to interrogate for the expression glossary
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
@@ -1358,8 +1374,8 @@ namespace Reallusion.Import
             }
             if (bd == null) return;
 
-            BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
-            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, false);
+            BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
+            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
             PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
 
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
@@ -1665,7 +1681,7 @@ namespace Reallusion.Import
             }
         }
 
-        public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool drive = false, bool transpose = false)
+        public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool drive = false, bool transpose = false, bool constrain = false)
         {
             const string blendShapePrefix = "blendShape.";
 
@@ -1685,8 +1701,8 @@ namespace Reallusion.Import
             }
             if (bd == null) return;
 
-            BoneEditor.SetupBoneDriverFlags(bd, drive, transpose);
-            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, false);
+            BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
+            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
             PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
 
             Dictionary <string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
@@ -1841,8 +1857,8 @@ namespace Reallusion.Import
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd != null)
             {
-                BoneEditor.SetupBoneDriverFlags(bd, false, false);
-                LogBoneDriverSettingsChanges(targetCharacterModel, bd, false, false, true);
+                BoneEditor.SetupBoneDriverFlags(bd, false, false, false);
+                LogBoneDriverSettingsChanges(targetCharacterModel, bd, false, false, false, true);
                 PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
             }
             else { Debug.Log("No Bonedriver found"); }

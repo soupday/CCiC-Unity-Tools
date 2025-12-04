@@ -52,6 +52,7 @@ namespace Reallusion.Import
             AmplifyShaders = 16384,
             BoneDriver = 32768,
             ExpressionTranspose = 65536,
+            ConstraintData = 131072,
         }
 
         public enum ExportType
@@ -242,6 +243,7 @@ namespace Reallusion.Import
         public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;
         public bool FeatureUseBoneDriver => (ShaderFlags & ShaderFeatureFlags.BoneDriver) > 0;
         public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
+        public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -863,6 +865,11 @@ namespace Reallusion.Import
                 ShaderFlags |= ShaderFeatureFlags.BoneDriver;
                 ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
             }
+
+            if (HasConstraintData())
+            {
+                ShaderFlags |= ShaderFeatureFlags.ConstraintData;
+            }
         }
 
         public void InitPhysics()
@@ -963,6 +970,14 @@ namespace Reallusion.Import
             return JsonData.PathExists(jsonPath);
         }
         
+        public bool HasConstraintData()
+        {
+            string jsonPath = name + "/Object/" + name + "/Constraint";
+            QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
+            bool hasData = data != null && data.values.Count > 0;
+            return hasData;
+        }
+
         public bool HasWrinkleDisplacement()
         {
             return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);

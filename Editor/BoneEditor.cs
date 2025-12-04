@@ -156,9 +156,18 @@ namespace Reallusion.Import
             else { Debug.Log($"Provided jsonPath: {jsonPath} is incorrect"); return; }
 
             ExpressionGlossary glossary = BuildExpressionGlossary(sourceObject, smr, jsonAsset.text);
-            string jsonSetupString = JsonConvert.SerializeObject(glossary);
+            string glossarySetupString = JsonConvert.SerializeObject(glossary);
 
-            SetupBoneDriver(AddBoneDriver(obj), jsonSetupString, bonesEnable, expressionEnable);
+            List<UpdateConstraint> constraintList = BuildConstraintList(smr, jsonAsset.text);
+            string constraintSetupString = string.Empty;
+            bool constrain = false;
+            if (constraintList.Count > 0)
+            {
+                constraintSetupString = JsonConvert.SerializeObject(constraintList);
+                constrain = true;
+            }
+
+            SetupBoneDriver(AddBoneDriver(obj), glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrain);
         }
 
         public static Component AddBoneDriverToBaseBody(GameObject rootObject, bool drive, bool transpose)
@@ -194,7 +203,16 @@ namespace Reallusion.Import
                 ExpressionGlossary glossary = BuildExpressionGlossary(rootObject, smr, jsonAsset.text);
                 string jsonSetupString = JsonConvert.SerializeObject(glossary);
 
-                SetupBoneDriver(boneDriver, jsonSetupString, drive, transpose);
+                List<UpdateConstraint> constraintList = BuildConstraintList(smr, jsonAsset.text);
+                string constraintSetupString = string.Empty;
+                bool constrain = false;
+                if (constraintList.Count > 0)
+                {
+                    constraintSetupString = JsonConvert.SerializeObject(constraintList);
+                    constrain = true;
+                }
+
+                SetupBoneDriver(boneDriver, jsonSetupString, constraintSetupString, drive, transpose, constrain);
             }
 
             return boneDriver;
@@ -232,7 +250,7 @@ namespace Reallusion.Import
             return boneDriver;
         }
 
-        private static void SetupBoneDriver(Component boneDriver, string jsonSetupString, bool bonesEnable, bool expressionEnable)
+        private static void SetupBoneDriver(Component boneDriver, string glossarySetupString, string constraintSetupString, bool bonesEnable, bool expressionEnable, bool constrainEnable)
         {
             MethodInfo SetupBoneDriver = null;
             if (boneDriver != null)
@@ -241,7 +259,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(string), typeof(bool), typeof(bool) },
+                                    new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool) },
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -256,10 +274,17 @@ namespace Reallusion.Import
                 return;
             }
 
-            SetupBoneDriver.Invoke(boneDriver, new object[] { jsonSetupString, bonesEnable, expressionEnable });
+            try
+            {
+                SetupBoneDriver.Invoke(boneDriver, new object[] { glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrainEnable });
+            }
+            catch
+            {
+                Debug.LogWarning("SetupBoneDriver cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+            }
         }
 
-        public static void SetupBoneDriverFlags(GameObject boneDriverObject, bool bonesEnable, bool expressionEnable)
+        public static void SetupBoneDriverFlags(GameObject boneDriverObject, bool bonesEnable, bool expressionEnable, bool constraintEnable)
         {
             Component boneDriver = null;
 
@@ -283,7 +308,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(bool), typeof(bool) },
+                                    new Type[] { typeof(bool), typeof(bool), typeof(bool)},
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -294,11 +319,18 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");                
                 return;
             }
 
-            SetupBoneDriver.Invoke(boneDriver, new object[] { bonesEnable, expressionEnable });
+            try
+            {
+                SetupBoneDriver.Invoke(boneDriver, new object[] { bonesEnable, expressionEnable, constraintEnable });
+            }
+            catch
+            {
+                Debug.LogWarning("SetupBoneDriverFlags cannot invoke the setup method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+            }
         }
 
         public static string[] RetrieveBoneArray(GameObject obj)
@@ -345,12 +377,18 @@ namespace Reallusion.Import
                     return strings;
                 }
 
-
-                var result = QueryBoneDriver.Invoke(boneDriver, new object[] { });
-                if (result != null)
+                try
                 {
-                    strings = (string[])result;
-                    return strings;
+                    var result = QueryBoneDriver.Invoke(boneDriver, new object[] { });
+                    if (result != null)
+                    {
+                        strings = (string[])result;
+                        return strings;
+                    }
+                }
+                catch
+                {
+                    Debug.LogWarning("RetrieveBoneArray cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
                 }
             }
             else
@@ -404,12 +442,18 @@ namespace Reallusion.Import
                     return dict;
                 }
 
-
-                var result = QueryBoneDriver.Invoke(boneDriver, new object[] { });
-                if (result != null)
+                try
                 {
-                    dict = (Dictionary<string, List<string>>)result;
-                    return dict;
+                    var result = QueryBoneDriver.Invoke(boneDriver, new object[] { });
+                    if (result != null)
+                    {
+                        dict = (Dictionary<string, List<string>>)result;
+                        return dict;
+                    }
+                }
+                catch
+                {
+                    Debug.LogWarning("RetrieveBoneDictionary cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
                 }
             }
             else
@@ -493,6 +537,53 @@ namespace Reallusion.Import
             return result;
         }
 
+        public static List<JsonConstraint> ExtractConstraintData(string jsonString)
+        {
+            var constraints = new List<JsonConstraint>();
+
+            var root = JObject.Parse(jsonString);
+
+            foreach (var characterProp in root.Properties())
+            {
+                var characterObject = characterProp.Value["Object"];
+                if (characterObject == null) continue;
+                
+                foreach (var modelProp in characterObject.Children<JProperty>())
+                {
+                    var constraintToken = modelProp.Value["Constraint"] as JObject;
+                    if (constraintToken == null) continue;
+
+                    foreach (var constraintProp in constraintToken.Properties())
+                    {
+                        string constraintName = constraintProp.Name;
+                        var constraintData = constraintProp.Value;
+
+                        var jc = new JsonConstraint(constraintName)
+                        {
+                            SourceChannels = constraintData["Source Channels"]?.ToObject<string[]>(),
+                            TargetChannel = constraintData["Target Channel"]?.ToString(),
+                            CurveMode = constraintData["Curve Mode"]?.ToString(),
+                            Curve = constraintData["Curve"]?.ToObject<List<float[]>>(),
+                            Mode = constraintData["Mode"]?.ToString()
+                        };
+                        constraints.Add(jc);
+                    }
+                }
+            }
+            /*
+            foreach (var constraint in constraints)
+            {
+                Debug.Log($"Name: {constraint.ConstraintName} Source: {constraint.SourceChannels[0]} Target: {constraint.TargetChannel} Curve: {constraint.Curve[1][0]} {constraint.Curve[1][1]} curvemode: {constraint.CurveMode}");
+                
+                foreach (float[] fl in constraint.Curve)
+                {
+                    Debug.Log($"Curve: {fl[0]},{fl[1]}");
+                }                
+            }
+            */
+            return constraints;
+        }
+
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
         {
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
@@ -543,6 +634,33 @@ namespace Reallusion.Import
             }
             return glossary;
         }
+
+        public static List<UpdateConstraint> BuildConstraintList(SkinnedMeshRenderer smr, string json)
+        {
+            List<JsonConstraint> jsonConstraints = ExtractConstraintData(json);
+
+            List<UpdateConstraint> constraints = new List<UpdateConstraint>();
+            foreach (var constraint in jsonConstraints)
+            {
+                int targetIndex = smr.sharedMesh.GetBlendShapeIndex(constraint.TargetChannel);
+                if (targetIndex == -1) continue;
+
+                List<int> sourceIndices = new List<int>();
+                foreach(string sourceName in constraint.SourceChannels)
+                {
+                    int i = smr.sharedMesh.GetBlendShapeIndex(sourceName);
+                    if (i > -1)
+                        sourceIndices.Add(i);
+                }
+
+                foreach (int sourceIndex in sourceIndices)
+                {
+                    Debug.Log($"Constraint: Source: {sourceIndex} Target: {targetIndex} Mode: {constraint.Mode}");
+                    constraints.Add(new UpdateConstraint(sourceIndex, targetIndex, constraint.Mode, constraint.Curve));
+                }                
+            }
+            return constraints;
+        }            
 
         public static Dictionary<string, List<string>> FindExcessBlendShapes(GameObject obj)
         {            
@@ -686,6 +804,122 @@ namespace Reallusion.Import
                 return new Quaternion(RotationArr[0], RotationArr[1], RotationArr[2], RotationArr[3]);
             }
         }
+
+        [Serializable]
+        public class JsonConstraint
+        {
+            public string ConstraintName;
+            public string[] SourceChannels;
+            public string TargetChannel;
+            public string CurveMode;
+            public List<float[]> Curve;
+            public string Mode;
+
+            public JsonConstraint(string constraintName)
+            {
+                ConstraintName = constraintName;
+            }
+        }
+
+        [Serializable]
+        public enum UpdateMode
+        {
+            None = 0,
+            Add = 1,
+            Limit = 2,
+        }
+
+        public enum CurveMode
+        {
+            None = 0,
+            Direct = 1,
+            Proportional = 2,
+            Sawtooth = 3,
+        }
+
+        [Serializable]
+        public class UpdateConstraint
+        {
+            public int SourceIndex;
+            public int TargetIndex;
+            public UpdateMode UpdateMode;
+            public CurveMode CurveMode;
+            public float Gradient;
+
+            public UpdateConstraint(int src, int tgt, string Mode, List<float[]> curve)
+            {
+                SourceIndex = src;
+                TargetIndex = tgt;
+
+                switch (Mode.ToLower())
+                {
+                    case "add":
+                        {
+                            UpdateMode = UpdateMode.Add;
+                            break;
+                        }
+                    case "limit":
+                        {
+                            UpdateMode = UpdateMode.Limit;
+                            break;
+                        }
+                    default:
+                        {
+                            UpdateMode = UpdateMode.None;
+                            break;
+                        }
+                }
+
+
+                List<Vector2> uniqueCurvePoints = new List<Vector2>(); // curve.Distinct().ToList();
+
+                foreach (float[] curvePoint in curve)
+                {
+                    Vector2 point = new Vector2(curvePoint[0], curvePoint[1]);
+                    if (!uniqueCurvePoints.Contains(point))
+                    {
+                        uniqueCurvePoints.Add(point);
+                    }
+                }
+
+                foreach (Vector2 curvePoint in uniqueCurvePoints)
+                {
+                    Debug.Log($"Count: {uniqueCurvePoints.Count} x: {curvePoint[0]}, y: {curvePoint[1]}");
+                }
+
+                if (uniqueCurvePoints.Count == 2)
+                {
+                    if (uniqueCurvePoints[0] == new Vector2 ( 0f, 0f ) && uniqueCurvePoints[1] == new Vector2(1f, 1f))
+                    {
+                        CurveMode = CurveMode.Direct;
+                    }
+                    else
+                    {
+                        Vector2 a = uniqueCurvePoints[0];
+                        Vector2 b = uniqueCurvePoints[1];
+
+                        if (Mathf.Approximately(a.x, b.x))
+                        {
+                            CurveMode = CurveMode.None;
+                        }
+                        else
+                        {
+                            CurveMode = CurveMode.Proportional;
+                            Gradient = (b.y - a.y) / (b.x - a.x);
+                        }
+                    }
+                }
+                else if (uniqueCurvePoints.Count == 3)
+                {
+                    CurveMode = CurveMode.Sawtooth;
+                }
+                else
+                {
+                    CurveMode = CurveMode.None;
+                }
+            }
+        }
+
         #endregion Class Data
     }
 }
