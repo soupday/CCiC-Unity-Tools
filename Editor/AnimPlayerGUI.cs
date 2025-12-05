@@ -205,7 +205,7 @@ namespace Reallusion.Import
         [SerializeField]
         private static AnimatorState playingState;
         [SerializeField]
-        public static int controlStateHash { get; set; }
+        public static int controlStateHash;// { get; set; }
 
         // animator/animation settings
         public static bool FootIK = true;

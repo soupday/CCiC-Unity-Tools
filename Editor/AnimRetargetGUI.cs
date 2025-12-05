@@ -1376,7 +1376,7 @@ namespace Reallusion.Import
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
+            Util.ApplyIfPrefabInstance(targetCharacterModel);
 
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
@@ -1649,7 +1649,7 @@ namespace Reallusion.Import
                             }
                         case "CC_Base_Head":
                             {
-                                PurgeBindings(sourceCurveBindings, headCurves, workingClip);
+                                //PurgeBindings(sourceCurveBindings, headCurves, workingClip);
                                 break;
                             }
                     }
@@ -1703,7 +1703,7 @@ namespace Reallusion.Import
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
+            Util.ApplyIfPrefabInstance(targetCharacterModel);
 
             Dictionary <string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
             // this is a list to keep
@@ -1859,7 +1859,7 @@ namespace Reallusion.Import
             {
                 BoneEditor.SetupBoneDriverFlags(bd, false, false, false);
                 LogBoneDriverSettingsChanges(targetCharacterModel, bd, false, false, false, true);
-                PrefabUtility.ApplyPrefabInstance(targetCharacterModel, InteractionMode.AutomatedAction);
+                Util.ApplyIfPrefabInstance(targetCharacterModel);
             }
             else { Debug.Log("No Bonedriver found"); }
 

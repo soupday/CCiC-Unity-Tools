@@ -413,7 +413,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -476,7 +476,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -586,6 +586,8 @@ namespace Reallusion.Import
 
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
         {
+            string[] exclusionFilter = new string[] { "CC_Base_Head" };
+
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
 
             SkeletonBone[] skeleton = new SkeletonBone[0];
@@ -603,6 +605,7 @@ namespace Reallusion.Import
             {
                 foreach (var bone in expression.Value)
                 {
+                    if (exclusionFilter.Contains(bone.Key)) continue;
                     try
                     {
                         Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
@@ -614,7 +617,7 @@ namespace Reallusion.Import
                     }
                     catch { Debug.Log("Error building ExpressionGlossary"); }
                 }
-            }
+            }            
 
             // add each instance of Expression data for each bone as a list
             foreach (ExpressionByBone ebb in glossary.ExpressionsByBone)
@@ -623,7 +626,7 @@ namespace Reallusion.Import
                 {
                     foreach (var bone in expression.Value)
                     {
-                        if (ebb.BoneName == bone.Key)
+                        if (ebb.BoneName == bone.Key && !exclusionFilter.Contains(ebb.BoneName))
                         {
                             bool isViseme = expression.Key.StartsWith("V_");
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
@@ -655,7 +658,7 @@ namespace Reallusion.Import
 
                 foreach (int sourceIndex in sourceIndices)
                 {
-                    Debug.Log($"Constraint: Source: {sourceIndex} Target: {targetIndex} Mode: {constraint.Mode}");
+                    //Debug.Log($"Constraint: Source: {sourceIndex} Target: {targetIndex} Mode: {constraint.Mode}");
                     constraints.Add(new UpdateConstraint(sourceIndex, targetIndex, constraint.Mode, constraint.Curve));
                 }                
             }
@@ -881,12 +884,12 @@ namespace Reallusion.Import
                         uniqueCurvePoints.Add(point);
                     }
                 }
-
+                /*
                 foreach (Vector2 curvePoint in uniqueCurvePoints)
                 {
                     Debug.Log($"Count: {uniqueCurvePoints.Count} x: {curvePoint[0]}, y: {curvePoint[1]}");
                 }
-
+                */
                 if (uniqueCurvePoints.Count == 2)
                 {
                     if (uniqueCurvePoints[0] == new Vector2 ( 0f, 0f ) && uniqueCurvePoints[1] == new Vector2(1f, 1f))
