@@ -31,6 +31,7 @@ namespace Reallusion.Import
 {
     public class BoneEditor : EditorWindow
     {
+        // tbd remove test
         #region Test Menu
         [MenuItem("Reallusion/Bone Driver", priority = 100)]
         public static void OpenBoneEditorWindow()
