@@ -2487,15 +2487,15 @@ namespace Reallusion.Import
                 if (characterInfo.RefractiveEyes)
                 {
                     mat.SetFloatIf("_IrisDepth", 0.004f * matJson.GetFloatValue("Custom Shader/Variable/Iris Depth Scale"));
-                    mat.SetFloatIf("_PupilScale", 1f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
+                    mat.SetFloatIf("_PupilScale", 1.0f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
                 }
                 else if (characterInfo.ParallaxEyes)
                 {
-                    float depth = Mathf.Clamp(0.5f * matJson.GetFloatValue("Custom Shader/Variable/Iris Depth Scale"), 0f, 1.0f);
+                    float depth = Mathf.Clamp(0.333f * matJson.GetFloatValue("Custom Shader/Variable/Iris Depth Scale"), 0f, 1.0f);
                     //float pupilScale = Mathf.Clamp(1f / Mathf.Pow((depth * 2f + 1f), 2f), 0.1f, 2.0f);                    
                     mat.SetFloatIf("_IrisDepth", depth);
                     //mat.SetFloat("_PupilScale", pupilScale);
-                    mat.SetFloatIf("_PupilScale", 1f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
+                    mat.SetFloatIf("_PupilScale", 0.5f * matJson.GetFloatValue("Custom Shader/Variable/Pupil Scale"));
                 }
                 else
                 {                    
@@ -2750,7 +2750,17 @@ namespace Reallusion.Import
 
             if (isEyelash || isEyeBrow)
             {
-                mat.SetFloatIf("_ShadowClip", 1.0f);
+                mat.SetFloatIf("_ShadowClip", 1.0f);                
+            }
+
+            if (isEyelash)
+            {
+                // turn off shadows on eyelash meshes
+                SkinnedMeshRenderer smr = obj.GetComponent<SkinnedMeshRenderer>();
+                if (smr)
+                {
+                    smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;                    
+                }
             }
         }
 
