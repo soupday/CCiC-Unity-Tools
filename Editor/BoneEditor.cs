@@ -91,7 +91,7 @@ namespace Reallusion.Import
             string path = AssetDatabase.GetAssetPath(parentObject);
             Debug.Log("prefab path:" + path);
 
-            SetupBoneDriverReflection(cCBaseBody, smr, AssetDatabase.GetAssetPath(jsonObject), model, true, true);
+            SetupBoneDriverReflection(cCBaseBody, smr, AssetDatabase.GetAssetPath(jsonObject), model, true, true, true);
         }
 
         void TestFindExtraShapes()
@@ -148,7 +148,7 @@ namespace Reallusion.Import
         #endregion Test UI
 
         #region Utils
-        public static void SetupBoneDriverReflection(GameObject obj, SkinnedMeshRenderer smr, string jsonPath, GameObject sourceObject, bool bonesEnable, bool expressionEnable)
+        public static void SetupBoneDriverReflection(GameObject obj, SkinnedMeshRenderer smr, string jsonPath, GameObject sourceObject, bool bonesEnable, bool expressionEnable, bool constrainEnable)
         {
             TextAsset jsonAsset = null;
 
@@ -165,7 +165,7 @@ namespace Reallusion.Import
             if (constraintList.Count > 0)
             {
                 constraintSetupString = JsonConvert.SerializeObject(constraintList);
-                constrain = true;
+                constrain = constrainEnable;
             }
 
             SetupBoneDriver(AddBoneDriver(obj), glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrain);

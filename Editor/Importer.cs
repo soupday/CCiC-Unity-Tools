@@ -704,7 +704,7 @@ namespace Reallusion.Import
                         {
                             if (renderer.GetType() == typeof(SkinnedMeshRenderer))
                             {
-                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj, characterInfo.FeatureUseBoneDriver, characterInfo.FeatureUseExpressionTranspose);
+                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj, characterInfo.FeatureUseBoneDriver, characterInfo.FeatureUseExpressionTranspose, characterInfo.FeatureUseConstraintData);
                             }
                         }
                     }
