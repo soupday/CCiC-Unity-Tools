@@ -7,7 +7,7 @@ Changelog
 - Eye shader limbus adjusted to be more accurate to CC/iC eyes.
 - Eyelash and Brows shadow and reflection fixes.
 - Bone driver script added.
-    - For exports with bone/expression data (CC5).
+    - For exports with bone/expression data (CC4.63 / CC5.0+).
     - Script will drive face bones from the facial expression blendshapes on the body mesh.
     - Script will also copy facial expression blendshapes from the body to other relevant meshes.
     - Facial expression blendshapes need only target the body and driver script takes care of the rest.
