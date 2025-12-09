@@ -41,7 +41,7 @@ namespace Reallusion.Import
 
         private static float width = 313f;
         private static float height = 240f;
-        private static float baseControlWidth = 168f;
+        //private static float baseControlWidth = 168f;
         private static float sliderWidth = 295f;
         private static float textWidth = 66f;
         private static float textHeight = 18f;

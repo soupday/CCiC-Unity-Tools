@@ -1229,7 +1229,7 @@ namespace Reallusion.Import
                     {
                         foreach (Object potential in potentials)
                         {
-                            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(potential.GetInstanceID(), out string tryGuid, out long tryLocalid))
+                            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(potential, out string tryGuid, out long tryLocalid))
                             {
                                 if (guid == tryGuid && tryLocalid == localid)
                                 {
