@@ -16,16 +16,17 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using UnityEngine;
-using UnityEditor;
-using Unity.Plastic.Newtonsoft.Json;
-using Unity.Plastic.Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.IO;
+using Unity.Plastic.Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json.Linq;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.XR;
 
 namespace Reallusion.Import
 {
@@ -600,10 +601,14 @@ namespace Reallusion.Import
             }
 
             ExpressionGlossary glossary = new ExpressionGlossary();
+            bool hasVisemes = false;
+            string[] visemeKeys = new string[] { "Open", "V_Open", "Explosive", "V_Explosive", "Dental_Lip", "V_Dental_Lip" };
 
             // build list of implicated bones and create a single ExpressionByBone for each bone with cached bindpose
             foreach (var expression in expressions)
             {
+                if (visemeKeys.Contains(expression.Key)) hasVisemes = true;
+
                 foreach (var bone in expression.Value)
                 {
                     if (exclusionFilter.Contains(bone.Key)) continue;
@@ -631,11 +636,51 @@ namespace Reallusion.Import
                         {
                             bool isViseme = expression.Key.StartsWith("V_");
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
-                            ebb.Expressions.Add(new Expression(expression.Key, index, isViseme, bone.Value.Translate, bone.Value.Rotation));
+                            if (index >= 0)
+                            {
+                                ebb.Expressions.Add(new Expression(expression.Key, index, isViseme, bone.Value.Translate, bone.Value.Rotation));
+                            }
                         }
                     }
                 }
             }
+
+            // viseme default bone expressions (from Neutral base)
+            Dictionary<string, (Vector3, Vector4)> visemeDefaults = new Dictionary<string, (Vector3, Vector4)>()
+            {
+                { "V_Open", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.1391f, 0.99027f)) },
+                { "Open", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.1391f, 0.99027f)) },
+                { "Er", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.03546f, 0.99937f)) },
+                { "Ih", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.021248f, 0.99977f)) },
+                { "Ah", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.13919f, 0.990265f)) },
+                { "Oh", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.084033f, 0.996462f)) },
+                { "Th", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.028257f, 0.9996f)) },
+                { "T_L_D_N", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.00997f, 0.9999f)) },
+                { "K_G_H_NG", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.009107f, 0.999958f)) },
+                { "AE", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.05678f, 0.99838f)) },
+                { "R", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.014407f, 0.999896f)) },
+            };
+            
+            if (!hasVisemes)
+            {
+                foreach (ExpressionByBone ebb in glossary.ExpressionsByBone)
+                {
+                    if (ebb.BoneName == "CC_Base_JawRoot")
+                    {
+                        foreach (var expression in visemeDefaults)
+                        {
+                            int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
+                            if (index >= 0)
+                            {
+                                ebb.Expressions.Add(new Expression(expression.Key, index, true, 
+                                                                   expression.Value.Item1, 
+                                                                   expression.Value.Item2));
+                            }
+                        }
+                    }
+                }
+            }
+
             return glossary;
         }
 

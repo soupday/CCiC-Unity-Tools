@@ -1416,7 +1416,7 @@ namespace Reallusion.Import
 
         #region FaceMorph
 
-        public static bool FaceFoldOut { get; private set; } = true;
+        public static bool FaceFoldOut { get; private set; } = false;
         public static bool UseLightIcons { get; set; } = false;
         private static bool doOnce = true;
         private static bool doOnceCatchMouse = true;
