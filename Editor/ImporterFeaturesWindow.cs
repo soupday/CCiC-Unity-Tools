@@ -16,13 +16,9 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Sprites;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Reallusion.Import
 {
@@ -161,6 +157,7 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
                 flagChanged = true;
 
+
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
                 flagChanged = true;
 
@@ -180,12 +177,12 @@ namespace Reallusion.Import
                 }
             }
 
-                /*
-                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
-                    flagChanged = true;
-                */
+            /*
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
+                flagChanged = true;
+            */
 
-                DrawLabelLine(line++, "Character Physics:");
+            DrawLabelLine(line++, "Character Physics:");
 
             // Cloth Physics
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ClothPhysics, "Enable Cloth Physics", SECTION_INDENT))
@@ -252,9 +249,20 @@ namespace Reallusion.Import
                     {
                         if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.SpringBoneHair, "Dynamic Bone Springbones", SUB_SECTION_INDENT, CharacterInfo.springGroup))
                             flagChanged = true;
-                    }                    
+                    }
                 }
             }
+
+            DrawLabelLine(line++, "Character Expression Features:");
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.BoneDriver, "Expression Driven Bones", SECTION_INDENT))
+                flagChanged = true;
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExpressionTranspose, "Expression Transpose", SECTION_INDENT))
+                flagChanged = true;
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ConstraintData, "Use Constraints", SECTION_INDENT))
+                flagChanged = true;
 
             DrawLabelLine(line++, "");
 
@@ -310,7 +318,7 @@ namespace Reallusion.Import
         {
             if (windowStyles == null) windowStyles = new Styles();
 
-            return itemIndex % 2 > 0 ? windowStyles.listEvenBg : windowStyles.listOddBg;
+            return itemIndex % 2 == 0 ? windowStyles.listEvenBg : windowStyles.listOddBg;
         }
 
         private void SetFeatureFlag(CharacterInfo.ShaderFeatureFlags flag, bool value)

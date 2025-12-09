@@ -17,11 +17,9 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEditor.SceneManagement;
@@ -30,7 +28,6 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using UnityEngine.Timeline;
-
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
@@ -587,8 +584,10 @@ namespace Reallusion.Import
             if (director != null)
             {
                 Selection.activeGameObject = director.gameObject;
+#if UNITY_2021_3_OR_NEWER
                 var tl = TimelineEditor.GetOrCreateWindow();
                 tl.Focus();
+#endif
                 if (TimelineEditor.inspectedDirector != null)
                 {
                     TimelineEditor.inspectedDirector.time = time;

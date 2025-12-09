@@ -20,7 +20,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace Reallusion.Import
 {
@@ -50,6 +49,9 @@ namespace Reallusion.Import
             TexturePacking = 4096,
             DualSpecularSkin = 8192,
             AmplifyShaders = 16384,
+            BoneDriver = 32768,
+            ExpressionTranspose = 65536,
+            ConstraintData = 131072,
         }
 
         public enum ExportType
@@ -118,6 +120,7 @@ namespace Reallusion.Import
         public RigOverride UnknownRigType { get; set; }
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
+        private string version = null;
         
         public struct GUIDRemap
         {
@@ -238,7 +241,9 @@ namespace Reallusion.Import
         public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
         public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
         public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;
-
+        public bool FeatureUseBoneDriver => (ShaderFlags & ShaderFeatureFlags.BoneDriver) > 0;
+        public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
+        public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -260,7 +265,7 @@ namespace Reallusion.Import
         private EyeQuality builtQualEyes = EyeQuality.Parallax;
         private HairQuality builtQualHair = HairQuality.TwoPass;
         private bool builtBakeCustomShaders = true;
-        private bool builtBakeSeparatePrefab = true;        
+        private bool builtBakeSeparatePrefab = true;
 
         public ShaderFeatureFlags BuiltShaderFlags { get; private set; } = ShaderFeatureFlags.NoFeatures;
         public bool BuiltFeatureWrinkleMaps => (BuiltShaderFlags & ShaderFeatureFlags.WrinkleMaps) > 0;
@@ -281,7 +286,20 @@ namespace Reallusion.Import
 
         public string CharacterName => name;
 
-        public bool IsBlenderProject { get { return JsonData.GetBoolValue(CharacterName + "/Blender_Project"); } }
+        public bool IsBlenderProject
+        {
+            get
+            {
+                if (jsonData != null)
+                {
+                    return JsonData.GetBoolValue(CharacterName + "/Blender_Project");
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
 
         private BaseGeneration generation = BaseGeneration.None;
         private GameObject fbx;
@@ -797,7 +815,9 @@ namespace Reallusion.Import
                 InitPhysics();
             }
 
-            if (generation != oldGen)
+            bool versionUpgraded = VersionUpgrade();
+
+            if (generation != oldGen || versionUpgraded)
             {
                 Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
                 Write();
@@ -840,7 +860,84 @@ namespace Reallusion.Import
             if (HasDisplacement())
             {
                 ShaderFlags |= ShaderFeatureFlags.Displacement;
-            }            
+            }
+            
+            if (HasExpressionBones())
+            {
+                ShaderFlags |= ShaderFeatureFlags.BoneDriver;
+                ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
+            }
+
+            if (HasConstraintData())
+            {
+                ShaderFlags |= ShaderFeatureFlags.ConstraintData;
+            }
+
+            version = Pipeline.VERSION;
+        }
+
+        public bool VersionGTE(int maj, int min, int rev)
+        {
+            if (!string.IsNullOrEmpty(version))
+            {
+                string[] split = version.Split('.');
+                if (split.Length == 3)
+                {
+                    int versionMaj = int.Parse(split[0]);
+                    int versionMin = int.Parse(split[1]);
+                    int versionRev = int.Parse(split[2]);                    
+                    int versionInt = versionMaj * 10000 + versionMin * 1000 + versionRev;
+                    int cmpInt = maj * 10000 + min * 1000 + rev;
+                    return versionInt >= cmpInt;
+                }
+            }
+            return false;
+        }
+
+        public bool VersionLT(int maj, int min, int rev)
+        {
+            if (!string.IsNullOrEmpty(version))
+            {
+                string[] split = version.Split('.');
+                if (split.Length == 3)
+                {
+                    int versionMaj = int.Parse(split[0]);
+                    int versionMin = int.Parse(split[1]);
+                    int versionRev = int.Parse(split[2]);
+                    int versionInt = versionMaj * 10000 + versionMin * 1000 + versionRev;
+                    int cmpInt = maj * 10000 + min * 1000 + rev;
+                    return versionInt < cmpInt;
+                }
+            }
+            return true;
+        }
+
+        public bool VersionUpgrade()
+        {
+            bool upgraded = false;
+
+            if (VersionLT(2, 1, 1))
+            {
+                if (HasExpressionBones())
+                {
+                    ShaderFlags |= ShaderFeatureFlags.BoneDriver;
+                    ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
+                }
+
+                if (HasConstraintData())
+                {
+                    ShaderFlags |= ShaderFeatureFlags.ConstraintData;
+                }
+
+                upgraded = true;
+            }
+
+            if (upgraded)
+            {
+                version = Pipeline.VERSION;
+            }
+
+            return upgraded;
         }
 
         public void InitPhysics()
@@ -934,7 +1031,21 @@ namespace Reallusion.Import
         {
             return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
         }
+
+        public bool HasExpressionBones()
+        {
+            string jsonPath = name + "/Object/" + name + "/Expression";
+            return JsonData.PathExists(jsonPath);
+        }
         
+        public bool HasConstraintData()
+        {
+            string jsonPath = name + "/Object/" + name + "/Constraint";
+            QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
+            bool hasData = data != null && data.values.Count > 0;
+            return hasData;
+        }
+
         public bool HasWrinkleDisplacement()
         {
             return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);
@@ -1028,6 +1139,9 @@ namespace Reallusion.Import
 
                 switch (property)
                 {
+                    case "version":
+                        version = value;
+                        break;
                     case "logType":
                         if (value == "Basic") logType = ProcessingType.Basic;
                         else if (value == "HighQuality") logType = ProcessingType.HighQuality;
@@ -1120,6 +1234,7 @@ namespace Reallusion.Import
         {
             ApplySettings();
             StreamWriter writer = new StreamWriter(infoFilepath, false);
+            writer.WriteLine("version=" + version);
             writer.WriteLine("logType=" + builtLogType.ToString());
             writer.WriteLine("generation=" + generation.ToString());
             writer.WriteLine("isLOD=" + (isLOD ? "true" : "false"));
@@ -1291,6 +1406,8 @@ namespace Reallusion.Import
             if (FeatureUseTessellation && 
                 (materialType == MaterialType.Skin ||
                  materialType == MaterialType.Head ||
+                 materialType == MaterialType.Cornea ||
+                 materialType == MaterialType.Eye ||
                  materialType == MaterialType.Teeth)) return true;
 
             return false;

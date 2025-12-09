@@ -160,6 +160,25 @@ namespace Reallusion.Import
             return defaultValue;
         }
 
+        public static bool SetBoolIf(this Material mat, string shaderRef, bool value)
+        {
+            if (mat.shader && mat.shader.FindPropertyIndex(shaderRef) >= 0)
+            {
+                mat.SetFloat(shaderRef, value ? 1f : 0f);
+                return true;
+            }
+            return false;
+        }
+
+        public static bool GetBoolIf(this Material mat, string shaderRef, bool defaultValue = false)
+        {
+            if (mat.shader && mat.shader.FindPropertyIndex(shaderRef) >= 0)
+            {
+                return mat.GetFloat(shaderRef) > 0f ? true : false;
+            }
+            return defaultValue;
+        }
+
         public static bool SetVectorIf(this Material mat, string shaderRef, Vector4 value)
         {
             if (mat.shader && mat.shader.FindPropertyIndex(shaderRef) >= 0)

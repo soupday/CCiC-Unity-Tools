@@ -284,9 +284,9 @@ namespace Reallusion.Import
                 current = new Version(0, 0, 0);
             }
 
-            if (last < new Version(2, 1, 0))  // essential breakpoint to move .cs files to runtime package
+            if (last < new Version(2, 1, 1))  // essential breakpoint to move .cs files to runtime package
             {
-                Debug.Log("Critical package updates for version 2.1.0 and above are required (this will be performed autoatically)");
+                Debug.Log("Critical package updates for version 2.1.1 and above are required (this will be performed autoatically)");
                 return true;
             }
             else

@@ -17,9 +17,7 @@
  */
 
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace Reallusion.Import

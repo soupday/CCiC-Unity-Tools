@@ -106,7 +106,11 @@ namespace Reallusion.Import
 
         public override void OnGUI()
         {
-            AnimRetargetGUI.DrawRetargeter();
+            GUILayout.Space(0f);
+            // (x:0.00, y:0.00, width:313.00, height:248.00 -> 270.00)
+            Rect pos = new Rect(0f, 0f, width, height);
+            
+            AnimRetargetGUI.DrawRetargeter(pos);
 
             if (setInitialPosition)
             {

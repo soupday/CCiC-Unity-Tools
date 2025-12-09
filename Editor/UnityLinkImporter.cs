@@ -25,7 +25,6 @@ using Newtonsoft.Json.Linq;
 using Formatting = Newtonsoft.Json.Formatting;
 #endif
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -33,10 +32,8 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 #if HDRP_10_5_0_OR_NEWER
@@ -703,7 +700,7 @@ namespace Reallusion.Import
 
                 if (characterPrefab != null)
                 {
-                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, true, MotionPrefix);
+                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, motionTargetChar, true, MotionPrefix);
 
                     // determine if PROP or AVATAR from characterID
                     CharacterInfo charInfo = UnityLinkManager.GetCharacterInfoFromLinkId(linkId);
@@ -1041,6 +1038,31 @@ namespace Reallusion.Import
                 camera.focalLength = jsonCameraObject.FocalLength;
                 //Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
                 camera.sensorSize = new Vector2(jsonCameraObject.Width, jsonCameraObject.Height);
+
+                const string horizontal = "HORIZONTAL";
+                const string vertical = "VERTICAL";
+                Camera.GateFitMode mode = Camera.GateFitMode.None;
+
+                switch (jsonCameraObject.Fit)
+                {
+                    case horizontal:
+                        {
+                            mode = Camera.GateFitMode.Horizontal;
+                            break;
+                        }
+                    case vertical:
+                        {
+                            mode = Camera.GateFitMode.Vertical;
+                            break;
+                        }
+                    default:
+                        {
+                            mode = Camera.GateFitMode.Vertical;
+                            break;
+                        }
+                }
+
+                camera.gateFit = mode;
             }
             else
             {
@@ -1333,7 +1355,7 @@ namespace Reallusion.Import
                 CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
                 if (CameraProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class.");
+                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
                 else
@@ -1364,7 +1386,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 
@@ -1800,7 +1822,7 @@ namespace Reallusion.Import
                 LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
                 if (LightProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class - is the runtime package installed correctly?");
+                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
             }
@@ -1823,7 +1845,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component.");
+                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 

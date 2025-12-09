@@ -16,15 +16,11 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
-using static Reallusion.Import.CharacterInfo;
-using static UnityEngine.Terrain;
 
 namespace Reallusion.Import
 {
@@ -656,11 +652,15 @@ namespace Reallusion.Import
         private void CopyAdditionalSettings(Material source, Material dest)
         {
             string[] refs = new string[] {
-                // Tessellation (HDRP 12+)
-                // Custom Tessellation (URP 17+)
+                // Tessellation (HDRP 12+)                
+                "_TessellationBackFaceCullEpsilon", "_TessellationFactor", 
+                "_TessellationFactorMaxDistance", "_TessellationFactorMinDistance",
+                "_TessellationFactorTriangleSize", "_TessellationMaxDisplacement", 
+                "_TessellationMode", "_TessellationShapeFactor",
+                // ???
                 "_SSSBlend", "_SSSDistortion", "_SSSTransmission",
-                // AMP Tessellation (3D)
-                // Custom Subsurface (URP 10+)
+                // AMP Tessellation (3D/URP)
+                "_TessMin", "_TessMax", "_TessPhongStrength", "_TessValue",
                 // AMP Subsurface (3D)
                 "_TransStrength", "_TransNormal", "_TransScattering",
                 "_TransAmbient", "_TransDirect", "_TransShadow",
@@ -1430,6 +1430,7 @@ namespace Reallusion.Import
             float irisHue = mat.GetFloatIf("_IrisHue");
             float irisSaturation = mat.GetFloatIf("_IrisSaturation");
             float irisBrightness = mat.GetFloatIf("_IrisBrightness");
+            float irisInnerBrightness = mat.GetFloatIf("_IrisInnerBrightness", 1f);
             float scleraHue = mat.GetFloatIf("_ScleraHue");
             float scleraSaturation = mat.GetFloatIf("_ScleraSaturation");
             float scleraBrightness = mat.GetFloatIf("_ScleraBrightness");
@@ -1437,9 +1438,7 @@ namespace Reallusion.Import
             float shadowRadius = mat.GetFloatIf("_ShadowRadius");
             float shadowHardness = mat.GetFloatIf("_ShadowHardness");
             float scleraScale = mat.GetFloatIf("_ScleraScale");
-            float limbusDarkRadius = mat.GetFloatIf("_LimbusDarkRadius");
-            float limbusDarkWidth = mat.GetFloatIf("_LimbusDarkWidth");
-            float limbusShading = mat.GetFloatIf("_LimbusShading");
+            float limbusDarkScale = mat.GetFloatIf("_LimbusDarkScale", 7f);
             float limbusContrast = mat.GetFloatIf("_LimbusContrast", 1f);
             float irisRadius = mat.GetFloatIf("_IrisRadius");
             float limbusWidth = mat.GetFloatIf("_LimbusWidth");
@@ -1458,7 +1457,7 @@ namespace Reallusion.Import
             Color irisCloudyColor = mat.GetColorIf("_IrisCloudyColor", Color.black);
             Color limbusColor = mat.GetColorIf("_LimbusColor", Color.black);
             bool isCornea = sourceName.iContains("Cornea");
-            bool isLeftEye = mat.GetFloatIf("_IsLeftEye") > 0f;
+            bool isLeftEye = mat.GetBoolIf("_IsLeftEye");
             Texture2D emission = GetMaterialTexture(mat, "_EmissionMap");
             Color emissiveColor = mat.GetColorIf("_EmissiveColor", Color.black);
             Color subsurfaceFalloff = mat.GetColorIf("_SubsurfaceFalloff", Color.white);
@@ -1483,20 +1482,20 @@ namespace Reallusion.Import
             {
                 bakedBaseMap = BakeCorneaDiffuseMap(cornea, sclera, blend,
                     scleraScale, scleraHue, scleraSaturation, scleraBrightness,
-                    irisHue, irisSaturation, irisBrightness, irisRadius, irisColor, irisCloudyColor,
-                    limbusShading, limbusContrast,
-                    limbusWidth, limbusDarkRadius, limbusDarkWidth, limbusColor,
+                    irisHue, irisSaturation, irisBrightness, irisInnerBrightness, irisRadius, irisColor, irisCloudyColor,
+                    limbusContrast,
+                    limbusWidth, limbusDarkScale, limbusColor,
                     shadowRadius, shadowHardness, cornerShadowColor,
-                    colorBlendStrength,
+                    colorBlendStrength, isLeftEye,
                     sourceName + "_BaseMap", CUSTOM_SHADERS ? "RLCorneaDiffuse" : "RLCorneaSingleDiffuse");
 
                 if (CUSTOM_SHADERS)
                 {
                     bakedSecondaryMap = BakeEyeDiffuseMap(cornea, blend,
-                        scleraScale, irisRadius, irisHue, irisSaturation, irisBrightness, irisColor, irisCloudyColor,
-                        limbusWidth, limbusDarkRadius, limbusDarkWidth, limbusColor,
-                        limbusShading, limbusContrast,
-                        colorBlendStrength,
+                        scleraScale, irisRadius, irisHue, irisSaturation, irisBrightness, irisInnerBrightness, irisColor, irisCloudyColor,
+                        limbusWidth, limbusDarkScale, limbusColor,
+                        limbusContrast,
+                        colorBlendStrength, isLeftEye,
                         sourceName + "_SecondaryMap");
                 }
 
@@ -1531,7 +1530,7 @@ namespace Reallusion.Import
                     // various baked mask maps for the baked shaders
                     bakedDetailMask = BakeCorneaDetailMaskMap(mask,
                         scleraScale, irisRadius,
-                        limbusWidth, limbusDarkRadius, limbusDarkWidth,
+                        limbusWidth, limbusDarkScale,
                         microNormalStrength,
                         sourceName + "_DetailMask");
 
@@ -1539,9 +1538,9 @@ namespace Reallusion.Import
                 {
                     // RGB textures cannot store low enough values for the refraction thickness
                     // so normalize it and use the thickness remap in the HDRP/Lit shader.
-                    bakedThicknessMap = BakeCorneaThicknessMap(limbusDarkRadius,
-                    limbusDarkWidth, refractionThickness / 0.025f,
-                    sourceName + "_Thickness");
+                    bakedThicknessMap = BakeCorneaThicknessMap(limbusDarkScale,
+                        refractionThickness / 0.025f,
+                        sourceName + "_Thickness");
                 }
                 else
                 {
@@ -1554,14 +1553,14 @@ namespace Reallusion.Import
             else
             {
                 bakedBaseMap = BakeEyeDiffuseMap(cornea, blend,
-                    scleraScale, irisRadius, irisHue, irisSaturation, irisBrightness, irisColor, irisCloudyColor,
-                    limbusWidth, limbusDarkRadius, limbusDarkWidth, limbusColor,
-                    limbusShading, limbusContrast, colorBlendStrength,
+                    scleraScale, irisRadius, irisHue, irisSaturation, irisBrightness, irisInnerBrightness, irisColor, irisCloudyColor,
+                    limbusWidth, limbusDarkScale, limbusColor,
+                    limbusContrast, colorBlendStrength, isLeftEye,
                     sourceName + "_BaseMap");
 
                 bakedMaskMap = BakeEyeMaskMap(mask, aoStrength, irisSmoothness,
                     scleraSmoothness,
-                    limbusDarkRadius, limbusDarkWidth, irisRadius,
+                    limbusDarkScale, irisRadius,
                     sourceName + "_Mask");
             }
 
@@ -1579,6 +1578,7 @@ namespace Reallusion.Import
             if (bakedSecondaryMap != null)
                 result.SetTextureIf("_SecondaryColorMap", bakedSecondaryMap);
 
+            result.SetBoolIf("_IsLeftEye", isLeftEye);
             result.SetColorIf("_LimbusColor", limbusColor);
             result.SetVectorIf("_DepthVector", depthVector);
 
@@ -1598,6 +1598,7 @@ namespace Reallusion.Import
                 else
                 {
                     result.SetFloatIf("_IrisDepth", irisDepth);
+                    result.SetFloatIf("_IrisScale", irisRadius * scleraScale * 6.81f);
                     result.SetFloatIf("_PupilScale", pupilScale);
                     result.SetTextureIf("_ScleraNormalMap", microNormal);
                     result.SetFloatIf("_ScleraNormalTiling", microNormalTiling);
@@ -1826,12 +1827,16 @@ namespace Reallusion.Import
                         Pipeline.GetUpgradedTemplateMaterial(sourceName, Pipeline.MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS,
                             MaterialQuality.Baked, useDigitalHuman));
 
+                    CopyAdditionalSettings(mat, firstPass);
+
                     secondPass = CreateBakedMaterial(mat, bakedBaseMap, bakedMaskMap, bakedMetallicGlossMap, bakedAOMap, bakedNormalMap,
                         null, null, null, null, emissionMap, null,
                         normalStrength, 1f, 1f, 0f, 0.5f, emissiveColor,
                         sourceName + "_2nd_Pass",
                         Pipeline.GetUpgradedTemplateMaterial(sourceName, Pipeline.MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS,
                             MaterialQuality.Baked, useDigitalHuman));
+
+                    CopyAdditionalSettings(mat, secondPass);
 
                     // multi material pass hair is custom baked shader only:
                     SetCustom(firstPass);
@@ -1850,6 +1855,8 @@ namespace Reallusion.Import
                         Pipeline.GetTemplateMaterial(sourceName, MaterialType.Hair,
                                     MaterialQuality.Baked, characterInfo,
                                     useDigitalHuman));
+
+                    CopyAdditionalSettings(mat, result);
 
                     SetCustom(result);
                     return result;
@@ -3062,12 +3069,12 @@ namespace Reallusion.Import
 
         private Texture2D BakeCorneaDiffuseMap(Texture2D cornea, Texture2D sclera, Texture2D colorBlend,
             float scleraScale, float scleraHue, float scleraSaturation, float scleraBrightness,
-            float irisHue, float irisSaturation, float irisBrightness, float irisRadius,
+            float irisHue, float irisSaturation, float irisBrightness, float irisInnerBrightness, float irisRadius,
             Color irisColor, Color irisCloudyColor,
-            float limbusShading, float limbusContrast,
-            float limbusWidth, float limbusDarkRadius, float limbusDarkWidth, Color limbusColor,
+            float limbusContrast,
+            float limbusWidth, float limbusDarkScale, Color limbusColor,
             float shadowRadius, float shadowHardness,
-            Color cornerShadowColor, float colorBlendStrength,
+            Color cornerShadowColor, float colorBlendStrength, bool isLeftEye,
             string name, string kernelName = "RLCorneaDiffuse")
         {
             Vector2Int maxSize = GetMaxSize(sclera);
@@ -3094,16 +3101,16 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("irisHue", irisHue);
                 bakeShader.SetFloat("irisSaturation", irisSaturation);
                 bakeShader.SetFloat("irisBrightness", irisBrightness);
+                bakeShader.SetFloat("irisInnerBrightness", irisInnerBrightness);
                 bakeShader.SetVector("irisColor", irisColor);
                 bakeShader.SetVector("irisCloudyColor", irisCloudyColor);
-                bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
-                bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
-                bakeShader.SetFloat("limbusShading", limbusShading);
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);
                 bakeShader.SetFloat("limbusContrast", limbusContrast);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
                 bakeShader.SetFloat("shadowRadius", shadowRadius);
                 bakeShader.SetFloat("shadowHardness", shadowHardness);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
+                bakeShader.SetBool("isLeftEye", isLeftEye);
                 bakeShader.SetVector("limbusColor", limbusColor);
                 bakeShader.SetVector("cornerShadowColor", cornerShadowColor);
                 Dispatch(bakeShader, kernel, bakeTarget);
@@ -3114,10 +3121,10 @@ namespace Reallusion.Import
         }
 
         private Texture2D BakeEyeDiffuseMap(Texture2D cornea, Texture2D colorBlend,
-            float scleraScale, float irisRadius, float irisHue, float irisSaturation, float irisBrightness, Color irisColor, Color irisCloudyColor,
-            float limbusWidth, float limbusDarkRadius, float limbusDarkWidth, Color limbusColor,
-            float limbusShading, float limbusContrast,
-            float colorBlendStrength,
+            float scleraScale, float irisRadius, float irisHue, float irisSaturation, float irisBrightness, float irisInnerBrightness, Color irisColor, Color irisCloudyColor,
+            float limbusWidth, float limbusDarkScale, Color limbusColor,
+            float limbusContrast,
+            float colorBlendStrength, bool isLeftEye,
             string name)
         {
             Vector2Int maxSize = GetMaxSize(cornea);
@@ -3139,14 +3146,14 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("irisHue", irisHue);
                 bakeShader.SetFloat("irisSaturation", irisSaturation);
                 bakeShader.SetFloat("irisBrightness", irisBrightness);
+                bakeShader.SetFloat("irisInnerBrightness", irisInnerBrightness);
                 bakeShader.SetVector("irisColor", irisColor);
                 bakeShader.SetVector("irisCloudyColor", irisCloudyColor);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
-                bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
-                bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
-                bakeShader.SetFloat("limbusShading", limbusShading);
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                                
                 bakeShader.SetFloat("limbusContrast", limbusContrast);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
+                bakeShader.SetBool("isLeftEye", isLeftEye);
                 bakeShader.SetVector("limbusColor", limbusColor);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
@@ -3187,7 +3194,7 @@ namespace Reallusion.Import
 
         private Texture2D BakeCorneaDetailMaskMap(Texture2D mask,
             float scleraScale, float irisRadius,
-            float limbusWidth, float limbusDarkRadius, float limbusDarkWidth,
+            float limbusWidth, float limbusDarkScale,
             float microNormalStrength,
             string name)
         {
@@ -3207,8 +3214,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("irisRadius", irisRadius);
                 bakeShader.SetFloat("scleraScale", scleraScale);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
-                bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
-                bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
@@ -3218,7 +3224,7 @@ namespace Reallusion.Import
 
         private Texture2D BakeEyeMaskMap(Texture2D mask,
             float aoStrength, float irisSmoothness, float scleraSmoothness,
-            float limbusDarkRadius, float limbusDarkWidth,
+            float limbusDarkScale,
             float irisRadius,
             string name)
         {
@@ -3237,8 +3243,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("aoStrength", aoStrength);
                 bakeShader.SetFloat("irisSmoothness", irisSmoothness);
                 bakeShader.SetFloat("scleraSmoothness", scleraSmoothness);
-                bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
-                bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
                 bakeShader.SetFloat("irisRadius", irisRadius);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
@@ -3248,7 +3253,7 @@ namespace Reallusion.Import
         }
 
         private Texture2D BakeCorneaThicknessMap(
-            float limbusDarkRadius, float limbusDarkWidth, float thicknessScale,
+            float limbusDarkScale, float thicknessScale,
             string name)
         {
             Vector2Int maxSize = new Vector2Int(256, 256);
@@ -3260,8 +3265,7 @@ namespace Reallusion.Import
             {
                 int kernel = bakeShader.FindKernel("RLCorneaThickness");
                 bakeTarget.Create(bakeShader, kernel);
-                bakeShader.SetFloat("limbusDarkRadius", limbusDarkRadius);
-                bakeShader.SetFloat("limbusDarkWidth", limbusDarkWidth);
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
                 bakeShader.SetFloat("thicknessScale", thicknessScale);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();

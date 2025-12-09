@@ -69,7 +69,7 @@ namespace Reallusion.Import
         {
             LodSelectionWindow window = GetWindow<LodSelectionWindow>("LOD Combining Tool");
 
-            string path = AssetDatabase.GetAssetPath(Selection.activeObject.GetInstanceID());
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject); //.GetInstanceID());
             if (AssetDatabase.IsValidFolder(path))
                 window.BuildModelPrefabDict(path);
             else

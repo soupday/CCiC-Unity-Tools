@@ -1,6 +1,19 @@
 Changelog
 =========
 
+### 2.1.1
+- Unity 6.3 fixes.
+- Import blendshape normals set to calculate by default.
+- Eye shader limbus adjusted to be more accurate to CC/iC eyes.
+- Eyelash and Brows shadow and reflection fixes.
+- Bone driver script added.
+    - For exports with bone/expression data (CC4.63 / CC5.0+).
+    - Script will drive face bones from the facial expression blendshapes on the body mesh.
+    - Script will also copy facial expression blendshapes from the body to other relevant meshes.
+    - Facial expression blendshapes need only target the body and driver script takes care of the rest.
+    - Optional expression strength controls.
+    - Animations retargeted to characters with active bone driver scripts have the driven blendshapes and bones stripped from the animation, significantly reducing size and improving playback performance.
+
 ### 2.1.0
 - Shader update for CC5 HD characters.
     - Eye shader updates
@@ -20,7 +33,7 @@ Changelog
     - Tessellation shaders for URP (Skin only for now)
     - Retarget expressions to/from CC5 HD profile.
     - Simultaneous datalink connection to Character Creator and iClone.
-    - Sending meshes from the Unity scene to iClone to aid scene specific animation. 
+    - Sending meshes from the Unity scene to iClone to aid scene specific animation.
 
 ### 2.0.0
 - Unified version, for all versions of Unity and pipelines.
