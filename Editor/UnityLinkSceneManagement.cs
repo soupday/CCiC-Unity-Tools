@@ -29,6 +29,7 @@ using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using UnityEngine.Timeline;
 using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
 
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.HighDefinition;
