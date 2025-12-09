@@ -20,7 +20,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace Reallusion.Import
 {

@@ -18,9 +18,7 @@
 
 //#define SOUPDEV
 
-using UnityEngine;
 using UnityEditor;
-using System.IO;
 
 namespace Reallusion.Import
 {

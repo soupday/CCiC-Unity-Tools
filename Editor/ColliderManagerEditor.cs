@@ -18,14 +18,11 @@
 
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.EditorTools;
 using ColliderSettings = Reallusion.Import.ColliderManager.ColliderSettings;
 using System.Linq;
 using System.Collections.Generic;
 using System;
 using Object = UnityEngine.Object;
-using System.Collections;
-using UnityEditor.ShortcutManagement;
 
 namespace Reallusion.Import
 {

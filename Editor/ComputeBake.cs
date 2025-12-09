@@ -16,15 +16,11 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
-using static Reallusion.Import.CharacterInfo;
-using static UnityEngine.Terrain;
 
 namespace Reallusion.Import
 {

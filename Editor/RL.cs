@@ -23,7 +23,6 @@ using System;
 using System.IO;
 using UnityEditor.Animations;
 using System.Reflection;
-using System.Linq;
 
 namespace Reallusion.Import
 {

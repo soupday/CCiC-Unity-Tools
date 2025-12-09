@@ -25,7 +25,6 @@ using Newtonsoft.Json.Linq;
 using Formatting = Newtonsoft.Json.Formatting;
 #endif
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -33,10 +32,8 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Timeline;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 #if HDRP_10_5_0_OR_NEWER

@@ -16,16 +16,12 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Codice.Client.BaseCommands;
-using Codice.Client.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Diagnostics;
-using static Codice.Client.BaseCommands.Import.Commit;
 
 namespace Reallusion.Import
 {
