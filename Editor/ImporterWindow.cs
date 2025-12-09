@@ -1786,6 +1786,17 @@ namespace Reallusion.Import
             }
             contextCharacter.UpdateAnimationRetargeting();
             contextCharacter.Write();
+
+            if (characterPrefab)
+            {
+                if (UpdatePreviewCharacter(characterPrefab))
+                {
+                    if (WindowManager.showPlayer)
+                        WindowManager.ShowAnimationPlayer();
+                }
+            }
+
+            Repaint();
         }
 
         public static void ResetAllSceneViewCamera(GameObject targetOverride = null)

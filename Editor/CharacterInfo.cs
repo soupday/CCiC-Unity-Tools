@@ -881,7 +881,7 @@ namespace Reallusion.Import
         {
             if (!string.IsNullOrEmpty(version))
             {
-                string[] split = version.Split(".");
+                string[] split = version.Split('.');
                 if (split.Length == 3)
                 {
                     int versionMaj = int.Parse(split[0]);
@@ -899,7 +899,7 @@ namespace Reallusion.Import
         {
             if (!string.IsNullOrEmpty(version))
             {
-                string[] split = version.Split(".");
+                string[] split = version.Split('.');
                 if (split.Length == 3)
                 {
                     int versionMaj = int.Parse(split[0]);
