@@ -16,12 +16,7 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if PLASTIC_NEWTONSOFT_AVAILABLE
-using Unity.Plastic.Newtonsoft.Json;
-#else
-using Newtonsoft.Json;  // com.unity.collab-proxy (plastic scm) versions prior to 1.14.12
-#endif
-
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;

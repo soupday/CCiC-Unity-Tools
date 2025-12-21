@@ -1,6 +1,9 @@
 Changelog
 =========
 
+### 2.2.0
+- Next release.
+
 ### 2.1.1
 - Unity 6.3 fixes.
 - Import blendshape normals set to calculate by default.

@@ -1,6 +1,6 @@
 {
   "name": "com.soupday.cc3_unity_tools",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "displayName": "CC/iC Unity Tools",
   "description": "Unity importer for Character Creator 3, 4 & 5 and iClone 7 and 8.",
   "unity": "2020.3",
@@ -14,11 +14,11 @@
   ],
   "author": {
     "name": "Victor Soupday",
-    "email": "user@noreply.com",
-    "url": "https://github.com/soupday"
+    "url": "https://github.com/soupday",
+    "email": "user@noreply.com"
   },
   "type": "tool",
   "dependencies": {
-    "com.unity.collab-proxy": "1.14.12"
+    "com.unity.nuget.newtonsoft-json": "3.0.0"
   }
 }

@@ -118,11 +118,6 @@
             "define": "UNITY_2023_1_6_OR_NEWER"
         },
         {
-            "name": "com.unity.collab-proxy",
-            "expression": "1.14.12",
-            "define": "PLASTIC_NEWTONSOFT_AVAILABLE"
-        },
-        {
             "name": "com.unity.render-pipelines.high-definition",
             "expression": "17.0.0",
             "define": "HDRP_17_0_0_OR_NEWER"
