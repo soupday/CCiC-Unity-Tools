@@ -1598,7 +1598,7 @@ namespace Reallusion.Import
                 else
                 {
                     result.SetFloatIf("_IrisDepth", irisDepth);
-                    result.SetFloatIf("_IrisScale", irisRadius * scleraScale * 6.81f);
+                    result.SetFloatIf("_IrisScale", irisRadius * scleraScale * 6.25f);
                     result.SetFloatIf("_PupilScale", pupilScale);
                     result.SetTextureIf("_ScleraNormalMap", microNormal);
                     result.SetFloatIf("_ScleraNormalTiling", microNormalTiling);
