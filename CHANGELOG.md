@@ -5,6 +5,7 @@ Changelog
 - Build error from Bone drivers fixed.
 - Unity 2020.3 no longer supported directly.
 - Eye shader scale update.
+- Shader updates for URP 17.1, 17.2 and 17.3.
 
 ### 2.1.1
 - Unity 6.3 fixes.
