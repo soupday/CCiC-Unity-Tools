@@ -21,8 +21,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Unity.Plastic.Newtonsoft.Json;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Formatting = Newtonsoft.Json.Formatting;
 using UnityEditor;
 using UnityEngine;
 

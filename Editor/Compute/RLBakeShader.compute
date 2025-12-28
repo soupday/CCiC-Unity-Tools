@@ -1235,20 +1235,20 @@ float EyeIrisMask(float radial)
 {
     float outer = irisRadius * scleraScale;
     float inner = outer - limbusWidth;
-    float mask = smoothstep(inner, outer, radial);
+    float mask = smoothstep(inner, outer, radial * 1.085);
     return pow(mask, limbusContrast);
 }
 
 float IrisDepthMask(float radial)
 {
-    float irisScale = irisRadius * scleraScale * 6.81;
+    float irisScale = irisRadius * scleraScale * 6.25;
     float a = irisScale * 0.1225;
     return saturate(Remap_float(radial, a, 0.0, 0.0, 1.0));
 }
 
 float EyeParallaxDepthMap(float radial)
 {
-    float irisScale = irisRadius * scleraScale * 6.81;   
+    float irisScale = irisRadius * scleraScale * 6.25;   
     return smoothstep(irisScale * 0.1225, irisScale * 0.1, radial);
 }
 

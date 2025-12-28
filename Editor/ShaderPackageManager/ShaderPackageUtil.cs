@@ -921,7 +921,10 @@ namespace Reallusion.Import
                     Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.URP10),
                     Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
                     Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
-                    Rule(new Version(17, 0, 0), new Version(100, 99, 99), PipelineVersion.URP17)
+                    Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP17),
+                    Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP171),
+                    Rule(new Version(17, 1, 0), new Version(17, 2, 0), PipelineVersion.URP172),
+                    Rule(new Version(17, 3, 0), new Version(100, 99, 99), PipelineVersion.URP173)
                 };
 
                 VersionLimits result = urpRules.Find(z => version >= z.Min && version < z.Max);
@@ -1795,6 +1798,7 @@ namespace Reallusion.Import
             URP17 = 117,
             URP171 = 1171,
             URP172 = 1172,
+            URP173 = 1173,
             URP18 = 118,
             URP19 = 119,
             URP20 = 120,
@@ -1813,6 +1817,7 @@ namespace Reallusion.Import
             HDRP17 = 217,
             HDRP171 = 2171,
             HDRP172 = 2172,
+            HDRP173 = 2173,
             HDRP18 = 218,
             HDRP19 = 219,
             HDRP20 = 220,

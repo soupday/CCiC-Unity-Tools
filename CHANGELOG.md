@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 2.2.0
+- Build error from Bone drivers fixed.
+- Unity 2020.3 no longer supported directly.
+- Eye shader scale update.
+
 ### 2.1.1
 - Unity 6.3 fixes.
 - Import blendshape normals set to calculate by default.
