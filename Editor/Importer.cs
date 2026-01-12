@@ -695,13 +695,18 @@ namespace Reallusion.Import
                                 AddWrinkleManagerReflection(obj, (SkinnedMeshRenderer)renderer, sharedMat, matJson);
                             }
                         }
+                    }
+                }
 
-                        if (characterInfo.FeatureUseBoneDriver || characterInfo.FeatureUseExpressionTranspose)
+                if (obj.name.ToLower() == "cc_base_body" || obj.name.ToLower() == "cc_game_body")
+                {
+                    if (characterInfo.FeatureUseBoneDriver || characterInfo.FeatureUseExpressionTranspose)
+                    {
+                        if (renderer.GetType() == typeof(SkinnedMeshRenderer))
                         {
-                            if (renderer.GetType() == typeof(SkinnedMeshRenderer))
-                            {
-                                BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer, characterInfo.jsonFilepath, sourceObj, characterInfo.FeatureUseBoneDriver, characterInfo.FeatureUseExpressionTranspose, characterInfo.FeatureUseConstraintData);
-                            }
+                            BoneEditor.SetupBoneDriverReflection(obj, (SkinnedMeshRenderer)renderer,
+                                characterInfo.jsonFilepath, sourceObj, characterInfo.FeatureUseBoneDriver,
+                                characterInfo.FeatureUseExpressionTranspose, characterInfo.FeatureUseConstraintData);
                         }
                     }
                 }

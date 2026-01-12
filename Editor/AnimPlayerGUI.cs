@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using Object = UnityEngine.Object;
 using UnityEditor.Animations;
 using System;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace Reallusion.Import
 {
@@ -153,7 +155,11 @@ namespace Reallusion.Import
                         }
                     }
                 }
-            }         
+            } 
+            
+            HDChar = CharIsHD();
+            BoneDriverPresent = CharHasBoneDriver();
+            Debug.Log($"Char is HD {HDChar}, Char has BoneDriver {BoneDriverPresent}");
         }
 
         static public void UpdateAnimatorClip(Animator animator, AnimationClip clip)
@@ -1459,6 +1465,10 @@ namespace Reallusion.Import
 
         const float ICON_FACE_SIZE = 48f;
 
+        private static EmotionExpressions ExpressionData;
+        private static bool HDChar;
+        private static bool BoneDriverPresent;
+
         public static void StartUp()
         {
             CleanUp();
@@ -1484,10 +1494,82 @@ namespace Reallusion.Import
             transparent.SetPixel(0, 0, new Color(1f, 1f, 1f, 0f));
             transparent.Apply();
             transparentBoxStyle.normal.background = transparent;
-
+            GetExpressionJson();
             InitFace();
         }
 
+        public static void GetExpressionJson()
+        {
+            TextAsset jsonAsset = Util.FindAsset("EmotionExpressions") as TextAsset;
+            if (jsonAsset != null)
+                ExpressionData = JsonConvert.DeserializeObject<EmotionExpressions>(jsonAsset.text);
+        }
+
+        public static bool CharIsHD()
+        {
+            SkinnedMeshRenderer[] smrs = CharacterAnimator.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+
+            string[] signatures = new string[] { "Mouth_LowerLip_Depress_R", "Mouth_Corner_Pull_L", "Mouth_Corner_Pull_R", "Neck_Stretch_R", "Neck_Swallow_Ph1" };
+            
+            foreach (SkinnedMeshRenderer smr in smrs)
+            {
+                if (smr.name.ToLower().Contains("body"))
+                {
+                    for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
+                    {
+                        string shapeName =  smr.sharedMesh.GetBlendShapeName(i);
+                        if (signatures.Contains(shapeName))
+                        {
+                            return true;
+                        }
+                    }
+                    
+                }
+            }
+            return false;
+        }
+
+        public static bool CharHasBoneDriver()
+        {
+            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(CharacterAnimator.gameObject);
+            return bd != null;
+        }
+
+        public class EmotionExpressions
+        {
+            // HD Face Data
+            public Dictionary<string, float> HD_NEUTRAL;
+
+            public Dictionary<string, Dictionary<string, float>> HD_HAPPY;
+            public Dictionary<string, Dictionary<string, float>> HD_SAD;
+            public Dictionary<string, Dictionary<string, float>> HD_ANGRY;
+            public Dictionary<string, Dictionary<string, float>> HD_DISGUST;
+            public Dictionary<string, Dictionary<string, float>> HD_FEAR;
+            public Dictionary<string, Dictionary<string, float>> HD_SURPRISE;
+
+            public int HD_HAPPY_IDX = 0;
+            public int HD_SAD_IDX = 0;
+            public int HD_ANGRY_IDX = 0;
+            public int HD_DISGUST_IDX = 0;
+            public int HD_FEAR_IDX = 0;
+            public int HD_SURPRISE_IDX = 0;
+
+            // SD Original Data
+            public Dictionary<string, float> FACE_HAPPY;
+            public Dictionary<string, float> FACE_SAD;
+            public Dictionary<string, float> FACE_ANGRY;
+            public Dictionary<string, float> FACE_DISGUST;
+            public Dictionary<string, float> FACE_FEAR;
+            public Dictionary<string, float> FACE_SURPRISE;
+            public Dictionary<string, float> FACE_NEUTRAL;
+            public Dictionary<string, float> FACE_HAPPY_EXT;
+            public Dictionary<string, float> FACE_SAD_EXT;
+            public Dictionary<string, float> FACE_ANGRY_EXT;
+            public Dictionary<string, float> FACE_DISGUST_EXT;
+            public Dictionary<string, float> FACE_FEAR_EXT;
+            public Dictionary<string, float> FACE_SURPRISE_EXT;
+        }
+        
         public static void InitFace()
         {
             if (CharacterAnimator == null) return;
@@ -1693,46 +1775,129 @@ namespace Reallusion.Import
                 //the height is determined by the vertical box + the horizontal GULayout group below it
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(1f), GUILayout.Height(45f));  //total height = this + button strip
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(308f), GUILayout.Height(1f)); //total width
+                
+                /*
+                public Dictionary<string, Dictionary<string, float>> HD_HAPPY;
+                public Dictionary<string, Dictionary<string, float>> HD_SAD;
+                public Dictionary<string, Dictionary<string, float>> HD_ANGRY;
+                public Dictionary<string, Dictionary<string, float>> HD_DISGUST;
+                public Dictionary<string, Dictionary<string, float>> HD_FEAR;
+                public Dictionary<string, Dictionary<string, float>> HD_SURPRISE;
 
+                public int HD_HAPPY_IDX = 0;
+                public int HD_SAD_IDX = 0;
+                public int HD_ANGRY_IDX = 0;
+                public int HD_DISGUST_IDX = 0;
+                public int HD_FEAR_IDX = 0;
+                public int HD_SURPRISE_IDX = 0;
+                */
+                
                 GUILayout.BeginHorizontal();
+                EditorGUI.BeginDisabledGroup(ExpressionData == null);
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceAngryImage, "Angry Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
+                if (GUILayout.Button(new GUIContent(faceAngryImage, "Angry Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
                 {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_ANGRY : FACE_ANGRY_EXT);
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_ANGRY", ExpressionData.HD_ANGRY_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_ANGRY
+                            : ExpressionData.FACE_ANGRY_EXT);
+                    }
                 }
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceDisgust, "Disgusted Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
-                {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_DISGUST : FACE_DISGUST_EXT);
 
-                }
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceFear, "Fearful Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
+                if (GUILayout.Button(new GUIContent(faceDisgust, "Disgusted Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
                 {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_FEAR : FACE_FEAR_EXT);
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_DISGUST", ExpressionData.HD_DISGUST_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_DISGUST
+                            : ExpressionData.FACE_DISGUST_EXT);
+                    }
                 }
+
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceHappy, "Happy Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
+                if (GUILayout.Button(new GUIContent(faceFear, "Fearful Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
                 {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_HAPPY : FACE_HAPPY_EXT);
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_FEAR", ExpressionData.HD_FEAR_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_FEAR
+                            : ExpressionData.FACE_FEAR_EXT);
+                    }
                 }
+
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceSad, "Sad Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
+                if (GUILayout.Button(new GUIContent(faceHappy, "Happy Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
                 {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_SAD : FACE_SAD_EXT);
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_HAPPY", ExpressionData.HD_HAPPY_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_HAPPY
+                            : ExpressionData.FACE_HAPPY_EXT);
+                    }
                 }
+
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent(faceSurprise, "Surprised Face"), GUILayout.Height(ICON_FACE_SIZE), GUILayout.Width(ICON_FACE_SIZE)))
+                if (GUILayout.Button(new GUIContent(faceSad, "Sad Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
                 {
-                    ResetFace(false);
-                    SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std ? FACE_SURPRISE : FACE_SURPRISE_EXT);
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_SAD", ExpressionData.HD_SAD_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_SAD
+                            : ExpressionData.FACE_SAD_EXT);
+                    }
                 }
+
                 GUILayout.FlexibleSpace();
+                if (GUILayout.Button(new GUIContent(faceSurprise, "Surprised Face"), GUILayout.Height(ICON_FACE_SIZE),
+                        GUILayout.Width(ICON_FACE_SIZE)))
+                {
+                    if (HDChar)
+                    {
+                        SetFacialExpressionHD("HD_SURPRISE", ExpressionData.HD_SURPRISE_IDX);
+                    }
+                    else
+                    {
+                        ResetFace(false);
+                        SetFacialExpression(MeshFacialProfile.expressionProfile == ExpressionProfile.Std
+                            ? ExpressionData.FACE_SURPRISE
+                            : ExpressionData.FACE_SURPRISE_EXT);
+                    }
+                }
+
+                GUILayout.FlexibleSpace();
+                EditorGUI.EndDisabledGroup();
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
             }
@@ -1934,7 +2099,7 @@ namespace Reallusion.Import
 
             if (!restore)
             {
-                if (dict != FACE_NEUTRAL)
+                if (dict != ExpressionData.FACE_NEUTRAL)
                 {
                     if (EXPRESSION != dict)
                     {
@@ -1975,9 +2140,91 @@ namespace Reallusion.Import
 
         static void SetNeutralExpression()
         {
-            SetFacialExpression(FACE_NEUTRAL, true);
+            SetFacialExpression(ExpressionData.FACE_NEUTRAL, true);
         }
 
+        static void SetFacialExpressionHD(string groupName, int showIndex)
+        {
+            Dictionary<string, float> dict = null;
+            
+            ExpressionData.HD_HAPPY_IDX = 0;
+            ExpressionData.HD_SAD_IDX = 0;
+            ExpressionData.HD_ANGRY_IDX = 0;
+            ExpressionData.HD_DISGUST_IDX = 0;
+            ExpressionData.HD_FEAR_IDX = 0;
+            ExpressionData.HD_SURPRISE_IDX = 0;
+            
+            switch (groupName)
+            {
+                case "HD_HAPPY":
+                {
+                    dict = showIndex == ExpressionData.HD_HAPPY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_HAPPY.ElementAt(showIndex).Value;
+                    ExpressionData.HD_HAPPY_IDX = IncrementIndex(showIndex, ExpressionData.HD_HAPPY.Count);
+                    break;
+                }
+                case "HD_SAD":
+                {
+                    dict = showIndex == ExpressionData.HD_SAD.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SAD.ElementAt(showIndex).Value;
+                    ExpressionData.HD_SAD_IDX = IncrementIndex(showIndex, ExpressionData.HD_SAD.Count);
+                    break;
+                }
+                case "HD_ANGRY":
+                {
+                    dict = showIndex == ExpressionData.HD_ANGRY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_ANGRY.ElementAt(showIndex).Value;
+                    ExpressionData.HD_ANGRY_IDX = IncrementIndex(showIndex, ExpressionData.HD_ANGRY.Count);
+                    break;
+                }
+                case "HD_DISGUST":
+                {
+                    dict = showIndex == ExpressionData.HD_DISGUST.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_DISGUST.ElementAt(showIndex).Value;
+                    ExpressionData.HD_DISGUST_IDX = IncrementIndex(showIndex, ExpressionData.HD_DISGUST.Count);
+                    break;
+                }
+                case "HD_FEAR":
+                {
+                    dict = showIndex == ExpressionData.HD_FEAR.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_FEAR.ElementAt(showIndex).Value;
+                    ExpressionData.HD_FEAR_IDX = IncrementIndex(showIndex, ExpressionData.HD_FEAR.Count);
+                    break;
+                }
+                case "HD_SURPRISE":
+                {
+                    dict = showIndex == ExpressionData.HD_SURPRISE.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SURPRISE.ElementAt(showIndex).Value;
+                    ExpressionData.HD_SURPRISE_IDX = IncrementIndex(showIndex, ExpressionData.HD_SURPRISE.Count);
+                    break;
+                }
+            }
+            SetFacialExpressionHD(ExpressionData.HD_NEUTRAL);
+            SetFacialExpressionHD(dict);
+        }
+
+        static int IncrementIndex(int val, int count)
+        {
+            Debug.Log($"Setting index {val} of {count}");
+            val++;
+            if (val > count) val = 0;
+            return val;
+        }
+
+        static void SetFacialExpressionHD(Dictionary<string, float> dict)
+        {
+            if (dict == null) return;
+            GameObject obj = CharacterAnimator.gameObject;
+            
+            SkinnedMeshRenderer[] smrs =  obj.GetComponentsInChildren<SkinnedMeshRenderer>();
+            if (smrs != null && smrs.Length > 0)
+            {
+                foreach (SkinnedMeshRenderer smr in smrs)
+                {
+                    foreach (var entry in dict)
+                    {
+                        int shapeIndex = smr.sharedMesh.GetBlendShapeIndex(entry.Key);
+                        if (shapeIndex != -1)
+                            smr.SetBlendShapeWeight(shapeIndex, entry.Value);
+                    }
+                }
+            }
+        }
+        
         static void SetIndividualBlendShape(string individualShapeName, float value)
         {
             if (CharacterAnimator == null) return;
@@ -2028,7 +2275,7 @@ namespace Reallusion.Import
             rot.eulerAngles = euler;
             return rot;
         }
-
+        /*
         // Facial Expressions
         public static Dictionary<string, float> FACE_HAPPY = new Dictionary<string, float>
         {
@@ -2751,7 +2998,7 @@ namespace Reallusion.Import
             {"A50_Mouth_Stretch_Left", 0f },
             {"A51_Mouth_Stretch_Right", 0f },
         };
-
+        */
         #endregion FaceMorph        
     }
 }
