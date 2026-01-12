@@ -168,24 +168,27 @@ namespace Reallusion.Import
 
             if (!animator || CharacterAnimator != animator) doneInitFace = false;
 
-            CharacterAnimator = animator;            
+            CharacterAnimator = animator;
             OriginalClip = clip;
-            
+
             SetupCharacterAndAnimation();
 
             AnimRetargetGUI.RebuildClip();
 
             MeshFacialProfile = FacialProfileMapper.GetMeshFacialProfile(animator ? animator.gameObject : null);
             ClipFacialProfile = FacialProfileMapper.GetAnimationClipFacialProfile(clip);
-            
+
             time = 0f;
-            play = false;            
+            play = false;
 
             // intitialise the face refs if needed
             if (!doneInitFace) InitFace();
 
             // finally, apply the face
-            ApplyFace();
+            if (HDChar)
+                ResetFace();
+            else
+                ApplyFace();
         }
 
         #region Animator Setup
@@ -1670,6 +1673,7 @@ namespace Reallusion.Import
             eyeChanged = true;
             if (EXPRESSION != null)
                 SetFacialExpression(EXPRESSION, true);
+            
             AdjustMouth(jawVal);
             AdjustBlink(blinkVal);
         }
