@@ -1509,7 +1509,7 @@ namespace Reallusion.Import
         {
             SkinnedMeshRenderer[] smrs = CharacterAnimator.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-            string[] signatures = new string[] { "Mouth_LowerLip_Depress_R", "Mouth_Corner_Pull_L", "Mouth_Corner_Pull_R", "Neck_Stretch_R", "Neck_Swallow_Ph1" };
+            string[] signatures = new string[] { "Mouth_Funnel_UL", "Mouth_Funnel_UR", "Eye_Look_Up_L", "Eye_Look_Up_R", "Jaw_Clench_L", "Jaw_Clench_R" };
             
             foreach (SkinnedMeshRenderer smr in smrs)
             {
@@ -1523,7 +1523,6 @@ namespace Reallusion.Import
                             return true;
                         }
                     }
-                    
                 }
             }
             return false;
@@ -1575,8 +1574,8 @@ namespace Reallusion.Import
             if (CharacterAnimator == null) return;
 
             EXPRESSIVENESS = 0f;
-            EXPRESSION = null;            
-
+            EXPRESSION = null;
+            
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
             
@@ -1594,19 +1593,38 @@ namespace Reallusion.Import
                 }
 
                 doOnceCatchMouse = true;
-
-                if (jawBone)
+                if (HDChar) // && bonedriver?
                 {
-                    Transform jaw = jawBone.transform;
-                    Quaternion rotation = jaw.localRotation;
-                    Vector3 euler = rotation.eulerAngles;
-                    jawRef = euler.z;
+                    var smrs = root.GetComponentsInChildren<SkinnedMeshRenderer>();
+                    foreach (var smr in smrs)
+                    {
+                        if (smr.gameObject.name.ToLower().Contains("body"))
+                        {
+                            int index = smr.sharedMesh.GetBlendShapeIndex("Jaw_Open");
+                            if (index != -1)
+                                jawRef = smr.GetBlendShapeWeight(index);
+                            break;
+                        }
+                    }
+                    Debug.Log($"jawRef {jawRef}");
                     jawVal = jawRef;
+                }
+                else
+                {
+                    if (jawBone)
+                    {
+                        Transform jaw = jawBone.transform;
+                        Quaternion rotation = jaw.localRotation;
+                        Vector3 euler = rotation.eulerAngles;
+
+                        jawRef = euler.z;
+                        jawVal = jawRef;
+                    }
                 }
 
                 if (!FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink", 
-                    new FacialProfile(ExpressionProfile.Std, VisemeProfile.None), 
-                    MeshFacialProfile, out blinkRef))
+                        new FacialProfile(ExpressionProfile.Std, VisemeProfile.None), 
+                        MeshFacialProfile, out blinkRef))
                 {
                     FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink_L",
                         new FacialProfile(ExpressionProfile.Std, VisemeProfile.None),
@@ -1620,20 +1638,30 @@ namespace Reallusion.Import
 
         public static void ResetFace(bool update = true, bool full = false)
         {
-            SetNeutralExpression();
-            if (full)
+            if (HDChar)
             {
-                EXPRESSIVENESS = 0f;
-                EXPRESSION = null;
+                SetFacialExpressionHD(ExpressionData.HD_NEUTRAL);
+                jawVal = jawRef;
+                eyeVal = eyeRef;
             }
-            Xpos = RestXpos;
-            Ypos = RestYpos;
-            eyeVal = eyeRef;
-            eyeChanged = true;
-            jawVal = jawRef;
-            AdjustMouth(jawVal);
-            blinkVal = blinkRef;
-            AdjustBlink(blinkVal);
+            else
+            {
+                SetNeutralExpression();
+                if (full)
+                {
+                    EXPRESSIVENESS = 0f;
+                    EXPRESSION = null;
+                }
+                Xpos = RestXpos;
+                Ypos = RestYpos;
+                eyeVal = eyeRef;
+                eyeChanged = true;
+                jawVal = jawRef;
+                AdjustMouth(jawVal);
+                blinkVal = blinkRef;
+                AdjustBlink(blinkVal);
+            }
+
             forceUpdate = update;
         }
 
@@ -1737,7 +1765,16 @@ namespace Reallusion.Import
 
                 GUI.DrawTexture(rightTopRowIcon, jawIconImage);
                 EditorGUI.BeginChangeCheck();
-                jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, jawRef - 25f, jawRef + 0f);
+                if (HDChar)
+                {
+                    if (jawVal < -10f || jawVal > 100f) jawVal = 0f;
+                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, -10f, 100f);
+                }
+                else
+                {
+                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, jawRef - 25f, jawRef + 0f);
+                }
+
                 if (EditorGUI.EndChangeCheck())
                 {
                     SetIndividualBlendShape("A25_Jaw_Open", Mathf.InverseLerp(jawRef + 0f, jawRef - 25f, jawVal) * 70f);
@@ -1775,22 +1812,6 @@ namespace Reallusion.Import
                 //the height is determined by the vertical box + the horizontal GULayout group below it
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(1f), GUILayout.Height(45f));  //total height = this + button strip
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(308f), GUILayout.Height(1f)); //total width
-                
-                /*
-                public Dictionary<string, Dictionary<string, float>> HD_HAPPY;
-                public Dictionary<string, Dictionary<string, float>> HD_SAD;
-                public Dictionary<string, Dictionary<string, float>> HD_ANGRY;
-                public Dictionary<string, Dictionary<string, float>> HD_DISGUST;
-                public Dictionary<string, Dictionary<string, float>> HD_FEAR;
-                public Dictionary<string, Dictionary<string, float>> HD_SURPRISE;
-
-                public int HD_HAPPY_IDX = 0;
-                public int HD_SAD_IDX = 0;
-                public int HD_ANGRY_IDX = 0;
-                public int HD_DISGUST_IDX = 0;
-                public int HD_FEAR_IDX = 0;
-                public int HD_SURPRISE_IDX = 0;
-                */
                 
                 GUILayout.BeginHorizontal();
                 EditorGUI.BeginDisabledGroup(ExpressionData == null);
@@ -2061,14 +2082,21 @@ namespace Reallusion.Import
 
             if (root)
             {
-                GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
-                if (jawBone)
+                if (HDChar)
                 {
-                    Transform jaw = jawBone.transform;
-                    Quaternion rotation = jaw.localRotation;
-                    Vector3 euler = rotation.eulerAngles;
-                    euler.z = input;
-                    jaw.localEulerAngles = euler;
+                    SetCharacterBlendShape(root, "Jaw_Open", input);
+                }
+                else
+                {
+                    GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
+                    if (jawBone)
+                    {
+                        Transform jaw = jawBone.transform;
+                        Quaternion rotation = jaw.localRotation;
+                        Vector3 euler = rotation.eulerAngles;
+                        euler.z = input;
+                        jaw.localEulerAngles = euler;
+                    }
                 }
             }
         }
@@ -2078,10 +2106,18 @@ namespace Reallusion.Import
             if (AnimPlayerGUI.CharacterAnimator == null) return;
             Object obj = AnimPlayerGUI.CharacterAnimator.gameObject;
 
-            GameObject root = Util.GetScenePrefabInstanceRoot(obj);            
+            GameObject root = Util.GetScenePrefabInstanceRoot(obj);
 
-            SetCharacterBlendShape(root, "A14_Eye_Blink_Left", input);
-            SetCharacterBlendShape(root, "A15_Eye_Blink_Right", input);            
+            if (HDChar)
+            {
+                SetCharacterBlendShape(root, "Eye_Blink_L", input);
+                SetCharacterBlendShape(root, "Eye_Blink_R", input);
+            }
+            else
+            {
+                SetCharacterBlendShape(root, "A14_Eye_Blink_Left", input);
+                SetCharacterBlendShape(root, "A15_Eye_Blink_Right", input);
+            }
         }
 
         private static bool SetCharacterBlendShape(GameObject characterRoot, string blendShapeName, float weight)
@@ -2199,7 +2235,7 @@ namespace Reallusion.Import
 
         static int IncrementIndex(int val, int count)
         {
-            Debug.Log($"Setting index {val} of {count}");
+            // allow overflow so that when val == count a neutral expression is set
             val++;
             if (val > count) val = 0;
             return val;
@@ -2275,730 +2311,6 @@ namespace Reallusion.Import
             rot.eulerAngles = euler;
             return rot;
         }
-        /*
-        // Facial Expressions
-        public static Dictionary<string, float> FACE_HAPPY = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 0f },
-            {"Brow_Raise_Inner_R", 0f },
-            {"Brow_Raise_Outer_L", 0f },
-            {"Brow_Raise_Outer_R", 0f },
-            {"Brow_Drop_L", 0f },
-            {"Brow_Drop_R", 0f },
-            {"Brow_Raise_L", 70f },
-            {"Brow_Raise_R", 70f },
-
-            {"Eye_Wide_L", 40f },
-            {"Eye_Wide_R", 40f },
-            {"Eye_Squint_L", 30f },
-            {"Eye_Squint_R", 30f },
-
-            {"Nose_Scrunch", 0f },
-            {"Nose_Nostrils_Flare", 40f },
-            {"Cheek_Raise_L", 30f },
-            {"Cheek_Raise_R", 30f },
-
-            {"Mouth_Frown", 0f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 0f },
-            {"Mouth_Widen", 0f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 70f },
-            {"Mouth_Smile_L", 40f },
-            {"Mouth_Smile_R", 40f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 10f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 70f },
-            {"Mouth_Top_Lip_Up", 20f },
-            {"Mouth_Bottom_Lip_Under", 30f },
-            {"Mouth_Snarl_Upper_L", -20f },
-            {"Mouth_Snarl_Upper_R", -20f },
-            {"Mouth_Snarl_Lower_L", 0f },
-            {"Mouth_Snarl_Lower_R", 0f },
-            {"Mouth_Up", 30f },
-            {"Mouth_Down", 0f },
-            {"Mouth_Open", 0f },
-
-            {"Turn_Jaw", 9f },
-        };
-
-        public static Dictionary<string, float> FACE_SAD = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 100f },
-            {"Brow_Raise_Inner_R", 100f },
-            {"Brow_Raise_Outer_L", 0f },
-            {"Brow_Raise_Outer_R", 0f },
-            {"Brow_Drop_L", 40f },
-            {"Brow_Drop_R", 40f },
-            {"Brow_Raise_L", 0f },
-            {"Brow_Raise_R", 0f },
-
-            {"Eye_Wide_L", 40f },
-            {"Eye_Wide_R", 40f },
-            {"Eye_Squint_L", 20f },
-            {"Eye_Squint_R", 20f },
-
-            {"Nose_Scrunch", 0f },
-            {"Nose_Nostrils_Flare", 0f },
-            {"Cheek_Raise_L", 60f },
-            {"Cheek_Raise_R", 60f },
-
-            {"Mouth_Frown", 30f },
-            {"Mouth_Blow", 20f },
-            {"Mouth_Pucker", 0f },
-            {"Mouth_Widen", 30f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 0f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 30f },
-            {"Mouth_Bottom_Lip_Down", 0f },
-            {"Mouth_Top_Lip_Up", 30f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 0f },
-            {"Mouth_Snarl_Lower_R", 0f },
-            {"Mouth_Up", 0f },
-            {"Mouth_Down", 60f },
-            {"Mouth_Open", 0f },
-
-            {"Turn_Jaw", 9f },
-        };
-
-        public static Dictionary<string, float> FACE_ANGRY = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 0f },
-            {"Brow_Raise_Inner_R", 0f },
-            {"Brow_Raise_Outer_L", 50f },
-            {"Brow_Raise_Outer_R", 50f },
-            {"Brow_Drop_L", 0f },
-            {"Brow_Drop_R", 0f },
-            {"Brow_Raise_L", 0f },
-            {"Brow_Raise_R", 0f },
-
-            {"Eye_Wide_L", 100f },
-            {"Eye_Wide_R", 100f },
-            {"Eye_Squint_L", 60f },
-            {"Eye_Squint_R", 60f },
-
-            {"Nose_Scrunch", 80f },
-            {"Nose_Nostrils_Flare", 0f },
-            {"Cheek_Raise_L", 100f },
-            {"Cheek_Raise_R", 100f },
-
-            {"Mouth_Frown", 80f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 30f },
-            {"Mouth_Widen", 0f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 0f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 50f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 60f },
-            {"Mouth_Top_Lip_Up", 100f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 0f },
-            {"Mouth_Snarl_Lower_R", 0f },
-            {"Mouth_Up", 50f },
-            {"Mouth_Down", 0f },
-            {"Mouth_Open", 0f },
-
-            {"Turn_Jaw", 20f },
-        };
-
-        public static Dictionary<string, float> FACE_DISGUST = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 0f },
-            {"Brow_Raise_Inner_R", 0f },
-            {"Brow_Raise_Outer_L", 60f },
-            {"Brow_Raise_Outer_R", 60f },
-            {"Brow_Drop_L", 70f },
-            {"Brow_Drop_R", 70f },
-            {"Brow_Raise_L", 0f },
-            {"Brow_Raise_R", 0f },
-
-            {"Eye_Wide_L", 0f },
-            {"Eye_Wide_R", 0f },
-            {"Eye_Squint_L", 20f },
-            {"Eye_Squint_R", 20f },
-
-            {"Nose_Scrunch", 100f },
-            {"Nose_Nostrils_Flare", 0f },
-            {"Cheek_Raise_L", 60f },
-            {"Cheek_Raise_R", 60f },
-
-            {"Mouth_Frown", 30f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 0f },
-            {"Mouth_Widen", 0f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 0f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 30f },
-            {"Mouth_Dimple_R", 30f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 0f },
-            {"Mouth_Top_Lip_Up", 100f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 20f },
-            {"Mouth_Snarl_Lower_R", 20f },
-            {"Mouth_Up", 0f },
-            {"Mouth_Down", 40f },
-            {"Mouth_Open", 0f },
-
-            {"Turn_Jaw", 9f },
-        };
-
-        public static Dictionary<string, float> FACE_FEAR = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 80f },
-            {"Brow_Raise_Inner_R", 80f },
-            {"Brow_Raise_Outer_L", 0f },
-            {"Brow_Raise_Outer_R", 0f },
-            {"Brow_Drop_L", 0f },
-            {"Brow_Drop_R", 0f },
-            {"Brow_Raise_L", 0f },
-            {"Brow_Raise_R", 0f },
-
-            {"Eye_Wide_L", 100f },
-            {"Eye_Wide_R", 100f },
-            {"Eye_Squint_L", 100f },
-            {"Eye_Squint_R", 100f },
-
-            {"Nose_Scrunch", 60f },
-            {"Nose_Nostrils_Flare", 0f },
-            {"Cheek_Raise_L", 100f },
-            {"Cheek_Raise_R", 100f },
-
-            {"Mouth_Frown", 70f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 30f },
-            {"Mouth_Widen", 40f },
-            {"Mouth_Widen_Sides", 20f },
-            {"Mouth_Smile", 0f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 30f },
-            {"Mouth_Top_Lip_Up", 100f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 30f },
-            {"Mouth_Snarl_Lower_R", 30f },
-            {"Mouth_Up", 0f },
-            {"Mouth_Down", 0f },
-            {"Mouth_Open", 0f },
-
-            {"Turn_Jaw", 20f },
-        };
-
-        public static Dictionary<string, float> FACE_SURPRISE = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 70f },
-            {"Brow_Raise_Inner_R", 70f },
-            {"Brow_Raise_Outer_L", 0f },
-            {"Brow_Raise_Outer_R", 0f },
-            {"Brow_Drop_L", 0f },
-            {"Brow_Drop_R", 0f },
-            {"Brow_Raise_L", 100f },
-            {"Brow_Raise_R", 100f },
-
-            {"Eye_Wide_L", 100f },
-            {"Eye_Wide_R", 100f },
-            {"Eye_Squint_L", 0f },
-            {"Eye_Squint_R", 0f },
-
-            {"Nose_Scrunch", 0f },
-            {"Nose_Nostrils_Flare", 30f },
-            {"Cheek_Raise_L", 70f },
-            {"Cheek_Raise_R", 70f },
-
-            {"Mouth_Frown", 0f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 0f },
-            {"Mouth_Widen", 0f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 60f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 0f },
-            {"Mouth_Top_Lip_Up", 0f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 0f },
-            {"Mouth_Snarl_Lower_R", 0f },
-            {"Mouth_Up", 90f },
-            {"Mouth_Down", 0f },
-            {"Mouth_Open", 100f },
-
-            {"Turn_Jaw", 20f },
-        };
-
-        public static Dictionary<string, float> FACE_NEUTRAL = new Dictionary<string, float>
-        {
-            {"Brow_Raise_Inner_L", 0f },
-            {"Brow_Raise_Inner_R", 0f },
-            {"Brow_Raise_Outer_L", 0f },
-            {"Brow_Raise_Outer_R", 0f },
-            {"Brow_Drop_L", 0f },
-            {"Brow_Drop_R", 0f },
-            {"Brow_Raise_L", 0f },
-            {"Brow_Raise_R", 0f },
-
-            {"Eye_Wide_L", 0f },
-            {"Eye_Wide_R", 0f },
-            {"Eye_Squint_L", 0f },
-            {"Eye_Squint_R", 0f },
-
-            {"Nose_Scrunch", 0f },
-            {"Nose_Nostrils_Flare", 0f },
-            {"Cheek_Raise_L", 0f },
-            {"Cheek_Raise_R", 0f },
-
-            {"Mouth_Frown", 0f },
-            {"Mouth_Blow", 0f },
-            {"Mouth_Pucker", 0f },
-            {"Mouth_Widen", 0f },
-            {"Mouth_Widen_Sides", 0f },
-            {"Mouth_Smile", 0f },
-            {"Mouth_Smile_L", 0f },
-            {"Mouth_Smile_R", 0f },
-            {"Mouth_Dimple_L", 0f },
-            {"Mouth_Dimple_R", 0f },
-            {"Mouth_Plosive", 0f },
-            {"Mouth_Lips_Open", 0f },
-            {"Mouth_Lips_Part", 0f },
-            {"Mouth_Bottom_Lip_Down", 0f },
-            {"Mouth_Top_Lip_Up", 0f },
-            {"Mouth_Bottom_Lip_Under", 0f },
-            {"Mouth_Snarl_Upper_L", 0f },
-            {"Mouth_Snarl_Upper_R", 0f },
-            {"Mouth_Snarl_Lower_L", 0f },
-            {"Mouth_Snarl_Lower_R", 0f },
-            {"Mouth_Up", 0f },
-            {"Mouth_Down", 0f },
-            {"Mouth_Open", 0f },
-
-            {"A01_Brow_Inner_Up", 0f },
-            {"A02_Brow_Down_Left", 0f },
-            {"A03_Brow_Down_Right", 0f },
-            {"A04_Brow_Outer_Up_Left", 0f },
-            {"A05_Brow_Outer_Up_Right", 0f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 0f },
-            {"A17_Eye_Squint_Right", 0f },
-            {"A18_Eye_Wide_Left", 0f },
-            {"A19_Eye_Wide_Right", 0f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 0f },
-            {"A22_Cheek_Squint_Right", 0f },
-            {"A23_Nose_Sneer_Left", 0f },
-            {"A24_Nose_Sneer_Right", 0f },
-            {"A25_Jaw_Open", 0f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", 0f },
-            {"A36_Mouth_Shrug_Lower", 0f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 0f },
-            {"A41_Mouth_Frown_Right", 0f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 0f },
-            {"A45_Mouth_Upper_Up_Right", 0f },
-            {"A46_Mouth_Lower_Down_Left", 0f },
-            {"A47_Mouth_Lower_Down_Right", 0f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-
-            {"Turn_Jaw", 0f },
-        };
-
-
-
-
-
-        public static Dictionary<string, float> FACE_HAPPY_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 100f },
-            {"A02_Brow_Down_Left", -30f },
-            {"A03_Brow_Down_Right", -30f },
-            {"A04_Brow_Outer_Up_Left", 100f },
-            {"A05_Brow_Outer_Up_Right", 100f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 0f },
-            {"A17_Eye_Squint_Right", 0f },
-            {"A18_Eye_Wide_Left", 100f },
-            {"A19_Eye_Wide_Right", 100f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 0f },
-            {"A22_Cheek_Squint_Right", 0f },
-            {"A23_Nose_Sneer_Left", 0f },
-            {"A24_Nose_Sneer_Right", 0f },
-            {"A25_Jaw_Open", 40f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", 70f },
-            {"A36_Mouth_Shrug_Lower", -70f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 100f },
-            {"A39_Mouth_Smile_Right", 100f },
-            {"A40_Mouth_Frown_Left", 0f },
-            {"A41_Mouth_Frown_Right", 0f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 0f },
-            {"A45_Mouth_Upper_Up_Right", 0f },
-            {"A46_Mouth_Lower_Down_Left", 90f },
-            {"A47_Mouth_Lower_Down_Right", 90f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-        };
-
-        public static Dictionary<string, float> FACE_SAD_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 100f },
-            {"A02_Brow_Down_Left", -50f },
-            {"A03_Brow_Down_Right", -50f },
-            {"A04_Brow_Outer_Up_Left", 0f },
-            {"A05_Brow_Outer_Up_Right", 0f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 100f },
-            {"A17_Eye_Squint_Right", 100f },
-            {"A18_Eye_Wide_Left", 0f },
-            {"A19_Eye_Wide_Right", 0f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 100f },
-            {"A22_Cheek_Squint_Right", 100f },
-            {"A23_Nose_Sneer_Left", 0f },
-            {"A24_Nose_Sneer_Right", 0f },
-            {"A25_Jaw_Open", 30f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 60f },
-            {"A35_Mouth_Shrug_Upper", 20f },
-            {"A36_Mouth_Shrug_Lower", 40f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 40f },
-            {"A41_Mouth_Frown_Right", 40f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 0f },
-            {"A45_Mouth_Upper_Up_Right", 0f },
-            {"A46_Mouth_Lower_Down_Left", 0f },
-            {"A47_Mouth_Lower_Down_Right", 0f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-        };
-
-        public static Dictionary<string, float> FACE_ANGRY_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 0f },
-            {"A02_Brow_Down_Left", 100f },
-            {"A03_Brow_Down_Right", 100f },
-            {"A04_Brow_Outer_Up_Left", 40f },
-            {"A05_Brow_Outer_Up_Right", 40f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 0f },
-            {"A17_Eye_Squint_Right", 0f },
-            {"A18_Eye_Wide_Left", 100f },
-            {"A19_Eye_Wide_Right", 100f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 100f },
-            {"A22_Cheek_Squint_Right", 100f },
-            {"A23_Nose_Sneer_Left", 40f },
-            {"A24_Nose_Sneer_Right", 40f },
-            {"A25_Jaw_Open", 70f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", -10f },
-            {"A36_Mouth_Shrug_Lower", -30f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 0f },
-            {"A41_Mouth_Frown_Right", 0f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 100f },
-            {"A45_Mouth_Upper_Up_Right", 100f },
-            {"A46_Mouth_Lower_Down_Left", 100f },
-            {"A47_Mouth_Lower_Down_Right", 100f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-        };
-
-        public static Dictionary<string, float> FACE_DISGUST_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 0f },
-            {"A02_Brow_Down_Left", 60f },
-            {"A03_Brow_Down_Right", 60f },
-            {"A04_Brow_Outer_Up_Left", 70f },
-            {"A05_Brow_Outer_Up_Right", 70f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 0f },
-            {"A17_Eye_Squint_Right", 0f },
-            {"A18_Eye_Wide_Left", 0f },
-            {"A19_Eye_Wide_Right", 0f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 100f },
-            {"A22_Cheek_Squint_Right", 100f },
-            {"A23_Nose_Sneer_Left", 100f },
-            {"A24_Nose_Sneer_Right", 100f },
-            {"A25_Jaw_Open", 20f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", 20f },
-            {"A36_Mouth_Shrug_Lower", 30f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 30f },
-            {"A41_Mouth_Frown_Right", 30f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 70f },
-            {"A45_Mouth_Upper_Up_Right", 70f },
-            {"A46_Mouth_Lower_Down_Left", 50f },
-            {"A47_Mouth_Lower_Down_Right", 50f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 40f },
-            {"A51_Mouth_Stretch_Right", 40f },
-        };
-
-        public static Dictionary<string, float> FACE_FEAR_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 100f },
-            {"A02_Brow_Down_Left", -30f },
-            {"A03_Brow_Down_Right", -30f },
-            {"A04_Brow_Outer_Up_Left", 100f },
-            {"A05_Brow_Outer_Up_Right", 100f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 100f },
-            {"A17_Eye_Squint_Right", 100f },
-            {"A18_Eye_Wide_Left", 100f },
-            {"A19_Eye_Wide_Right", 100f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 100f },
-            {"A22_Cheek_Squint_Right", 100f },
-            {"A23_Nose_Sneer_Left", 30f },
-            {"A24_Nose_Sneer_Right", 30f },
-            {"A25_Jaw_Open", 60f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 0f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", 0f },
-            {"A36_Mouth_Shrug_Lower", 0f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 40f },
-            {"A41_Mouth_Frown_Right", 40f },
-            {"A42_Mouth_Dimple_Left", 0f },
-            {"A43_Mouth_Dimple_Right", 0f },
-            {"A44_Mouth_Upper_Up_Left", 40f },
-            {"A45_Mouth_Upper_Up_Right", 40f },
-            {"A46_Mouth_Lower_Down_Left", 70f },
-            {"A47_Mouth_Lower_Down_Right", 70f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-        };
-
-        public static Dictionary<string, float> FACE_SURPRISE_EXT = new Dictionary<string, float>
-        {
-            {"A01_Brow_Inner_Up", 100f },
-            {"A02_Brow_Down_Left", -50f },
-            {"A03_Brow_Down_Right", -50f },
-            {"A04_Brow_Outer_Up_Left", 100f },
-            {"A05_Brow_Outer_Up_Right", 100f },
-            {"A06_Eye_Look_Up_Left", 0f },
-            {"A07_Eye_Look_Up_Right", 0f },
-            {"A08_Eye_Look_Down_Left", 0f },
-            {"A09_Eye_Look_Down_Right", 0f },
-            {"A10_Eye_Look_Out_Left", 0f },
-            {"A11_Eye_Look_In_Left", 0f },
-            {"A12_Eye_Look_In_Right", 0f },
-            {"A13_Eye_Look_Out_Right", 0f },
-            {"A14_Eye_Blink_Left", 0f },
-            {"A15_Eye_Blink_Right", 0f },
-            {"A16_Eye_Squint_Left", 0f },
-            {"A17_Eye_Squint_Right", 0f },
-            {"A18_Eye_Wide_Left", 100f },
-            {"A19_Eye_Wide_Right", 100f },
-            {"A20_Cheek_Puff", 0f },
-            {"A21_Cheek_Squint_Left", 0f },
-            {"A22_Cheek_Squint_Right", 0f },
-            {"A23_Nose_Sneer_Left", 0f },
-            {"A24_Nose_Sneer_Right", 0f },
-            {"A25_Jaw_Open", 50f },
-            {"A26_Jaw_Forward", 0f },
-            {"A27_Jaw_Left", 0f },
-            {"A28_Jaw_Right", 0f },
-            {"A29_Mouth_Funnel", 30f },
-            {"A30_Mouth_Pucker", 0f },
-            {"A31_Mouth_Left", 0f },
-            {"A32_Mouth_Right", 0f },
-            {"A33_Mouth_Roll_Upper", 0f },
-            {"A34_Mouth_Roll_Lower", 0f },
-            {"A35_Mouth_Shrug_Upper", 30f },
-            {"A36_Mouth_Shrug_Lower", 0f },
-            {"A37_Mouth_Close", 0f },
-            {"A38_Mouth_Smile_Left", 0f },
-            {"A39_Mouth_Smile_Right", 0f },
-            {"A40_Mouth_Frown_Left", 0f },
-            {"A41_Mouth_Frown_Right", 0f },
-            {"A42_Mouth_Dimple_Left", 30f },
-            {"A43_Mouth_Dimple_Right", 30f },
-            {"A44_Mouth_Upper_Up_Left", 30f },
-            {"A45_Mouth_Upper_Up_Right", 30f },
-            {"A46_Mouth_Lower_Down_Left", 60f },
-            {"A47_Mouth_Lower_Down_Right", 60f },
-            {"A48_Mouth_Press_Left", 0f },
-            {"A49_Mouth_Press_Right", 0f },
-            {"A50_Mouth_Stretch_Left", 0f },
-            {"A51_Mouth_Stretch_Right", 0f },
-        };
-        */
         #endregion FaceMorph        
     }
 }
