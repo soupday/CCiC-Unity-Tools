@@ -159,7 +159,7 @@ namespace Reallusion.Import
             
             HDChar = CharIsHD();
             BoneDriverPresent = CharHasBoneDriver();
-            Debug.Log($"Char is HD {HDChar}, Char has BoneDriver {BoneDriverPresent}");
+            //Debug.Log($"Char is HD {HDChar}, Char has BoneDriver {BoneDriverPresent}");
         }
 
         static public void UpdateAnimatorClip(Animator animator, AnimationClip clip)
@@ -1609,7 +1609,6 @@ namespace Reallusion.Import
                             break;
                         }
                     }
-                    Debug.Log($"jawRef {jawRef}");
                     jawVal = jawRef;
                 }
                 else
@@ -1645,7 +1644,11 @@ namespace Reallusion.Import
             {
                 SetFacialExpressionHD(ExpressionData.HD_NEUTRAL);
                 jawVal = jawRef;
+                Xpos = RestXpos;
+                Ypos = RestYpos;
                 eyeVal = eyeRef;
+                eyeChanged = true;
+                blinkVal = blinkRef;
             }
             else
             {
@@ -1771,8 +1774,9 @@ namespace Reallusion.Import
                 EditorGUI.BeginChangeCheck();
                 if (HDChar)
                 {
-                    if (jawVal < -10f || jawVal > 100f) jawVal = 0f;
-                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, -10f, 100f);
+                    if (jawVal < 0f) jawVal = 0f;
+                    if (jawVal > 100f) jawVal = 100f;
+                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, 0f, 100f);
                 }
                 else
                 {
@@ -2064,6 +2068,17 @@ namespace Reallusion.Import
                     SetIndividualBlendShape("A11_Eye_Look_In_Left", lookRightValue);
                     SetIndividualBlendShape("A12_Eye_Look_In_Right", lookLeftValue);
                     SetIndividualBlendShape("A13_Eye_Look_Out_Right", lookRightValue);
+                    //HD Char
+                    SetIndividualBlendShape("Eye_Look_Up_L", lookUpValue);
+                    SetIndividualBlendShape("Eye_Look_Up_R", lookUpValue);
+                    SetIndividualBlendShape("Eye_Look_Down_L", lookDownValue);
+                    SetIndividualBlendShape("Eye_Look_Down_R", lookDownValue);
+                    SetIndividualBlendShape("Eye_Look_Left_L", lookLeftValue);
+                    SetIndividualBlendShape("Eye_Look_Left_R", lookLeftValue);
+                    SetIndividualBlendShape("Eye_Look_Right_L", lookRightValue);
+                    SetIndividualBlendShape("Eye_Look_Right_R", lookRightValue);
+                    
+                    
                     euler.z = input.x;
                     euler.x = input.y;
 
@@ -2248,6 +2263,7 @@ namespace Reallusion.Import
         static void SetFacialExpressionHD(Dictionary<string, float> dict)
         {
             if (dict == null) return;
+            if (!CharacterAnimator) return;
             GameObject obj = CharacterAnimator.gameObject;
             
             SkinnedMeshRenderer[] smrs =  obj.GetComponentsInChildren<SkinnedMeshRenderer>();
