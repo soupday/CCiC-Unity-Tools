@@ -1614,6 +1614,16 @@ namespace Reallusion.Import
             string[] rEyeCurves = new string[] { "Right Eye Down-Up", "Right Eye In-Out" };
             string[] headCurves = new string[] { "Head Nod Down-Up", "Head Tilt Left-Right", "Head Turn Left-Right" };
 
+            // Identify all curve bindings for constraint blendshapes (starting with "C_") and purge them
+            List<string> animatedConstraints = new  List<string>();
+            foreach (var binding in sourceCurveBindings)
+            {
+                if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
+                    animatedConstraints.Add(binding.propertyName);
+            }
+            foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
+            PurgeBindings(sourceCurveBindings, animatedConstraints.ToArray(), workingClip);
+            
             foreach (var boneToEvaluate in bonesToEvaluate)
             {
                 //Debug.Log($"boneToEvaluate {boneToEvaluate}");

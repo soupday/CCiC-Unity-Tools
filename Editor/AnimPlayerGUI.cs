@@ -1776,7 +1776,7 @@ namespace Reallusion.Import
                 {
                     if (jawVal < 0f) jawVal = 0f;
                     if (jawVal > 100f) jawVal = 100f;
-                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, 0f, 100f);
+                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, 100f, 0f);
                 }
                 else
                 {

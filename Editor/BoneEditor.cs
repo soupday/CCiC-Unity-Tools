@@ -824,6 +824,7 @@ namespace Reallusion.Import
             public string ExpressionName;
             public int BlendShapeIndex;
             public bool isViseme;
+            public bool isConstraint;
 
             public float[] TranslateArr;
             public float[] RotationArr;
@@ -840,6 +841,7 @@ namespace Reallusion.Import
                 isViseme = viseme;
                 TranslateArr = new float[] { translate.x, translate.y, translate.z };
                 RotationArr = new float[] { rotation.x, rotation.y, rotation.z, rotation.w };
+                isConstraint = name.ToLower().StartsWith("c_");
             }
 
             public Vector3 GetTranslate()
