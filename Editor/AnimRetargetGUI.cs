@@ -1621,7 +1621,7 @@ namespace Reallusion.Import
                 if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
                     animatedConstraints.Add(binding.propertyName);
             }
-            foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
+            //foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
             PurgeBindings(sourceCurveBindings, animatedConstraints.ToArray(), workingClip);
             
             foreach (var boneToEvaluate in bonesToEvaluate)
@@ -1673,20 +1673,35 @@ namespace Reallusion.Import
             {
                 try
                 {
+                    var targetBindings = sourceCurveBindings.ToList().FindAll(x => x.propertyName == binding);
+                    if (targetBindings.Count > 0)
+                    {
+                        foreach (var tgt in targetBindings)
+                        {
+                            //Debug.Log($"Purging {tgt.propertyName}");
+                            AnimationUtility.SetEditorCurve(clip, tgt, null);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"Cannot Find {binding}");
+                    }
+                    /*
                     EditorCurveBinding target = sourceCurveBindings.FirstOrDefault(x => x.propertyName == binding);
                     if (!string.IsNullOrEmpty(target.propertyName))
                     {
-                        //Debug.Log($"Purging {target.propertyName}");
+                        Debug.Log($"Purging {target.propertyName}");
                         AnimationUtility.SetEditorCurve(clip, target, null);
                     }
                     else
                     {
                         Debug.Log($"Cannot Find {binding}");
                     }
+                    */
                 }
                 catch(Exception e)
                 {
-                    Debug.Log($"Purging Error {e.Message}");
+                    Debug.LogWarning($"Purging Error {e.Message}");
                 }
             }
         }
