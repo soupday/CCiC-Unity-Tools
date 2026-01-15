@@ -1503,9 +1503,16 @@ namespace Reallusion.Import
 
         public static void GetExpressionJson()
         {
-            TextAsset jsonAsset = Util.FindAsset("EmotionExpressions") as TextAsset;
-            if (jsonAsset != null)
-                ExpressionData = JsonConvert.DeserializeObject<EmotionExpressions>(jsonAsset.text);
+            try
+            {
+                TextAsset jsonAsset = Util.FindAsset("EmotionExpressions") as TextAsset;
+                if (jsonAsset != null)
+                    ExpressionData = JsonConvert.DeserializeObject<EmotionExpressions>(jsonAsset.text);
+            }
+            catch
+            {
+                Debug.Log("Unable to deserialize expression data, example facial expressions will be unavailable.");
+            }
         }
 
         public static bool CharIsHD()
