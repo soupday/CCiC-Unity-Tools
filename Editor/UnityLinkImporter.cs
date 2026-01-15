@@ -1511,6 +1511,13 @@ namespace Reallusion.Import
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
             HDLightData.SetShadowResolution(3);
+            HDLightData.EnableShadows(true);
+            //HDLightData.shadowResolution.@override = 3;
+            HDLightData.shadowResolution.useOverride = false;
+            HDLightData.shadowResolution.level = 3;
+            //HDLightData.useContactShadow.@override = false;            
+            HDLightData.useContactShadow.useOverride = false;
+            HDLightData.useContactShadow.level = 2;
 #elif URP_10_5_0_OR_NEWER
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
