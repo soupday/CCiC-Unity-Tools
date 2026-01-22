@@ -722,6 +722,22 @@ namespace Reallusion.Import
                 bool hasOpacity = false;
                 bool blendOpacity = false;
                 bool diffuseHasAlpha = false;
+                MaterialNodeType nodeType = GetMaterialNodeType(matJson);
+
+                switch (customShader)
+                {
+                    case "RLEyeOcclusion": return MaterialType.EyeOcclusion;
+                    case "RLEyeOcclusion_Plus": return MaterialType.EyeOcclusionPlus;
+                    case "RLEyeTearline": return MaterialType.Tearline;
+                    case "RLEyeTearline_Plus": return MaterialType.TearlinePlus;
+                    case "RLHair": return MaterialType.Hair;
+                    case "RLSkin": return MaterialType.Skin;
+                    case "RLHead": return MaterialType.Head;
+                    case "RLTongue": return MaterialType.Tongue;
+                    case "RLTeethGum": return MaterialType.Teeth;
+                    case "RLEye": return MaterialType.Cornea;
+                    case "RLSSS": return MaterialType.SSS;                    
+                }
 
                 string jsonTexturePath = matJson.GetStringValue("Textures/Base Color/Texture Path");
                 if (!string.IsNullOrEmpty(jsonTexturePath))
@@ -749,18 +765,15 @@ namespace Reallusion.Import
                         blendOpacity = true;
                     }
                 }
-
-                if (matJson != null)
+                
+                jsonTexturePath = matJson.GetStringValue("Textures/Opacity/Texture Path");
+                if (!string.IsNullOrEmpty(jsonTexturePath)) hasOpacity = true;
+                float opacity = matJson.GetFloatValue("Opacity");
+                if (opacity < 1.0f)
                 {
-                    string texturePath = matJson.GetStringValue("Textures/Opacity/Texture Path");
-                    if (!string.IsNullOrEmpty(texturePath)) hasOpacity = true;
-                    float opacity = matJson.GetFloatValue("Opacity");
-                    if (opacity < 1.0f)
-                    {
-                        hasOpacity = true;
-                        blendOpacity = true;
-                    }
-                }
+                    hasOpacity = true;
+                    blendOpacity = true;
+                }                 
 
                 if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R"))
                 {
@@ -777,6 +790,13 @@ namespace Reallusion.Import
                     }
                 }
 
+                if (nodeType == MaterialNodeType.Hair || nodeType == MaterialNodeType.Brow ||
+                    nodeType == MaterialNodeType.Beard)
+                {
+                    if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Color"))
+                        return MaterialType.Scalp;                    
+                }
+
                 if (hasOpacity)
                 {
                     if (customShader == "Pbr" || customShader == "Tra")
@@ -789,25 +809,10 @@ namespace Reallusion.Import
                             return MaterialType.Scalp;
                     }
                 }                
-
-                switch (customShader)
-                {
-                    case "RLEyeOcclusion": return MaterialType.EyeOcclusion;
-                    case "RLEyeOcclusion_Plus": return MaterialType.EyeOcclusionPlus;
-                    case "RLEyeTearline": return MaterialType.Tearline;
-                    case "RLEyeTearline_Plus": return MaterialType.TearlinePlus;
-                    case "RLHair": return MaterialType.Hair;
-                    case "RLSkin": return MaterialType.Skin;
-                    case "RLHead": return MaterialType.Head;
-                    case "RLTongue": return MaterialType.Tongue;
-                    case "RLTeethGum": return MaterialType.Teeth;
-                    case "RLEye": return MaterialType.Cornea;
-                    case "RLSSS": return MaterialType.SSS;
-                    default:
-                        if (blendOpacity) return MaterialType.BlendAlpha;
-                        else if (hasOpacity) return MaterialType.DefaultAlpha;                        
-                        else return MaterialType.DefaultOpaque;
-                }
+                
+                if (blendOpacity) return MaterialType.BlendAlpha;
+                else if (hasOpacity) return MaterialType.DefaultAlpha;                        
+                else return MaterialType.DefaultOpaque;
             }
             else
             {
@@ -864,6 +869,7 @@ namespace Reallusion.Import
         {
             bool useAmplify = characterInfo.FeatureUseAmplifyShaders;
             bool useTessellation = characterInfo.UseTessellation(materialType, matJson);
+            bool doubleSided = matJson.GetBoolValue("Two Side");
 
             // get the template material.
             Material templateMaterial = Pipeline.GetTemplateMaterial(sourceName, materialType, 
@@ -928,7 +934,7 @@ namespace Reallusion.Import
                 remapMaterial.CopyPropertiesFromMaterial(templateMaterial);
             }
 
-            Pipeline.UpgradeShader(remapMaterial, useTessellation, useAmplify);
+            Pipeline.UpgradeShader(remapMaterial, useTessellation, useAmplify, doubleSided);
 
             // add the path of the remapped material for later re-import.
             string remapPath = AssetDatabase.GetAssetPath(remapMaterial);
@@ -2622,14 +2628,18 @@ namespace Reallusion.Import
 
             Color diffuseColor = Color.white;
 
+            float opacityContrast = 1.0f;
+            float opacityStrength = 1.0f;
+
             if (matJson != null)
             {
                 Color ambientColor = Util.LinearTosRGB(matJson.GetColorValue("Ambient Color"));
                 mat.SetFloatIf("_AOStrength", Mathf.Clamp01(matJson.GetFloatValue("Textures/AO/Strength") / 100f));
-                float opacityMapStrength = Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f);
-                float opacity = Mathf.Clamp01(matJson.GetFloatValue("Opacity"));
-                mat.SetFloatIf("_AlphaContrast", opacityMapStrength);
-                mat.SetFloatIf("_AlphaStrength", Mathf.Max(1f, opacity * ValueByPipeline(1.0f, 1f/0.75f, 1f/0.75f)));
+                opacityContrast = Mathf.Clamp01(matJson.GetFloatValue("Textures/Opacity/Strength") / 100f);
+                opacityStrength = Mathf.Clamp01(matJson.GetFloatValue("Opacity"));
+                opacityStrength = Mathf.Max(1f, opacityStrength * ValueByPipeline(1.0f, 1f / 0.75f, 1f / 0.75f));
+                mat.SetFloatIf("_AlphaContrast", opacityContrast);
+                mat.SetFloatIf("_AlphaStrength", opacityStrength);
                 if (matJson.PathExists("Textures/Glow/Texture Path"))
                     mat.SetColorIf("_EmissiveColor", ambientColor * (matJson.GetFloatValue("Textures/Glow/Strength") / 100f));
                 if (matJson.PathExists("Textures/Normal/Strength"))
@@ -2726,13 +2736,13 @@ namespace Reallusion.Import
                 mat.SetBooleanKeyword("BOOLEAN_ENABLECOLOR",
                         matJson.GetFloatValue("Custom Shader/Variable/ActiveChangeHairColor") > 0f);
 
-                mat.SetColorIf("_HighlightAColor", Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/_1st Dye Color")));
+                mat.SetColorIf("_HighlightAColor", Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/_1st Dye Color")));                
                 mat.SetFloatIf("_HighlightAStrength", matJson.GetFloatValue("Custom Shader/Variable/_1st Dye Strength"));
                 mat.SetVectorIf("_HighlightADistribution", (1f / 255f) * matJson.GetVector3Value("Custom Shader/Variable/_1st Dye Distribution from Grayscale"));
                 mat.SetFloatIf("_HighlightAOverlapEnd", matJson.GetFloatValue("Custom Shader/Variable/Mask 1st Dye by RootMap"));
                 mat.SetFloatIf("_HighlightAOverlapInvert", matJson.GetFloatValue("Custom Shader/Variable/Invert 1st Dye RootMap Mask"));
 
-                mat.SetColorIf("_HighlightBColor", Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/_2nd Dye Color")));
+                mat.SetColorIf("_HighlightBColor", Util.LinearTosRGB(matJson.GetColorValue("Custom Shader/Variable/_2nd Dye Color")));                
                 mat.SetFloatIf("_HighlightBStrength", matJson.GetFloatValue("Custom Shader/Variable/_2nd Dye Strength"));
                 mat.SetVectorIf("_HighlightBDistribution", (1f / 255f) * matJson.GetVector3Value("Custom Shader/Variable/_2nd Dye Distribution from Grayscale"));
                 mat.SetFloatIf("_HighlightBOverlapEnd", matJson.GetFloatValue("Custom Shader/Variable/Mask 2nd Dye by RootMap"));
@@ -2748,14 +2758,10 @@ namespace Reallusion.Import
                 smoothnessContrast = ValueByPipeline(1.25f, 1.25f, 1.25f);
                 specularPowerMod = ValueByPipeline(1f, 1f, 1f);
                 mat.SetFloatIf("_DepthPrepass", 0.75f);
-                //mat.SetFloatIf("_AlphaContrast", 1.25f);
-                //mat.SetFloatIf("_AlphaStrength", 1.0f);
+                mat.SetFloatIf("_AlphaContrast", 1.03f * opacityContrast);
+                mat.SetFloatIf("_AlphaStrength", 0.88f * opacityStrength);
                 mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
-            }
-
-            if (isEyelash || isEyeBrow)
-            {
-                mat.SetFloatIf("_ShadowClip", 1.0f);                
+                mat.SetFloatIf("_ShadowClip", 1.0f);
             }
 
             if (isEyelash)

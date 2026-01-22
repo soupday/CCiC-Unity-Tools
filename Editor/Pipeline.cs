@@ -897,12 +897,18 @@ namespace Reallusion.Import
             return GetDefaultMaterial(quality);
         }
 
-        public static bool UpgradeShader(Material mat, bool useTessellation, bool useAmplify)
+        public static bool UpgradeShader(Material mat, bool useTessellation, bool useAmplify, bool doubleSided=false)
         {
             Shader shader = mat.shader;
             string shaderName = shader.name;
             bool tessellationUpgrade = false;
             bool amplifyUpgrade = false;
+
+            if (shaderName == "Standard" && doubleSided)
+            {
+                Shader dblSidedShader = Shader.Find("RL_Standard_DoubleSided");
+                mat.shader = dblSidedShader;                
+            }
 
             if (useAmplify)
             {
