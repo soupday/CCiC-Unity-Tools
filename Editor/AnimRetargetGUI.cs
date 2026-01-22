@@ -165,10 +165,10 @@ namespace Reallusion.Import
             // set the animation player's Foot IK to off
             AnimPlayerGUI.ForceSettingsReset();
             AnimPlayerGUI.UpdateAnimator();
-        }        
+        }
 
         static void CleanUp()
-        {            
+        {
             // reset the player fully with the currently selected clip
             AnimPlayerGUI.SetupCharacterAndAnimation();
         }
@@ -270,7 +270,7 @@ namespace Reallusion.Import
                 heelOffset = 0f;
                 heightOffset = 0f;
             }
-                      
+
             OffsetALL();
         }
 
@@ -316,7 +316,7 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical(); // vertical spacer to force window size
             GUILayout.Space(areaRect.height - TAB_HEIGHT);
-            GUILayout.EndVertical();            
+            GUILayout.EndVertical();
 
             GUILayout.BeginVertical(); // vertical layout of content
 
@@ -344,7 +344,7 @@ namespace Reallusion.Import
         }
 
         public static void DrawBlendShapeRetargetControls()
-        {            
+        {
             GUILayout.BeginVertical();
 
             // Content
@@ -386,7 +386,7 @@ namespace Reallusion.Import
             EditorGUI.BeginChangeCheck();
             createFullAnimationTrack = GUILayout.Toggle(createFullAnimationTrack, new GUIContent("Animate all face objects individually", "This will construct animation tracks for every blend shape on every applicable face object (e.g. eyebrows, beards etc). This reults in a very large animation with a higher performance overhead than the runtime transpose method."));
             if (EditorGUI.EndChangeCheck())
-            {                
+            {
                 if (createFullAnimationTrack)
                 {
                     expressionDrivenBones = false;
@@ -457,7 +457,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-                        
+
             GUI.backgroundColor = Color.Lerp(backgroundColor, tint, 0.25f);
             if (GUILayout.Button(new GUIContent(blendshapeImage, "Retarget Blendshapes."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
@@ -478,7 +478,7 @@ namespace Reallusion.Import
         }
 
         public static void DrawAnimationadjustmentControls()
-        {                  
+        {
             GUILayout.BeginVertical();// All retarget controls
             GUILayout.Space(4f);
             // Horizontal Group of 3 controls `Hand` `Jaw` and `Blendshapes`
@@ -491,7 +491,7 @@ namespace Reallusion.Import
             {
                 handPose++;
                 if (handPose > 2) handPose = 0;
-                ApplyPose(handPose);                
+                ApplyPose(handPose);
             }
             GUILayout.BeginVertical();
 
@@ -522,7 +522,7 @@ namespace Reallusion.Import
                 CloseMouthToggle(closeMouth);
             }
             GUILayout.EndVertical(); // End of Jaw control
-            
+
             GUILayout.Space(10f);
 
             GUILayout.EndHorizontal(); // End of Blendshapes control
@@ -557,7 +557,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             if (EditorGUI.EndChangeCheck())
             {
-                OffsetArmsFB();                
+                OffsetArmsFB();
             }
 
             EditorGUI.BeginChangeCheck();
@@ -567,7 +567,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             if (EditorGUI.EndChangeCheck())
             {
-                OffsetLegs();                
+                OffsetLegs();
             }
 
             EditorGUI.BeginChangeCheck();
@@ -577,7 +577,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             if (EditorGUI.EndChangeCheck())
             {
-                OffsetHeel();                
+                OffsetHeel();
             }
 
             EditorGUI.BeginChangeCheck();
@@ -649,7 +649,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal(); // End of reset and save controls
-        } 
+        }
 
         private static void LogBoneDriverSettingsChanges(GameObject root, GameObject bd, bool drive, bool transpose, bool constrain, bool legacy)
         {
@@ -809,7 +809,7 @@ namespace Reallusion.Import
             OffsetHeel();
             OffsetHeight();
             CloseMouthToggle(closeMouth);
-            ApplyPose(handPose);            
+            ApplyPose(handPose);
         }
 
         static void SetEditorCurves(AnimationClip clip, List<EditorCurveBinding> bindings, List<AnimationCurve> curves)
@@ -828,7 +828,7 @@ namespace Reallusion.Import
         static void OffsetShoulders()
         {
             if (!(OriginalClip && WorkingClip)) return;
-                        
+
             List<EditorCurveBinding> applicableBindings = new List<EditorCurveBinding>();
             List<AnimationCurve> applicableCurves = new List<AnimationCurve>();
 
@@ -909,10 +909,10 @@ namespace Reallusion.Import
                 }
                 applicableBindings.Add(bind.Value);
                 applicableCurves.Add(curve);
-            }            
+            }
             AnimationClip swapClip = AnimPlayerGUI.CloneClip(WorkingClip);
             SetEditorCurves(swapClip, applicableBindings, applicableCurves);
-            AnimPlayerGUI.SelectOverrideAnimationWithoutReset(swapClip, AnimPlayerGUI.animatorOverrideController);            
+            AnimPlayerGUI.SelectOverrideAnimationWithoutReset(swapClip, AnimPlayerGUI.animatorOverrideController);
             AnimPlayerGUI.UpdateAnimator();
         }
 
@@ -934,7 +934,7 @@ namespace Reallusion.Import
 
                 switch (bind.Key)
                 {
-                    case lArm:                    
+                    case lArm:
                         {
                             scale = arScale;
                             eval = true;
@@ -942,7 +942,7 @@ namespace Reallusion.Import
                             includeBackgroundVal = true;
                         }
                         break;
-                    case rArm:                    
+                    case rArm:
                         {
                             scale = arScale;
                             eval = true;
@@ -1008,7 +1008,7 @@ namespace Reallusion.Import
                 Keyframe[] keys = curve.keys;
 
                 switch (bind.Key)
-                {                    
+                {
                     case lArmFB:
                         {
                             scale = arScale;
@@ -1024,7 +1024,7 @@ namespace Reallusion.Import
                             subtract = false;
                             includeBackgroundVal = false;
                         }
-                        break;                    
+                        break;
                 }
 
                 float diff = armFBOffset * scale;
@@ -1278,7 +1278,7 @@ namespace Reallusion.Import
                 propertyName = targetPropertyName
             };
 
-            if (AnimationUtility.GetEditorCurve(workingClip, workingBinding) == null || 
+            if (AnimationUtility.GetEditorCurve(workingClip, workingBinding) == null ||
                 targetPropertyName != sourceCurveBinding.propertyName)
             {
                 AnimationCurve workingCurve = AnimationUtility.GetEditorCurve(originalClip, sourceCurveBinding);
@@ -1369,7 +1369,7 @@ namespace Reallusion.Import
             // needs a set up bonedriver component to interrogate for the expression glossary
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null)
-            {                
+            {
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
             }
             if (bd == null) return;
@@ -1615,7 +1615,7 @@ namespace Reallusion.Import
             string[] headCurves = new string[] { "Head Nod Down-Up", "Head Tilt Left-Right", "Head Turn Left-Right" };
 
             // Identify all curve bindings for constraint blendshapes (starting with "C_") and purge them
-            List<string> animatedConstraints = new  List<string>();
+            List<string> animatedConstraints = new List<string>();
             foreach (var binding in sourceCurveBindings)
             {
                 if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
@@ -1623,7 +1623,7 @@ namespace Reallusion.Import
             }
             //foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
             PurgeBindings(sourceCurveBindings, animatedConstraints.ToArray(), workingClip);
-            
+
             foreach (var boneToEvaluate in bonesToEvaluate)
             {
                 //Debug.Log($"boneToEvaluate {boneToEvaluate}");
@@ -1699,7 +1699,7 @@ namespace Reallusion.Import
                     }
                     */
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogWarning($"Purging Error {e.Message}");
                 }
@@ -1722,7 +1722,7 @@ namespace Reallusion.Import
             if (bd == null)
             {
                 BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-                
+
             }
             if (bd == null) return;
 
@@ -1730,10 +1730,10 @@ namespace Reallusion.Import
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
             Util.ApplyIfPrefabInstance(targetCharacterModel);
 
-            Dictionary <string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
+            Dictionary<string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
             // this is a list to keep
-                        
-            List<(string, string)> keepMe = new List<(string, string)> ();
+
+            List<(string, string)> keepMe = new List<(string, string)>();
             foreach (var path in excessBlendhsapes)
             {
                 foreach (string prop in path.Value)
@@ -1778,7 +1778,7 @@ namespace Reallusion.Import
             // build a cache of remapped (from the anim profile to the mesh profile) blend shape names in the animation and their original curve bindings:
             EditorCurveBinding[] workingCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
             string report = "";
-            
+
             Dictionary<string, EditorCurveBinding> cache = new Dictionary<string, EditorCurveBinding>();
             for (int i = 0; i < workingCurveBindings.Length; i++)
             {
@@ -1795,7 +1795,7 @@ namespace Reallusion.Import
                             if (!cache.ContainsKey(meshProfileBlendShapeName))
                             {
                                 cache.Add(meshProfileBlendShapeName, workingCurveBindings[i]);
-                                
+
                                 report += "Mapping: " + meshProfileBlendShapeName + " from " + animBlendShapeName + "\n";
                             }
                         }
@@ -1806,7 +1806,7 @@ namespace Reallusion.Import
                                 if (!cache.ContainsKey(multiShapeName))
                                 {
                                     cache.Add(multiShapeName, workingCurveBindings[i]);
-                                    
+
                                     report += "Mapping (multi): " + multiShapeName + " from " + animBlendShapeName + "\n";
                                 }
                             }
@@ -1834,7 +1834,7 @@ namespace Reallusion.Import
                 Transform t = targetAssetData.FirstOrDefault(t => t.name == path);
                 if (t != null)
                     smr = t.gameObject.GetComponent<SkinnedMeshRenderer>();
-                
+
                 if (smr && smr.sharedMesh && smr.sharedMesh.blendShapeCount > 0)
                 {
                     for (int j = 0; j < smr.sharedMesh.blendShapeCount; j++)
@@ -1857,7 +1857,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-                        
+
             report += "\n";
             int curvesFailedToMap = 0;
             foreach (string shape in cache.Keys)
@@ -1872,7 +1872,7 @@ namespace Reallusion.Import
             string reportHeader = "Blendshape Mapping report:\n";
             if (curvesFailedToMap == 0) reportHeader += "All " + cache.Count + " BlendShape curves retargeted!\n\n";
             else reportHeader += curvesFailedToMap + " out of " + cache.Count + " BlendShape curves could not be retargeted!\n\n";
-            
+
             bool log = true;
             if (log) Util.LogAlways(reportHeader + report);
         }
@@ -2036,7 +2036,7 @@ namespace Reallusion.Import
                 }
             }
         }
-        
+
         static string GenerateClipAssetPath(AnimationClip originalClip, string characterFbxPath, string prefix = "", bool overwrite = false)
         {
             if (!originalClip || string.IsNullOrEmpty(characterFbxPath)) return null;
@@ -2076,7 +2076,7 @@ namespace Reallusion.Import
         }
 
         public static AnimationClip WriteAnimationToAssetDatabase(AnimationClip workingClip, string assetPath, bool originalSettings = false)
-        {            
+        {
             if (string.IsNullOrEmpty(assetPath)) return null;
 
             Util.LogDetail("Writing Asset: " + assetPath);
@@ -2108,8 +2108,8 @@ namespace Reallusion.Import
                 // player/re-tartgeter will be untouched so end users dont see a behaviour change after saving
 
                 // **End of addition**
-            }            
-            
+            }
+
             AnimationClip asset = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
             if (asset == null)
             {
@@ -2198,8 +2198,8 @@ namespace Reallusion.Import
 
         static string[] armFBCurveNames = new string[]
                 {
-                    lArmFB,                    
-                    rArmFB,                    
+                    lArmFB,
+                    rArmFB,
                 };
 
         static string[] legCurveNames = new string[]
@@ -2259,13 +2259,19 @@ namespace Reallusion.Import
             System.IO.File.WriteAllText(path, pathString);
         }
 
-        public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath, 
+        public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath,
             GameObject targetCharacterModel, CharacterInfo info, bool replaceIfExists, string motionPrefix = null)
         {
 
             List<AnimationClip> animationClips = new List<AnimationClip>();
 
-            AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);            
+            AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
+
+            if (info.FeatureUseExtractGeneric)
+            {
+                Debug.Log("Extracting generic animation data.");
+                clips = GenericAnimProcessing.ProcessGenericClips(info, clips, motionAssetPath);
+            }
 
             if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
             if (!targetCharacterModel) return null;
@@ -2293,14 +2299,14 @@ namespace Reallusion.Import
                 }
 
                 if (!string.IsNullOrEmpty(firstPath))
-                    AnimPlayerGUI.UpdateAnimatorClip(CharacterAnimator, 
+                    AnimPlayerGUI.UpdateAnimatorClip(CharacterAnimator,
                                                      AssetDatabase.LoadAssetAtPath<AnimationClip>(firstPath));
             }
             else
             {
                 Util.LogInfo("No animation clips found.");
             }
-            
+
             return animationClips;
         }
 
@@ -2578,7 +2584,7 @@ namespace Reallusion.Import
                 overrideTab = -1;
                 overrideIcons = new Texture[]
                 {
-                    
+
                 };
             }
         }

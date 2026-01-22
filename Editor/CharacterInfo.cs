@@ -31,10 +31,10 @@ namespace Reallusion.Import
         public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, MaxTextureSize }
         public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality, MaxTextureQuality }
 
-        public enum ShaderFeatureFlags 
-        { 
-            NoFeatures = 0, 
-            Tessellation = 1, 
+        public enum ShaderFeatureFlags
+        {
+            NoFeatures = 0,
+            Tessellation = 1,
             ClothPhysics = 2, // group flag to allow selection between UnityClothPhysics & MagicaCloth
             HairPhysics = 4, // group flag to allow selection between UnityClothHairPhysics & MagicaClothHairPhysics
             SpringBoneHair = 8,  // dynamic bone springbones
@@ -52,6 +52,7 @@ namespace Reallusion.Import
             BoneDriver = 32768,
             ExpressionTranspose = 65536,
             ConstraintData = 131072,
+            ExtractGeneric = 262144,
         }
 
         public enum ExportType
@@ -68,7 +69,7 @@ namespace Reallusion.Import
         public enum AnimationTargetLevel { None, Unmodified, Modified }
 
         public string linkId = string.Empty;
-        public bool isLinked { get {  return linkId != string.Empty; } }
+        public bool isLinked { get { return linkId != string.Empty; } }
 
         public string motionPrefix = string.Empty;
         public ExportType exportType = ExportType.NONE;
@@ -95,12 +96,12 @@ namespace Reallusion.Import
         public enum RigOverride { None = 0, Generic, Humanoid }
 
         public string guid;
-        public string path;        
+        public string path;
         public string infoFilepath;
         public string jsonFilepath;
         public string name;
         public string folder;
-          
+
         public bool isLOD = false;
         public bool bakeIsBaked = false;
         public bool tempHairBake = false;
@@ -121,7 +122,7 @@ namespace Reallusion.Import
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
         private string version = null;
-        
+
         public struct GUIDRemap
         {
             public string from;
@@ -218,7 +219,7 @@ namespace Reallusion.Import
         public MaterialQuality BuildQuality
         {
             get
-            {                
+            {
                 if (BuildType == ProcessingType.HighQuality) return MaterialQuality.High;
                 else if (BuildType == ProcessingType.Basic) return MaterialQuality.Default;
                 return MaterialQuality.None;
@@ -244,6 +245,7 @@ namespace Reallusion.Import
         public bool FeatureUseBoneDriver => (ShaderFlags & ShaderFeatureFlags.BoneDriver) > 0;
         public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
         public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
+        public bool FeatureUseExtractGeneric => (ShaderFlags & ShaderFeatureFlags.ExtractGeneric) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
@@ -256,7 +258,7 @@ namespace Reallusion.Import
         public bool CoverageHair { get { return qualHair == HairQuality.Coverage; } }
         public bool DefaultHair { get { return qualHair == HairQuality.Default; } }
         public bool BakeCustomShaders { get { return bakeCustomShaders; } set { bakeCustomShaders = value; } }
-        public bool BakeSeparatePrefab { get { return bakeSeparatePrefab; } set { bakeSeparatePrefab = value; } }        
+        public bool BakeSeparatePrefab { get { return bakeSeparatePrefab; } set { bakeSeparatePrefab = value; } }
         public TexSizeQuality QualTexSize { get { return qualTexSize; } set { qualTexSize = value; } }
         public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
@@ -269,7 +271,7 @@ namespace Reallusion.Import
 
         public ShaderFeatureFlags BuiltShaderFlags { get; private set; } = ShaderFeatureFlags.NoFeatures;
         public bool BuiltFeatureWrinkleMaps => (BuiltShaderFlags & ShaderFeatureFlags.WrinkleMaps) > 0;
-        public bool BuiltFeatureTessellation => (BuiltShaderFlags & ShaderFeatureFlags.Tessellation) > 0;        
+        public bool BuiltFeatureTessellation => (BuiltShaderFlags & ShaderFeatureFlags.Tessellation) > 0;
         public bool BuiltBasicMaterials => builtLogType == ProcessingType.Basic;
         public bool BuiltHQMaterials => builtLogType == ProcessingType.HighQuality;
         public bool BuiltDualMaterialHair => builtQualHair == HairQuality.TwoPass;
@@ -310,7 +312,7 @@ namespace Reallusion.Import
             if (logType == ProcessingType.HighQuality && !CanHaveHighQualityMaterials)
                 logType = ProcessingType.Basic;
 
-            if (qualEyes == EyeQuality.Refractive && !Pipeline.isHDRP) 
+            if (qualEyes == EyeQuality.Refractive && !Pipeline.isHDRP)
                 qualEyes = EyeQuality.Parallax;
 
             if (qualHair == HairQuality.Coverage && Pipeline.isHDRP)
@@ -329,7 +331,7 @@ namespace Reallusion.Import
             this.guid = guid;
             path = AssetDatabase.GUIDToAssetPath(this.guid);
             name = Path.GetFileNameWithoutExtension(path);
-            folder = Path.GetDirectoryName(path);            
+            folder = Path.GetDirectoryName(path);
             infoFilepath = Path.Combine(folder, name + "_ImportInfo.txt");
             jsonFilepath = Path.Combine(folder, name + ".json");
             if (path.iContains("_lod")) isLOD = true;
@@ -338,7 +340,7 @@ namespace Reallusion.Import
             selectedInList = false;
             settingsChanged = false;
 
-            if (File.Exists(infoFilepath))            
+            if (File.Exists(infoFilepath))
                 Read();
             else
                 Write();
@@ -351,13 +353,13 @@ namespace Reallusion.Import
             qualEyes = from.qualEyes;
             qualHair = from.qualHair;
             bakeCustomShaders = from.bakeCustomShaders;
-            bakeSeparatePrefab = from.bakeSeparatePrefab;  
+            bakeSeparatePrefab = from.bakeSeparatePrefab;
             ShaderFlags = from.ShaderFlags;
             FixCharSettings();
         }
 
         public void ApplySettings()
-        {            
+        {
             FixCharSettings();
             CleanGUIDRemaps();
 
@@ -367,7 +369,7 @@ namespace Reallusion.Import
             builtBakeCustomShaders = bakeCustomShaders;
             builtBakeSeparatePrefab = bakeSeparatePrefab;
             BuiltShaderFlags = ShaderFlags;
-        }        
+        }
 
         public GameObject Fbx
         {
@@ -388,7 +390,7 @@ namespace Reallusion.Import
         }
 
         public Avatar GetCharacterAvatar()
-        {                        
+        {
             Object[] objects = AssetDatabase.LoadAllAssetsAtPath(path);
             foreach (Object obj in objects)
             {
@@ -452,8 +454,8 @@ namespace Reallusion.Import
             if (prefabAsset != null) return prefabAsset;
 
             // fall back to the (unprocessed) fbx
-            GameObject fbx = Fbx;            
-            return fbx;            
+            GameObject fbx = Fbx;
+            return fbx;
         }
 
         public GameObject GetPrefabInstance(bool baked = false)
@@ -461,7 +463,7 @@ namespace Reallusion.Import
             if (baked)
             {
                 GameObject bakedPrefabAsset = BakedPrefabAsset;
-                if (bakedPrefabAsset) 
+                if (bakedPrefabAsset)
                     return (GameObject)PrefabUtility.InstantiatePrefab(BakedPrefabAsset);
             }
             else
@@ -475,7 +477,7 @@ namespace Reallusion.Import
         }
 
         public QuickJSON JsonData
-        { 
+        {
             get
             {
                 if (jsonData == null)
@@ -551,7 +553,7 @@ namespace Reallusion.Import
             else
             {
                 return objName + "/Materials/" + matName;
-            }            
+            }
         }
 
         public string ObjectsMaterialsJsonPath(string objName)
@@ -581,8 +583,8 @@ namespace Reallusion.Import
         public QuickJSON GetObjJson(GameObject obj)
         {
             QuickJSON objectsData = ObjectsJsonData;
-            string objName = obj.name;            
-            List<string> tryObjectNames = new List<string>();            
+            string objName = obj.name;
+            List<string> tryObjectNames = new List<string>();
 
             if (objName.iContains("_Extracted"))
             {
@@ -607,14 +609,14 @@ namespace Reallusion.Import
                 tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
                 // finally search for an object name in the mesh json whose name starts with the truncted source name
                 //realObjName = objectsData.FindKeyName(specObjName);
-            }            
+            }
 
             // search for the material json directly from the possible object and material names
             foreach (string objectName in tryObjectNames)
             {
                 if (objectsData.PathExists(objectName))
                 {
-                    return objectsData.GetObjectAtPath(objectName);                    
+                    return objectsData.GetObjectAtPath(objectName);
                 }
             }
 
@@ -634,7 +636,7 @@ namespace Reallusion.Import
         }
 
         public QuickJSON GetMatJson(GameObject obj, string sourceName)
-        {            
+        {
             QuickJSON objectsData = ObjectsJsonData;
             QuickJSON matJson = null;
             string objName = obj.name;
@@ -642,7 +644,7 @@ namespace Reallusion.Import
             List<string> tryMaterialNames = new List<string>();
             List<string> tryObjectNames = new List<string>();
             tryMaterialNames.Add(sourceName);
-            
+
             if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
             {
                 Util.LogWarn("Material name has a Unity duplication suffix, there may be more than one material with this name in the character.");
@@ -669,7 +671,7 @@ namespace Reallusion.Import
             if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
             {
                 Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
-                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));                
+                tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
                 // finally search for an object name in the mesh json whose name starts with the truncted source name
                 //realObjName = objectsData.FindKeyName(specObjName);
             }
@@ -681,14 +683,14 @@ namespace Reallusion.Import
                 // finally search for an object name in the mesh json whose name starts with the truncted source name
                 //realMatName = objectsData.FindKeyName(ObjectsMaterialsJsonPath(realObjName), specMatName);
             }
-            
+
             // search for the material json directly from the possible object and material names
-            foreach (string objectName in tryObjectNames) 
-            { 
+            foreach (string objectName in tryObjectNames)
+            {
                 if (objectsData.PathExists(objectName))
                 {
                     foreach (string materialName in tryMaterialNames)
-                    {                        
+                    {
                         jsonPath = ObjectsMatJsonPath(objectName, materialName);
                         matJson = objectsData.GetObjectAtPath(jsonPath);
                         if (matJson != null) return matJson;
@@ -735,7 +737,7 @@ namespace Reallusion.Import
         public QuickJSON PhysicsJsonData
         {
             get
-            {                              
+            {
                 string jsonPath = name + "/Object/" + name + "/Physics";
                 if (JsonData.PathExists(jsonPath))
                     return JsonData.GetObjectAtPath(jsonPath);
@@ -760,18 +762,18 @@ namespace Reallusion.Import
         {
             if (jsonData != null) jsonData = Util.GetJsonData(jsonFilepath);
         }
-        
+
         public BaseGeneration Generation
-        { 
+        {
             get
-            { 
+            {
                 if (generation == BaseGeneration.None)
                 {
                     CheckGeneration();
-                }                
+                }
 
                 return generation;
-            } 
+            }
         }
 
         public bool HasColorEnabledHair()
@@ -806,7 +808,7 @@ namespace Reallusion.Import
             }
 
             generation = RL.GetCharacterGeneration(Fbx, gen);
-            CheckOverride();            
+            CheckOverride();
 
             // new character detected, initialize settings
             if (oldGen == BaseGeneration.None)
@@ -861,7 +863,7 @@ namespace Reallusion.Import
             {
                 ShaderFlags |= ShaderFeatureFlags.Displacement;
             }
-            
+
             if (HasExpressionBones())
             {
                 ShaderFlags |= ShaderFeatureFlags.BoneDriver;
@@ -885,7 +887,7 @@ namespace Reallusion.Import
                 {
                     int versionMaj = int.Parse(split[0]);
                     int versionMin = int.Parse(split[1]);
-                    int versionRev = int.Parse(split[2]);                    
+                    int versionRev = int.Parse(split[2]);
                     int versionInt = versionMaj * 10000 + versionMin * 1000 + versionRev;
                     int cmpInt = maj * 10000 + min * 1000 + rev;
                     return versionInt >= cmpInt;
@@ -1037,7 +1039,7 @@ namespace Reallusion.Import
             string jsonPath = name + "/Object/" + name + "/Expression";
             return JsonData.PathExists(jsonPath);
         }
-        
+
         public bool HasConstraintData()
         {
             string jsonPath = name + "/Object/" + name + "/Constraint";
@@ -1051,7 +1053,7 @@ namespace Reallusion.Import
             return AnyJsonMaterialPathExists("Resource Textures/Wrinkle Dis 1/Texture Path", true);
         }
 
-        public bool AnyJsonMaterialPathExists(string path, bool requireValue=false)
+        public bool AnyJsonMaterialPathExists(string path, bool requireValue = false)
         {
             QuickJSON objectsJson = ObjectsJsonData;
 
@@ -1151,7 +1153,7 @@ namespace Reallusion.Import
                         if (value == "Basic") qualEyes = EyeQuality.Basic;
                         else if (value == "Parallax") qualEyes = EyeQuality.Parallax;
                         else if (value == "Refractive") qualEyes = EyeQuality.Refractive;
-                        else qualEyes = EyeQuality.None;                        
+                        else qualEyes = EyeQuality.None;
                         break;
                     case "qualHair":
                         if (value == "Default") qualHair = HairQuality.Default;
@@ -1164,16 +1166,16 @@ namespace Reallusion.Import
                             qualHair = value == "true" ? HairQuality.TwoPass : HairQuality.Default;
                         break;
                     case "bakeIsBaked":
-                        bakeIsBaked = value == "true" ? true : false;                        
+                        bakeIsBaked = value == "true" ? true : false;
                         break;
                     case "tempHairBake":
                         tempHairBake = value == "true" ? true : false;
                         break;
                     case "bakeCustomShaders":
-                        bakeCustomShaders = value == "true" ? true : false;                        
+                        bakeCustomShaders = value == "true" ? true : false;
                         break;
                     case "bakeSeparatePrefab":
-                        bakeSeparatePrefab = value == "true" ? true : false;                        
+                        bakeSeparatePrefab = value == "true" ? true : false;
                         break;
                     case "generation":
                         generation = (BaseGeneration)System.Enum.Parse(typeof(BaseGeneration), value);
@@ -1212,7 +1214,7 @@ namespace Reallusion.Import
                         }
                     case "exportType":
                         {
-                            exportType = (ExportType)System.Enum.Parse(typeof (ExportType), value);
+                            exportType = (ExportType)System.Enum.Parse(typeof(ExportType), value);
                             break;
                         }
                     case "qualTexSize":
@@ -1258,7 +1260,7 @@ namespace Reallusion.Import
                 writer.WriteLine("GUIDRemap=" + gr.from + "|" + gr.to);
             }
             writer.Close();
-            AssetDatabase.ImportAsset(infoFilepath);            
+            AssetDatabase.ImportAsset(infoFilepath);
         }
 
         public void CheckRadioGroupFlags()
@@ -1267,7 +1269,7 @@ namespace Reallusion.Import
             {
                 Util.LogWarn("The Importer Window is not open - please open the CC/iC importer window before continuing.");
                 return;
-            }            
+            }
 
             if (ShaderFlags.HasFlag(ShaderFeatureFlags.ClothPhysics))
             {
@@ -1361,7 +1363,7 @@ namespace Reallusion.Import
                         else
                         {
                             if (mag)
-                                ShaderFlags |= ShaderFeatureFlags.MagicaBone; 
+                                ShaderFlags |= ShaderFeatureFlags.MagicaBone;
                             else if (dyn)
                                 ShaderFlags |= ShaderFeatureFlags.SpringBoneHair;
                         }
@@ -1393,7 +1395,7 @@ namespace Reallusion.Import
         public bool UseTessellation(MaterialType materialType, QuickJSON matJson)
         {
             bool useDisplacement = false;
-            if (matJson.PathExists("Textures/Displacement/Texture Path") && 
+            if (matJson.PathExists("Textures/Displacement/Texture Path") &&
                 !string.IsNullOrEmpty(matJson.GetStringValue("Textures/Displacement/Texture Path")))
             {
                 useDisplacement = FeatureUseDisplacement;
@@ -1403,7 +1405,7 @@ namespace Reallusion.Import
             if (FeatureUseTessellation && useDisplacement) return true;
 
             // try tessellate skin and teeth if requested
-            if (FeatureUseTessellation && 
+            if (FeatureUseTessellation &&
                 (materialType == MaterialType.Skin ||
                  materialType == MaterialType.Head ||
                  materialType == MaterialType.Cornea ||
@@ -1423,7 +1425,7 @@ namespace Reallusion.Import
                 {
                     return avatar.humanDescription.skeleton[0].scale.y;
                 }
-            }           
+            }
 
             return 1f;
         }
