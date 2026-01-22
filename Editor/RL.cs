@@ -996,8 +996,7 @@ namespace Reallusion.Import
 
         public static GameObject FindExpressionSourceMesh(GameObject root)
         {
-            SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();
-            List<GameObject> expressionMeshes = new List<GameObject>();
+            SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();            
             GameObject bestExpressionsMesh = null;
             int bestExpressionCount = 0;
             foreach (SkinnedMeshRenderer smr in skinnedMeshRenderers)            
@@ -1005,8 +1004,7 @@ namespace Reallusion.Import
                 GameObject go = smr.gameObject;
                 if (IsBodyMesh(smr)) return go;
                 if (FacialProfileMapper.MeshHasFacialBlendShapes(smr.gameObject))
-                {
-                    expressionMeshes.Add(go);
+                {                    
                     int expressionCount = smr.sharedMesh.blendShapeCount;
                     if (expressionCount > bestExpressionCount)
                     {
