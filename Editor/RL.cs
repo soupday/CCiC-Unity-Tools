@@ -993,5 +993,29 @@ namespace Reallusion.Import
 
             return null;
         }
+
+        public static GameObject FindExpressionSourceMesh(GameObject root)
+        {
+            SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();
+            List<GameObject> expressionMeshes = new List<GameObject>();
+            GameObject bestExpressionsMesh = null;
+            int bestExpressionCount = 0;
+            foreach (SkinnedMeshRenderer smr in skinnedMeshRenderers)            
+            {
+                GameObject go = smr.gameObject;
+                if (IsBodyMesh(smr)) return go;
+                if (FacialProfileMapper.MeshHasFacialBlendShapes(smr.gameObject))
+                {
+                    expressionMeshes.Add(go);
+                    int expressionCount = smr.sharedMesh.blendShapeCount;
+                    if (expressionCount > bestExpressionCount)
+                    {
+                        bestExpressionCount = expressionCount;
+                        bestExpressionsMesh = go;
+                    }
+                }
+            }
+            return bestExpressionsMesh;
+        }
     }
 }
