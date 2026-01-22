@@ -207,10 +207,12 @@ namespace Reallusion.Import
         {
             ShaderFeatureFlags builtBoneDriverFlags = (BuiltShaderFlags & ShaderFeatureFlags.BoneDriver) |
                                                       (BuiltShaderFlags & ShaderFeatureFlags.ConstraintData) |
-                                                      (BuiltShaderFlags & ShaderFeatureFlags.ExpressionTranspose);
+                                                      (BuiltShaderFlags & ShaderFeatureFlags.ExpressionTranspose) |
+                                                      (BuiltShaderFlags & ShaderFeatureFlags.ExtractGeneric);
             ShaderFeatureFlags boneDriverFlags = (ShaderFlags & ShaderFeatureFlags.BoneDriver) |
                                                  (ShaderFlags & ShaderFeatureFlags.ConstraintData) |
-                                                 (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose);
+                                                 (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) |
+                                                 (ShaderFlags & ShaderFeatureFlags.ExtractGeneric);
             if (builtBoneDriverFlags != boneDriverFlags) return true;
             AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
             return animationRetargeted != neededTargetLevel;
@@ -1043,8 +1045,6 @@ namespace Reallusion.Import
 
         public bool IsRLCharacter()
         {
-            CheckGeneration();
-
             if (Generation == BaseGeneration.ActorBuild ||
                 Generation == BaseGeneration.ActorCore ||
                 Generation == BaseGeneration.G3 ||
