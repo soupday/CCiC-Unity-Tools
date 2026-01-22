@@ -205,6 +205,13 @@ namespace Reallusion.Import
 
         public bool AnimationNeedsRetargeting()
         {
+            ShaderFeatureFlags builtBoneDriverFlags = (BuiltShaderFlags & ShaderFeatureFlags.BoneDriver) |
+                                                      (BuiltShaderFlags & ShaderFeatureFlags.ConstraintData) |
+                                                      (BuiltShaderFlags & ShaderFeatureFlags.ExpressionTranspose);
+            ShaderFeatureFlags boneDriverFlags = (ShaderFlags & ShaderFeatureFlags.BoneDriver) |
+                                                 (ShaderFlags & ShaderFeatureFlags.ConstraintData) |
+                                                 (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose);
+            if (builtBoneDriverFlags != boneDriverFlags) return true;
             AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
             return animationRetargeted != neededTargetLevel;
         }
@@ -1034,18 +1041,39 @@ namespace Reallusion.Import
             return AnyJsonMaterialPathExists("Textures/Displacement/Texture Path", true);
         }
 
-        public bool HasExpressionBones()
+        public bool IsRLCharacter()
         {
-            string jsonPath = name + "/Object/" + name + "/Expression";
-            return JsonData.PathExists(jsonPath);
+            CheckGeneration();
+
+            if (Generation == BaseGeneration.ActorBuild ||
+                Generation == BaseGeneration.ActorCore ||
+                Generation == BaseGeneration.G3 ||
+                Generation == BaseGeneration.G3Plus ||
+                Generation == BaseGeneration.GameBase)
+                return true;
+            return false;
+        }
+
+        public bool HasExpressionBones()
+        {            
+            if (IsRLCharacter())
+            {
+                string jsonPath = name + "/Object/" + name + "/Expression";
+                return JsonData.PathExists(jsonPath);
+            }
+            return false;
         }
 
         public bool HasConstraintData()
         {
-            string jsonPath = name + "/Object/" + name + "/Constraint";
-            QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
-            bool hasData = data != null && data.values.Count > 0;
-            return hasData;
+            if (IsRLCharacter())
+            {
+                string jsonPath = name + "/Object/" + name + "/Constraint";
+                QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
+                bool hasData = data != null && data.values.Count > 0;
+                return hasData;
+            }
+            return false;
         }
 
         public bool HasWrinkleDisplacement()

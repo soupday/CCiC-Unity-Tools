@@ -1064,7 +1064,7 @@ namespace Reallusion.Import
                 diffuseAlpha = GetTexture(sourceName, "BDiffuseAlpha", matJson, "Textures/NOTEX", true);
                 HDRPMask = GetTexture(sourceName, "BHDRP", matJson, "Textures/NOTEX", true);
                 metallicGloss = GetTexture(sourceName, "BMetallicAlpha", matJson, "Textures/NOTEX", true);
-            }            
+            }
             
             if (!HDRPMask || !metallicGloss)
             {
