@@ -85,7 +85,7 @@ namespace Reallusion.Import
             }
             return true;
         }
-        
+
         public static BaseGeneration GetCharacterGeneration(GameObject fbx, string generationString)
         {
             if (fbx)
@@ -98,14 +98,14 @@ namespace Reallusion.Import
                     {
                         // some ActorScan characters are really GameBase
                         if (CharacterContainsBones(children, new string[] { "head", "pelvis", "spine_02" }))
-                        {                            
+                        {
                             gen = BaseGeneration.GameBase;
                         }
 
                         return gen;
                     }
                 }
-                
+
                 // check game base
                 if (CharacterContainsBones(children, new string[] { "head", "pelvis", "spine_02" }))
                     return BaseGeneration.GameBase;
@@ -162,21 +162,21 @@ namespace Reallusion.Import
         public static void ForceLegacyBlendshapeNormals(ModelImporter importer, bool value)
         {
             string pName = "legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes";
-            PropertyInfo prop = importer.GetType().GetProperty(pName, 
-                                                                BindingFlags.Instance | 
-                                                                BindingFlags.NonPublic | 
+            PropertyInfo prop = importer.GetType().GetProperty(pName,
+                                                                BindingFlags.Instance |
+                                                                BindingFlags.NonPublic |
                                                                 BindingFlags.Public);
             prop.SetValue(importer, value);
         }
 
         public static void HumanoidImportSettings(GameObject fbx, ModelImporter importer, CharacterInfo info, Avatar avatar = null)
-        {            
+        {
             // import normals to avoid mesh smoothing issues            
             // importing blend shape normals gives disasterously bad results, they need to be recalculated,
             // ideally using the legacy blend shape normals option, but this has not been exposed to scripts so...
             int importSet = 0;
             if (info.IsBlenderProject) importSet = 1;
-            switch(importSet)
+            switch (importSet)
             {
                 case 0: // From CC3/4
                     if (Importer.BUILD_NORMALS_MODE == 1)
@@ -221,17 +221,17 @@ namespace Reallusion.Import
                         importer.normalSmoothingAngle = 120f;
                         ForceLegacyBlendshapeNormals(importer, false);
                     }
-                    break;                    
+                    break;
             }
             importer.importTangents = ModelImporterTangents.CalculateMikk;
             importer.generateAnimations = ModelImporterGenerateAnimations.GenerateAnimations;
             importer.animationType = ModelImporterAnimationType.Human;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.keepQuads = false;
-            importer.weldVertices = true;            
+            importer.weldVertices = true;
 
             importer.autoGenerateAvatarMappingIfUnspecified = true;
-            
+
             if (info.Generation == BaseGeneration.Unknown)
             {
                 switch (info.UnknownRigType)
@@ -516,7 +516,7 @@ namespace Reallusion.Import
             {
                 UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(animatorPath);
                 if (asset.GetType() == typeof(AnimatorController))
-                {                    
+                {
                     return AssetDatabase.LoadAssetAtPath<AnimatorController>(animatorPath);
                 }
             }
@@ -530,7 +530,7 @@ namespace Reallusion.Import
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 string name = Path.GetFileNameWithoutExtension(path);
                 if (name.iEquals(animatorName))
-                {   
+                {
                     UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                     if (asset.GetType() == typeof(AnimatorController))
                     {
@@ -549,7 +549,7 @@ namespace Reallusion.Import
         public static AnimatorController AutoCreateAnimator(GameObject fbx, string assetPath, ModelImporter importer)
         {
             string animatorPath = Path.GetDirectoryName(assetPath) + "/" + fbx.name + "_animator.controller";
-            
+
             AnimatorController controller = null;
 
             if (!File.Exists(animatorPath))
@@ -584,11 +584,11 @@ namespace Reallusion.Import
                                 {
                                     previewClip = clip;
                                     continue;
-                                }     
-                                
+                                }
+
                                 controller.AddMotion(clip, 0);
                                 foundClip = clip;
-                                break;                                
+                                break;
                             }
                         }
                     }
@@ -616,7 +616,7 @@ namespace Reallusion.Import
 
             return controller;
         }
-        
+
         public static void SetupAnimation(ModelImporter importer, CharacterInfo characterInfo, bool forceUpdate)
         {
             if (importer.defaultClipAnimations.Length > 0)
@@ -658,7 +658,7 @@ namespace Reallusion.Import
 
             if (changed)
             {
-                importer.clipAnimations = animations;                
+                importer.clipAnimations = animations;
                 if (forceUpdate)
                 {
                     AssetDatabase.WriteImportSettingsIfDirty(importer.assetPath);
@@ -688,7 +688,7 @@ namespace Reallusion.Import
             ResetFbxAnimator(info.Fbx);
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(path);
             HumanoidImportSettings(info.Fbx, importer, info);
-            SetupAnimation(importer, info, true);            
+            SetupAnimation(importer, info, true);
 
             Avatar sourceAvatar = info.GetCharacterAvatar();
 
@@ -704,12 +704,12 @@ namespace Reallusion.Import
         }
 
         public static void DoMotionImport(CharacterInfo info, Avatar sourceAvatar, string motionFbxPath)
-        {            
+        {
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(motionFbxPath);
             GameObject fbx = AssetDatabase.LoadAssetAtPath<GameObject>(motionFbxPath);
             HumanoidImportSettings(fbx, importer, info, null);
             SetupAnimation(importer, info, true);
-        }      
+        }
 
         public static void AddDefaultAnimatorController(CharacterInfo info, GameObject prefab)
         {
@@ -720,12 +720,12 @@ namespace Reallusion.Import
             AnimatorController defaultController = CreateDefaultAnimator(info.Fbx, info.folder);
             Animator animator = prefab.GetComponent<Animator>();
 
-            if (!animator || !defaultController) return;            
-            
+            if (!animator || !defaultController) return;
+
             animator.runtimeAnimatorController = defaultController;
             animator.applyRootMotion = true;
             animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
-                
+
             // replace baked prefab animator too
             if (File.Exists(prefabBakedPath))
             {
@@ -742,8 +742,8 @@ namespace Reallusion.Import
         }
 
         public static string InitCharacterPrefab(CharacterInfo info)
-        {            
-            string prefabFolder = Util.CreateFolder(info.folder, Importer.PREFABS_FOLDER);            
+        {
+            string prefabFolder = Util.CreateFolder(info.folder, Importer.PREFABS_FOLDER);
             string prefabPath = Path.Combine(prefabFolder, info.name + ".prefab");
 
 #if UNITY_2023_OR_NEWER
@@ -787,12 +787,12 @@ namespace Reallusion.Import
         ///     Note: no longer deletes the clone. Use SaveAndRemoveScenePrefab() to finalize the prefab.
         /// </summary>
         public static GameObject CreateInstanceFromModel(CharacterInfo info, GameObject modelSource)
-        {                        
+        {
             return PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
         }
 
         public static GameObject CreateLODInstanceFromModel(CharacterInfo info, GameObject modelSource)
-        {                        
+        {
             Renderer[] renderers = modelSource.transform.GetComponentsInChildren<Renderer>(true);
             int lodLevels = 0;
             foreach (Renderer child in renderers)
@@ -809,8 +809,8 @@ namespace Reallusion.Import
             lodLevels += 1;
             LOD[] lods = new LOD[lodLevels];
             GameObject sceneLODInstance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
-            LODGroup lodGroup = sceneLODInstance.AddComponent<LODGroup>();            
-            Renderer[] prefabRenderers = sceneLODInstance.transform.GetComponentsInChildren<Renderer>(true);                
+            LODGroup lodGroup = sceneLODInstance.AddComponent<LODGroup>();
+            Renderer[] prefabRenderers = sceneLODInstance.transform.GetComponentsInChildren<Renderer>(true);
 
             if (originalCharacter)
             {
@@ -865,7 +865,7 @@ namespace Reallusion.Import
             Renderer[] renderers = fbx.GetComponentsInChildren<Renderer>(true);
             foreach (Renderer r in renderers)
             {
-                int index = r.name.LastIndexOf("_LOD");                
+                int index = r.name.LastIndexOf("_LOD");
                 if (index >= 0 && r.name.Length == index + 5 && char.IsDigit(r.name[r.name.Length - 1]))
                 {
                     // any mesh with a _LOD<N> suffix is a LOD level
@@ -884,7 +884,7 @@ namespace Reallusion.Import
             }
             return levels.Count;
         }
-        
+
         public static bool IsBodyMesh(SkinnedMeshRenderer smr)
         {
             string meshName = smr.gameObject.name;
@@ -922,7 +922,7 @@ namespace Reallusion.Import
         public static Material GetActorCoreSingleMaterial(GameObject fbx)
         {
             if (fbx)
-            {                
+            {
                 Material actorCoreMaterial = null;
                 Transform[] transforms = fbx.GetComponentsInChildren<Transform>();
                 foreach (Transform t in transforms)
@@ -996,15 +996,16 @@ namespace Reallusion.Import
 
         public static GameObject FindExpressionSourceMesh(GameObject root)
         {
-            SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();            
+            Debug.Log("FindExpressionSourceMesh");
+            SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();
             GameObject bestExpressionsMesh = null;
             int bestExpressionCount = 0;
-            foreach (SkinnedMeshRenderer smr in skinnedMeshRenderers)            
+            foreach (SkinnedMeshRenderer smr in skinnedMeshRenderers)
             {
                 GameObject go = smr.gameObject;
-                if (IsBodyMesh(smr)) return go;
+                if (IsBodyMesh(smr)) { Debug.Log($"FindExpressionSourceMesh (go): {go.name}"); return go; }
                 if (FacialProfileMapper.MeshHasFacialBlendShapes(smr.gameObject))
-                {                    
+                {
                     int expressionCount = smr.sharedMesh.blendShapeCount;
                     if (expressionCount > bestExpressionCount)
                     {
@@ -1013,6 +1014,7 @@ namespace Reallusion.Import
                     }
                 }
             }
+            Debug.Log($"FindExpressionSourceMesh: {bestExpressionsMesh.name}");
             return bestExpressionsMesh;
         }
     }

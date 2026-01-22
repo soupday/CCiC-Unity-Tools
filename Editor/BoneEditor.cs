@@ -31,122 +31,6 @@ namespace Reallusion.Import
 {
     public class BoneEditor : EditorWindow
     {
-        // tbd remove test
-        #region Test Menu
-        [MenuItem("Reallusion/Bone Driver", priority = 100)]
-        public static void OpenBoneEditorWindow()
-        {
-            InitWindow();
-        }
-
-        [MenuItem("Reallusion/Bone Driver", priority = 100, validate = true)]
-        public static bool ValidateBoneEditorWindow()
-        {
-            return !HasOpenInstances<BoneEditor>();
-        }
-        #endregion Test Menu
-
-        #region Test Vars
-        public static BoneEditor Instance;
-        [SerializeField]
-        public GameObject model;
-        [SerializeField]
-        public TextAsset jsonObject;
-        [SerializeField]
-        public GameObject cCBaseBody;
-        #endregion Test Vars
-
-        #region Test UI
-        public static void InitWindow()
-        {
-            Instance = ScriptableObject.CreateInstance<BoneEditor>();
-            Instance.ShowUtility();
-        }
-
-        private void OnGUI()
-        {
-            model = EditorGUILayout.ObjectField(model, typeof(GameObject), true) as GameObject;
-            jsonObject = EditorGUILayout.ObjectField(jsonObject, typeof(TextAsset), true) as TextAsset;
-
-            EditorGUILayout.ObjectField(cCBaseBody, typeof(GameObject), true);
-
-            if (GUILayout.Button("Do"))
-            {
-                TestSetupDriver();
-            }
-
-            if (GUILayout.Button("Query"))
-            {
-                TestFetchBoneArray();
-                TestFindExtraShapes();
-            }
-        }
-
-        private void TestSetupDriver()
-        {
-            TestFindBaseBody(model.transform);
-            SkinnedMeshRenderer smr = cCBaseBody.GetComponent<SkinnedMeshRenderer>();
-
-            UnityEngine.Object parentObject = PrefabUtility.GetCorrespondingObjectFromSource(model);
-            string path = AssetDatabase.GetAssetPath(parentObject);
-            Debug.Log("prefab path:" + path);
-
-            SetupBoneDriverReflection(cCBaseBody, smr, AssetDatabase.GetAssetPath(jsonObject), model, true, true, true);
-        }
-
-        void TestFindExtraShapes()
-        {
-            if (cCBaseBody == null) TestFindBaseBody(model.transform);
-            Dictionary<string, List<string>>  extraShapes = FindExcessBlendShapes(cCBaseBody);
-
-            int count = 0;
-            foreach (var entry in extraShapes)
-            {
-                Debug.Log($"Renderer: {entry.Key} Count: {entry.Value.Count}");
-                foreach (var extra in entry.Value)
-                {
-                    //Debug.Log($"    {extra}");
-                    count++;
-                }
-            }
-            Debug.Log($"Total extra count: {count}");
-        }
-
-        void TestFetchBoneArray()
-        {
-            if (cCBaseBody == null) TestFindBaseBody(model.transform);
-            string[] bonesBeingDriven = RetrieveBoneArray(cCBaseBody);
-
-            foreach (string bone in bonesBeingDriven)
-            {
-                Debug.Log($"Bone: {bone} is being driven by expressions");  //so animation tracks for these bones arent needed
-            }
-        }
-
-        void TestFindBaseBody(Transform t)
-        {
-            for (int i = 0; i < t.childCount; i++)
-            {
-                if (t.GetChild(i).name == "CC_Base_Body")
-                    cCBaseBody = t.GetChild(i).gameObject;
-                else
-                    TestFindBaseBody(t.GetChild(i));
-            }
-        }
-
-        void TestLogGlossary(ExpressionGlossary glossary)
-        {
-            foreach (ExpressionByBone ebb in glossary.ExpressionsByBone)
-            {
-                Debug.Log($"BoneName {ebb.BoneName}");
-                foreach (Expression e in ebb.Expressions)
-                {
-                    Debug.Log($"    {e.ExpressionName} idx: {e.BlendShapeIndex}");
-                }
-            }
-        }
-        #endregion Test UI
-
         #region Utils
         public static void SetupBoneDriverReflection(GameObject obj, SkinnedMeshRenderer smr, string jsonPath, GameObject sourceObject, bool bonesEnable, bool expressionEnable, bool constrainEnable)
         {
@@ -185,16 +69,19 @@ namespace Reallusion.Import
             TextAsset jsonAsset = null;
             if (Util.HasJSONAsset(folder, name))
             {
-                string jsonPath = Path.Combine(folder, name + ".json");                
+                string jsonPath = Path.Combine(folder, name + ".json");
                 jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
             }
 
             // find the base body
             Component boneDriver = null;
             SkinnedMeshRenderer smr = null;
-            GameObject go = FindNamedObjectInHierarchy(rootObject, "CC_Base_Body");
+            //GameObject go = FindNamedObjectInHierarchy(rootObject, "CC_Base_Body");
+            GameObject go = RL.FindExpressionSourceMesh(instanceRoot);
+            Debug.Log($"(81) Adding BoneDriver to {go.name}");
             if (go != null)
             {
+                Debug.Log($"(84) Adding BoneDriver to {go.name}");
                 boneDriver = AddBoneDriver(go);
                 smr = go.GetComponent<SkinnedMeshRenderer>();
             }
@@ -309,7 +196,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(bool), typeof(bool), typeof(bool)},
+                                    new Type[] { typeof(bool), typeof(bool), typeof(bool) },
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -320,7 +207,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");                
+                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;
             }
 
@@ -548,7 +435,7 @@ namespace Reallusion.Import
             {
                 var characterObject = characterProp.Value["Object"];
                 if (characterObject == null) continue;
-                
+
                 foreach (var modelProp in characterObject.Children<JProperty>())
                 {
                     var constraintToken = modelProp.Value["Constraint"] as JObject;
@@ -622,7 +509,7 @@ namespace Reallusion.Import
                     }
                     catch { Debug.Log("Error building ExpressionGlossary"); }
                 }
-            }            
+            }
 
             // add each instance of Expression data for each bone as a list
             foreach (ExpressionByBone ebb in glossary.ExpressionsByBone)
@@ -659,7 +546,7 @@ namespace Reallusion.Import
                 { "AE", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.05678f, 0.99838f)) },
                 { "R", (new Vector3(0f, 0f, 0f), new Vector4(0f, 0f, -0.014407f, 0.999896f)) },
             };
-            
+
             if (!hasVisemes)
             {
                 foreach (ExpressionByBone ebb in glossary.ExpressionsByBone)
@@ -671,8 +558,8 @@ namespace Reallusion.Import
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
                             if (index >= 0)
                             {
-                                ebb.Expressions.Add(new Expression(expression.Key, index, true, 
-                                                                   expression.Value.Item1, 
+                                ebb.Expressions.Add(new Expression(expression.Key, index, true,
+                                                                   expression.Value.Item1,
                                                                    expression.Value.Item2));
                             }
                         }
@@ -694,7 +581,7 @@ namespace Reallusion.Import
                 if (targetIndex == -1) continue;
 
                 List<int> sourceIndices = new List<int>();
-                foreach(string sourceName in constraint.SourceChannels)
+                foreach (string sourceName in constraint.SourceChannels)
                 {
                     int i = smr.sharedMesh.GetBlendShapeIndex(sourceName);
                     if (i > -1)
@@ -705,30 +592,31 @@ namespace Reallusion.Import
                 {
                     //Debug.Log($"Constraint: Source: {sourceIndex} Target: {targetIndex} Mode: {constraint.Mode}");
                     constraints.Add(new UpdateConstraint(sourceIndex, targetIndex, constraint.Mode, constraint.Curve));
-                }                
+                }
             }
             return constraints;
-        }            
+        }
 
         public static Dictionary<string, List<string>> FindExcessBlendShapes(GameObject obj)
-        {            
+        {
             Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>(); // dict is a map of the non driven blendshapes that are not common to the body or tongue and so must be kept            
 
             SkinnedMeshRenderer[] renderers = obj.transform.parent.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
             List<string> drivenBlendShapeFilter = new List<string>();
-            
-            string[] drivers = new string[] { "CC_Base_Body", "CC_Base_Tongue" };
+
+            //string[] drivers = new string[] { "CC_Base_Body", "CC_Base_Tongue" };
+            string[] drivers = new string[] { obj.name };
             foreach (string driver in drivers)
             {
-                List<string> coreBlendShapes = new List<string>();
+                //List<string> coreBlendShapes = new List<string>();
                 var smr = renderers.First(r => r.name == driver);
                 for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                 {
-                    drivenBlendShapeFilter.Add(smr.sharedMesh.GetBlendShapeName(i));                    
+                    drivenBlendShapeFilter.Add(smr.sharedMesh.GetBlendShapeName(i));
                 }
             }
-                        
+
             foreach (var renderer in renderers)
             {
                 List<string> extraBlendShapes = new List<string>();
@@ -939,7 +827,7 @@ namespace Reallusion.Import
                 */
                 if (uniqueCurvePoints.Count == 2)
                 {
-                    if (uniqueCurvePoints[0] == new Vector2 ( 0f, 0f ) && uniqueCurvePoints[1] == new Vector2(1f, 1f))
+                    if (uniqueCurvePoints[0] == new Vector2(0f, 0f) && uniqueCurvePoints[1] == new Vector2(1f, 1f))
                     {
                         CurveMode = CurveMode.Direct;
                     }

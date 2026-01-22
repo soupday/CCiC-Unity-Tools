@@ -1346,6 +1346,8 @@ namespace Reallusion.Import
             }
             else
             {
+                RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+
                 if (useBoneDriver)
                 {
                     PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose, useConstraintData);
@@ -1355,11 +1357,12 @@ namespace Reallusion.Import
                 {
                     PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
-
+                /*
                 if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
                 {
                     RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
                 }
+                */
             }
             logOnce = false;
         }
@@ -1760,13 +1763,14 @@ namespace Reallusion.Import
                 bool purge = false;
                 purge = !CurveHasData(binding, workingClip);
 
-                if (binding.path != "CC_Base_Body" && binding.path != "CC_Base_Tongue")
+                //if (binding.path != "CC_Base_Body" && binding.path != "CC_Base_Tongue")
+                if (binding.path != bd.name)
                 {
                     if (binding.propertyName.StartsWith(blendShapePrefix))
                     {
                         if (!bindingFilter.Contains(binding))
                         {
-                            //Debug.Log($"Pruging {binding.path} {binding.propertyName}");
+                            //Debug.Log($"Purging {binding.path} {binding.propertyName}");
                             purge = true;
                         }
                     }
