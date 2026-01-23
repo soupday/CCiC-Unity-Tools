@@ -1674,8 +1674,7 @@ namespace Reallusion.Import
 
             GameObject source = RL.FindExpressionSourceMesh(targetCharacterModel);
 
-
-            EditorCurveBinding[] workingClipBindings = AnimationUtility.GetCurveBindings(workingClip);
+            List<EditorCurveBinding> workingClipBindings = AnimationUtility.GetCurveBindings(workingClip).ToList();
             // Data looks like this:
             // path: "Circle_Sparse"  propertyName: "blendShape.Tongue_Twist_R"  for blendshapes on a mesh
             // path: "" propertyName: "Jaw Close"
@@ -1708,13 +1707,13 @@ namespace Reallusion.Import
             // match the path of each binding in the working clip to a list member of allMeshes and store the binding of the first instance of that blendshape.
             Dictionary<string, EditorCurveBinding> uniqueBindings = new Dictionary<string, EditorCurveBinding>();
 
-            try
-            {
-                for (int i = 0; i < workingClipBindings.Length; i++)
+            //try
+            //{
+                for (int i = 0; i < workingClipBindings.Count; i++)
                 {
                     EditorCurveBinding binding = workingClipBindings[i];
-                    float progress = (float)i / (float)workingClipBindings.Length;
-                    EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    float progress = (float)i / (float)workingClipBindings.Count;
+                    //EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
                     bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
                     if (isConstraint && driveConstraints) continue;
 
@@ -1751,9 +1750,11 @@ namespace Reallusion.Import
                                     {
                                         // copy the binding into a new curve
                                         if (binding.path != targetPath && binding.propertyName != targetPropertyName)
-                                        {
+                                        {                                            
                                             EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding, targetPath, targetPropertyName);
                                             uniqueBindings.Add(newBinding.propertyName, newBinding);
+                                            if (j == 0) workingClipBindings[i] = newBinding;
+                                            else workingClipBindings.Add(newBinding);
                                         }
                                         else
                                         {
@@ -1766,8 +1767,8 @@ namespace Reallusion.Import
                         }
                     }
                 }
-            }
-            catch { }
+            //}
+            //catch { }            
 
             try
             {
@@ -1776,7 +1777,7 @@ namespace Reallusion.Import
                 foreach (var binding in workingClipBindings)
                 {
                     n++;
-                    float progress = (float)n / (float)workingClipBindings.Length;
+                    float progress = (float)n / (float)workingClipBindings.Count;
                     EditorUtility.DisplayProgressBar($"Cleaning EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
                     if (!uniqueBindings.ContainsValue(binding))
                     {
