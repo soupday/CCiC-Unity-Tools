@@ -24,6 +24,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.IO;
+using System.Runtime.Remoting.Metadata;
 
 namespace Reallusion.Import
 {
@@ -1346,7 +1347,7 @@ namespace Reallusion.Import
             }
             else
             {
-                RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+                //RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
 
                 if (useBoneDriver)
                 {
@@ -1355,7 +1356,8 @@ namespace Reallusion.Import
 
                 if (useBlendTranspose)
                 {
-                    PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose, useConstraintData);
+                    PruneBlendShapesToSourceMeshes(workingClip, targetCharacterModel, meshProfile, animProfile, useConstraintData);
+                    //PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
                 /*
                 if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
@@ -1391,225 +1393,6 @@ namespace Reallusion.Import
 
             EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
 
-#if EXTRACT_NAMES
-            // temp name extraction
-            string report1 = "";
-            foreach (var dictEntry in dict)
-            {
-                report1 += $"{dictEntry.Key},\n";                
-            }
-            Debug.Log(report1);
-
-            /*
-            CC_Base_JawRoot,
-            CC_Base_Teeth02,
-            CC_Base_L_Eye,
-            CC_Base_R_Eye,
-            CC_Base_Tongue01,
-            CC_Base_UpperJaw,
-            CC_Base_Teeth01,
-            CC_Base_Head,
-            */
-
-            
-            string report2 = "";
-            foreach (var sourceCurveBinding in sourceCurveBindings)
-            {
-                if (string.IsNullOrEmpty(sourceCurveBinding.path))
-                    report2 += $"{sourceCurveBinding.propertyName},\n";
-            }
-            Debug.Log(report2);
-
-            /*
-            Left Eye Down - Up,
-            Left Eye In - Out,
-            Right Eye Down - Up,
-            Right Eye In - Out,
-            Jaw Close,
-            Jaw Left - Right,
-            Head Nod Down - Up,
-            Head Tilt Left - Right,
-            Head Turn Left - Right,
-            */
-
-            /*
-            RootT.x,
-            RootT.y,
-            RootT.z,
-            RootQ.x,
-            RootQ.y,
-            RootQ.z,
-            RootQ.w,
-            LeftFootT.x,
-            LeftFootT.y,
-            LeftFootT.z,
-            LeftFootQ.x,
-            LeftFootQ.y,
-            LeftFootQ.z,
-            LeftFootQ.w,
-            RightFootT.x,
-            RightFootT.y,
-            RightFootT.z,
-            RightFootQ.x,
-            RightFootQ.y,
-            RightFootQ.z,
-            RightFootQ.w,
-            LeftHandT.x,
-            LeftHandT.y,
-            LeftHandT.z,
-            LeftHandQ.x,
-            LeftHandQ.y,
-            LeftHandQ.z,
-            LeftHandQ.w,
-            RightHandT.x,
-            RightHandT.y,
-            RightHandT.z,
-            RightHandQ.x,
-            RightHandQ.y,
-            RightHandQ.z,
-            RightHandQ.w,
-            Spine Front-Back,
-            Spine Left-Right,
-            Spine Twist Left - Right,
-            Chest Front-Back,
-            Chest Left-Right,
-            Chest Twist Left - Right,
-            UpperChest Front-Back,
-            UpperChest Left-Right,
-            UpperChest Twist Left - Right,
-            Neck Nod Down - Up,
-            Neck Tilt Left - Right,
-            Neck Turn Left - Right,
-            Head Nod Down - Up,
-            Head Tilt Left - Right,
-            Head Turn Left - Right,
-            Left Eye Down - Up,
-            Left Eye In - Out,
-            Right Eye Down - Up,
-            Right Eye In - Out,
-            Jaw Close,
-            Jaw Left - Right,
-            Left Upper Leg Front-Back,
-            Left Upper Leg In-Out,
-            Left Upper Leg Twist In - Out,
-            Left Lower Leg Stretch,
-            Left Lower Leg Twist In-Out,
-            Left Foot Up - Down,
-            Left Foot Twist In-Out,
-            Left Toes Up - Down,
-            Right Upper Leg Front-Back,
-            Right Upper Leg In-Out,
-            Right Upper Leg Twist In - Out,
-            Right Lower Leg Stretch,
-            Right Lower Leg Twist In-Out,
-            Right Foot Up - Down,
-            Right Foot Twist In-Out,
-            Right Toes Up - Down,
-            Left Shoulder Down - Up,
-            Left Shoulder Front - Back,
-            Left Arm Down - Up,
-            Left Arm Front - Back,
-            Left Arm Twist In-Out,
-            Left Forearm Stretch,
-            Left Forearm Twist In-Out,
-            Left Hand Down - Up,
-            Left Hand In - Out,
-            Right Shoulder Down - Up,
-            Right Shoulder Front - Back,
-            Right Arm Down - Up,
-            Right Arm Front - Back,
-            Right Arm Twist In-Out,
-            Right Forearm Stretch,
-            Right Forearm Twist In-Out,
-            Right Hand Down - Up,
-            Right Hand In - Out,
-            LeftHand.Thumb.1 Stretched,
-            LeftHand.Thumb.Spread,
-            LeftHand.Thumb.2 Stretched,
-            LeftHand.Thumb.3 Stretched,
-            LeftHand.Index.1 Stretched,
-            LeftHand.Index.Spread,
-            LeftHand.Index.2 Stretched,
-            LeftHand.Index.3 Stretched,
-            LeftHand.Middle.1 Stretched,
-            LeftHand.Middle.Spread,
-            LeftHand.Middle.2 Stretched,
-            LeftHand.Middle.3 Stretched,
-            LeftHand.Ring.1 Stretched,
-            LeftHand.Ring.Spread,
-            LeftHand.Ring.2 Stretched,
-            LeftHand.Ring.3 Stretched,
-            LeftHand.Little.1 Stretched,
-            LeftHand.Little.Spread,
-            LeftHand.Little.2 Stretched,
-            LeftHand.Little.3 Stretched,
-            RightHand.Thumb.1 Stretched,
-            RightHand.Thumb.Spread,
-            RightHand.Thumb.2 Stretched,
-            RightHand.Thumb.3 Stretched,
-            RightHand.Index.1 Stretched,
-            RightHand.Index.Spread,
-            RightHand.Index.2 Stretched,
-            RightHand.Index.3 Stretched,
-            RightHand.Middle.1 Stretched,
-            RightHand.Middle.Spread,
-            RightHand.Middle.2 Stretched,
-            RightHand.Middle.3 Stretched,
-            RightHand.Ring.1 Stretched,
-            RightHand.Ring.Spread,
-            RightHand.Ring.2 Stretched,
-            RightHand.Ring.3 Stretched,
-            RightHand.Little.1 Stretched,
-            RightHand.Little.Spread,
-            RightHand.Little.2 Stretched,
-            RightHand.Little.3 Stretched,
-            HeadTDOF.x,
-            HeadTDOF.y,
-            HeadTDOF.z,
-            LeftFootTDOF.x,
-            LeftFootTDOF.y,
-            LeftFootTDOF.z,
-            LeftToesTDOF.x,
-            LeftToesTDOF.y,
-            LeftToesTDOF.z,
-            RightFootTDOF.x,
-            RightFootTDOF.y,
-            RightFootTDOF.z,
-            RightToesTDOF.x,
-            RightToesTDOF.y,
-            RightToesTDOF.z,
-            LeftHandTDOF.y,
-            LeftHandTDOF.z,
-            RightHandTDOF.y,
-            RightHandTDOF.z,
-            */
-
-            /*
-            CC_Base_JawRoot,
-            CC_Base_Teeth02,
-            CC_Base_L_Eye,
-            CC_Base_R_Eye,
-            CC_Base_Tongue01,
-            CC_Base_UpperJaw,
-            CC_Base_Teeth01,
-            CC_Base_Head,
-            */
-            /*
-            string[] targetBindings = new string[]
-            {
-                "Left Eye Down - Up",
-                "Left Eye In - Out",
-                "Right Eye Down - Up",
-                "Right Eye In - Out",
-                "Jaw Close",
-                "Jaw Left - Right",
-                "Head Nod Down - Up",
-                "Head Tilt Left - Right",
-                "Head Turn Left - Right",
-            };
-            */
-#endif
-
             string[] bonesToEvaluate = new string[] { "CC_Base_JawRoot", "CC_Base_L_Eye", "CC_Base_R_Eye", "CC_Base_Head" };
 
             string[] jawCurves = new string[] { "Jaw Close", "Jaw Left-Right" };
@@ -1619,11 +1402,19 @@ namespace Reallusion.Import
 
             // Identify all curve bindings for constraint blendshapes (starting with "C_") and purge them
             List<string> animatedConstraints = new List<string>();
-            foreach (var binding in sourceCurveBindings)
+            try
             {
-                if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
-                    animatedConstraints.Add(binding.propertyName);
+                int n = 0;
+                foreach (var binding in sourceCurveBindings)
+                {
+                    n++;
+                    float progress = (float)n / (float)sourceCurveBindings.Length;
+                    EditorUtility.DisplayProgressBar($"Determining Animated Constraints...", $"Working on {binding.propertyName} ", progress);
+                    if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
+                        animatedConstraints.Add(binding.propertyName);
+                }
             }
+            catch { }
             //foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
             PurgeBindings(sourceCurveBindings, animatedConstraints.ToArray(), workingClip);
 
@@ -1668,12 +1459,17 @@ namespace Reallusion.Import
                     }
                 }
             }
+            EditorUtility.ClearProgressBar();
         }
 
         public static void PurgeBindings(EditorCurveBinding[] sourceCurveBindings, string[] bindings, AnimationClip clip)
         {
+            int n = 0;
             foreach (string binding in bindings)
             {
+                n++;
+                float progress = (float)n / (float)sourceCurveBindings.Length;
+                EditorUtility.DisplayProgressBar($"Purging unnecessary tracks...", $"Working on {binding} ", progress);
                 try
                 {
                     var targetBindings = sourceCurveBindings.ToList().FindAll(x => x.propertyName == binding);
@@ -1689,24 +1485,13 @@ namespace Reallusion.Import
                     {
                         Debug.Log($"Cannot Find {binding}");
                     }
-                    /*
-                    EditorCurveBinding target = sourceCurveBindings.FirstOrDefault(x => x.propertyName == binding);
-                    if (!string.IsNullOrEmpty(target.propertyName))
-                    {
-                        Debug.Log($"Purging {target.propertyName}");
-                        AnimationUtility.SetEditorCurve(clip, target, null);
-                    }
-                    else
-                    {
-                        Debug.Log($"Cannot Find {binding}");
-                    }
-                    */
                 }
                 catch (Exception e)
                 {
                     Debug.LogWarning($"Purging Error {e.Message}");
                 }
             }
+            EditorUtility.ClearProgressBar();
         }
 
         public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool drive = false, bool transpose = false, bool constrain = false)
@@ -1881,8 +1666,187 @@ namespace Reallusion.Import
             if (log) Util.LogAlways(reportHeader + report);
         }
 
+        public static void PruneBlendShapesToSourceMeshes(AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool driveConstraints = false)
+        {
+            const string blendShapePrefix = "blendShape.";
+            // purge all blendshape curves from working anim
+            // copy all remappable curves from original to working for the source mesh only
+
+            GameObject source = RL.FindExpressionSourceMesh(targetCharacterModel);
+
+
+            EditorCurveBinding[] workingClipBindings = AnimationUtility.GetCurveBindings(workingClip);
+            // Data looks like this:
+            // path: "Circle_Sparse"  propertyName: "blendShape.Tongue_Twist_R"  for blendshapes on a mesh
+            // path: "" propertyName: "Jaw Close"
+            // path: "" propertyName: "Jaw Left-Right" for mechanim tracks
+
+            // get all meshes into a list prioritized by the source meshes
+            SkinnedMeshRenderer[] allSmrs = targetCharacterModel.GetComponentsInChildren<SkinnedMeshRenderer>();
+            List<SkinnedMeshRenderer> targetSmrs = new List<SkinnedMeshRenderer>();
+            string[] sourceMeshes = new string[] { source.name, "CC_Base_Tongue", "CC_Base_Eye", "CC_Base_EyeOcclusion", "CC_Base_TearLine", };
+            try
+            {
+                foreach (string meshName in sourceMeshes)
+                {
+                    var s = allSmrs.FirstOrDefault(x => x.name == meshName);
+                    if (s)
+                        targetSmrs.Add(s);
+                }
+
+                foreach (var smr in allSmrs)
+                {
+                    EditorUtility.DisplayProgressBar($"Analyzing SkinnedMeshRenderers...", $"Working on {smr.name} ", 0.45f);
+                    if (smr.sharedMesh && smr.sharedMesh.blendShapeCount > 0)
+                    {
+                        if (!targetSmrs.Contains(smr))
+                            targetSmrs.Add(smr);
+                    }
+                }
+            }
+            catch { }
+            // match the path of each binding in the working clip to a list member of allMeshes and store the binding of the first instance of that blendshape.
+            Dictionary<string, EditorCurveBinding> uniqueBindings = new Dictionary<string, EditorCurveBinding>();
+
+            try
+            {
+                for (int i = 0; i < workingClipBindings.Length; i++)
+                {
+                    EditorCurveBinding binding = workingClipBindings[i];
+                    float progress = (float)i / (float)workingClipBindings.Length;
+                    EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
+                    if (isConstraint && driveConstraints) continue;
+
+                    if (!uniqueBindings.ContainsKey(binding.propertyName) && binding.propertyName.StartsWith(blendShapePrefix))
+                    {
+                        string targetPath = string.Empty;
+                        string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
+
+                        string targetBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
+                        List<string> targetBlendshapeNames = null;
+                        if (!string.IsNullOrEmpty(targetBlendShapeName))
+                        {
+                            targetBlendshapeNames = FacialProfileMapper.GetMultiShapeNames(targetBlendShapeName);
+                        }
+
+                        if (targetBlendshapeNames != null)
+                        {
+                            for (int j = 0; i < targetBlendshapeNames.Count; i++)
+                            {
+                                targetBlendShapeName = targetBlendshapeNames[j];
+                                foreach (var smr in targetSmrs)
+                                {
+                                    int index = smr.sharedMesh.GetBlendShapeIndex(targetBlendShapeName);
+                                    if (index != -1)
+                                    {
+                                        targetPath = smr.name;
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(targetPath))
+                                {
+                                    if (i > 0) // if theres more than one blend shape to retarget to
+                                    {
+                                        // copy the binding into a new curve
+                                        EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding);
+                                        newBinding.path = targetPath;
+                                        newBinding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
+                                        uniqueBindings.Add(newBinding.propertyName, newBinding);
+                                    }
+                                    else // otherwise just repath this one.
+                                    {
+                                        binding.path = targetPath;
+                                        uniqueBindings.Add(binding.propertyName, binding);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                int n = 0;
+                // now remove everything not on the unique list
+                foreach (var binding in workingClipBindings)
+                {
+                    n++;
+                    float progress = (float)n / (float)workingClipBindings.Length;
+                    EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    if (!uniqueBindings.ContainsValue(binding))
+                    {
+                        if (binding.propertyName.StartsWith(blendShapePrefix))
+                            AnimationUtility.SetEditorCurve(workingClip, binding, null);
+                    }
+                }
+            }
+            catch { }
+            EditorUtility.ClearProgressBar();
+        }
+
+        public static EditorCurveBinding DuplicateClipBindingOrSomat(AnimationClip workingClip, EditorCurveBinding binding)
+        {
+            EditorCurveBinding newBinding = new EditorCurveBinding();
+            AnimationCurve curve = AnimationUtility.GetEditorCurve(workingClip, binding);
+            AnimationUtility.SetEditorCurve(workingClip, newBinding, curve);
+            return newBinding;
+        }
+
+        public static void RemapOnlyExistingBlendShapeCurves(AnimationClip originalClip, AnimationClip workingClip, FacialProfile meshProfile, FacialProfile animProfile)
+        {
+            const string blendShapePrefix = "blendShape.";
+
+            EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
+
+            string report = "";
+
+            // build a cache of the blend shape names and their curve bindings:
+            Dictionary<string, EditorCurveBinding> remapBindings = new Dictionary<string, EditorCurveBinding>();
+            for (int i = 0; i < sourceCurveBindings.Length; i++)
+            {
+                if (CurveHasData(sourceCurveBindings[i], workingClip) &&
+                    sourceCurveBindings[i].propertyName.StartsWith(blendShapePrefix))
+                {
+                    string blendShapeName = sourceCurveBindings[i].propertyName.Substring(blendShapePrefix.Length);
+                    string profileBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
+                    if (!string.IsNullOrEmpty(profileBlendShapeName))
+                    {
+                        List<string> multiProfileName = FacialProfileMapper.GetMultiShapeNames(profileBlendShapeName);
+                        if (multiProfileName.Count == 1)
+                        {
+                            if (!remapBindings.ContainsKey(profileBlendShapeName))
+                            {
+                                remapBindings.Add(profileBlendShapeName, sourceCurveBindings[i]);
+                                report += "Mapping: " + profileBlendShapeName + " from " + blendShapeName + "\n";
+                            }
+                        }
+                        else
+                        {
+                            foreach (string multiShapeName in multiProfileName)
+                            {
+                                if (!remapBindings.ContainsKey(multiShapeName))
+                                {
+                                    remapBindings.Add(multiShapeName, sourceCurveBindings[i]);
+                                    report += "Mapping (multi): " + multiShapeName + " from " + blendShapeName + "\n";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var binding in Array.FindAll(sourceCurveBindings, x => x.propertyName.StartsWith(blendShapePrefix)))
+            {
+
+            }
+
+        }
+
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
         {
+            Debug.Log("RetargetBlendShapesToAllMeshes");
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd != null)
             {
