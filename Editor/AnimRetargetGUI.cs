@@ -1749,20 +1749,17 @@ namespace Reallusion.Import
                                     }
                                     if (!string.IsNullOrEmpty(targetPath))
                                     {
-                                        if (j > 0) // if theres more than one blend shape to retarget to
+                                        // copy the binding into a new curve
+                                        if (binding.path != targetPath && binding.propertyName != targetPropertyName)
                                         {
-                                            // copy the binding into a new curve
-                                            EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding);
-                                            newBinding.path = targetPath;
-                                            newBinding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
+                                            EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding, targetPath, targetPropertyName);
                                             uniqueBindings.Add(newBinding.propertyName, newBinding);
                                         }
-                                        else // otherwise just repath this one.
+                                        else
                                         {
-                                            binding.path = targetPath;
-                                            binding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
                                             uniqueBindings.Add(binding.propertyName, binding);
                                         }
+
                                     }
                                 }
                             }
@@ -1796,9 +1793,14 @@ namespace Reallusion.Import
             EditorUtility.ClearProgressBar();
         }
 
-        public static EditorCurveBinding DuplicateClipBindingOrSomat(AnimationClip workingClip, EditorCurveBinding binding)
+        public static EditorCurveBinding DuplicateClipBindingOrSomat(AnimationClip workingClip, EditorCurveBinding binding, string targetPath, string targetPropertyName)
         {
-            EditorCurveBinding newBinding = new EditorCurveBinding();
+            EditorCurveBinding newBinding = new EditorCurveBinding()
+            {
+                path = targetPath,
+                propertyName = targetPropertyName
+            };
+
             AnimationCurve curve = AnimationUtility.GetEditorCurve(workingClip, binding);
             AnimationUtility.SetEditorCurve(workingClip, newBinding, curve);
             return newBinding;
