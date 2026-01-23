@@ -1718,7 +1718,7 @@ namespace Reallusion.Import
                     bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
                     if (isConstraint && driveConstraints) continue;
 
-                    if (!uniqueBindings.ContainsKey(binding.propertyName) && binding.propertyName.StartsWith(blendShapePrefix))
+                    if (binding.propertyName.StartsWith(blendShapePrefix))
                     {
                         string targetPath = string.Empty;
                         string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
@@ -1729,34 +1729,40 @@ namespace Reallusion.Import
                         {
                             targetBlendshapeNames = FacialProfileMapper.GetMultiShapeNames(targetBlendShapeName);
                         }
-
                         if (targetBlendshapeNames != null)
                         {
-                            for (int j = 0; i < targetBlendshapeNames.Count; i++)
+                            for (int j = 0; j < targetBlendshapeNames.Count; j++)
                             {
                                 targetBlendShapeName = targetBlendshapeNames[j];
-                                foreach (var smr in targetSmrs)
+                                string targetPropertyName = $"{blendShapePrefix}{targetBlendShapeName}";
+
+                                if (!uniqueBindings.ContainsKey(targetPropertyName))
                                 {
-                                    int index = smr.sharedMesh.GetBlendShapeIndex(targetBlendShapeName);
-                                    if (index != -1)
+                                    foreach (var smr in targetSmrs)
                                     {
-                                        targetPath = smr.name;
+                                        int index = smr.sharedMesh.GetBlendShapeIndex(targetBlendShapeName);
+                                        if (index != -1)
+                                        {
+                                            targetPath = smr.name;
+                                            break;
+                                        }
                                     }
-                                }
-                                if (!string.IsNullOrEmpty(targetPath))
-                                {
-                                    if (i > 0) // if theres more than one blend shape to retarget to
+                                    if (!string.IsNullOrEmpty(targetPath))
                                     {
-                                        // copy the binding into a new curve
-                                        EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding);
-                                        newBinding.path = targetPath;
-                                        newBinding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
-                                        uniqueBindings.Add(newBinding.propertyName, newBinding);
-                                    }
-                                    else // otherwise just repath this one.
-                                    {
-                                        binding.path = targetPath;
-                                        uniqueBindings.Add(binding.propertyName, binding);
+                                        if (j > 0) // if theres more than one blend shape to retarget to
+                                        {
+                                            // copy the binding into a new curve
+                                            EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding);
+                                            newBinding.path = targetPath;
+                                            newBinding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
+                                            uniqueBindings.Add(newBinding.propertyName, newBinding);
+                                        }
+                                        else // otherwise just repath this one.
+                                        {
+                                            binding.path = targetPath;
+                                            binding.propertyName = $"{blendShapePrefix}{targetBlendShapeName}";
+                                            uniqueBindings.Add(binding.propertyName, binding);
+                                        }
                                     }
                                 }
                             }
@@ -1774,11 +1780,15 @@ namespace Reallusion.Import
                 {
                     n++;
                     float progress = (float)n / (float)workingClipBindings.Length;
-                    EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    EditorUtility.DisplayProgressBar($"Cleaning EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
                     if (!uniqueBindings.ContainsValue(binding))
                     {
                         if (binding.propertyName.StartsWith(blendShapePrefix))
                             AnimationUtility.SetEditorCurve(workingClip, binding, null);
+                    }
+                    else
+                    {
+                        Debug.Log("Keeping this one" + binding.propertyName);
                     }
                 }
             }
