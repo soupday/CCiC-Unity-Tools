@@ -1777,7 +1777,7 @@ namespace Reallusion.Import
                                     if (!string.IsNullOrEmpty(targetPath))
                                     {
                                         // copy the binding into a new curve
-                                        if (binding.path != targetPath && binding.propertyName != targetPropertyName)
+                                        if (binding.path != targetPath || binding.propertyName != targetPropertyName)
                                         {
                                             EditorCurveBinding newBinding = ReassignClipBinding(workingClip, binding, targetPath, targetPropertyName);
                                             uniqueBindings.Add(newBinding.propertyName, newBinding);

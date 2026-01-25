@@ -741,7 +741,7 @@ namespace Reallusion.Import
                 string customShader = matJson?.GetStringValue("Custom Shader/Shader Name", defaultType);
                 bool hasOpacity = false;
                 bool blendOpacity = false;
-                bool diffuseHasAlpha = false;
+                bool diffuseHasAlpha = false;                
                 MaterialNodeType nodeType = GetMaterialNodeType(matJson);
 
                 switch (customShader)
@@ -808,11 +808,13 @@ namespace Reallusion.Import
                     {
                         return MaterialType.DefaultOpaque;
                     }
-                }
+                }                
 
                 if (nodeType == MaterialNodeType.Hair || nodeType == MaterialNodeType.Brow ||
-                    nodeType == MaterialNodeType.Beard)
+                    nodeType == MaterialNodeType.Beard || nodeType == MaterialNodeType.Eyelash)
                 {
+                    if (hasOpacity || diffuseHasAlpha) return MaterialType.Scalp;
+
                     if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Color"))
                         return MaterialType.Scalp;
                 }
