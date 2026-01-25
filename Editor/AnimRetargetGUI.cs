@@ -25,6 +25,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using System.IO;
 using System.Runtime.Remoting.Metadata;
+using UnityEngine.UIElements;
 
 namespace Reallusion.Import
 {
@@ -1351,6 +1352,7 @@ namespace Reallusion.Import
 
                 if (useBoneDriver)
                 {
+                    // remove animated constraint tracks and any tracks for bones that are now driven by expressions
                     PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
 
@@ -1367,6 +1369,7 @@ namespace Reallusion.Import
                 */
             }
             logOnce = false;
+            EditorUtility.ClearProgressBar();
         }
 
         public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false, bool constrain = false)
@@ -1401,7 +1404,7 @@ namespace Reallusion.Import
             string[] headCurves = new string[] { "Head Nod Down-Up", "Head Tilt Left-Right", "Head Turn Left-Right" };
 
             // Identify all curve bindings for constraint blendshapes (starting with "C_") and purge them
-            List<string> animatedConstraints = new List<string>();
+            List<EditorCurveBinding> animatedConstraintBindings = new List<EditorCurveBinding>();
             try
             {
                 int n = 0;
@@ -1411,15 +1414,16 @@ namespace Reallusion.Import
                     float progress = (float)n / (float)sourceCurveBindings.Length;
                     EditorUtility.DisplayProgressBar($"Determining Animated Constraints...", $"Working on {binding.propertyName} ", progress);
                     if (binding.propertyName.ToLower().StartsWith("blendshape.c_"))
-                        animatedConstraints.Add(binding.propertyName);
+                    {
+                        animatedConstraintBindings.Add(binding);
+                    }
                 }
             }
             catch (Exception e)
             {
                 Debug.Log(e.Message);
             }
-            //foreach (var binding in animatedConstraints) Debug.Log($"Purging: {binding}");
-            PurgeBindings(sourceCurveBindings, animatedConstraints.ToArray(), workingClip);
+            PurgeBindings(animatedConstraintBindings.ToArray(), workingClip);
 
             foreach (var boneToEvaluate in bonesToEvaluate)
             {
@@ -1462,40 +1466,58 @@ namespace Reallusion.Import
                     }
                 }
             }
-            EditorUtility.ClearProgressBar();
+        }
+
+        #region Track Purging
+        public static void PurgeBindings(EditorCurveBinding[] bindings, AnimationClip clip)
+        {
+            try
+            {
+                AnimationCurve[] curves = new AnimationCurve[bindings.Length];
+                for (int i = 0; i < curves.Length; i++) { curves[i] = null; }
+                Debug.Log($"Purging Bindings (Length {curves.Length})");
+                AnimationUtility.SetEditorCurves(clip, bindings, curves);
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Purging Bindings Error: {e.Message}");
+            }
         }
 
         public static void PurgeBindings(EditorCurveBinding[] sourceCurveBindings, string[] bindings, AnimationClip clip)
         {
-            int n = 0;
-            foreach (string binding in bindings)
+            try
             {
-                n++;
-                float progress = (float)n / (float)sourceCurveBindings.Length;
-                EditorUtility.DisplayProgressBar($"Purging unnecessary tracks...", $"Working on {binding} ", progress);
-                try
+                int n = 0;
+                List<EditorCurveBinding> bindingsToPurge = new List<EditorCurveBinding>();
+                foreach (string binding in bindings)
                 {
+                    n++;
+                    float progress = (float)n / (float)sourceCurveBindings.Length;
+                    EditorUtility.DisplayProgressBar($"Finding unnecessary tracks...", $"Evaluating on {binding} ", progress);
+
                     var targetBindings = sourceCurveBindings.ToList().FindAll(x => x.propertyName == binding);
                     if (targetBindings.Count > 0)
                     {
                         foreach (var tgt in targetBindings)
                         {
-                            //Debug.Log($"Purging {tgt.propertyName}");
-                            AnimationUtility.SetEditorCurve(clip, tgt, null);
+                            bindingsToPurge.Add(tgt);
                         }
                     }
                     else
                     {
-                        Debug.Log($"Cannot Find {binding}");
+                        Debug.Log($"INFO: Cannot Find {binding}");
                     }
                 }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"Purging Error {e.Message}");
-                }
+                EditorUtility.DisplayProgressBar($"Removing unnecessary tracks...", $"Working...", 0.5f);
+                PurgeBindings(bindingsToPurge.ToArray(), clip);
             }
-            EditorUtility.ClearProgressBar();
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Purging Error {e.Message}");
+            }
         }
+        #endregion
 
         public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool drive = false, bool transpose = false, bool constrain = false)
         {
@@ -1668,7 +1690,7 @@ namespace Reallusion.Import
             bool log = true;
             if (log) Util.LogAlways(reportHeader + report);
         }
-
+        #region Blendshape Pruning
         public static void PruneBlendShapesToSourceMeshes(AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool driveConstraints = false)
         {
             const string blendShapePrefix = "blendShape.";
@@ -1713,73 +1735,74 @@ namespace Reallusion.Import
             // match the path of each binding in the working clip to a list member of allMeshes and store the binding of the first instance of that blendshape.
             Dictionary<string, EditorCurveBinding> uniqueBindings = new Dictionary<string, EditorCurveBinding>();
 
-            //try
-            //{
-            for (int i = 0; i < workingClipBindings.Count; i++)
+            try
             {
-                EditorCurveBinding binding = workingClipBindings[i];
-                float progress = (float)i / (float)workingClipBindings.Count;
-                //EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
-                bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
-                if (isConstraint && driveConstraints) continue;
-
-                if (binding.propertyName.StartsWith(blendShapePrefix))
+                for (int i = 0; i < workingClipBindings.Count; i++)
                 {
-                    string targetPath = string.Empty;
-                    string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
+                    EditorCurveBinding binding = workingClipBindings[i];
+                    float progress = (float)i / (float)workingClipBindings.Count;
+                    //EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
+                    if (isConstraint && driveConstraints) continue;
 
-                    string targetBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
-                    List<string> targetBlendshapeNames = null;
-                    if (!string.IsNullOrEmpty(targetBlendShapeName))
+                    if (binding.propertyName.StartsWith(blendShapePrefix))
                     {
-                        targetBlendshapeNames = FacialProfileMapper.GetMultiShapeNames(targetBlendShapeName);
-                    }
-                    if (targetBlendshapeNames != null)
-                    {
-                        for (int j = 0; j < targetBlendshapeNames.Count; j++)
+                        string targetPath = string.Empty;
+                        string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
+
+                        string targetBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
+                        List<string> targetBlendshapeNames = null;
+                        if (!string.IsNullOrEmpty(targetBlendShapeName))
                         {
-                            targetBlendShapeName = targetBlendshapeNames[j];
-                            string targetPropertyName = $"{blendShapePrefix}{targetBlendShapeName}";
-
-                            if (!uniqueBindings.ContainsKey(targetPropertyName))
+                            targetBlendshapeNames = FacialProfileMapper.GetMultiShapeNames(targetBlendShapeName);
+                        }
+                        if (targetBlendshapeNames != null)
+                        {
+                            for (int j = 0; j < targetBlendshapeNames.Count; j++)
                             {
-                                foreach (var smr in targetSmrs)
-                                {
-                                    int index = smr.sharedMesh.GetBlendShapeIndex(targetBlendShapeName);
-                                    if (index != -1)
-                                    {
-                                        targetPath = smr.name;
-                                        break;
-                                    }
-                                }
-                                if (!string.IsNullOrEmpty(targetPath))
-                                {
-                                    // copy the binding into a new curve
-                                    if (binding.path != targetPath && binding.propertyName != targetPropertyName)
-                                    {
-                                        EditorCurveBinding newBinding = DuplicateClipBindingOrSomat(workingClip, binding, targetPath, targetPropertyName);
-                                        uniqueBindings.Add(newBinding.propertyName, newBinding);
-                                        //if (j == 0) workingClipBindings[i] = newBinding;
-                                        //else 
-                                        workingClipBindings.Add(newBinding);
-                                    }
-                                    else
-                                    {
-                                        uniqueBindings.Add(binding.propertyName, binding);
-                                    }
+                                targetBlendShapeName = targetBlendshapeNames[j];
+                                string targetPropertyName = $"{blendShapePrefix}{targetBlendShapeName}";
 
+                                if (!uniqueBindings.ContainsKey(targetPropertyName))
+                                {
+                                    foreach (var smr in targetSmrs)
+                                    {
+                                        int index = smr.sharedMesh.GetBlendShapeIndex(targetBlendShapeName);
+                                        if (index != -1)
+                                        {
+                                            targetPath = smr.name;
+                                            break;
+                                        }
+                                    }
+                                    if (!string.IsNullOrEmpty(targetPath))
+                                    {
+                                        // copy the binding into a new curve
+                                        if (binding.path != targetPath && binding.propertyName != targetPropertyName)
+                                        {
+                                            EditorCurveBinding newBinding = ReassignClipBinding(workingClip, binding, targetPath, targetPropertyName);
+                                            uniqueBindings.Add(newBinding.propertyName, newBinding);
+                                            //if (j == 0) workingClipBindings[i] = newBinding;
+                                            //else 
+                                            workingClipBindings.Add(newBinding);
+                                        }
+                                        else
+                                        {
+                                            uniqueBindings.Add(binding.propertyName, binding);
+                                        }
+
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            //}
-            //catch { }            
+            catch { }
 
             try
             {
                 int n = 0;
+                List<EditorCurveBinding> purgeList = new List<EditorCurveBinding>();
                 // now remove everything not on the unique list
                 foreach (var binding in workingClipBindings)
                 {
@@ -1789,22 +1812,26 @@ namespace Reallusion.Import
                     if (!uniqueBindings.ContainsValue(binding))
                     {
                         if (binding.propertyName.StartsWith(blendShapePrefix))
-                            AnimationUtility.SetEditorCurve(workingClip, binding, null);
+                        {
+                            purgeList.Add(binding);
+                            //AnimationUtility.SetEditorCurve(workingClip, binding, null);
+                        }
                     }
                     else
                     {
-                        Debug.Log("Keeping this one" + binding.propertyName);
+                        Debug.Log("Retaining blendshape " + binding.propertyName);
                     }
                 }
+                PurgeBindings(purgeList.ToArray(), workingClip);
             }
             catch (Exception e)
             {
                 Debug.Log(e.Message);
             }
-            EditorUtility.ClearProgressBar();
         }
+        #endregion
 
-        public static EditorCurveBinding DuplicateClipBindingOrSomat(AnimationClip workingClip, EditorCurveBinding binding, string targetPath, string targetPropertyName)
+        public static EditorCurveBinding ReassignClipBinding(AnimationClip workingClip, EditorCurveBinding binding, string targetPath, string targetPropertyName)
         {
             EditorCurveBinding newBinding = new EditorCurveBinding()
             {
