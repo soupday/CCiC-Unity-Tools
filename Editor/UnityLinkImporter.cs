@@ -750,7 +750,10 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            
+
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
+
             CharacterInfo charInfo = new CharacterInfo(guid);
 
             charInfo.linkId = linkId;
@@ -785,6 +788,9 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
+
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
 
             CharacterInfo charInfo = new CharacterInfo(guid);
 

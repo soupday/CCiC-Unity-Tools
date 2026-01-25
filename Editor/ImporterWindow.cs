@@ -1650,6 +1650,7 @@ namespace Reallusion.Import
         {
             Util.LogInfo("Building materials:");
 
+            WindowManager.HideAnimationRetargeter(true);
             WindowManager.HideAnimationPlayer(true);
 
             // refresh the character info for any Json changes
