@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 2.2.1
+- HD Facial profile animation retargeting.
+- Updated Animation Player - Facial Expression Preview for HD facial profile.
+- DataLink lights import with highest shadow quality.
+- Better opacity detection on hair, brows, and beards.
+- Faster animation retargeting.
+
+
 ### 2.2.0
 - Build error from Bone drivers fixed.
 - Unity 2020.3 no longer supported directly.
