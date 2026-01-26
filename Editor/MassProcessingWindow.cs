@@ -251,9 +251,12 @@ namespace Reallusion.Import
 
         public void BeginMassProcessing()
         {
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
+
             // add a delayed call to refresh the char list in the importer window and the batch window
             EditorApplication.delayCall += ProcessingRefresh;
-            buildQueue = new List<CharacterInfo>();
+            buildQueue = new List<CharacterInfo>();            
 
             foreach (CharacterInfo character in workingList)
             {

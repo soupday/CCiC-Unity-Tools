@@ -750,7 +750,10 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
-            
+
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
+
             CharacterInfo charInfo = new CharacterInfo(guid);
 
             charInfo.linkId = linkId;
@@ -785,6 +788,9 @@ namespace Reallusion.Import
         {
             if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
+
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
 
             CharacterInfo charInfo = new CharacterInfo(guid);
 
@@ -1497,12 +1503,27 @@ namespace Reallusion.Import
 
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
+            HDLightData.EnableShadows(true);
+            //HDLightData.shadowResolution.@override = 3;
+            HDLightData.shadowResolution.useOverride = false;
+            HDLightData.shadowResolution.level = 3;
+            //HDLightData.useContactShadow.@override = false;            
+            HDLightData.useContactShadow.useOverride = false;
+            HDLightData.useContactShadow.level = 2;
 #elif HDRP_10_5_0_OR_NEWER
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
 
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
+            HDLightData.SetShadowResolution(3);
+            HDLightData.EnableShadows(true);
+            //HDLightData.shadowResolution.@override = 3;
+            HDLightData.shadowResolution.useOverride = false;
+            HDLightData.shadowResolution.level = 3;
+            //HDLightData.useContactShadow.@override = false;            
+            HDLightData.useContactShadow.useOverride = false;
+            HDLightData.useContactShadow.level = 2;
 #elif URP_10_5_0_OR_NEWER
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * URP_INTENSITY_SCALE;
@@ -1514,8 +1535,8 @@ namespace Reallusion.Import
             light.lightmapBakeType = LightmapBakeType.Mixed;
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
-#endif            
-            light.useColorTemperature = false;
+#endif                        
+            light.useColorTemperature = false;            
             light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
             light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);

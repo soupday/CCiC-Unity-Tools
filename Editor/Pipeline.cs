@@ -43,7 +43,7 @@ namespace Reallusion.Import
 
     public static class Pipeline
     {
-        public const string VERSION = "2.2.0"; // temp change to force upgrade
+        public const string VERSION = "2.2.1"; // temp change to force upgrade
 
 #if HDRP_10_5_0_OR_NEWER
         // version
@@ -897,12 +897,18 @@ namespace Reallusion.Import
             return GetDefaultMaterial(quality);
         }
 
-        public static bool UpgradeShader(Material mat, bool useTessellation, bool useAmplify)
+        public static bool UpgradeShader(Material mat, bool useTessellation, bool useAmplify, bool doubleSided=false)
         {
             Shader shader = mat.shader;
             string shaderName = shader.name;
             bool tessellationUpgrade = false;
             bool amplifyUpgrade = false;
+
+            if (shaderName == "Standard" && doubleSided)
+            {
+                Shader dblSidedShader = Shader.Find("RL_Standard_DoubleSided");
+                mat.shader = dblSidedShader;                
+            }
 
             if (useAmplify)
             {

@@ -46,7 +46,7 @@ namespace Reallusion.Import
         }
 
         void OnDisable()
-        {            
+        {
             AssemblyReloadEvents.beforeAssemblyReload -= Close;
             importerFeaturesWindow = null;
         }
@@ -102,7 +102,7 @@ namespace Reallusion.Import
             {
                 contextCharacter = importerWindow.Character;
             }
-            
+
             Vector2 windowSize = new Vector2(DROPDOWN_WIDTH, INITIAL_DROPDOWN_HEIGHT);
             ShowAsDropDown(buttonRect, windowSize);
         }
@@ -264,6 +264,13 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ConstraintData, "Use Constraints", SECTION_INDENT))
                 flagChanged = true;
 
+            /*
+            DrawLabelLine(line++, "Extra Generic Animation Data:");
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExtractGeneric, "Merge extra generic data", SECTION_INDENT))
+                flagChanged = true;
+            */
+
             DrawLabelLine(line++, "");
 
             if (Event.current.type == EventType.Repaint)
@@ -286,7 +293,7 @@ namespace Reallusion.Import
             GUI.DrawTexture(container, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, color, border, Vector4.zero);
         }
 
-        private bool DrawFlagSelectionLine(int line, CharacterInfo.ShaderFeatureFlags flag, string overrideLabel = "", float indent = 0f, CharacterInfo.ShaderFeatureFlags [] radioGroup = null)
+        private bool DrawFlagSelectionLine(int line, CharacterInfo.ShaderFeatureFlags flag, string overrideLabel = "", float indent = 0f, CharacterInfo.ShaderFeatureFlags[] radioGroup = null)
         {
             GUILayout.BeginHorizontal(GetLineStyle(line));
             GUILayout.Space(indent);
@@ -398,6 +405,6 @@ namespace Reallusion.Import
             {
                 SetFeatureFlag(groupFlag, groupFlag.Equals(flag));
             }
-        }        
+        }
     }
 }

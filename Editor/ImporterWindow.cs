@@ -1650,6 +1650,9 @@ namespace Reallusion.Import
         {
             Util.LogInfo("Building materials:");
 
+            WindowManager.HideAnimationRetargeter(true);
+            WindowManager.HideAnimationPlayer(true);
+
             // refresh the character info for any Json changes
             contextCharacter.Refresh();
 
@@ -1765,6 +1768,8 @@ namespace Reallusion.Import
 
         void ProcessAnimations()
         {
+            WindowManager.HideAnimationPlayer(false);
+
             RL.DoAnimationImport(contextCharacter);
             GameObject characterPrefab = Util.FindCharacterPrefabAsset(contextCharacter.Fbx);
             if (characterPrefab == null)
