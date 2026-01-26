@@ -1378,7 +1378,8 @@ namespace Reallusion.Import
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null)
             {
-                BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
+                Component co = BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
+                if (co) bd = co.gameObject;
             }
             if (bd == null) return;
 
@@ -1534,8 +1535,8 @@ namespace Reallusion.Import
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null)
             {
-                BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-
+                Component co = BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
+                if (co) bd = co.gameObject;
             }
             if (bd == null) return;
 
@@ -1698,6 +1699,11 @@ namespace Reallusion.Import
             // copy all remappable curves from original to working for the source mesh only
 
             GameObject source = RL.FindExpressionSourceMesh(targetCharacterModel);
+            if (!source)
+            {
+                Util.LogInfo("No Expression Source Mesh Found!");
+                return;
+            }
 
             List<EditorCurveBinding> workingClipBindings = AnimationUtility.GetCurveBindings(workingClip).ToList();
             // Data looks like this:
