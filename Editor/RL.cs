@@ -808,8 +808,9 @@ namespace Reallusion.Import
 
             lodLevels += 1;
             LOD[] lods = new LOD[lodLevels];
-            GameObject sceneLODInstance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
-            LODGroup lodGroup = sceneLODInstance.AddComponent<LODGroup>();
+            GameObject sceneLODInstance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;            
+            LODGroup lodGroup = sceneLODInstance.GetComponent<LODGroup>();
+            if (!lodGroup) lodGroup = sceneLODInstance.AddComponent<LODGroup>();
             Renderer[] prefabRenderers = sceneLODInstance.transform.GetComponentsInChildren<Renderer>(true);
 
             if (originalCharacter)
@@ -995,15 +996,14 @@ namespace Reallusion.Import
         }
 
         public static GameObject FindExpressionSourceMesh(GameObject root)
-        {
-            Debug.Log("FindExpressionSourceMesh");
+        {            
             SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();
             GameObject bestExpressionsMesh = null;
             int bestExpressionCount = 0;
             foreach (SkinnedMeshRenderer smr in skinnedMeshRenderers)
             {
                 GameObject go = smr.gameObject;
-                if (IsBodyMesh(smr)) { Debug.Log($"FindExpressionSourceMesh (go): {go.name}"); return go; }
+                if (IsBodyMesh(smr)) { Util.LogInfo($"Found Expression Source Mesh (Body Mesh): {go.name}"); return go; }
                 if (FacialProfileMapper.MeshHasFacialBlendShapes(smr.gameObject))
                 {
                     int expressionCount = smr.sharedMesh.blendShapeCount;
@@ -1014,7 +1014,8 @@ namespace Reallusion.Import
                     }
                 }
             }
-            Debug.Log($"FindExpressionSourceMesh: {bestExpressionsMesh.name}");
+            if (bestExpressionsMesh != null)
+                Util.LogInfo($"Found Expression Source Mesh (Best guess): {bestExpressionsMesh.name}");
             return bestExpressionsMesh;
         }
     }

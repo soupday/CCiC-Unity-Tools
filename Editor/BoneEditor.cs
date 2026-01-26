@@ -77,13 +77,17 @@ namespace Reallusion.Import
             Component boneDriver = null;
             SkinnedMeshRenderer smr = null;
             //GameObject go = FindNamedObjectInHierarchy(rootObject, "CC_Base_Body");
-            GameObject go = RL.FindExpressionSourceMesh(instanceRoot);
-            Debug.Log($"(81) Adding BoneDriver to {go.name}");
+            GameObject go = RL.FindExpressionSourceMesh(instanceRoot);            
             if (go != null)
-            {
-                Debug.Log($"(84) Adding BoneDriver to {go.name}");
+            {                
+                Util.LogInfo($"Adding BoneDriver to {go.name}");
                 boneDriver = AddBoneDriver(go);
                 smr = go.GetComponent<SkinnedMeshRenderer>();
+            }
+            else
+            {
+                Util.LogInfo("No expression source mesh found for bone driver!");
+                return null;
             }
 
             if (boneDriver && smr && jsonAsset && go)
