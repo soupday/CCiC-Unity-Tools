@@ -1391,12 +1391,12 @@ namespace Reallusion.Import
 
         public static void ApplyBoneDriverSettings(GameObject targetCharacterModel, GameObject bd, bool drive = false, bool transpose = false, bool constrain = false)
         {
-            //Component boneDrivercomp = BoneEditor.GetBoneDriverComponentReflection(targetCharacterModel);
+            Component boneDrivercomp = BoneEditor.GetBoneDriverComponentReflection(targetCharacterModel);
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
 
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PrefabUtility.RecordPrefabInstancePropertyModifications.html
-            //PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);            
+            PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);            
             //PrefabUtility.RecordPrefabInstancePropertyModifications(bd);
 
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);

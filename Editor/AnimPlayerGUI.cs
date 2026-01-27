@@ -82,6 +82,8 @@ namespace Reallusion.Import
             {
                 //clean up controller here
                 ResetToBaseAnimatorController();
+                ResetFace();
+                ResetCharacterPose();
 
                 EditorApplication.update -= UpdateCallback;
                 EditorApplication.playModeStateChanged -= PlayStateChangeCallback;
@@ -822,9 +824,10 @@ namespace Reallusion.Import
             // clear the animation controller + override controller
             // remove the on-disk temporary controller
             ResetToBaseAnimatorController();
-            
+
             //DestroyAnimationController();
             // revert character pose to original T-Pose
+            ResetFace();
             ResetCharacterPose();
             // user can now select a new animation for playing
         }
@@ -1342,6 +1345,8 @@ namespace Reallusion.Import
 
                         //replace original animator controller
                         ResetToBaseAnimatorController();
+                        ResetFace();
+                        ResetCharacterPose();
 
                         break;
                     }
