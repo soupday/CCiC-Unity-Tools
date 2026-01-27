@@ -297,18 +297,22 @@ namespace Reallusion.Import
 
         public string CharacterName => name;
 
+        public enum BoolEnum { NotSet=-1, False=0, True=1 };
+        public BoolEnum isBlenderProject = BoolEnum.NotSet;
+        public bool CheckBlenderProject()
+        {
+            if (isBlenderProject == BoolEnum.NotSet)
+            {
+                isBlenderProject = JsonData.GetBoolValue(CharacterName + "/Blender_Project") ? BoolEnum.True : BoolEnum.False;
+                return true;
+            }
+            return false;
+        }
         public bool IsBlenderProject
         {
             get
-            {
-                if (jsonData != null)
-                {
-                    return JsonData.GetBoolValue(CharacterName + "/Blender_Project");
-                }
-                else
-                {
-                    return false;
-                }
+            {                
+                return isBlenderProject == BoolEnum.True;
             }
         }
 
@@ -818,17 +822,18 @@ namespace Reallusion.Import
 
             generation = RL.GetCharacterGeneration(Fbx, gen);
             CheckOverride();
+            bool setBlender = CheckBlenderProject();
 
             // new character detected, initialize settings
             if (oldGen == BaseGeneration.None)
             {
                 InitSettings();
-                InitPhysics();
+                InitPhysics();                
             }
 
             bool versionUpgraded = VersionUpgrade();
 
-            if (generation != oldGen || versionUpgraded)
+            if (generation != oldGen || versionUpgraded || setBlender)
             {
                 Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
                 Write();
@@ -941,7 +946,7 @@ namespace Reallusion.Import
                 }
 
                 upgraded = true;
-            }
+            }            
 
             if (upgraded)
             {
@@ -1194,28 +1199,31 @@ namespace Reallusion.Import
                             qualHair = value == "true" ? HairQuality.TwoPass : HairQuality.Default;
                         break;
                     case "bakeIsBaked":
-                        bakeIsBaked = value == "true" ? true : false;
+                        bakeIsBaked = value == "true";
                         break;
                     case "tempHairBake":
-                        tempHairBake = value == "true" ? true : false;
+                        tempHairBake = value == "true";
                         break;
                     case "bakeCustomShaders":
-                        bakeCustomShaders = value == "true" ? true : false;
+                        bakeCustomShaders = value == "true";
                         break;
                     case "bakeSeparatePrefab":
-                        bakeSeparatePrefab = value == "true" ? true : false;
+                        bakeSeparatePrefab = value == "true";
                         break;
                     case "generation":
                         generation = (BaseGeneration)System.Enum.Parse(typeof(BaseGeneration), value);
                         break;
+                    case "isBlender":                        
+                        isBlenderProject = (BoolEnum)System.Enum.Parse(typeof(BoolEnum), value);
+                        break;
                     case "isLOD":
-                        isLOD = value == "true" ? true : false;
+                        isLOD = value == "true";
                         break;
                     case "shaderFlags":
                         ShaderFlags = (ShaderFeatureFlags)int.Parse(value);
                         break;
                     case "animationSetup":
-                        animationSetup = value == "true" ? true : false;
+                        animationSetup = value == "true";
                         break;
                     case "animationRetargeted":
                         animationRetargeted = (AnimationTargetLevel)int.Parse(value);
@@ -1267,7 +1275,8 @@ namespace Reallusion.Import
             writer.WriteLine("version=" + version);
             writer.WriteLine("logType=" + builtLogType.ToString());
             writer.WriteLine("generation=" + generation.ToString());
-            writer.WriteLine("isLOD=" + (isLOD ? "true" : "false"));
+            writer.WriteLine("isBlender=" + isBlenderProject.ToString());
+            writer.WriteLine("isLOD=" + (isLOD ? "true" : "false"));           
             writer.WriteLine("qualEyes=" + builtQualEyes.ToString());
             writer.WriteLine("qualHair=" + builtQualHair.ToString());
             writer.WriteLine("bakeIsBaked=" + (bakeIsBaked ? "true" : "false"));
