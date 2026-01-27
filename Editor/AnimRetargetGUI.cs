@@ -77,7 +77,7 @@ namespace Reallusion.Import
         private static Styles styles;
         private static bool expressionDrivenBones = true;
         private static bool expressionBlendShapeTranspose = true;
-        private static bool expressionConstrain = true;
+        private static bool expressionConstrain = false;
         private static bool createFullAnimationTrack = false;
         private static bool logOnce = false;
 
@@ -648,6 +648,7 @@ namespace Reallusion.Import
                     string characterFbxPath = AssetDatabase.GetAssetPath(fbxAsset);
                     string assetPath = GenerateClipAssetPath(OriginalClip, characterFbxPath);
                     WriteAnimationToAssetDatabase(WorkingClip, assetPath, true);
+                    SaveBoneDriverChangesToPrefab(scenePrefab);
                 }
             }
             GUILayout.FlexibleSpace();
@@ -1396,11 +1397,15 @@ namespace Reallusion.Import
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
 
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PrefabUtility.RecordPrefabInstancePropertyModifications.html
-            PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);            
+            PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);
             //PrefabUtility.RecordPrefabInstancePropertyModifications(bd);
 
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            //Util.ApplyIfPrefabInstance(targetCharacterModel);
+            //Util.ApplyIfPrefabInstance(targetCharacterModel);           
+        }
+
+        public static void SaveBoneDriverChangesToPrefab(GameObject targetCharacterModel)
+        {
 
             Type BoneDriver = null;
             if (BoneDriver == null)
