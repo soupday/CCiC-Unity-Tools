@@ -77,9 +77,9 @@ namespace Reallusion.Import
             Component boneDriver = null;
             SkinnedMeshRenderer smr = null;
             //GameObject go = FindNamedObjectInHierarchy(rootObject, "CC_Base_Body");
-            GameObject go = RL.FindExpressionSourceMesh(instanceRoot);            
+            GameObject go = RL.FindExpressionSourceMesh(instanceRoot);
             if (go != null)
-            {                
+            {
                 Util.LogInfo($"Adding BoneDriver to {go.name}");
                 boneDriver = AddBoneDriver(go);
                 smr = go.GetComponent<SkinnedMeshRenderer>();
@@ -376,6 +376,31 @@ namespace Reallusion.Import
             if (boneDriver != null)
             {
                 return boneDriver.gameObject;
+            }
+            return null;
+        }
+
+        public static Component GetBoneDriverComponentReflection(GameObject obj)
+        {
+            Type BoneDriver = null;
+            if (BoneDriver == null)
+            {
+                BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
+                if (BoneDriver == null)
+                {
+                    Debug.LogWarning("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    return null;
+                }
+                else
+                {
+                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                }
+            }
+
+            Component boneDriver = obj.GetComponentInChildren(BoneDriver);
+            if (boneDriver != null)
+            {
+                return boneDriver;
             }
             return null;
         }
