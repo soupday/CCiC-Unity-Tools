@@ -1353,9 +1353,18 @@ namespace Reallusion.Import
             else
             {
                 if (useBoneDriver || useBlendTranspose || useConstraintData)
-                    if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, useBoneDriver, useBlendTranspose, useConstraintData))
-                    { Debug.Log("RetargetBlendShapes - No BoneDriver available."); EditorUtility.ClearProgressBar(); return; }
+                {
 
+                    if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, useBoneDriver, useBlendTranspose, useConstraintData))
+                    {
+                        Debug.Log("RetargetBlendShapes - No BoneDriver available."); EditorUtility.ClearProgressBar();
+                        return;
+                    }
+                    else
+                    {
+                        ApplyBoneDriverSettings(targetCharacterModel, bd, useBoneDriver, useBlendTranspose, useConstraintData);
+                    }
+                }
                 if (useBoneDriver)
                 {
                     // remove animated constraint tracks and any tracks for bones that are now driven by expressions
@@ -1452,7 +1461,7 @@ namespace Reallusion.Import
         {
             // needs a set up bonedriver reference to interrogate for the expression glossary
             if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, drive, transpose, constrain)) return;
-            ApplyBoneDriverSettings(targetCharacterModel, bd, drive, transpose, constrain);
+            //ApplyBoneDriverSettings(targetCharacterModel, bd, drive, transpose, constrain);
 
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
