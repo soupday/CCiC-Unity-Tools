@@ -279,7 +279,7 @@ namespace Reallusion.Import
                 if ((flags & Importer.FLAG_HAIR) > 0)
                 {
                     importer.mipMapsPreserveCoverage = true;
-                    importer.alphaTestReferenceValue = Importer.MIPMAP_ALPHA_CLIP_HAIR;
+                    importer.alphaTestReferenceValue = Importer.MIPMAP_CLIP_HAIR;
                 }
                 else if ((flags & Importer.FLAG_ALPHA_CLIP) > 0)
                 {

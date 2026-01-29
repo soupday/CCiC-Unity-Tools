@@ -922,8 +922,8 @@ namespace Reallusion.Import
                     Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
                     Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
                     Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP17),
-                    Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP171),
-                    Rule(new Version(17, 1, 0), new Version(17, 2, 0), PipelineVersion.URP172),
+                    Rule(new Version(17, 1, 0), new Version(17, 2, 0), PipelineVersion.URP171),
+                    Rule(new Version(17, 2, 0), new Version(17, 3, 0), PipelineVersion.URP172),
                     Rule(new Version(17, 3, 0), new Version(100, 99, 99), PipelineVersion.URP173)
                 };
 

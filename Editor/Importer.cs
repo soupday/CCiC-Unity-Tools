@@ -37,6 +37,7 @@ namespace Reallusion.Import
         private readonly string materialsFolder;
         private readonly string characterName;
         private readonly string motionPrefix;
+        private readonly bool extEyelash;
         private readonly int id;
         private readonly List<string> textureFolders;
         private readonly ModelImporter importer;
@@ -59,8 +60,7 @@ namespace Reallusion.Import
         public const string PREFABS_FOLDER = "Prefabs";
         public const string BAKE_SUFFIX = "_Baked";
 
-        public const float MIPMAP_BIAS_HAIR_ID_MAP = -1f;
-        public const float MIPMAP_ALPHA_CLIP_HAIR = 0.6f;
+        public const float MIPMAP_BIAS_HAIR_ID_MAP = -1f;        
         public const float MIPMAP_ALPHA_CLIP_HAIR_BAKED = 0.8f;
 
         public const int FLAG_SRGB = 1;
@@ -107,6 +107,21 @@ namespace Reallusion.Import
             set
             {
                 EditorPrefs.SetFloat("RL_Importer_Mipmap_Bias_Hair", value);
+            }
+        }
+
+        public static float MIPMAP_CLIP_HAIR
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Importer_Mipmap_Clip_Hair"))
+                    return EditorPrefs.GetFloat("RL_Importer_Mipmap_Clip_Hair");
+                return 0.4f;
+            }
+
+            set
+            {
+                EditorPrefs.SetFloat("RL_Importer_Mipmap_Clip_Hair", value);
             }
         }
 
@@ -258,6 +273,7 @@ namespace Reallusion.Import
 
             generation = info.Generation;
             blenderProject = info.IsBlenderProject;
+            extEyelash = info.HasExternalEyelash();
 
             // initialise the import path cache.        
             // this is used to re-import everything in one batch after it has all been setup.
@@ -759,6 +775,15 @@ namespace Reallusion.Import
                     case "RLSSS": return MaterialType.SSS;
                 }
 
+                if (Util.NameContainsKeywords(sourceName, "Std_Eyelash", "Ga_Eyelash"))
+                {
+                    // disable standard eyelash if external (HD) eyelashes are present
+                    if (extEyelash) return MaterialType.Disabled;
+
+                    return MaterialType.Eyelash;
+                }
+                if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R")) return MaterialType.Eye;
+
                 string jsonTexturePath = matJson.GetStringValue("Textures/Base Color/Texture Path");
                 if (!string.IsNullOrEmpty(jsonTexturePath))
                 {
@@ -770,24 +795,9 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (diffuseHasAlpha)
-                {
-                    if (Util.NameContainsKeywords(sourceName, "Transparency", "Alpha", "Opacity", "Lenses", "Lens", "Glass", "Glasses", "Blend"))
-                    {
-                        hasOpacity = true;
-                        blendOpacity = true;
-                    }
-
-                    if (Util.NameContainsKeywords(sourceName, "Base", "Scalp", "Eyelash", "hair", "clap") ||
-                        Util.NameContainsKeywords(obj.name, "Eyelash_"))
-                    {
-                        hasOpacity = true;
-                        blendOpacity = true;
-                    }
-                }
-
                 jsonTexturePath = matJson.GetStringValue("Textures/Opacity/Texture Path");
                 if (!string.IsNullOrEmpty(jsonTexturePath)) hasOpacity = true;
+                
                 float opacity = matJson.GetFloatValue("Opacity");
                 if (opacity < 1.0f)
                 {
@@ -795,11 +805,24 @@ namespace Reallusion.Import
                     blendOpacity = true;
                 }
 
-                if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R"))
+                // if it's in a hair/brow/beard or eyelash node (and it's not RLHair)
+                // return as a Scalp material if transparency, or opaque if not.
+                if (nodeType == MaterialNodeType.Hair || nodeType == MaterialNodeType.Brow ||
+                    nodeType == MaterialNodeType.Beard || nodeType == MaterialNodeType.Eyelash)
                 {
-                    return MaterialType.Eye;
+                    if (hasOpacity || diffuseHasAlpha) return MaterialType.Scalp;
+                    else return MaterialType.DefaultOpaque;
                 }
 
+                if ((diffuseHasAlpha || hasOpacity) &&
+                    Util.NameContainsKeywords(sourceName, "Transparency", "Alpha", "Opacity", 
+                                                          "Lenses", "Lens", "Glass", "Glasses", 
+                                                          "Blend", "Hair"))
+                {
+                    hasOpacity = true;
+                    blendOpacity = true;
+                }
+                                             
                 // actor build materials that are opaque, but detected as transparent.
                 if (characterInfo.Generation == BaseGeneration.ActorBuild)
                 {
@@ -810,30 +833,8 @@ namespace Reallusion.Import
                     }
                 }                
 
-                if (nodeType == MaterialNodeType.Hair || nodeType == MaterialNodeType.Brow ||
-                    nodeType == MaterialNodeType.Beard || nodeType == MaterialNodeType.Eyelash)
-                {
-                    if (hasOpacity || diffuseHasAlpha) return MaterialType.Scalp;
-
-                    if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Color"))
-                        return MaterialType.Scalp;
-                }
-
-                if (hasOpacity)
-                {
-                    if (customShader == "Pbr" || customShader == "Tra")
-                    {
-                        if (Util.NameContainsKeywords(obj.name, "Eyelash_"))
-                            return MaterialType.Eyelash;
-                        if (Util.NameContainsKeywords(sourceName, "Eyelash", "Lash"))
-                            return MaterialType.Eyelash;
-                        if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Hair", "Clap"))
-                            return MaterialType.Scalp;
-                    }
-                }
-
                 if (blendOpacity) return MaterialType.BlendAlpha;
-                else if (hasOpacity) return MaterialType.DefaultAlpha;
+                else if (hasOpacity || diffuseHasAlpha) return MaterialType.DefaultAlpha;
                 else return MaterialType.DefaultOpaque;
             }
             else
@@ -997,7 +998,12 @@ namespace Reallusion.Import
         {
             string shaderName = mat.shader.name;
 
-            if (shaderName.iContains(Pipeline.SHADER_DEFAULT))
+            if (shaderName.iContains(Pipeline.SHADER_DISABLED))
+            {
+                return;
+            }
+
+            else if (shaderName.iContains(Pipeline.SHADER_DEFAULT))
             {
                 ConnectDefaultMaterial(obj, sourceName, sharedMat, mat, materialType, matJson);
             }
@@ -1512,22 +1518,33 @@ namespace Reallusion.Import
             bool useDisplacement = GetTexture(sourceName, "Displacement",
                                               matJson, "Textures/Displacement", true);
 
+            TexCategory medDetail = TexCategory.MediumDetail;
+            TexCategory highDetail = TexCategory.HighDetail;
+            int baseFlag = FLAG_SRGB;
+            if (Pipeline.IsMergedMaterial(sourceName, characterInfo) || 
+                mat.shader.name.iEndsWith(Pipeline.SHADER_DEFAULT_MERGED))
+            {
+                medDetail = TexCategory.MaxDetail;
+                highDetail = TexCategory.MaxDetail;
+                baseFlag = FLAG_SRGB | FLAG_HAIR;
+            }
+
             if (RP == RenderPipeline.HDRP)
             {
                 if (!ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Diffuse",
                     matJson, "Textures/Base Color",
-                    TexCategory.MediumDetail, FLAG_SRGB))
+                    medDetail, baseFlag))
                 {
                     ConnectTextureTo(sourceName, mat, "_BaseColorMap", "Opacity",
                         matJson, "Textures/Opacity",
-                        TexCategory.MediumDetail, FLAG_SRGB);
+                        medDetail, baseFlag);
                 }
 
                 if (allowSpecular)
                 {
                     ConnectTextureTo(sourceName, mat, "_SpecularColorMap", "Specular",
                         matJson, "Textures/Specular",
-                        TexCategory.MediumDetail);
+                        medDetail);
                 }
 
                 ConnectTextureTo(sourceName, mat, "_MaskMap", "HDRP",
@@ -1536,7 +1553,7 @@ namespace Reallusion.Import
 
                 if (ConnectTextureTo(sourceName, mat, "_NormalMap", "Normal",
                     matJson, "Textures/Normal",
-                    TexCategory.HighDetail,
+                    highDetail,
                     FLAG_NORMAL))
                 {
                     mat.EnableKeyword("_NORMALMAP");
@@ -1550,7 +1567,7 @@ namespace Reallusion.Import
 
                 ConnectTextureTo(sourceName, mat, "_EmissiveColorMap", "Glow",
                     matJson, "Textures/Glow",
-                    TexCategory.MediumDetail);
+                    medDetail);
 
                 if (matJson.GetBoolValue("Two Side"))
                 {
@@ -1564,13 +1581,13 @@ namespace Reallusion.Import
                 {
                     if (!ConnectTextureTo(sourceName, mat, "_BaseMap", "Diffuse",
                         matJson, "Textures/Base Color",
-                        TexCategory.MediumDetail,
-                        FLAG_SRGB))
+                        medDetail,
+                        baseFlag))
                     {
                         ConnectTextureTo(sourceName, mat, "_BaseMap", "Opacity",
                             matJson, "Textures/Opacity",
-                            TexCategory.MediumDetail,
-                            FLAG_SRGB);
+                            medDetail,
+                            baseFlag);
                     }
 
                     if (matJson != null && matJson.GetBoolValue("Two Side"))
@@ -1582,13 +1599,13 @@ namespace Reallusion.Import
                 {
                     if (!ConnectTextureTo(sourceName, mat, "_MainTex", "Diffuse",
                         matJson, "Textures/Base Color",
-                        TexCategory.MediumDetail,
-                        FLAG_SRGB))
+                        medDetail,
+                        baseFlag))
                     {
                         ConnectTextureTo(sourceName, mat, "_MainTex", "Opacity",
                             matJson, "Textures/Opacity",
-                            TexCategory.MediumDetail,
-                            FLAG_SRGB);
+                            medDetail,
+                            baseFlag);
                     }
                 }
 
@@ -1596,27 +1613,27 @@ namespace Reallusion.Import
                 {
                     ConnectTextureTo(sourceName, mat, "_SpecGlossMap", "Specular",
                             matJson, "Textures/Specular",
-                            TexCategory.MediumDetail);
+                            medDetail);
                 }
 
                 if (ConnectTextureTo(sourceName, mat, "_MetallicGlossMap", "MetallicAlpha",
                         matJson, "Textures/MetallicAlpha",
-                        TexCategory.MediumDetail))
+                        medDetail))
                 {
                     mat.SetFloatIf("_Metallic", 1f);
                 }
 
                 ConnectTextureTo(sourceName, mat, "_OcclusionMap", "ao",
                     matJson, "Textures/AO",
-                    TexCategory.MediumDetail);
+                    medDetail);
 
                 ConnectTextureTo(sourceName, mat, "_BumpMap", "Normal",
                     matJson, "Textures/Normal",
-                    TexCategory.MediumDetail, FLAG_NORMAL);
+                    medDetail, FLAG_NORMAL);
 
                 if (ConnectTextureTo(sourceName, mat, "_EmissionMap", "Glow",
                     matJson, "Textures/Glow",
-                    TexCategory.MediumDetail))
+                    medDetail))
                 {
                     mat.globalIlluminationFlags = mat.globalIlluminationFlags | MaterialGlobalIlluminationFlags.AnyEmissive;
                     mat.EnableKeyword("_EMISSION");
@@ -2780,8 +2797,9 @@ namespace Reallusion.Import
                 smoothnessContrast = ValueByPipeline(1.25f, 1.25f, 1.25f);
                 specularPowerMod = ValueByPipeline(1f, 1f, 1f);
                 mat.SetFloatIf("_DepthPrepass", 0.75f);
-                mat.SetFloatIf("_AlphaContrast", 1.03f * opacityContrast);
-                mat.SetFloatIf("_AlphaStrength", 0.88f * opacityStrength);
+                mat.SetFloatIf("_AlphaContrast", 1.1f * opacityContrast);
+                mat.SetFloatIf("_AlphaStrength", 0.75f * opacityStrength);
+                mat.SetFloatIf("_AlphaClip", 0.666f * opacityStrength);
                 mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
                 mat.SetFloatIf("_ShadowClip", 1.0f);
             }
