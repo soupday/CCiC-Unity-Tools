@@ -751,7 +751,10 @@ namespace Reallusion.Import
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            GUILayout.Label(importType, importerStyles.boldStyle);
+            string qualityText = importType;
+            if (contextCharacter.SubD != CharacterInfo.SubDLevel.SubD0)
+                qualityText += $" ({contextCharacter.SubD.ToString()})";
+            GUILayout.Label(qualityText, importerStyles.boldStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 

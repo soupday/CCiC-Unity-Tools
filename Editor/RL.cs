@@ -250,6 +250,26 @@ namespace Reallusion.Import
                 return;
             }
 
+            switch (info.SubD)
+            {
+                case CharacterInfo.SubDLevel.SubD1:
+                    if (importer.skinWeights != ModelImporterSkinWeights.Custom)
+                        importer.skinWeights = ModelImporterSkinWeights.Custom;
+                    if (importer.maxBonesPerVertex < 6)
+                        importer.maxBonesPerVertex = 6;
+                    break;
+                case CharacterInfo.SubDLevel.SubD2:
+                    if (importer.skinWeights != ModelImporterSkinWeights.Custom)
+                        importer.skinWeights = ModelImporterSkinWeights.Custom;
+                    if (importer.maxBonesPerVertex < 8)
+                        importer.maxBonesPerVertex = 8;
+                    break;
+                default:
+                    if (importer.maxBonesPerVertex < 4)
+                        importer.maxBonesPerVertex = 4;
+                    break;
+            }
+
             if (avatar)
             {
                 importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;

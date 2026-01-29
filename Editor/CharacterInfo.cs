@@ -20,6 +20,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core;
 
 namespace Reallusion.Import
 {
@@ -30,6 +31,7 @@ namespace Reallusion.Import
         public enum HairQuality { None, Default, TwoPass, Coverage }
         public enum TexSizeQuality { LowTexureSize, MediumTextureSize, HighTextureSize, MaxTextureSize }
         public enum TexCompressionQuality { NoCompression, LowTextureQuality, MediumTextureQuality, HighTextureQuality, MaxTextureQuality }
+        public enum SubDLevel { SubD0, SubD1, SubD2 };
 
         public enum ShaderFeatureFlags
         {
@@ -278,6 +280,7 @@ namespace Reallusion.Import
         private bool builtBakeCustomShaders = true;
         private bool builtBakeSeparatePrefab = true;
 
+        public SubDLevel SubD { get; private set; } = SubDLevel.SubD0;        
         public ShaderFeatureFlags BuiltShaderFlags { get; private set; } = ShaderFeatureFlags.NoFeatures;
         public bool BuiltFeatureWrinkleMaps => (BuiltShaderFlags & ShaderFeatureFlags.WrinkleMaps) > 0;
         public bool BuiltFeatureTessellation => (BuiltShaderFlags & ShaderFeatureFlags.Tessellation) > 0;
@@ -296,6 +299,17 @@ namespace Reallusion.Import
         public bool Unprocessed => builtLogType == ProcessingType.None;
 
         public string CharacterName => name;
+
+        public bool CheckSubDLevel()
+        {
+            SubDLevel s = GetSubDLevel();
+            if (SubD != s)
+            {
+                SubD = s;
+                return true;
+            }
+            return false;
+        }
 
         public enum BoolEnum { NotSet=-1, False=0, True=1 };
         public BoolEnum isBlenderProject = BoolEnum.NotSet;
@@ -823,6 +837,7 @@ namespace Reallusion.Import
             generation = RL.GetCharacterGeneration(Fbx, gen);
             CheckOverride();
             bool setBlender = CheckBlenderProject();
+            bool setSubDB = CheckSubDLevel();
 
             // new character detected, initialize settings
             if (oldGen == BaseGeneration.None)
@@ -833,7 +848,7 @@ namespace Reallusion.Import
 
             bool versionUpgraded = VersionUpgrade();
 
-            if (generation != oldGen || versionUpgraded || setBlender)
+            if (generation != oldGen || versionUpgraded || setBlender || setSubDB)
             {
                 Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
                 Write();
@@ -1165,6 +1180,28 @@ namespace Reallusion.Import
             return false;
         }
 
+        public SubDLevel GetSubDLevel()
+        {
+            QuickJSON objectsJson = ObjectsJsonData;
+            const string path = "SubD Level";
+            int maxLevel = 0;
+
+            foreach (MultiValue mvMesh in objectsJson.values)
+            {
+                if (mvMesh.Type == MultiType.Object)
+                {
+                    QuickJSON objJson = mvMesh.ObjectValue;
+                    if (objJson.PathExists(path))
+                    {
+                        int level = objJson.GetIntValue(path);
+                        if (level > maxLevel) maxLevel = level;
+                    }
+                }
+            }
+            maxLevel = Mathf.Max(0, Mathf.Min(maxLevel, 2));
+            return (SubDLevel)maxLevel;
+        }
+
         public void Release()
         {
             if (jsonData != null || fbx != null)
@@ -1253,6 +1290,9 @@ namespace Reallusion.Import
                     case "generation":
                         generation = (BaseGeneration)System.Enum.Parse(typeof(BaseGeneration), value);
                         break;
+                    case "subDLevel":
+                        SubD = (SubDLevel)System.Enum.Parse(typeof(SubDLevel), value);
+                        break;
                     case "isBlender":                        
                         isBlenderProject = (BoolEnum)System.Enum.Parse(typeof(BoolEnum), value);
                         break;
@@ -1315,6 +1355,7 @@ namespace Reallusion.Import
             writer.WriteLine("version=" + version);
             writer.WriteLine("logType=" + builtLogType.ToString());
             writer.WriteLine("generation=" + generation.ToString());
+            writer.WriteLine("subDLevel=" + SubD.ToString());
             writer.WriteLine("isBlender=" + isBlenderProject.ToString());
             writer.WriteLine("isLOD=" + (isLOD ? "true" : "false"));           
             writer.WriteLine("qualEyes=" + builtQualEyes.ToString());
