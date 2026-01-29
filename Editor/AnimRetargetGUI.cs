@@ -170,6 +170,16 @@ namespace Reallusion.Import
             // set the animation player's Foot IK to off
             AnimPlayerGUI.ForceSettingsReset();
             AnimPlayerGUI.UpdateAnimator();
+            CopyBoneDriverSettingsToGUI();
+        }
+
+        public static void CopyBoneDriverSettingsToGUI()
+        {
+            (bool, bool, bool) bdSettings = GetBoneDriverSettingsReflection();
+            expressionDrivenBones = bdSettings.Item1;
+            expressionBlendShapeTranspose = bdSettings.Item2;
+            expressionConstrain = bdSettings.Item3;
+            createFullAnimationTrack = !(expressionDrivenBones || expressionBlendShapeTranspose || expressionConstrain);
         }
 
         static void CleanUp()
@@ -1454,6 +1464,43 @@ namespace Reallusion.Import
                 {
                     Util.LogWarn("Unable to apply prefab instance.");
                 }
+            }
+        }
+
+        public static (bool, bool, bool) GetBoneDriverSettingsReflection()
+        {
+            try
+            {
+                if (CharacterAnimator == null) return (false, false, false);
+
+                GameObject obj = CharacterAnimator.gameObject;
+                Component boneDriver = BoneEditor.GetBoneDriverComponentReflection(obj);
+                if (boneDriver)
+                {
+                    bool bones = false, expressions = false, constraint = false;
+                    if (Physics.GetTypeField(boneDriver, "bones", out object b))
+                    {
+                        bones = (bool)b;
+                    }
+                    if (Physics.GetTypeField(boneDriver, "expressions", out object e))
+                    {
+                        expressions = (bool)e;
+                    }
+                    if (Physics.GetTypeField(boneDriver, "constraint", out object c))
+                    {
+                        constraint = (bool)c;
+                    }
+                    return (bones, expressions, constraint);
+                }
+                else
+                {
+                    return (false, false, false);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Unable to retrieve Bonedriver info: {e.Message}");
+                return (false, false, false);
             }
         }
 

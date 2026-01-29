@@ -35,15 +35,15 @@ namespace Reallusion.Import
         //private static float time, prev, current = 0f;
         public static bool AnimFoldOut { get; private set; } = true;
         public static FacialProfile MeshFacialProfile { get; private set; }
-        public static FacialProfile ClipFacialProfile { get; private set; }        
-        public static AnimationClip OriginalClip { get; set; }        
-        public static AnimationClip WorkingClip { get ; set; }
+        public static FacialProfile ClipFacialProfile { get; private set; }
+        public static AnimationClip OriginalClip { get; set; }
+        public static AnimationClip WorkingClip { get; set; }
         public static Animator CharacterAnimator { get; set; }
 
         //private static double updateTime = 0f;
         //private static double deltaTime = 0f;
         //private static double frameTime = 1f;
-        
+
         private static bool forceUpdate = false;
         private static FacialProfile defaultProfile = new FacialProfile(ExpressionProfile.ExPlus, VisemeProfile.PairsCC3);
 
@@ -76,7 +76,7 @@ namespace Reallusion.Import
             }
         }
 
-        public static void ClosePlayer()  
+        public static void ClosePlayer()
         {
             if (IsPlayerShown())
             {
@@ -90,8 +90,8 @@ namespace Reallusion.Import
 
                 //if (CharacterAnimator)       
                 ///{
-                    //GameObject scenePrefab = Util.GetScenePrefabInstanceRoot(CharacterAnimator.gameObject);
-                    //Util.TryResetScenePrefab(scenePrefab);
+                //GameObject scenePrefab = Util.GetScenePrefabInstanceRoot(CharacterAnimator.gameObject);
+                //Util.TryResetScenePrefab(scenePrefab);
                 //}
 
 #if SCENEVIEW_OVERLAY_COMPATIBLE
@@ -125,13 +125,13 @@ namespace Reallusion.Import
         public static void SetCharacter(GameObject scenePrefab)
         {
             if (scenePrefab)
-                Util.LogDetail("scenePrefab.name: " + scenePrefab.name + " " + PrefabUtility.IsPartOfPrefabInstance(scenePrefab));            
+                Util.LogDetail("scenePrefab.name: " + scenePrefab.name + " " + PrefabUtility.IsPartOfPrefabInstance(scenePrefab));
 
             if (!scenePrefab && WindowManager.IsPreviewScene)
                 scenePrefab = WindowManager.GetPreviewScene().GetPreviewCharacter();
 
-            if (scenePrefab)  
-            {                                
+            if (scenePrefab)
+            {
                 Animator animator = scenePrefab.GetComponent<Animator>();
                 if (!animator) animator = scenePrefab.GetComponentInChildren<Animator>();
                 if (animator != null)
@@ -157,8 +157,8 @@ namespace Reallusion.Import
                         }
                     }
                 }
-            } 
-            
+            }
+
             HDChar = CharIsHD();
             BoneDriverPresent = CharHasBoneDriver();
             //Debug.Log($"Char is HD {HDChar}, Char has BoneDriver {BoneDriverPresent}");
@@ -235,7 +235,7 @@ namespace Reallusion.Import
         // Animaton Override Controller
         [SerializeField]
         public static AnimatorOverrideController animatorOverrideController;
-        
+
 
         // Playback
         private static bool play = false;
@@ -289,8 +289,10 @@ namespace Reallusion.Import
 
             // reset the animation player
             ResetAnimationPlayer();
+
+            if (AnimRetargetGUI.IsPlayerShown()) AnimRetargetGUI.CopyBoneDriverSettingsToGUI();
         }
-        
+
         private static AnimatorController CreateAnimatiorController()
         {
             controllerPath = dirString + controllerName + ".controller";
@@ -301,7 +303,7 @@ namespace Reallusion.Import
             // play mode parameters
             a.AddParameter(paramDirection, AnimatorControllerParameterType.Float);
             AnimatorStateMachine rootStateMachine = a.layers[0].stateMachine;
-            AnimatorState baseState = rootStateMachine.AddState(defaultState);            
+            AnimatorState baseState = rootStateMachine.AddState(defaultState);
             baseState.iKOnFeet = FootIK;
             // play mode parameters
             baseState.speedParameter = paramDirection;
@@ -354,7 +356,7 @@ namespace Reallusion.Import
 
                 if (EditorApplication.isPlaying) CharacterAnimator.gameObject.SetActive(false);
                 playbackAnimatorController.layers = allLayer;
-                if (EditorApplication.isPlaying) CharacterAnimator.gameObject.SetActive(true);                
+                if (EditorApplication.isPlaying) CharacterAnimator.gameObject.SetActive(true);
             }
         }
 
@@ -369,7 +371,7 @@ namespace Reallusion.Import
 
         private static void SelectOverrideAnimation(AnimationClip clip, AnimatorOverrideController aoc)
         {
-            ResetAnimationPlayer();            
+            ResetAnimationPlayer();
             var clone = GameObject.Instantiate(clip);
             clone.name = clip.name;
             SetClipSettings(clone);  // update the bake flags in AnimationClipSettings
@@ -448,7 +450,7 @@ namespace Reallusion.Import
 
             if (!characterPrefab) return;
 
-            Util.LogDetail(("Attempting to reset: " + characterPrefab.name));            
+            Util.LogDetail(("Attempting to reset: " + characterPrefab.name));
 
             GameObject basePrefab = PrefabUtility.GetCorrespondingObjectFromSource(characterPrefab);
 
@@ -517,7 +519,7 @@ namespace Reallusion.Import
             WorkingClip = CloneClip(OriginalClip);
 
             time = 0f;
-            play = false;            
+            play = false;
         }
 
         public static AnimationClip CloneClip(AnimationClip clip)
@@ -526,12 +528,12 @@ namespace Reallusion.Import
             {
                 var clone = Object.Instantiate(clip);
                 clone.name = clip.name;
-                AnimationClip clonedClip = clone as AnimationClip;                
+                AnimationClip clonedClip = clone as AnimationClip;
 
                 return clonedClip;
             }
-            
-            return null;            
+
+            return null;
         }
 
         #region IMGUI
@@ -714,7 +716,7 @@ namespace Reallusion.Import
                 // "Animation.Play"
                 Texture playButton = playbackSpeed > 0 ? EditorGUIUtility.IconContent("d_forward@2x").image : EditorGUIUtility.IconContent("d_back@2x").image;
                 Texture pauseButton = EditorGUIUtility.IconContent("PauseButton").image;
-                
+
                 // play/pause: "Animation.Play" / "PauseButton"
 
                 if (GUILayout.Button(new GUIContent(play ? pauseButton : playButton, play ? "Pause" : "Play"), EditorStyles.toolbarButton, GUILayout.Height(30f)))
@@ -737,7 +739,7 @@ namespace Reallusion.Import
 
                 GUILayout.Space(10f);
                 //GUILayout.Label(new GUIContent(EditorGUIUtility.IconContent("d_UnityEditor.GameView").image, "Controls for 'Play Mode'"), guiStyles.playIconStyle, GUILayout.Width(24f), GUILayout.Height(24f));
-                                
+
                 if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_ViewToolOrbit On").image, "Select the character root."), EditorStyles.toolbarButton))
                 {
                     if (ColliderManagerEditor.EditMode)
@@ -748,7 +750,7 @@ namespace Reallusion.Import
                     {
                         Selection.activeObject = selectedAnimator.gameObject;
                     }
-                        
+
                 }
 
                 Texture bigPlayButton = EditorApplication.isPlaying ? EditorGUIUtility.IconContent("preAudioPlayOn").image : EditorGUIUtility.IconContent("preAudioPlayOff").image;
@@ -793,7 +795,7 @@ namespace Reallusion.Import
                 CharacterAnimator.Update(time);
             }
         }
-        
+
         // playback speed slider sets speed multiplier directly in edit mode but requires an update in play mode
         private static void PlaybackSpeedSlider()
         {
@@ -820,7 +822,7 @@ namespace Reallusion.Import
             // clear all the animation data
             WorkingClip = null;
             OriginalClip = null;
-            
+
             // clear the animation controller + override controller
             // remove the on-disk temporary controller
             ResetToBaseAnimatorController();
@@ -1011,7 +1013,7 @@ namespace Reallusion.Import
             //                              entering play mode maually wont cause callback to refocus on the scene
             if (!EditorApplication.isPlaying)
                 Util.SerializeBoolToEditorPrefs(true, WindowManager.sceneFocus);
-            
+
             EditorApplication.isPlaying = !EditorApplication.isPlaying;
         }
 
@@ -1095,7 +1097,7 @@ namespace Reallusion.Import
         }
 
         public static string FindSkeletonBoneName(string humanBoneName, Avatar avatar)
-        {            
+        {
             for (int i = 0; i < avatar.humanDescription.human.Length; i++)
             {
                 if (avatar.humanDescription.human[i].humanName.Equals(humanBoneName, System.StringComparison.InvariantCultureIgnoreCase))
@@ -1167,11 +1169,11 @@ namespace Reallusion.Import
             scene.Repaint();
         }
 
-        public static void ForbidTracking() 
+        public static void ForbidTracking()
         {
             // this is called by the collider manager editor script to use its own tracking while editing colliders
             // this avoids having an objected selected since its control handles will be visible and cause problems
-            
+
             if (isTracking)
             {
                 isTracking = false;
@@ -1316,7 +1318,7 @@ namespace Reallusion.Import
         };
 
         #endregion Pose reset and bone tracking
-        
+
 
         #region Update
         private static void PlayStateChangeCallback(PlayModeStateChange state)
@@ -1332,7 +1334,7 @@ namespace Reallusion.Import
                         Util.SerializeFloatToEditorPrefs(time, WindowManager.timeKey);
                         Util.SerializeBoolToEditorPrefs(isTracking, WindowManager.trackingStatusKey);
                         if (isTracking)
-                        {                            
+                        {
                             foreach (BoneItem boneItem in boneItemList)
                             {
                                 if (boneItem.selected)
@@ -1351,7 +1353,7 @@ namespace Reallusion.Import
                         break;
                     }
                 case PlayModeStateChange.EnteredPlayMode:
-                    {                        
+                    {
                         break;
                     }
                 case PlayModeStateChange.ExitingPlayMode:
@@ -1525,14 +1527,14 @@ namespace Reallusion.Import
             SkinnedMeshRenderer[] smrs = CharacterAnimator.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
             string[] signatures = new string[] { "Mouth_Funnel_UL", "Mouth_Funnel_UR", "Eye_Look_Up_L", "Eye_Look_Up_R", "Jaw_Clench_L", "Jaw_Clench_R" };
-            
+
             foreach (SkinnedMeshRenderer smr in smrs)
             {
                 if (smr.name.ToLower().Contains("body"))
                 {
                     for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                     {
-                        string shapeName =  smr.sharedMesh.GetBlendShapeName(i);
+                        string shapeName = smr.sharedMesh.GetBlendShapeName(i);
                         if (signatures.Contains(shapeName))
                         {
                             return true;
@@ -1583,17 +1585,17 @@ namespace Reallusion.Import
             public Dictionary<string, float> FACE_FEAR_EXT;
             public Dictionary<string, float> FACE_SURPRISE_EXT;
         }
-        
+
         public static void InitFace()
         {
             if (CharacterAnimator == null) return;
 
             EXPRESSIVENESS = 0f;
             EXPRESSION = null;
-            
+
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
-            
+
             if (root)
             {
                 GameObject leftEye = MeshUtil.FindCharacterBone(root, "CC_Base_L_Eye", "L_Eye");
@@ -1636,15 +1638,15 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (!FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink", 
-                        new FacialProfile(ExpressionProfile.Std, VisemeProfile.None), 
+                if (!FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink",
+                        new FacialProfile(ExpressionProfile.Std, VisemeProfile.None),
                         MeshFacialProfile, out blinkRef))
                 {
                     FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink_L",
                         new FacialProfile(ExpressionProfile.Std, VisemeProfile.None),
                         MeshFacialProfile, out blinkRef);
                 }
-                blinkVal = blinkRef;                            
+                blinkVal = blinkRef;
             }
 
             doneInitFace = true;
@@ -1688,7 +1690,7 @@ namespace Reallusion.Import
             eyeChanged = true;
             if (EXPRESSION != null)
                 SetFacialExpression(EXPRESSION, true);
-            
+
             AdjustMouth(jawVal);
             AdjustBlink(blinkVal);
         }
@@ -1713,10 +1715,10 @@ namespace Reallusion.Import
                     lookAt = head.transform.position;
 
                 if (head)
-                {                    
+                {
                     //foreach (SceneView sv in SceneView.sceneViews)
                     //{
-                        SceneView.lastActiveSceneView.LookAt(lookAt, GetLookBackDir(), 0.25f);
+                    SceneView.lastActiveSceneView.LookAt(lookAt, GetLookBackDir(), 0.25f);
                     //}
                 }
             }
@@ -1726,14 +1728,14 @@ namespace Reallusion.Import
         {
             doOnce = true;
             doOnceCatchMouse = true;
-            doneInitFace = false;            
+            doneInitFace = false;
             EXPRESSION = null;
             EXPRESSIVENESS = 0f;
         }
 
         public static void DrawFacialMorph()
         {
-            if (doOnce) 
+            if (doOnce)
             {
                 StartUp();
                 doOnce = !doOnce;
@@ -1821,7 +1823,7 @@ namespace Reallusion.Import
                         WindowManager.StopMatchSceneCamera();
                     }
 
-                    resetClickTimer = EditorApplication.timeSinceStartup;                    
+                    resetClickTimer = EditorApplication.timeSinceStartup;
 
                     SceneView.RepaintAll();
                 }
@@ -1832,7 +1834,7 @@ namespace Reallusion.Import
                 //the height is determined by the vertical box + the horizontal GULayout group below it
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(1f), GUILayout.Height(45f));  //total height = this + button strip
                 GUILayout.Box("", transparentBoxStyle, GUILayout.Width(308f), GUILayout.Height(1f)); //total width
-                
+
                 GUILayout.BeginHorizontal();
                 EditorGUI.BeginDisabledGroup(ExpressionData == null);
                 GUILayout.FlexibleSpace();
@@ -2020,7 +2022,7 @@ namespace Reallusion.Import
 
                     case EventType.MouseUp:
                         {
-                            outlineColor = mouseOverColor;                            
+                            outlineColor = mouseOverColor;
                             GUIUtility.hotControl = 0;
                         }
                         break;
@@ -2039,8 +2041,8 @@ namespace Reallusion.Import
 
             Vector2 output = new Vector2(referenceVector2.x + relX, referenceVector2.y + relY);
             return output;
-        }        
-        
+        }
+
         public static void AdjustEyes()
         {
             if (!eyeChanged) return;
@@ -2068,8 +2070,8 @@ namespace Reallusion.Import
                     Vector3 euler = leftEye.transform.localRotation.eulerAngles;
                     float leftRight = Mathf.DeltaAngle(eyeVal.x, eyeRef.x) / 45f;
                     float upDown = Mathf.DeltaAngle(eyeVal.y, eyeRef.y) / 24f;
-                    float lookUpValue = upDown < 0f ? -upDown * 100f: 0;
-                    float lookDownValue = upDown >= 0f ? upDown * 100f: 0;
+                    float lookUpValue = upDown < 0f ? -upDown * 100f : 0;
+                    float lookDownValue = upDown >= 0f ? upDown * 100f : 0;
                     float lookLeftValue = leftRight >= 0f ? leftRight * 100f : 0;
                     float lookRightValue = leftRight < 0f ? -leftRight * 100f : 0;
                     SetIndividualBlendShape("A06_Eye_Look_Up_Left", lookUpValue);
@@ -2089,8 +2091,8 @@ namespace Reallusion.Import
                     SetIndividualBlendShape("Eye_Look_Left_R", lookLeftValue);
                     SetIndividualBlendShape("Eye_Look_Right_L", lookRightValue);
                     SetIndividualBlendShape("Eye_Look_Right_R", lookRightValue);
-                    
-                    
+
+
                     euler.z = input.x;
                     euler.x = input.y;
 
@@ -2153,9 +2155,9 @@ namespace Reallusion.Import
 
         private static bool SetCharacterBlendShape(GameObject characterRoot, string blendShapeName, float weight)
         {
-            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeName, 
+            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeName,
                 defaultProfile, MeshFacialProfile, weight);
-        }        
+        }
 
         static void SetFacialExpression(Dictionary<string, float> dict, bool restore = false)
         {
@@ -2187,7 +2189,7 @@ namespace Reallusion.Import
             {
                 foreach (KeyValuePair<string, float> entry in dict)
                 {
-                    string shapeName = entry.Key;                    
+                    string shapeName = entry.Key;
 
                     if (shapeName.iEquals("Turn_Jaw") || shapeName.iEquals("A25_Jaw_Open"))
                     {
@@ -2200,7 +2202,7 @@ namespace Reallusion.Import
                         }
                     }
 
-                    SetCharacterBlendShape(root, shapeName, entry.Value * EXPRESSIVENESS);                    
+                    SetCharacterBlendShape(root, shapeName, entry.Value * EXPRESSIVENESS);
                 }
             }
         }
@@ -2213,52 +2215,52 @@ namespace Reallusion.Import
         static void SetFacialExpressionHD(string groupName, int showIndex)
         {
             Dictionary<string, float> dict = null;
-            
+
             ExpressionData.HD_HAPPY_IDX = 0;
             ExpressionData.HD_SAD_IDX = 0;
             ExpressionData.HD_ANGRY_IDX = 0;
             ExpressionData.HD_DISGUST_IDX = 0;
             ExpressionData.HD_FEAR_IDX = 0;
             ExpressionData.HD_SURPRISE_IDX = 0;
-            
+
             switch (groupName)
             {
                 case "HD_HAPPY":
-                {
-                    dict = showIndex == ExpressionData.HD_HAPPY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_HAPPY.ElementAt(showIndex).Value;
-                    ExpressionData.HD_HAPPY_IDX = IncrementIndex(showIndex, ExpressionData.HD_HAPPY.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_HAPPY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_HAPPY.ElementAt(showIndex).Value;
+                        ExpressionData.HD_HAPPY_IDX = IncrementIndex(showIndex, ExpressionData.HD_HAPPY.Count);
+                        break;
+                    }
                 case "HD_SAD":
-                {
-                    dict = showIndex == ExpressionData.HD_SAD.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SAD.ElementAt(showIndex).Value;
-                    ExpressionData.HD_SAD_IDX = IncrementIndex(showIndex, ExpressionData.HD_SAD.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_SAD.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SAD.ElementAt(showIndex).Value;
+                        ExpressionData.HD_SAD_IDX = IncrementIndex(showIndex, ExpressionData.HD_SAD.Count);
+                        break;
+                    }
                 case "HD_ANGRY":
-                {
-                    dict = showIndex == ExpressionData.HD_ANGRY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_ANGRY.ElementAt(showIndex).Value;
-                    ExpressionData.HD_ANGRY_IDX = IncrementIndex(showIndex, ExpressionData.HD_ANGRY.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_ANGRY.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_ANGRY.ElementAt(showIndex).Value;
+                        ExpressionData.HD_ANGRY_IDX = IncrementIndex(showIndex, ExpressionData.HD_ANGRY.Count);
+                        break;
+                    }
                 case "HD_DISGUST":
-                {
-                    dict = showIndex == ExpressionData.HD_DISGUST.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_DISGUST.ElementAt(showIndex).Value;
-                    ExpressionData.HD_DISGUST_IDX = IncrementIndex(showIndex, ExpressionData.HD_DISGUST.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_DISGUST.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_DISGUST.ElementAt(showIndex).Value;
+                        ExpressionData.HD_DISGUST_IDX = IncrementIndex(showIndex, ExpressionData.HD_DISGUST.Count);
+                        break;
+                    }
                 case "HD_FEAR":
-                {
-                    dict = showIndex == ExpressionData.HD_FEAR.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_FEAR.ElementAt(showIndex).Value;
-                    ExpressionData.HD_FEAR_IDX = IncrementIndex(showIndex, ExpressionData.HD_FEAR.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_FEAR.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_FEAR.ElementAt(showIndex).Value;
+                        ExpressionData.HD_FEAR_IDX = IncrementIndex(showIndex, ExpressionData.HD_FEAR.Count);
+                        break;
+                    }
                 case "HD_SURPRISE":
-                {
-                    dict = showIndex == ExpressionData.HD_SURPRISE.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SURPRISE.ElementAt(showIndex).Value;
-                    ExpressionData.HD_SURPRISE_IDX = IncrementIndex(showIndex, ExpressionData.HD_SURPRISE.Count);
-                    break;
-                }
+                    {
+                        dict = showIndex == ExpressionData.HD_SURPRISE.Count ? ExpressionData.HD_NEUTRAL : ExpressionData.HD_SURPRISE.ElementAt(showIndex).Value;
+                        ExpressionData.HD_SURPRISE_IDX = IncrementIndex(showIndex, ExpressionData.HD_SURPRISE.Count);
+                        break;
+                    }
             }
             SetFacialExpressionHD(ExpressionData.HD_NEUTRAL);
             SetFacialExpressionHD(dict);
@@ -2277,8 +2279,8 @@ namespace Reallusion.Import
             if (dict == null) return;
             if (!CharacterAnimator) return;
             GameObject obj = CharacterAnimator.gameObject;
-            
-            SkinnedMeshRenderer[] smrs =  obj.GetComponentsInChildren<SkinnedMeshRenderer>();
+
+            SkinnedMeshRenderer[] smrs = obj.GetComponentsInChildren<SkinnedMeshRenderer>();
             if (smrs != null && smrs.Length > 0)
             {
                 foreach (SkinnedMeshRenderer smr in smrs)
@@ -2292,14 +2294,14 @@ namespace Reallusion.Import
                 }
             }
         }
-        
+
         static void SetIndividualBlendShape(string individualShapeName, float value)
         {
             if (CharacterAnimator == null) return;
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
             SetCharacterBlendShape(root, individualShapeName, value);
-        }        
+        }
 
         static void SnapViewToHead()
         {
@@ -2327,7 +2329,7 @@ namespace Reallusion.Import
 
                     //foreach (SceneView sv in SceneView.sceneViews)
                     //{
-                        SceneView.lastActiveSceneView.LookAt(snapLookAt, camDir, 0.15f);
+                    SceneView.lastActiveSceneView.LookAt(snapLookAt, camDir, 0.15f);
                     //}
 
                     SceneView.RepaintAll();
