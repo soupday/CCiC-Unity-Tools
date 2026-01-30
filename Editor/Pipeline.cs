@@ -36,7 +36,7 @@ namespace Reallusion.Import
     {
         None, Skin, Head, Eye, Cornea, EyeOcclusion, Tearline, Hair, Scalp,
         Eyelash, Teeth, Tongue, DefaultOpaque, DefaultAlpha, BlendAlpha, SSS, 
-        TearlinePlus, EyeOcclusionPlus
+        TearlinePlus, EyeOcclusionPlus, Disabled,
     }
 
     public enum MaterialQuality { None, Default, High, Baked }
@@ -52,6 +52,8 @@ namespace Reallusion.Import
         //
         public const string SHADER_DEFAULT = "HDRP/Lit";
         public const string SHADER_DEFAULT_HAIR = "HDRP/Hair";
+        public const string SHADER_DEFAULT_MERGED = "RL5_Merged_HDRP";
+        public const string SHADER_DISABLED = "RL5_Disabled_HDRP";
         //
         public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_HDRP";
         public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_HDRP";
@@ -130,6 +132,9 @@ namespace Reallusion.Import
         public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_HDRP";
         // for gamebase single material or actor core...
         public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_HDRP";
+        public const string MATERIAL_DEFAULT_MERGED = "RL5_Template_Default_Merged_HDRP";
+        // disabled
+        public const string MATERIAL_DEFAULT_DISABLED = "RL5_Template_Default_Disabled_HDRP";
 
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
@@ -177,6 +182,8 @@ namespace Reallusion.Import
         //
         public const string SHADER_DEFAULT = "Universal Render Pipeline/Lit";
         public const string SHADER_DEFAULT_HAIR = "Universal Render Pipeline/Hair"; // n/a
+        public const string SHADER_DEFAULT_MERGED = "RL5_Merged_URP";
+        public const string SHADER_DISABLED = "RL5_Disabled_URP";
         //
         public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_URP";
         public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_URP";
@@ -257,6 +264,9 @@ namespace Reallusion.Import
         public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_URP";
         // for gamebase single material or actor core...
         public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_URP";
+        public const string MATERIAL_DEFAULT_MERGED = "RL5_Template_Default_SingleMaterial_URP";
+        // disabled
+        public const string MATERIAL_DEFAULT_DISABLED = "RL5_Template_Default_Disabled_URP";
 
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
@@ -304,6 +314,8 @@ namespace Reallusion.Import
         //
         public const string SHADER_DEFAULT = "Standard";
         public const string SHADER_DEFAULT_HAIR = "Standard";
+        public const string SHADER_DEFAULT_MERGED = "RL5_Merged_3D";
+        public const string SHADER_DISABLED = "RL5_Disabled_3D";
         //
         public const string SHADER_HQ_SKIN = "RL5_SkinShader_Variants_3D";
         public const string SHADER_HQ_HEAD = "RL5_SkinShader_Variants_3D";
@@ -384,7 +396,10 @@ namespace Reallusion.Import
         public const string MATERIAL_DEFAULT_SSS = "RL5_Template_Default_SSS_3D";
         // for gamebase single material or actor core...
         public const string MATERIAL_DEFAULT_SINGLE_MATERIAL = "RL5_Template_Default_SingleMaterial_3D";
-        
+        public const string MATERIAL_DEFAULT_MERGED = "RL5_Template_Default_SingleMaterial_3D";
+        // disabled
+        public const string MATERIAL_DEFAULT_DISABLED = "RL5_Template_Default_Disabled_3D";
+
         // Baked Materials
         // Note: Non custom materials must bake to HDRP default shaders
         //       Only "Custom" materials have custom shaders, or have special settings like refraction.
@@ -445,6 +460,7 @@ namespace Reallusion.Import
             { MaterialType.BlendAlpha, SHADER_HQ_ALPHABLEND },
             { MaterialType.DefaultOpaque, SHADER_HQ_OPAQUE },
             { MaterialType.SSS, SHADER_HQ_SSS },
+            { MaterialType.Disabled, SHADER_DISABLED },
         };
 
         private static Dictionary<MaterialType, string> DICT_MATERIALS_DEFAULT = new Dictionary<MaterialType, string>
@@ -466,6 +482,7 @@ namespace Reallusion.Import
             { MaterialType.BlendAlpha, MATERIAL_DEFAULT_ALPHABLEND },
             { MaterialType.DefaultOpaque, MATERIAL_DEFAULT_OPAQUE },
             { MaterialType.SSS, MATERIAL_DEFAULT_SSS },
+            { MaterialType.Disabled, MATERIAL_DEFAULT_DISABLED },
         };
 
         private static Dictionary<MaterialType, string> DICT_MATERIALS_HQ = new Dictionary<MaterialType, string>
@@ -721,17 +738,34 @@ namespace Reallusion.Import
             return Util.FindMaterial(materialName);
         }
 
-        public static string GetQualityMaterialName(string sourceName, MaterialType materialType, MaterialQuality quality, CharacterInfo info)
-        {            
+        public static bool IsMergedMaterial(string sourceName, CharacterInfo info)
+        {
             if (info.Generation == BaseGeneration.ActorCore)
-                return MATERIAL_DEFAULT_SINGLE_MATERIAL;            
+                return true;
 
             if (info.Generation == BaseGeneration.ActorBuild)
             {
                 Material singleMaterial = RL.GetActorBuildSingleMaterial(info.Fbx);
                 if (singleMaterial && singleMaterial.name == sourceName)
-                    return MATERIAL_DEFAULT_SINGLE_MATERIAL;
+                    return true;
             }
+
+            if (sourceName.iContains("_merge"))
+            {
+                Material singleMaterial = RL.GetActorBuildSingleMaterial(info.Fbx);
+                if (singleMaterial && singleMaterial.name == sourceName)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static string GetQualityMaterialName(string sourceName, MaterialType materialType, MaterialQuality quality, CharacterInfo info)
+        {
+            if (materialType == MaterialType.Disabled)
+                return MATERIAL_DEFAULT_DISABLED;
+
+            if (IsMergedMaterial(sourceName, info)) return MATERIAL_DEFAULT_MERGED;
 
             if (quality == MaterialQuality.High) // option overrides for high quality materials
             {
@@ -906,8 +940,8 @@ namespace Reallusion.Import
 
             if (shaderName == "Standard" && doubleSided)
             {
-                Shader dblSidedShader = Shader.Find("RL_Standard_DoubleSided");
-                mat.shader = dblSidedShader;                
+                Shader dblSidedShader = Shader.Find("Reallusion/RL_Standard_DoubleSided");
+                mat.shader = dblSidedShader;
             }
 
             if (useAmplify)

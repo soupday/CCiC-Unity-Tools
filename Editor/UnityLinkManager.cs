@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using UnityEngine.Playables;
+using UnityEditor.SceneManagement;
 
 namespace Reallusion.Import
 {
@@ -38,7 +39,7 @@ namespace Reallusion.Import
         #region Import
         public static bool SIMPLE_MODE;
         public static string IMPORT_DESTINATION_FOLDER = string.Empty;
-        public static string IMPORT_DEFAULT_DESTINATION_FOLDER { get {  return GetDefaultFullFolderPath(); } }
+        public static string IMPORT_DEFAULT_DESTINATION_FOLDER { get { return GetDefaultFullFolderPath(); } }
         public static string STAGING_IMPORT_SUBFOLDER = "Staging Imports";
         public static string SCENE_ASSETS = "Scene Assets";
         public static string SCENE_FOLDER = string.Empty;
@@ -50,7 +51,7 @@ namespace Reallusion.Import
         // timeline creation only
         public static string TIMELINE_SAVE_FOLDER = string.Empty;
         public static bool LOCK_TIMELINE_TO_LAST_USED;
-        public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }        
+        public static string TIMELINE_DEFAULT_SAVE_FOLDER { get { return GetDefaultFullFolderPath(); } }
         public static string TIMELINE_DEFAULT_REFERENCE_STRING = "Timeline Name"; // retain default so UI can see it has been changed before allowing creation
         public static string TIMELINE_REFERENCE_STRING = TIMELINE_DEFAULT_REFERENCE_STRING;
         // selected timeline asset - updated by the rowgui level selection in TimeLineTreeView
@@ -108,7 +109,7 @@ namespace Reallusion.Import
             SetupLogging();
             //StartQueue();
             StartClient();
-            //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
+            //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup
         }
         #endregion Setup
 
@@ -122,15 +123,15 @@ namespace Reallusion.Import
             if (!Directory.Exists(defaultpath)) { Directory.CreateDirectory(defaultpath); }
             return defaultpath;
         }
-        public static string EXPORTPATH = "";        
+        public static string EXPORTPATH = "";
         public static bool IS_CLIENT_LOCAL = true; // need to recall this for auto reconnecting ... tbd
         public const string LOCAL_HOST = "127.0.0.1";
         public static string REMOTE_HOST = string.Empty;
-                
+
         public static bool IMPORT_INTO_SCENE = true;
         public static bool USE_CURRENT_SCENE = true;
         public static bool ADD_TO_TIMELINE = true;
-        
+
         public static bool timelineSceneCreated = false; // hmm
 
 
@@ -139,7 +140,7 @@ namespace Reallusion.Import
         static NetworkStream stream = null;
         static Thread clientThread;
         static bool clientThreadActive = false;
-        public static bool IsClientThreadActive {  get {  return clientThreadActive; } }
+        public static bool IsClientThreadActive { get { return clientThreadActive; } }
         static bool retryConnection = true;
         public static bool reconnect = false;
         static bool listening = false;
@@ -147,7 +148,7 @@ namespace Reallusion.Import
         private static bool queueIsActive = false;
 
         public static event EventHandler ClientConnected;
-        public static event EventHandler ClientDisconnected;        
+        public static event EventHandler ClientDisconnected;
 
         static void StartClient()
         {
@@ -164,7 +165,7 @@ namespace Reallusion.Import
             int port = 9334;
 
             client = new TcpClient();
-            
+
             #region connection retry
             int retryCount = 100;
             while (retryCount > 0 && retryConnection)
@@ -173,7 +174,7 @@ namespace Reallusion.Import
                 /*
                 try
                 {
-                    var result = client.BeginConnect(ipAddress, port, null, null); 
+                    var result = client.BeginConnect(ipAddress, port, null, null);
                     var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
 
                     if (!success)
@@ -189,7 +190,7 @@ namespace Reallusion.Import
                     NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
                 */
-                
+
                 try
                 {
                     client.Connect(ipAddress, port);
@@ -198,7 +199,7 @@ namespace Reallusion.Import
                 {
                     NotifyInternalQueue("Attempting connection... " + e.Message);
                 }
-                
+
                 if (client.Connected)
                 {
                     retryCount = 0;
@@ -284,7 +285,7 @@ namespace Reallusion.Import
         static int MAX_CHUNK_SIZE = 32768;
 
         static void RecvData()
-        {            
+        {
             try
             {
                 if (stream.CanRead)
@@ -388,7 +389,7 @@ namespace Reallusion.Import
                             catch (Exception ex)
                             {
                                 Debug.Log("Data read: " + ex);
-                            }                            
+                            }
                             zipSize -= bytesRead;
                         }
                         fileStream.Close();
@@ -407,7 +408,7 @@ namespace Reallusion.Import
                         HandleRecivedData(data);
                     }
                 }
-            }            
+            }
 
             // reset all
             opCode = OpCodes.NONE;
@@ -438,7 +439,7 @@ namespace Reallusion.Import
         }
 
         // alt - may be faster
-        public static byte[] ConcatBytes (byte[] first, byte[] second)
+        public static byte[] ConcatBytes(byte[] first, byte[] second)
         {
             IEnumerable<byte> bytes = first.Concat(second);
             return bytes.ToArray();
@@ -504,6 +505,7 @@ namespace Reallusion.Import
             MOTION = 240,
             REQUEST = 250,
             CONFIRM = 251,
+            RELINK = 300,
 
             // additions for testing
             TEST = 999,
@@ -697,7 +699,7 @@ namespace Reallusion.Import
 
         public const string connectPrefString = "RL_CC_Server_Disconnect_Timestamp";
 
-        static void SetConnectedTimeStamp(bool disconnect = false)  
+        static void SetConnectedTimeStamp(bool disconnect = false)
         {
             // disconnect = true will set the connected timestamp beyond the timeout limit for auto reconnection
             long time = 0;// long.MinValue;
@@ -863,7 +865,12 @@ namespace Reallusion.Import
                     }
                 case OpCodes.REQUEST:
                     {
-                        try { qItem.Request = JsonConvert.DeserializeObject<JsonRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; } 
+                        try { qItem.Request = JsonConvert.DeserializeObject<JsonRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        break;
+                    }
+                case OpCodes.RELINK:
+                    {
+                        try { qItem.Relink = JsonConvert.DeserializeObject<JsonRelink>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
                         break;
                     }
             }
@@ -880,7 +887,7 @@ namespace Reallusion.Import
                 Debug.LogWarning(dataString);
             }
         }
-        
+
         public static byte[] ExtractBytes(byte[] data, int startIndex, int length)
         {
             byte[] sizeBytes = new byte[length];
@@ -891,7 +898,7 @@ namespace Reallusion.Import
             }
             return sizeBytes;
         }
-        
+
         static string ClientHelloMessage()
         {
             string jsonString = string.Empty;
@@ -904,7 +911,7 @@ namespace Reallusion.Import
             if (Version.TryParse(Pipeline.VERSION, out v))
                 ints = new int[] { v.Major, v.Minor, v.Build };
             else
-                ints = new int[] { 2, 0, 0 };            
+                ints = new int[] { 2, 0, 0 };
 
             hello.Version = ints;
             hello.Path = EXPORTPATH;
@@ -934,7 +941,7 @@ namespace Reallusion.Import
         }
 
         public static void StopQueue()
-        {            
+        {
             //activityQueue.Clear();
             EditorApplication.update -= QueueDelegate;
             queueIsActive = false;
@@ -956,7 +963,7 @@ namespace Reallusion.Import
 
             if (activityQueue == null) { return; }
             QueueItem next = new QueueItem(OpCodes.NONE, Exchange.RECEIVED);
-            
+
             if (activityQueue.Count == 0) { return; }
             try
             {
@@ -1057,15 +1064,20 @@ namespace Reallusion.Import
                         //Debug.Log(next.FrameSync.ToString());
                         break;
                     }
-                    case OpCodes.REQUEST:
+                case OpCodes.REQUEST:
                     {
                         //Debug.LogWarning("The 'Send Scene' function is not yet fully implemented - Use with caution.");
                         RespondToSceneRequest(next);
                         break;
                     }
+                case OpCodes.RELINK:
+                    {
+                        ActorRelink(next);
+                        break;
+                    }
             }
             next.Processed = true;
-            if (UnityLinkManagerWindow.Instance != null) UnityLinkManagerWindow.Instance.Focus();            
+            if (UnityLinkManagerWindow.Instance != null) UnityLinkManagerWindow.Instance.Focus();
         }
 
         static void CameraSync(QueueItem item)
@@ -1087,7 +1099,7 @@ namespace Reallusion.Import
             Quaternion corrected = unityQuaternion * cameraCorrection;
 
             // put the scene into focus so it updates
-            scene.Focus();            
+            scene.Focus();
 
             scene.cameraSettings.fieldOfView = item.CameraSync.Fov;
             float halfAngle = scene.cameraSettings.fieldOfView / 2f;
@@ -1115,17 +1127,17 @@ namespace Reallusion.Import
 
             Quaternion blenderQuaternion = item.CameraSync.Rotation;
             // convert blender quaternion to unity
-            Quaternion unityQuaternion = new Quaternion( blenderQuaternion.x,
+            Quaternion unityQuaternion = new Quaternion(blenderQuaternion.x,
                                                         -blenderQuaternion.z,
                                                          blenderQuaternion.y,
                                                          blenderQuaternion.w);
             // correct rotation to point blender camera's forward -Y (in Unity space) to forward +Z
             Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
             Quaternion corrected = unityQuaternion * cameraCorrection;
-            
+
             //camera.transform.position = cameraPos;
             //camera.transform.rotation = corrected;
-            
+
             // put the scene into focus so it updates
             scene.Focus();
 
@@ -1136,16 +1148,16 @@ namespace Reallusion.Import
             Vector3 toPivot = targetPos - cameraPos;
             float dist = Vector3.Dot(dir, toPivot);
             if (dist < 0f) dist = 1.0f;
-            Vector3 lookPos = cameraPos + (dir * dist);            
+            Vector3 lookPos = cameraPos + (dir * dist);
             scene.LookAt(lookPos, corrected, dist / 8.0f);
             scene.pivot = lookPos;
             scene.cameraSettings.fieldOfView = item.CameraSync.Fov;
-            
+
             // other ways to force the scene to update
             //SceneView.lastActiveSceneView.Repaint();
             //EditorApplication.ExecuteMenuItem("Window/General/Scene");
         }
-        
+
         static void FrameSync(QueueItem item)
         {
             UnityLinkSceneManagement.SetTimelineTimeIndex(item.FrameSync.CurrentTime / (item.FrameSync.Fps * 100f));
@@ -1172,11 +1184,11 @@ namespace Reallusion.Import
             // Examine current scene contents
 #if UNITY_2023_OR_NEWER
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else       
+#else
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
             JsonRequest reply = new JsonRequest(item.Request.Type);
-            
+
             if (item.Request != null && item.Request.Actors != null)
             {
                 //Debug.Log("Listing iClone scene contents");
@@ -1226,6 +1238,84 @@ namespace Reallusion.Import
             }
         }
 
+        static void ActorRelink(QueueItem item)
+        {
+            // Examine current scene contents
+#if UNITY_2023_OR_NEWER
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+#endif
+            string newLinkId = item.Relink.LinkId;
+            string sourceLinkId = item.Relink.LinkId;
+            string sourceName = item.Relink.Name;            
+
+            List<CharacterInfo> characters = WindowManager.GetCharacterList(true, true);
+            CharacterInfo current = ImporterWindow.Current.Character;
+            if (current == null)
+            {
+                EditorUtility.DisplayDialog("Error",
+                            "No character selected to update Link ID!",
+                            "Ok");
+                return;
+            }
+
+            bool inUse = false;
+            foreach (var c in characters)
+            {
+                if (c.linkId == newLinkId)
+                {
+                    if (c != current)
+                    {
+                        inUse = true;                        
+                        newLinkId = Util.RandomString(20, true);
+                        Util.LogWarn($"Link Id is in use, generating new: {newLinkId}");
+                    }                    
+                }
+            }
+
+            Util.LogInfo($"Re-linking Character: {current.name}");
+            // fetch the old link id
+            string oldLinkId = current.linkId;
+
+            if (string.IsNullOrEmpty(oldLinkId))
+            {
+                Util.LogInfo($"Setting Link Id: {newLinkId}");
+
+                // set and write the character info to the new link id
+                current.linkId = newLinkId;
+                current.Write();
+
+                // add/update the datalink actor data
+                GameObject prefab = current.PrefabAsset;
+                if (prefab)
+                {
+                    DataLinkActorData data = prefab.GetComponentInChildren<DataLinkActorData>();
+                    if (!data) data = prefab.AddComponent<DataLinkActorData>();
+                    data.Set(newLinkId, prefab, current.Fbx);
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(oldLinkId) || inUse)
+            {
+                Util.LogInfo($"Syncing Link ID back to CC/iC: {sourceLinkId} -> {current.linkId}");
+                // send a relink back with the link id of the Unity character
+                // the Unity character's link id is fixed,
+                // so update the link id in CC/iC (as this is prone to changing)
+                // this way we don't break already tranfered Unity scenes.
+                JsonRelink reply = new JsonRelink(sourceLinkId, current.linkId, sourceName, current.exportType.ToString());
+                try
+                {
+                    string replyString = JsonConvert.SerializeObject(reply);
+                    SendMessage(OpCodes.RELINK, replyString);
+                }
+                catch
+                {
+                    Debug.Log("Cannot format relink reply");
+                }
+            }
+        }
+
         static bool IsSkinned(GameObject go)
         {
             var smr = go.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -1261,10 +1351,10 @@ namespace Reallusion.Import
 
         #endregion  Activity queue handling
 
-        #region Class data               
+        #region Class data
         public static CharacterInfo.ExportType ParseExportType(string value)
         {
-            return Enum.TryParse(value, out CharacterInfo.ExportType result) ? result : CharacterInfo.ExportType.UNKNOWN;            
+            return Enum.TryParse(value, out CharacterInfo.ExportType result) ? result : CharacterInfo.ExportType.UNKNOWN;
         }
 
         public class JsonHello // HELLO: (1) - Respond to new connection with server data
@@ -1448,21 +1538,21 @@ namespace Reallusion.Import
             public override string ToString()
             {
                 string allNames = string.Empty;
-                for (int i = 0;  i < Names.Length; i++)
+                for (int i = 0; i < Names.Length; i++)
                 {
                     allNames += Names[i];
                     allNames += (i == Names.Length - 1) ? " " : ", ";
                 }
-                
+
                 string allTypes = string.Empty;
-                for(int i = 0;i < Types.Length; i++)
+                for (int i = 0; i < Types.Length; i++)
                 {
                     allTypes += Types[i];
-                    allTypes += (i == Types.Length -1) ? " " : ", ";
+                    allTypes += (i == Types.Length - 1) ? " " : ", ";
                 }
 
                 string allLinkIds = string.Empty;
-                for(int i =0;i < LinkIds.Length; i++)
+                for (int i = 0; i < LinkIds.Length; i++)
                 {
                     allLinkIds += LinkIds[i];
                     allLinkIds += (i == LinkIds.Length - 1) ? " " : ", ";
@@ -1471,9 +1561,9 @@ namespace Reallusion.Import
                 return (string.IsNullOrEmpty(RemoteId) ? "" : ("Remote Id " + RemoteId + " ,")) + "Path " + this.Path + ", Names " + allNames + ", Types " + allTypes + ", linkIds " + allLinkIds;
             }
         }
-        
+
         public class JsonLightData
-        {            
+        {
             public const string linkIdStr = "link_id";
             public const string nameStr = "name";
             public const string locStr = "loc";
@@ -1639,7 +1729,7 @@ namespace Reallusion.Import
             }
 
             public Quaternion GetRotation()
-            {                
+            {
                 Quaternion unCorrected = new Quaternion(rot[0], -rot[2], rot[1], rot[3]);
                 Quaternion cameraCorrection = Quaternion.Euler(90f, -180f, 0f);
                 Quaternion corrected = unCorrected * cameraCorrection;
@@ -1652,7 +1742,7 @@ namespace Reallusion.Import
             }
 
             public Color GetColor()
-            {                
+            {
                 return new Color(color[0], color[1], color[2]);
             }
 
@@ -1683,11 +1773,11 @@ namespace Reallusion.Import
                                      light_data["angle"],
                                      light_data["falloff"],
                                      light_data["attenuation"],
-                                     light_data["darkness"]) 
+                                     light_data["darkness"])
              */
 
             public int time { get; set; }
-            public float Time { get {  return this.GetSeconds(); } }
+            public float Time { get { return this.GetSeconds(); } }
             public int Frame { get; set; }
             public bool Active { get; set; }
             public float PosX { get; set; }
@@ -1717,12 +1807,12 @@ namespace Reallusion.Import
 
             public const int FRAME_BYTE_COUNT = 85;
             public DeserializedLightFrames(byte[] data)
-            {                
+            {
                 time = GetCurrentEndianWord(ExtractBytes(data, 0, 4), SourceEndian.BigEndian);
                 Frame = GetCurrentEndianWord(ExtractBytes(data, 4, 4), SourceEndian.BigEndian);
                 Active = ByteToBool(ExtractBytes(data, 8, 1));
                 PosX = GetCurrentEndianFloat(ExtractBytes(data, 9, 4), SourceEndian.BigEndian);
-                PosY  = GetCurrentEndianFloat(ExtractBytes(data, 13, 4), SourceEndian.BigEndian);
+                PosY = GetCurrentEndianFloat(ExtractBytes(data, 13, 4), SourceEndian.BigEndian);
                 PosZ = GetCurrentEndianFloat(ExtractBytes(data, 17, 4), SourceEndian.BigEndian);
                 RotX = GetCurrentEndianFloat(ExtractBytes(data, 21, 4), SourceEndian.BigEndian);
                 RotY = GetCurrentEndianFloat(ExtractBytes(data, 25, 4), SourceEndian.BigEndian);
@@ -1741,7 +1831,7 @@ namespace Reallusion.Import
                 Attenuation = GetCurrentEndianFloat(ExtractBytes(data, 77, 4), SourceEndian.BigEndian);
                 Darkness = GetCurrentEndianFloat(ExtractBytes(data, 81, 4), SourceEndian.BigEndian);
             }
-            
+
             public float GetSeconds()
             {
                 return (float)time / 6000f;
@@ -1766,7 +1856,7 @@ namespace Reallusion.Import
             }
 
             public Color GetColor()
-            {                
+            {
                 return new Color(ColorR, ColorG, ColorB);
             }
 
@@ -1822,7 +1912,7 @@ namespace Reallusion.Import
             [JsonProperty(fovStr)]
             public float Fov { get; set; }
             [JsonProperty(fitStr)]
-            public string Fit { get; set; }            
+            public string Fit { get; set; }
             [JsonProperty(widthStr)]
             public float Width { get; set; }
             [JsonProperty(heightStr)]
@@ -1925,7 +2015,7 @@ namespace Reallusion.Import
             }
 
         }
-                
+
         public class DeserializedCameraFrames
         {
             /* 86 bytes
@@ -1950,7 +2040,7 @@ namespace Reallusion.Import
                                 camera_data["dof_near_blur"],
                                 camera_data["dof_far_transition"],
                                 camera_data["dof_near_transition"],
-                                camera_data["dof_min_blend_distance"], 
+                                camera_data["dof_min_blend_distance"],
                                 camera_data["fov"]), # Blur Edge Sampling Scale,
                                 camera_data["active"])
             */
@@ -1971,16 +2061,16 @@ namespace Reallusion.Import
             public float ScaleY { get; set; }
             public float ScaleZ { get; set; }
             public Vector3 Scale { get { return this.GetScale(); } }
-            public float FocalLength {  get; set; }
-            public bool DofEnable {  get; set; }
+            public float FocalLength { get; set; }
+            public bool DofEnable { get; set; }
             public float DofFocus { get; set; }
-            public float DofRange {  get; set; }
-            public float DofFarBlur {  get; set; }
-            public float DofNearBlur {  get; set; }
-            public float DofFarTransition {  get; set; }
-            public float DofNearTransition {  get; set; }
-            public float DofMinBlendDistance {  get; set; }
-            public float FieldOfView {  get; set; }
+            public float DofRange { get; set; }
+            public float DofFarBlur { get; set; }
+            public float DofNearBlur { get; set; }
+            public float DofFarTransition { get; set; }
+            public float DofNearTransition { get; set; }
+            public float DofMinBlendDistance { get; set; }
+            public float FieldOfView { get; set; }
             public bool IsActive { get; set; }
 
             public const int FRAME_BYTE_COUNT = 86;
@@ -2037,7 +2127,7 @@ namespace Reallusion.Import
 
         static bool ByteToBool(byte[] data)
         {
-            if ( data.Length != 1) { Debug.LogWarning("Only byte[] of 1 byte accepted as input."); return false; }
+            if (data.Length != 1) { Debug.LogWarning("Only byte[] of 1 byte accepted as input."); return false; }
             return (data[0] == 1);
         }
 
@@ -2083,7 +2173,7 @@ namespace Reallusion.Import
             {
                 string objList = string.Empty;
                 foreach (string obj in Objects)
-                {                    
+                {
                     objList += (obj + " ");
                 }
                 return "Path " + this.Path + ", Name " + this.Name + ", Type " + this.Type + ", Link Id " + this.LinkId + ", Replace " + this.Replace + ", Objects " + objList;
@@ -2167,10 +2257,10 @@ namespace Reallusion.Import
             public const string widthStr = "width";         // width: Float - Apeture width
             public const string heightStr = "height";       // height: Float - Apeture height
             public const string focalStr = "focal_length";  // focal_length: Float - Focal length of lens
-            public const string targetStr = "target";       // target: Float list [x, y, z] average pos of selection (i.e. iclone camera pivot)    
+            public const string targetStr = "target";       // target: Float list [x, y, z] average pos of selection (i.e. iclone camera pivot)
             /*
                 // I have no idea what the following are, but I send them anyway
-                
+
                 min: Float list - (Min Bounds Vector) [x, y, z]
                 max: Float list - (Max Bounds Vector) [x, y, z]
                 center: Float list - (Centre Bounds Vector) [x, y, z]
@@ -2303,6 +2393,29 @@ namespace Reallusion.Import
             }
         }
 
+        public class JsonRelink
+        {
+            [JsonProperty("link_id")]
+            public string LinkId { get; set; }
+
+            [JsonProperty("to_link_id")]
+            public string ToLinkId { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            public JsonRelink(string linkId, string toLinkId, string name, string type)
+            {
+                LinkId = linkId;
+                ToLinkId = toLinkId;
+                Name = name;
+                Type = type;
+            }
+        }
+
         public class JsonRequestActors
         {
             [JsonProperty("name")]
@@ -2338,7 +2451,7 @@ namespace Reallusion.Import
             public Exchange Exchange { get; set; }
             public DateTime EntryTime { get; set; }
             public bool Processed { get; set; }
-            public bool Debug {  get; set; }
+            public bool Debug { get; set; }
             public JsonNotify Notify { get; set; }
             public JsonHello Hello { get; set; }
             public JsonCharacter Character { get; set; }
@@ -2351,7 +2464,8 @@ namespace Reallusion.Import
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
             public JsonRequest Request { get; set; }
-            public string RemoteId {  get; set; }
+            public JsonRelink Relink { get; set; }
+            public string RemoteId { get; set; }
 
             public QueueItem(OpCodes opCode, Exchange direction)
             {
@@ -2368,6 +2482,7 @@ namespace Reallusion.Import
                 Staging = null;
                 CameraSync = null;
                 FrameSync = null;
+                Relink = null;
             }
         }
 
@@ -2469,7 +2584,7 @@ namespace Reallusion.Import
             return reverse;
         }
         #endregion Architecture agnostic byte ordering
-                
+
         #region FBX extraction
         public enum FbxTypes
         {
@@ -2487,7 +2602,7 @@ namespace Reallusion.Import
 
             string assetName = Path.GetFileNameWithoutExtension(assetPath); Debug.Log(assetName);
             string extractFolderName = assetName + "_fbx"; Debug.Log(extractFolderName);
-            
+
             string fullExtractPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.CreateFolder(assetFolder, extractFolderName));
 
             Debug.Log(AssetDatabase.GUIDToAssetPath(guid) + " Extract path: " + fullExtractPath);
@@ -2552,19 +2667,19 @@ namespace Reallusion.Import
             List<GameObject> prelist = list.FindAll(x => x.GetComponent<SkinnedMeshRenderer>() == null);
             Transform[] hierarchy = new Transform[0];
             foreach (GameObject go in prelist)
-            {                
+            {
                 if (go.name.iContains("bone") && go.name.iContains("root"))
                 {
                     string extension = ".prefab";
                     string prefabPath = fullExtractPath + "/" + go.name + extension;
-                    
+
                     if (go.GetComponentsInChildren<Transform>() != null)
                     {
                         GameObject p = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
                         Debug.Log("Saving: " + go.name + " as hierarchy prefab. (" + prefabPath + ")");
                         hierarchy = p.GetComponentsInChildren<Transform>();
                     }
-                }                
+                }
             }
 
             foreach (GameObject go in list)
@@ -2638,7 +2753,7 @@ namespace Reallusion.Import
 
             string beautifiedJson = string.Empty;
             if (!string.IsNullOrEmpty(dataString))
-            {                
+            {
                 try
                 {
                     JToken parsedJson = JToken.Parse(dataString);
@@ -2725,7 +2840,7 @@ namespace Reallusion.Import
         private static string fullPathToWrite = string.Empty;
         private static string contentsToWrite = string.Empty;
         private static bool createFile = false;
-                
+
         private static void WriteOnUpdate(string path, string text, bool create = false)
         {
             EditorApplication.update -= WriterDelegate;

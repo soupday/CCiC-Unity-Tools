@@ -613,9 +613,7 @@ namespace Reallusion.Import
 
             if (AnimPlayerGUI.IsPlayerShown())
             {
-                AnimPlayerGUI.ResetFace();
-                AnimPlayerGUI.ResetCharacterPose();
-                AnimPlayerGUI.ClosePlayer();
+                AnimPlayerGUI.ClosePlayer();                
             }
             HideAnimationRetargeter(false);
 

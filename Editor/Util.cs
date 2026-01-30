@@ -1467,13 +1467,22 @@ namespace Reallusion.Import
             return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
         }
 
-        public static string RandomString(int length)
+        public static string RandomString(int length, bool upper=false)
         {
             System.Random random = new System.Random();
 
-            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            if (upper)
+            {
+                const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                return new string(Enumerable.Repeat(chars, length)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
+            else
+            {
+                const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                return new string(Enumerable.Repeat(chars, length)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
         }
 
         public static void ApplyIfPrefabInstance(GameObject obj)

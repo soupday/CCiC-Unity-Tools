@@ -131,6 +131,12 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Material Templates/Default/RL5_Template_Default_Disabled_3D.mat",
+      "GUID": "d679de315aeb8f04d843d7a63e822ed7",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Material Templates/Default/RL5_Template_Default_Eyelash_3D.mat",
       "GUID": "b35c4c64355ca384d9523452530bbc63",
       "InstalledGUID": "",
@@ -709,6 +715,12 @@
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Amplify/HQ/Tessellation/RL5_Amplify_TongueShader_3D_Tessellation.shader",
       "GUID": "318d82ba6421eb541a8e00aab5eb7dd9",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/3D/Shaders/Standard/RL5_Disabled_3D.shader",
+      "GUID": "72e8429078a486f45a0c0a90ac854f61",
       "InstalledGUID": "",
       "Validated": false
     },

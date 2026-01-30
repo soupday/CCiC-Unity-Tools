@@ -26,6 +26,9 @@ using Object = UnityEngine.Object;
 using System.IO;
 using System.Runtime.Remoting.Metadata;
 using UnityEngine.UIElements;
+using UnityEditor.VersionControl;
+using System.Reflection;
+using UnityEditor.SceneManagement;
 
 namespace Reallusion.Import
 {
@@ -74,7 +77,7 @@ namespace Reallusion.Import
         private static Styles styles;
         private static bool expressionDrivenBones = true;
         private static bool expressionBlendShapeTranspose = true;
-        private static bool expressionConstrain = true;
+        private static bool expressionConstrain = false;
         private static bool createFullAnimationTrack = false;
         private static bool logOnce = false;
 
@@ -167,6 +170,16 @@ namespace Reallusion.Import
             // set the animation player's Foot IK to off
             AnimPlayerGUI.ForceSettingsReset();
             AnimPlayerGUI.UpdateAnimator();
+            CopyBoneDriverSettingsToGUI();
+        }
+
+        public static void CopyBoneDriverSettingsToGUI()
+        {
+            (bool, bool, bool) bdSettings = GetBoneDriverSettingsReflection();
+            expressionDrivenBones = bdSettings.Item1;
+            expressionBlendShapeTranspose = bdSettings.Item2;
+            expressionConstrain = bdSettings.Item3;
+            createFullAnimationTrack = !(expressionDrivenBones || expressionBlendShapeTranspose || expressionConstrain);
         }
 
         static void CleanUp()
@@ -645,6 +658,7 @@ namespace Reallusion.Import
                     string characterFbxPath = AssetDatabase.GetAssetPath(fbxAsset);
                     string assetPath = GenerateClipAssetPath(OriginalClip, characterFbxPath);
                     WriteAnimationToAssetDatabase(WorkingClip, assetPath, true);
+                    SaveBoneDriverChangesToPrefab(scenePrefab);
                 }
             }
             GUILayout.FlexibleSpace();
@@ -1348,8 +1362,19 @@ namespace Reallusion.Import
             }
             else
             {
-                //RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
+                if (useBoneDriver || useBlendTranspose || useConstraintData)
+                {
 
+                    if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, useBoneDriver, useBlendTranspose, useConstraintData))
+                    {
+                        Debug.Log("RetargetBlendShapes - No BoneDriver available."); EditorUtility.ClearProgressBar();
+                        return;
+                    }
+                    else
+                    {
+                        ApplyBoneDriverSettings(targetCharacterModel, bd, useBoneDriver, useBlendTranspose, useConstraintData);
+                    }
+                }
                 if (useBoneDriver)
                 {
                     // remove animated constraint tracks and any tracks for bones that are now driven by expressions
@@ -1359,33 +1384,131 @@ namespace Reallusion.Import
                 if (useBlendTranspose)
                 {
                     PruneBlendShapesToSourceMeshes(workingClip, targetCharacterModel, meshProfile, animProfile, useConstraintData);
-                    //PruneBlendShapeTargets(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
-                /*
-                if ((info != null && !info.FeatureUseExpressionTranspose && !info.FeatureUseExpressionTranspose) && !FeatureUseExpressionTranspose && !FeatureUseBoneDriver)
-                {
-                    RetargetBlendShapesToAllMeshes(originalClip, workingClip, targetCharacterModel, meshProfile, animProfile);
-                }
-                */
             }
             logOnce = false;
             EditorUtility.ClearProgressBar();
         }
 
-        public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false, bool constrain = false)
+        public static bool CheckBoneDriver(GameObject targetCharacterModel, out GameObject bd, bool drive = false, bool transpose = false, bool constrain = false)
         {
-            // needs a set up bonedriver component to interrogate for the expression glossary
-            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
+            bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd == null)
             {
                 Component co = BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-                if (co) bd = co.gameObject;
+                if (co)
+                {
+                    bd = co.gameObject;
+                    return true;
+                }
             }
-            if (bd == null) return;
+            else
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static void ApplyBoneDriverSettings(GameObject targetCharacterModel, GameObject bd, bool drive = false, bool transpose = false, bool constrain = false)
+        {
+            Component boneDrivercomp = BoneEditor.GetBoneDriverComponentReflection(targetCharacterModel);
 
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
+
+            // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PrefabUtility.RecordPrefabInstancePropertyModifications.html
+            PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);
+            //PrefabUtility.RecordPrefabInstancePropertyModifications(bd);
+
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            Util.ApplyIfPrefabInstance(targetCharacterModel);
+            //Util.ApplyIfPrefabInstance(targetCharacterModel);           
+        }
+
+        public static void SaveBoneDriverChangesToPrefab(GameObject targetCharacterModel)
+        {
+
+            Type BoneDriver = null;
+            if (BoneDriver == null)
+            {
+                BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
+                if (BoneDriver == null)
+                {
+                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    return;
+                }
+            }
+
+            if (PrefabUtility.GetPrefabInstanceStatus(targetCharacterModel) != PrefabInstanceStatus.NotAPrefab)
+            {
+                try
+                {
+                    List<AddedComponent> addedComponents = PrefabUtility.GetAddedComponents(targetCharacterModel);
+                    foreach (AddedComponent add in addedComponents)
+                    {
+                        if (add.instanceComponent.GetType() == BoneDriver)
+                        {
+                            add.Apply();
+                        }
+                    }
+
+                    List<ObjectOverride> overrides = PrefabUtility.GetObjectOverrides(targetCharacterModel);
+                    foreach (var ovr in overrides)
+                    {
+
+                        if (ovr.instanceObject.GetType() == BoneDriver)
+                        {
+                            ovr.Apply();
+                        }
+                    }
+                }
+                catch
+                {
+                    Util.LogWarn("Unable to apply prefab instance.");
+                }
+            }
+        }
+
+        public static (bool, bool, bool) GetBoneDriverSettingsReflection()
+        {
+            try
+            {
+                if (CharacterAnimator == null) return (false, false, false);
+
+                GameObject obj = CharacterAnimator.gameObject;
+                Component boneDriver = BoneEditor.GetBoneDriverComponentReflection(obj);
+                if (boneDriver)
+                {
+                    bool bones = false, expressions = false, constraint = false;
+                    if (Physics.GetTypeField(boneDriver, "bones", out object b))
+                    {
+                        bones = (bool)b;
+                    }
+                    if (Physics.GetTypeField(boneDriver, "expressions", out object e))
+                    {
+                        expressions = (bool)e;
+                    }
+                    if (Physics.GetTypeField(boneDriver, "constraint", out object c))
+                    {
+                        constraint = (bool)c;
+                    }
+                    return (bones, expressions, constraint);
+                }
+                else
+                {
+                    return (false, false, false);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Unable to retrieve Bonedriver info: {e.Message}");
+                return (false, false, false);
+            }
+        }
+
+        public static void PruneTargettedMechanimTracks(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, bool drive = false, bool transpose = false, bool constrain = false)
+        {
+            // needs a set up bonedriver reference to interrogate for the expression glossary
+            if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, drive, transpose, constrain)) return;
+            //ApplyBoneDriverSettings(targetCharacterModel, bd, drive, transpose, constrain);
 
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
@@ -1520,177 +1643,6 @@ namespace Reallusion.Import
         }
         #endregion
 
-        public static void PruneBlendShapeTargets(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool drive = false, bool transpose = false, bool constrain = false)
-        {
-            const string blendShapePrefix = "blendShape.";
-
-            EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
-            // Data looks like this:
-            // path: "Circle_Sparse"  propertyName: "blendShape.Tongue_Twist_R"  for blendshapes on a mesh
-            // path: "" propertyName: "Jaw Close"
-            // path: "" propertyName: "Jaw Left-Right" for mechanim tracks
-
-
-            // get a dictionary of blend shapes that are not contained in the CC_Base_Body or CC_Base_Tongue meshes
-            GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
-            if (bd == null)
-            {
-                Component co = BoneEditor.AddBoneDriverToBaseBody(targetCharacterModel, drive, transpose);
-                if (co) bd = co.gameObject;
-            }
-            if (bd == null) return;
-
-            BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
-            LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            Util.ApplyIfPrefabInstance(targetCharacterModel);
-
-            Dictionary<string, List<string>> excessBlendhsapes = BoneEditor.FindExcessBlendShapes(bd);
-            // this is a list to keep
-
-            List<(string, string)> keepMe = new List<(string, string)>();
-            foreach (var path in excessBlendhsapes)
-            {
-                foreach (string prop in path.Value)
-                {
-                    (string, string) entry = (path.Key, prop);
-                    keepMe.Add(entry);
-                }
-            }
-
-            // Get a list of EditorCurveBindings in the animation clip that should be kept
-            List<EditorCurveBinding> bindingFilter = new List<EditorCurveBinding>();
-            foreach (var entry in keepMe)
-            {
-                EditorCurveBinding bindingToKeep = sourceCurveBindings.FirstOrDefault(p => p.path == entry.Item1 && p.propertyName == blendShapePrefix + entry.Item2);
-                if (!string.IsNullOrEmpty(bindingToKeep.path) && !string.IsNullOrEmpty(bindingToKeep.propertyName))
-                {
-                    //Debug.Log($"Do Not purge: {bindingToKeep.path} {bindingToKeep.propertyName}  ----  {entry.Item1} {blendShapePrefix + entry.Item2}");
-                    bindingFilter.Add(bindingToKeep);
-                }
-            }
-
-            foreach (EditorCurveBinding binding in sourceCurveBindings)
-            {
-                bool purge = false;
-                purge = !CurveHasData(binding, workingClip);
-
-                //if (binding.path != "CC_Base_Body" && binding.path != "CC_Base_Tongue")
-                if (binding.path != bd.name)
-                {
-                    if (binding.propertyName.StartsWith(blendShapePrefix))
-                    {
-                        if (!bindingFilter.Contains(binding))
-                        {
-                            //Debug.Log($"Purging {binding.path} {binding.propertyName}");
-                            purge = true;
-                        }
-                    }
-                }
-                if (purge) AnimationUtility.SetEditorCurve(workingClip, binding, null);
-            }
-            // Need to transpose any blendhapes from the animations facial profile to the mesh's profile
-
-            // build a cache of remapped (from the anim profile to the mesh profile) blend shape names in the animation and their original curve bindings:
-            EditorCurveBinding[] workingCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
-            string report = "";
-
-            Dictionary<string, EditorCurveBinding> cache = new Dictionary<string, EditorCurveBinding>();
-            for (int i = 0; i < workingCurveBindings.Length; i++)
-            {
-                if (CurveHasData(workingCurveBindings[i], workingClip) &&
-                    workingCurveBindings[i].propertyName.StartsWith(blendShapePrefix))
-                {
-                    string animBlendShapeName = workingCurveBindings[i].propertyName.Substring(blendShapePrefix.Length);
-                    string meshProfileBlendShapeName = meshProfile.GetMappingFrom(animBlendShapeName, animProfile);
-                    if (!string.IsNullOrEmpty(meshProfileBlendShapeName))
-                    {
-                        List<string> multiProfileName = FacialProfileMapper.GetMultiShapeNames(meshProfileBlendShapeName);
-                        if (multiProfileName.Count == 1)
-                        {
-                            if (!cache.ContainsKey(meshProfileBlendShapeName))
-                            {
-                                cache.Add(meshProfileBlendShapeName, workingCurveBindings[i]);
-
-                                report += "Mapping: " + meshProfileBlendShapeName + " from " + animBlendShapeName + "\n";
-                            }
-                        }
-                        else
-                        {
-                            foreach (string multiShapeName in multiProfileName)
-                            {
-                                if (!cache.ContainsKey(multiShapeName))
-                                {
-                                    cache.Add(multiShapeName, workingCurveBindings[i]);
-
-                                    report += "Mapping (multi): " + multiShapeName + " from " + animBlendShapeName + "\n";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            List<string> uniqueAnimPaths = new List<string>();
-            foreach (EditorCurveBinding binding in workingCurveBindings)
-            {
-                if (!uniqueAnimPaths.Contains(binding.path))
-                {
-                    uniqueAnimPaths.Add(binding.path);
-                }
-            }
-
-            List<string> mappedBlendShapes = new List<string>();
-
-            Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
-
-            foreach (string path in uniqueAnimPaths)
-            {
-                SkinnedMeshRenderer smr = null;
-                Transform t = targetAssetData.FirstOrDefault(t => t.name == path);
-                if (t != null)
-                    smr = t.gameObject.GetComponent<SkinnedMeshRenderer>();
-
-                if (smr && smr.sharedMesh && smr.sharedMesh.blendShapeCount > 0)
-                {
-                    for (int j = 0; j < smr.sharedMesh.blendShapeCount; j++)
-                    {
-                        string blendShapeName = smr.sharedMesh.GetBlendShapeName(j);
-                        string targetPropertyName = blendShapePrefix + blendShapeName;
-
-                        if (cache.TryGetValue(blendShapeName, out EditorCurveBinding sourceCurveBinding))
-                        {
-                            report += $"Copying curve for {blendShapeName} to {targetPropertyName}\n";
-                            CopyCurve(originalClip, workingClip, path, targetPropertyName, sourceCurveBinding);
-
-                            if (!mappedBlendShapes.Contains(blendShapeName))
-                                mappedBlendShapes.Add(blendShapeName);
-                        }
-                        else
-                        {
-                            //report += "Could not map blendshape: " + blendShapeName + " in object: " + go.name + "\n";
-                        }
-                    }
-                }
-            }
-
-            report += "\n";
-            int curvesFailedToMap = 0;
-            foreach (string shape in cache.Keys)
-            {
-                if (!mappedBlendShapes.Contains(shape))
-                {
-                    curvesFailedToMap++;
-                    report += "Could not find BlendShape: " + shape + " in target character.\n";
-                }
-            }
-
-            string reportHeader = "Blendshape Mapping report:\n";
-            if (curvesFailedToMap == 0) reportHeader += "All " + cache.Count + " BlendShape curves retargeted!\n\n";
-            else reportHeader += curvesFailedToMap + " out of " + cache.Count + " BlendShape curves could not be retargeted!\n\n";
-
-            bool log = true;
-            if (log) Util.LogAlways(reportHeader + report);
-        }
         #region Blendshape Pruning
         public static void PruneBlendShapesToSourceMeshes(AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool driveConstraints = false)
         {
@@ -1747,7 +1699,7 @@ namespace Reallusion.Import
                 {
                     EditorCurveBinding binding = workingClipBindings[i];
                     float progress = (float)i / (float)workingClipBindings.Count;
-                    //EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
+                    EditorUtility.DisplayProgressBar($"Analyzing EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
                     bool isConstraint = binding.propertyName.StartsWith($"{blendShapePrefix}C_");
                     if (isConstraint && driveConstraints) continue;
 
@@ -1787,8 +1739,6 @@ namespace Reallusion.Import
                                         {
                                             EditorCurveBinding newBinding = ReassignClipBinding(workingClip, binding, targetPath, targetPropertyName);
                                             uniqueBindings.Add(newBinding.propertyName, newBinding);
-                                            //if (j == 0) workingClipBindings[i] = newBinding;
-                                            //else 
                                             workingClipBindings.Add(newBinding);
                                         }
                                         else
@@ -1820,7 +1770,6 @@ namespace Reallusion.Import
                         if (binding.propertyName.StartsWith(blendShapePrefix))
                         {
                             purgeList.Add(binding);
-                            //AnimationUtility.SetEditorCurve(workingClip, binding, null);
                         }
                     }
                     else
@@ -1859,67 +1808,15 @@ namespace Reallusion.Import
             return newBinding;
         }
 
-        public static void RemapOnlyExistingBlendShapeCurves(AnimationClip originalClip, AnimationClip workingClip, FacialProfile meshProfile, FacialProfile animProfile)
-        {
-            const string blendShapePrefix = "blendShape.";
-
-            EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
-
-            string report = "";
-
-            // build a cache of the blend shape names and their curve bindings:
-            Dictionary<string, EditorCurveBinding> remapBindings = new Dictionary<string, EditorCurveBinding>();
-            for (int i = 0; i < sourceCurveBindings.Length; i++)
-            {
-                if (CurveHasData(sourceCurveBindings[i], workingClip) &&
-                    sourceCurveBindings[i].propertyName.StartsWith(blendShapePrefix))
-                {
-                    string blendShapeName = sourceCurveBindings[i].propertyName.Substring(blendShapePrefix.Length);
-                    string profileBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
-                    if (!string.IsNullOrEmpty(profileBlendShapeName))
-                    {
-                        List<string> multiProfileName = FacialProfileMapper.GetMultiShapeNames(profileBlendShapeName);
-                        if (multiProfileName.Count == 1)
-                        {
-                            if (!remapBindings.ContainsKey(profileBlendShapeName))
-                            {
-                                remapBindings.Add(profileBlendShapeName, sourceCurveBindings[i]);
-                                report += "Mapping: " + profileBlendShapeName + " from " + blendShapeName + "\n";
-                            }
-                        }
-                        else
-                        {
-                            foreach (string multiShapeName in multiProfileName)
-                            {
-                                if (!remapBindings.ContainsKey(multiShapeName))
-                                {
-                                    remapBindings.Add(multiShapeName, sourceCurveBindings[i]);
-                                    report += "Mapping (multi): " + multiShapeName + " from " + blendShapeName + "\n";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (var binding in Array.FindAll(sourceCurveBindings, x => x.propertyName.StartsWith(blendShapePrefix)))
-            {
-
-            }
-
-        }
-
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
         {
             Debug.Log("RetargetBlendShapesToAllMeshes");
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd != null)
             {
-                BoneEditor.SetupBoneDriverFlags(bd, false, false, false);
-                LogBoneDriverSettingsChanges(targetCharacterModel, bd, false, false, false, true);
-                Util.ApplyIfPrefabInstance(targetCharacterModel);
+                ApplyBoneDriverSettings(targetCharacterModel, bd, false, false, false);
             }
-            else { Debug.Log("No Bonedriver found"); }
+            else { Debug.Log("No Bonedriver found - Can safely ignore when retargetting to all meshes"); }
 
             EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
             Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();

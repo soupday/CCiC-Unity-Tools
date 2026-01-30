@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -93,7 +93,7 @@ namespace Reallusion.Import
 
 #endif
         Type LightProxyType = null;
-                
+
         Type CameraProxyType = null;
         MethodInfo SetupLightMethod = null;
         MethodInfo SetupCameraMethod = null;
@@ -101,7 +101,7 @@ namespace Reallusion.Import
         // animated property flags
         // transform specific
         bool pos_delta = false, rot_delta = false, scale_delta = false;
-        
+
         // enabled specific - use in building an activation track
         bool active_delta = false;
 
@@ -126,7 +126,7 @@ namespace Reallusion.Import
 
         PackageType packageType = PackageType.NONE;
 
-        private static Dictionary<string, Transform> map;  // prefab map editorcurve binding path -> transform 
+        private static Dictionary<string, Transform> map;  // prefab map editorcurve binding path -> transform
         #endregion
 
         #region Import Preparation
@@ -165,8 +165,8 @@ namespace Reallusion.Import
                         }
                     }
                 }
-                                
-                // scene-relevant dependencies such as global volume profiles for HDRP will be saved in a 
+
+                // scene-relevant dependencies such as global volume profiles for HDRP will be saved in a
                 // folder in the same parent folder as the scene.unity file called Scene Assets/<scene name>/
                 bool haveSavedScene = false;
                 Scene current = EditorSceneManager.GetActiveScene();
@@ -280,17 +280,17 @@ namespace Reallusion.Import
                 {
                     ZipFile.ExtractToDirectory(zipPath, zipFolder);
                 }
-                catch (Exception e) 
+                catch (Exception e)
                 {
-                    Debug.LogError("Error extracting remote zip to directory:\n" + 
-                                    zipPath + "\n" + 
-                                    zipFolder + "\n" + 
+                    Debug.LogError("Error extracting remote zip to directory:\n" +
+                                    zipPath + "\n" +
+                                    zipFolder + "\n" +
                                     e.Message);
                 }
 #else
                 //System.IO.Compression.FileSystem.ZipFile.ExtractToDirectory(zipPath, zipFolder);
                 // either use nuget < PackageReference Include = "System.IO.Compression.ZipFile" Version = "4.3.0" />
-                // or requires a reference to System.IO.Compression.FileSystem to be added to the solution 
+                // or requires a reference to System.IO.Compression.FileSystem to be added to the solution
                 Debug.LogError("Cannot process files from a remote host in Unity versions prior to 2021.1");
 #endif
                 File.Delete(zipPath);
@@ -303,7 +303,7 @@ namespace Reallusion.Import
             //EditorApplication.update -= WaitForFrames;
             //EditorApplication.update += WaitForFrames;
         }
-                
+
         void WaitForFrames()
         {
             if (waitForFramesBeforeStartingImport > 0)
@@ -312,7 +312,7 @@ namespace Reallusion.Import
                 return;
             }
             EditorApplication.update -= WaitForFrames;
-            
+
             DoImport();
         }
         // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
@@ -344,7 +344,7 @@ namespace Reallusion.Import
             }
 
             if (importStaging)
-            {                
+            {
                 ImportStaging(fbxPath, QueueItem.Staging);
             }
 
@@ -389,7 +389,7 @@ namespace Reallusion.Import
                 Util.LogInfo("Found a matched linkID for the character at: " + characterMatch.path);
                 return characterMatch;
             }
-                
+
             return null;
         }
 
@@ -406,7 +406,7 @@ namespace Reallusion.Import
                     return Path.GetDirectoryName(fbxPath);
                 }
             }
-            
+
             //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
@@ -425,7 +425,7 @@ namespace Reallusion.Import
                     return fbxPath;
                 }
             }
-            
+
             //Debug.Log("No Matched Asset Path for linkId: " + linkId);
             return string.Empty;
         }
@@ -435,7 +435,7 @@ namespace Reallusion.Import
             string inProjectAssetPath = string.Empty;
             string assetFolderName = name;
             //Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
-            
+
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
 
@@ -462,7 +462,7 @@ namespace Reallusion.Import
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
                     //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
-                    
+
                     FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
                     // or
                     //CopyDirectory(assetFolder, destinationFolder, true);
@@ -502,7 +502,7 @@ namespace Reallusion.Import
                     importer.SaveAndReimport();
 
                     destinationFolder = existingLinkedCharFolder;
-                }        
+                }
                 assetImportDestinationPath = destinationFolder;
             }
             catch (Exception ex)
@@ -512,7 +512,7 @@ namespace Reallusion.Import
 
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
             {
-                // return the containing folder in the unity project 
+                // return the containing folder in the unity project
                 inProjectAssetPath = destinationFolder;
             }
             else // fbx imports
@@ -644,8 +644,8 @@ namespace Reallusion.Import
             for (int i = 0; i < 999; i++)
             {
                 string suffix = (i > 0) ? ("." + i.ToString("D3")) : "";
-                string testFileName = fileName + suffix + extension; 
-                
+                string testFileName = fileName + suffix + extension;
+
                 string testFilePath = Path.Combine(folderName, testFileName);
                 if (File.Exists(testFilePath))
                     continue;
@@ -679,8 +679,12 @@ namespace Reallusion.Import
                 string sourceFolder = Path.GetDirectoryName(fullFbxPath);
                 string sourceFolderMeta = sourceFolder + ".meta";
                 string targetFolder = Path.GetDirectoryName(motionTargetChar.path);
-
-                string targetFile = Path.Combine(targetFolder, sourceFile);
+                string targetFileName = sourceFile;
+                if (!targetFileName.StartsWith(motionTargetChar.name + "_"))
+                {
+                    targetFileName = motionTargetChar.name + "_" + targetFileName;
+                }                
+                string targetFile = Path.Combine(targetFolder, targetFileName);
                 string uniqueTargetFile = GetNonDuplicateFileName(targetFile, false);
 
                 File.Move(fullFbxPath, uniqueTargetFile);
@@ -758,7 +762,7 @@ namespace Reallusion.Import
 
             charInfo.linkId = linkId;
             charInfo.exportType = CharacterInfo.ExportType.PROP;
-            charInfo.motionPrefix = MotionPrefix;  
+            charInfo.motionPrefix = MotionPrefix;
 
             charInfo.BuildQuality = MaterialQuality.High;
             charInfo.animationSetup = false;
@@ -839,7 +843,7 @@ namespace Reallusion.Import
             string dataPath = Path.GetDirectoryName(Application.dataPath);
             string fullFolderPath = Path.Combine(dataPath, fbxPath);
             string[] fileList = Directory.GetFiles(fullFolderPath);
-            
+
             List<string> rlxList = fileList.ToList().FindAll(x => Path.GetExtension(x).Equals(".rlx", StringComparison.InvariantCultureIgnoreCase));
             foreach (string file in rlxList)
             {
@@ -897,7 +901,7 @@ namespace Reallusion.Import
                     }
             }
         }
-        
+
         GameObject GetRootSceneObject(string linkId)
         {
             GameObject root = null;
@@ -925,19 +929,19 @@ namespace Reallusion.Import
                               UnityEditor.PrefabUnpackMode.Completely,
                               UnityEditor.InteractionMode.AutomatedAction);
                     }
-                
+
                     for (int i = 0; i < root.transform.childCount; i++)
                     {
                         GameObject.DestroyImmediate(root.transform.GetChild(i).gameObject);
                     }
                 }
-                existing.createdTimeStamp = DateTime.Now.Ticks;
+                existing.UpdateTimeStamp();
             }
             else
             {
                 root = new GameObject();
             }
-                        
+
             root.transform.position = Vector3.zero;
             root.transform.rotation = Quaternion.identity;
             if (root.GetComponent<Animator>() == null)
@@ -946,9 +950,8 @@ namespace Reallusion.Import
             if (existing == null)
             {
                 DataLinkActorData data = root.AddComponent<DataLinkActorData>();
-                data.linkId = linkId;
-                data.createdTimeStamp = DateTime.Now.Ticks;
-            }            
+                data.Set(linkId);
+            }
             return root;
         }
         #endregion Staging Import
@@ -1004,7 +1007,7 @@ namespace Reallusion.Import
             if (camera == null) camera = target.AddComponent<Camera>();
 
             target.AddComponent(CameraProxyType);
-            
+
             float alpha = ((jsonCameraObject.DofRange + jsonCameraObject.DofFarTransition + jsonCameraObject.DofNearTransition) / 16f) * 0.01f;
             float beta = 1 / ((jsonCameraObject.DofFarBlur + jsonCameraObject.DofNearBlur) / 2);
             float initialAperture = alpha * beta;
@@ -1023,7 +1026,7 @@ namespace Reallusion.Import
             HDCameraData.physicalParameters.aperture = initialAperture;
 #elif URP_10_5_0_OR_NEWER
            UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
-            if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();  
+            if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();
 
            URPCameraData.renderPostProcessing = true;
            URPCameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
@@ -1075,7 +1078,7 @@ namespace Reallusion.Import
             SetInitialCameraTransform(target.transform, jsonCameraObject);
 
             AnimationClip clip = MakeCameraAnimationClipFromFramesForObject(frames, target, root);
-            
+
             if (jsonCameraObject != null)
             {
                 clip.name = jsonCameraObject.LinkId;
@@ -1098,10 +1101,10 @@ namespace Reallusion.Import
         {
             /*
              * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
-             * 
+             *
              * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
              *       |
-             *       --> Child GameObject (with <Camera> component)   | GetAnimatableBindings TARGET object                
+             *       --> Child GameObject (with <Camera> component)   | GetAnimatableBindings TARGET object
             */
 
             ResetDeltas();
@@ -1128,7 +1131,7 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.ScaleY - frames[0].ScaleY) > threshold) { scale_delta = true; }
                 if (Math.Abs(frame.ScaleZ - frames[0].ScaleZ) > threshold) { scale_delta = true; }
 
-                
+
                 if (Math.Abs(frame.DofFocus - frames[0].DofFocus) > threshold) { dof_delta = true; }
                 if (Math.Abs(frame.DofRange - frames[0].DofRange) > threshold) { dof_delta = true; }
                 if (Math.Abs(frame.DofFarBlur - frames[0].DofFarBlur) > threshold) { dof_delta = true; }
@@ -1140,7 +1143,7 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.FocalLength - frames[0].FocalLength) > threshold) { fov_delta = true; }
                 if (Math.Abs(frame.FieldOfView - frames[0].FieldOfView) > threshold) { fov_delta = true; }
             }
-            
+
             List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, dof_delta, fov_delta };
 
             AnimationClip clip = new AnimationClip();
@@ -1425,7 +1428,7 @@ namespace Reallusion.Import
         void MakeAnimatedLight(string folderPath, byte[] frameData, string jsonString)
         {
             //LogBeautifiedJson(jsonString);
-            
+
             UnityLinkManager.JsonLightData jsonLightObject = null;
             try
             {
@@ -1507,7 +1510,7 @@ namespace Reallusion.Import
             //HDLightData.shadowResolution.@override = 3;
             HDLightData.shadowResolution.useOverride = false;
             HDLightData.shadowResolution.level = 3;
-            //HDLightData.useContactShadow.@override = false;            
+            //HDLightData.useContactShadow.@override = false;
             HDLightData.useContactShadow.useOverride = false;
             HDLightData.useContactShadow.level = 2;
 #elif HDRP_10_5_0_OR_NEWER
@@ -1521,7 +1524,7 @@ namespace Reallusion.Import
             //HDLightData.shadowResolution.@override = 3;
             HDLightData.shadowResolution.useOverride = false;
             HDLightData.shadowResolution.level = 3;
-            //HDLightData.useContactShadow.@override = false;            
+            //HDLightData.useContactShadow.@override = false;
             HDLightData.useContactShadow.useOverride = false;
             HDLightData.useContactShadow.level = 2;
 #elif URP_10_5_0_OR_NEWER
@@ -1535,8 +1538,8 @@ namespace Reallusion.Import
             light.lightmapBakeType = LightmapBakeType.Mixed;
             light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
-#endif                        
-            light.useColorTemperature = false;            
+#endif
+            light.useColorTemperature = false;
             light.color = jsonLightObject.Color;
             light.spotAngle = jsonLightObject.Angle;
             light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);
@@ -1554,10 +1557,10 @@ namespace Reallusion.Import
             AnimationClip clip = MakeLightAnimationFromFramesForObject(jsonString, frames, target, root);
 
             clip.name = jsonLightObject.LinkId;
-            SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);                
-            SetupLight(jsonLightObject, root, clip);            
+            SaveStagingAnimationClip(jsonLightObject.LinkId, jsonLightObject.Name, clip);
+            SetupLight(jsonLightObject, root, clip);
         }
-        
+
         public float GetInnerAngle(float fall, float att)
         {
             return (fall + att) / 2;
@@ -1567,10 +1570,10 @@ namespace Reallusion.Import
         {
             /*
              * This presupposes that the light is structured as follows (NB: ALL global and local positions/rotations at zero)
-             * 
+             *
              * Root GameObject (with <Animator> component)            | GetAnimatableBindings ROOT object
              *       |
-             *       --> Child GameObject (with <Light> component)    | GetAnimatableBindings TARGET object                
+             *       --> Child GameObject (with <Light> component)    | GetAnimatableBindings TARGET object
             */
 
             // check for changes across the timeline
@@ -1580,14 +1583,14 @@ namespace Reallusion.Import
 
             ResetDeltas();
             float threshold = 0.0001f;
-            
+
             foreach (var frame in frames)
             {
                 if (Math.Abs(frame.PosX - frames[0].PosX) > threshold) { pos_delta = true; }
                 if (Math.Abs(frame.PosY - frames[0].PosY) > threshold) { pos_delta = true; }
                 if (Math.Abs(frame.PosZ - frames[0].PosZ) > threshold) { pos_delta = true; }
 
-                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; } //Debug.Log(frame.RotX - frames[0].RotX); } // 
+                if (Math.Abs(frame.RotX - frames[0].RotX) > threshold) { rot_delta = true; } //Debug.Log(frame.RotX - frames[0].RotX); } //
                 if (Math.Abs(frame.RotY - frames[0].RotY) > threshold) { rot_delta = true; } //Debug.Log(frame.RotY - frames[0].RotY); }
                 if (Math.Abs(frame.RotZ - frames[0].RotZ) > threshold) { rot_delta = true; } //Debug.Log(frame.RotZ - frames[0].RotZ); }
                 if (Math.Abs(frame.RotW - frames[0].RotW) > threshold) { rot_delta = true; } //Debug.Log(frame.RotW - frames[0].RotW); }
@@ -1607,9 +1610,9 @@ namespace Reallusion.Import
                 if (Math.Abs(frame.Attenuation - frames[0].Attenuation) > threshold) { att_delta = true; }
                 if (Math.Abs(frame.Darkness - frames[0].Darkness) > threshold) { dark_delta = true; }
             }
-            
+
             List<bool> changes = new List<bool>() { pos_delta, rot_delta, scale_delta, color_delta, mult_delta, range_delta, angle_delta, fall_delta, att_delta, dark_delta };
-            
+
             AnimationClip clip = new AnimationClip();
 
             if (changes.FindAll(x => x == true).Count() == 0)
@@ -1628,11 +1631,11 @@ namespace Reallusion.Import
 
             if (!animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.Animation) && !animatedStatus.HasFlag(UnityLinkSceneManagement.AnimatedStatus.Activation))
             {
-                // if there are no changes then no anim is needed                
+                // if there are no changes then no anim is needed
                 clip.name = "EMPTY";
                 return clip;
             }
-            
+
             EditorCurveBinding[] bindable = AnimationUtility.GetAnimatableBindings(target, root);
             // Find binding for property
 
@@ -1652,7 +1655,7 @@ namespace Reallusion.Import
             var b_scaX = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.x"));
             var b_scaY = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.y"));
             var b_scaZ = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("LocalScale.z"));
-                        
+
             // Proxy Enabled
             var b_enabled = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyActive"));
 
@@ -1669,7 +1672,7 @@ namespace Reallusion.Import
             var b_att = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyAttenuation"));
             var b_dark = bindable.ToList().FirstOrDefault(x => x.propertyName.iContains("ProxyDarkness"));
 
-            
+
             // Make keyframe[] for each bindable property
 
             // Transform properties
@@ -1879,8 +1882,8 @@ namespace Reallusion.Import
 
             string jsonString = JsonConvert.SerializeObject(json);
             SetupLightMethod.Invoke(proxy, new object[] { jsonString });
-            
-            GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);            
+
+            GameObject prefab = GetPrefabAsset(json.LinkId, json.Name, root);
             //GameObject.DestroyImmediate(root);
 
             List<AnimationClip> clips = new List<AnimationClip>();
@@ -1898,7 +1901,7 @@ namespace Reallusion.Import
             {
                 trackType |= UnityLinkSceneManagement.TrackType.NoTrack;
             }
-                        
+
             // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
             timelineKitList.Add((trackType, importIntoScene, prefab, addToTimeLine, clips, animatedStatus, json.LinkId));
 
@@ -1910,7 +1913,7 @@ namespace Reallusion.Import
         {
             // find the ies file delivered with the staging RLX file (and store it)
             string iesPath = SaveStagingIESFile(LinkId, Name);
-            
+
             if (!string.IsNullOrEmpty(iesPath))
             {
                 switch (light.type)
@@ -1981,7 +1984,7 @@ namespace Reallusion.Import
                 string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(clipAssetPath));
 
-                //Debug.LogWarning("Saving RLX animation to " + clipAssetPath);                
+                //Debug.LogWarning("Saving RLX animation to " + clipAssetPath);
                 if (File.Exists(fullClipAssetPath))
                 {
                     AssetDatabase.DeleteAsset(clipAssetPath);
@@ -2098,10 +2101,10 @@ namespace Reallusion.Import
                 {
                     prefab = PrefabUtility.SavePrefabAsset(toPrefab);
                 }
-                else 
+                else
                 {
                     prefab = PrefabUtility.SaveAsPrefabAsset(toPrefab, prefabAssetPath);
-                }               
+                }
             }
 
             if (UnityEditor.PrefabUtility.IsPartOfPrefabInstance(toPrefab))
@@ -2111,7 +2114,7 @@ namespace Reallusion.Import
 #if UNITY_POST_PROCESSING_3_1_1
             if (CameraProxyType == null)
             {
-                CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");                
+                CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
             }
             if (CameraProxyType != null)
             {
@@ -2126,7 +2129,7 @@ namespace Reallusion.Import
                 }
             }
 #endif
-            GameObject.DestroyImmediate(toPrefab, true);            
+            GameObject.DestroyImmediate(toPrefab, true);
             return prefab;
         }
 
@@ -2254,7 +2257,7 @@ namespace Reallusion.Import
                         }
                     }
 
-                    if (!bindingIsAnimated) staticBindings.Add(binding);                    
+                    if (!bindingIsAnimated) staticBindings.Add(binding);
                 }
 
                 // if we arent cleaning up the clip (or it isnt animated or theres nothing to do), then jump out now
@@ -2264,7 +2267,7 @@ namespace Reallusion.Import
                 {
                     foreach (var binding in animatedBindings)
                     {
-                        // properties such as Position have 3 curves named (propertyName) m_localPosition.x .y & .z - where one or two are animated then the remaining ones should be be preserved 
+                        // properties such as Position have 3 curves named (propertyName) m_localPosition.x .y & .z - where one or two are animated then the remaining ones should be be preserved
 
                         if (staticBindings.Count > 0)
                         {
@@ -2375,7 +2378,7 @@ namespace Reallusion.Import
                                             if (strings[1].iEquals("z")) scale.z = curve.keys[0].value;
                                         }
                                     }
-                                    
+
                                     Quaternion q = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
 
                                     if (t.localPosition != position || t.localRotation != q || t.localScale != scale)
@@ -2384,7 +2387,7 @@ namespace Reallusion.Import
                                         t.localRotation = q;
                                         t.localScale = scale;
                                         updateRequired = true;
-                                    }                                                                 
+                                    }
                                 }
                             }
                         }

@@ -1235,20 +1235,20 @@ float EyeIrisMask(float radial)
 {
     float outer = irisRadius * scleraScale;
     float inner = outer - limbusWidth;
-    float mask = smoothstep(inner, outer, radial * 1.085);
+    float mask = smoothstep(inner, outer, radial);
     return pow(mask, limbusContrast);
 }
 
 float IrisDepthMask(float radial)
 {
-    float irisScale = irisRadius * scleraScale * 6.25;
+    float irisScale = irisRadius * scleraScale * 6.81;
     float a = irisScale * 0.1225;
     return saturate(Remap_float(radial, a, 0.0, 0.0, 1.0));
 }
 
 float EyeParallaxDepthMap(float radial)
 {
-    float irisScale = irisRadius * scleraScale * 6.25;   
+    float irisScale = irisRadius * scleraScale * 6.81;   
     return smoothstep(irisScale * 0.1225, irisScale * 0.1, radial);
 }
 
@@ -1288,7 +1288,7 @@ void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
     float radial = RADIAL(uv);
-    float irisScale = irisRadius * scleraScale * 6.25;
+    float irisScale = irisRadius * scleraScale * 6.81;
     float2 touv = TilingOffset(uv, irisScale, float2(0.5, 0.5));
     
     float4 color = SAMPLE(CorneaDiffuse, touv) * sRGBToLinear(irisColor);
@@ -1319,7 +1319,7 @@ void RLEyeDiffuse(uint3 id : SV_DispatchThreadID)
 void RLCorneaSingleDiffuse(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);    
-    float irisScale = irisRadius * scleraScale * 6.25;
+    float irisScale = irisRadius * scleraScale * 6.81;
     float2 touvCornea = TilingOffset(uv, irisScale, float2(0.5, 0.5));
     float2 touvSclera = TilingOffset(uv, scleraScale, float2(0.5, 0.5));
 
@@ -1371,7 +1371,7 @@ void RLCorneaMask(uint3 id : SV_DispatchThreadID)
 void RLCorneaDetailMask(uint3 id : SV_DispatchThreadID)
 {
     float2 uv = GetUV(id.xy);
-    float irisScale = irisRadius * scleraScale * 6.25;
+    float irisScale = irisRadius * scleraScale * 6.81;
     float2 touv = TilingOffset(uv, irisScale, float2(0.5, 0.5));
     float radial = RADIAL(uv);    
     float limbusMask = EyeLimbusMask(touv);

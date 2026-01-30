@@ -8,6 +8,9 @@ Changelog
 - Better opacity detection on hair, brows, and beards.
 - Faster animation retargeting.
 - LOD Model processing fix.
+- Merged Material update.
+- Standard eyelash disabled/hidden when HD eyelash detected.
+- Fix to Send motion when character names differ.
 
 ### 2.2.0
 - Build error from Bone drivers fixed.

@@ -751,7 +751,10 @@ namespace Reallusion.Import
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            GUILayout.Label(importType, importerStyles.boldStyle);
+            string qualityText = importType;
+            if (contextCharacter.SubD != CharacterInfo.SubDLevel.SubD0)
+                qualityText += $" ({contextCharacter.SubD.ToString()})";
+            GUILayout.Label(qualityText, importerStyles.boldStyle);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
@@ -1387,9 +1390,17 @@ namespace Reallusion.Import
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
             GUILayout.Label("Hair Mip-map Bias");
+            GUILayout.Space(ROW_SPACE);
             GUILayout.BeginHorizontal();
             Importer.MIPMAP_BIAS_HAIR = GUILayout.HorizontalSlider(Importer.MIPMAP_BIAS_HAIR, -1f, 1f, GUILayout.Width(160f));
             GUILayout.Label(Importer.MIPMAP_BIAS_HAIR.ToString("0.00"),
+                            GUILayout.Width(40f));
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Hair Mip-map Clip");
+            GUILayout.Space(ROW_SPACE);
+            GUILayout.BeginHorizontal();
+            Importer.MIPMAP_CLIP_HAIR = GUILayout.HorizontalSlider(Importer.MIPMAP_CLIP_HAIR, 0.01f, 0.99f, GUILayout.Width(160f));
+            GUILayout.Label(Importer.MIPMAP_CLIP_HAIR.ToString("0.00"),
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -1849,6 +1860,7 @@ namespace Reallusion.Import
         {
             Importer.MIPMAP_BIAS = 0f;
             Importer.MIPMAP_BIAS_HAIR = -0.65f;
+            Importer.MIPMAP_CLIP_HAIR = 0.4f;
             Importer.RECONSTRUCT_FLOW_NORMALS = false;
             Importer.REBAKE_BLENDER_UNITY_MAPS = false;
             Importer.REBAKE_PACKED_TEXTURE_MAPS = false;
