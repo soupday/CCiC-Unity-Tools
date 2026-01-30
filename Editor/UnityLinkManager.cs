@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -109,7 +109,7 @@ namespace Reallusion.Import
             SetupLogging();
             //StartQueue();
             StartClient();
-            //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup 
+            //UnityLinkManagerWindow.OpenWindow(); // window OnEnable will add the delegates for cleanup
         }
         #endregion Setup
 
@@ -174,7 +174,7 @@ namespace Reallusion.Import
                 /*
                 try
                 {
-                    var result = client.BeginConnect(ipAddress, port, null, null); 
+                    var result = client.BeginConnect(ipAddress, port, null, null);
                     var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
 
                     if (!success)
@@ -1184,7 +1184,7 @@ namespace Reallusion.Import
             // Examine current scene contents
 #if UNITY_2023_OR_NEWER
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else       
+#else
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
             JsonRequest reply = new JsonRequest(item.Request.Type);
@@ -1247,6 +1247,7 @@ namespace Reallusion.Import
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
             string newLinkId = item.Relink.LinkId;
+            string sourceName = item.Relink.Name;
 
             List<CharacterInfo> characters = WindowManager.GetCharacterList(true, true);
             CharacterInfo current = ImporterWindow.Current.Character;
@@ -1273,38 +1274,43 @@ namespace Reallusion.Import
                 }
             }
 
-            Util.LogInfo($"Relinking Character: {current.name}");
+            Util.LogInfo($"Re-linking Character: {current.name}");
             // fetch the old link id
             string oldLinkId = current.linkId;
-            Util.LogInfo($"Old Link Id: {oldLinkId} -> New Link Id: {newLinkId}");
 
-            // set and write the character info to the new link id
-            current.linkId = newLinkId;
-            current.Write();
-            GameObject prefab = current.PrefabAsset;
-            if (prefab)
+            if (string.IsNullOrEmpty(oldLinkId))
             {
-                DataLinkActorData data = prefab.GetComponentInChildren<DataLinkActorData>();
-                if (data)
+                Util.LogInfo($"Setting Link Id: {newLinkId}");
+
+                // set and write the character info to the new link id
+                current.linkId = newLinkId;
+                current.Write();
+
+                // add/update the datalink actor data
+                GameObject prefab = current.PrefabAsset;
+                if (prefab)
                 {
-                    data.linkId = newLinkId;
-                }
-                else
-                {
-                    var newData = prefab.AddComponent<DataLinkActorData>();
-                    newData.linkId = newLinkId;
-                    // tbd..
+                    DataLinkActorData data = prefab.GetComponentInChildren<DataLinkActorData>();
+                    if (!data) data = prefab.AddComponent<DataLinkActorData>();
+                    data.Set(newLinkId, prefab, current.Fbx);
                 }
             }
-
-            // update scene objects with the new link id
-            // TODO: what about other scenes not currently loaded?
-            foreach (var lso in linkedSceneObjects)
+            else
             {
-                if (lso.linkId == oldLinkId)
+                Util.LogInfo($"Syncing Link ID back to CC/iC: {newLinkId} -> {current.linkId}");
+                // send a relink back with the link id of the Unity character
+                // the Unity character's link id is fixed,
+                // so update the link id in CC/iC (as this is prone to changing)
+                // this way we don't break already tranfered Unity scenes.
+                JsonRelink reply = new JsonRelink(newLinkId, current.linkId, sourceName, current.exportType.ToString());
+                try
                 {
-                    Util.LogInfo($"Updaing Scene object: {lso.name} to new link id");
-                    lso.linkId = newLinkId;
+                    string replyString = JsonConvert.SerializeObject(reply);
+                    SendMessage(OpCodes.RELINK, replyString);
+                }
+                catch
+                {
+                    Debug.Log("Cannot format relink reply");
                 }
             }
         }
@@ -1344,7 +1350,7 @@ namespace Reallusion.Import
 
         #endregion  Activity queue handling
 
-        #region Class data               
+        #region Class data
         public static CharacterInfo.ExportType ParseExportType(string value)
         {
             return Enum.TryParse(value, out CharacterInfo.ExportType result) ? result : CharacterInfo.ExportType.UNKNOWN;
@@ -1766,7 +1772,7 @@ namespace Reallusion.Import
                                      light_data["angle"],
                                      light_data["falloff"],
                                      light_data["attenuation"],
-                                     light_data["darkness"]) 
+                                     light_data["darkness"])
              */
 
             public int time { get; set; }
@@ -2033,7 +2039,7 @@ namespace Reallusion.Import
                                 camera_data["dof_near_blur"],
                                 camera_data["dof_far_transition"],
                                 camera_data["dof_near_transition"],
-                                camera_data["dof_min_blend_distance"], 
+                                camera_data["dof_min_blend_distance"],
                                 camera_data["fov"]), # Blur Edge Sampling Scale,
                                 camera_data["active"])
             */
@@ -2250,10 +2256,10 @@ namespace Reallusion.Import
             public const string widthStr = "width";         // width: Float - Apeture width
             public const string heightStr = "height";       // height: Float - Apeture height
             public const string focalStr = "focal_length";  // focal_length: Float - Focal length of lens
-            public const string targetStr = "target";       // target: Float list [x, y, z] average pos of selection (i.e. iclone camera pivot)    
+            public const string targetStr = "target";       // target: Float list [x, y, z] average pos of selection (i.e. iclone camera pivot)
             /*
                 // I have no idea what the following are, but I send them anyway
-                
+
                 min: Float list - (Min Bounds Vector) [x, y, z]
                 max: Float list - (Max Bounds Vector) [x, y, z]
                 center: Float list - (Centre Bounds Vector) [x, y, z]
@@ -2391,15 +2397,19 @@ namespace Reallusion.Import
             [JsonProperty("link_id")]
             public string LinkId { get; set; }
 
+            [JsonProperty("to_link_id")]
+            public string ToLinkId { get; set; }
+
             [JsonProperty("name")]
             public string Name { get; set; }
 
             [JsonProperty("type")]
             public string Type { get; set; }
 
-            public JsonRelink(string linkId, string name, string type)
+            public JsonRelink(string linkId, string toLinkId, string name, string type)
             {
                 LinkId = linkId;
+                ToLinkId = toLinkId;
                 Name = name;
                 Type = type;
             }

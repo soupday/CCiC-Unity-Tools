@@ -59,8 +59,7 @@ namespace Reallusion.Import
 
             DataLinkActorData data = timelineObject.GetComponent<DataLinkActorData>();
             if (data == null) data = timelineObject.AddComponent<DataLinkActorData>();
-            data.linkId = Util.RandomString(20);
-            data.createdTimeStamp = DateTime.Now.Ticks;
+            data.Set(Util.RandomString(20));            
 
             PlayableDirector director = timelineObject.GetComponent<PlayableDirector>();
             if (director == null)
