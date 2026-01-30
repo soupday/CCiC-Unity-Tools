@@ -1247,7 +1247,8 @@ namespace Reallusion.Import
             DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
 #endif
             string newLinkId = item.Relink.LinkId;
-            string sourceName = item.Relink.Name;
+            string sourceLinkId = item.Relink.LinkId;
+            string sourceName = item.Relink.Name;            
 
             List<CharacterInfo> characters = WindowManager.GetCharacterList(true, true);
             CharacterInfo current = ImporterWindow.Current.Character;
@@ -1259,18 +1260,17 @@ namespace Reallusion.Import
                 return;
             }
 
-            // make sure no existing characters have this new link id
+            bool inUse = false;
             foreach (var c in characters)
             {
                 if (c.linkId == newLinkId)
                 {
                     if (c != current)
                     {
-                        EditorUtility.DisplayDialog("Error",
-                            $"Another Character: {c.name}, already has the Link Id: {newLinkId}!",
-                            "Ok");
-                    }
-                    return;
+                        inUse = true;                        
+                        newLinkId = Util.RandomString(20, true);
+                        Util.LogWarn($"Link Id is in use, generating new: {newLinkId}");
+                    }                    
                 }
             }
 
@@ -1295,14 +1295,15 @@ namespace Reallusion.Import
                     data.Set(newLinkId, prefab, current.Fbx);
                 }
             }
-            else
+            
+            if (!string.IsNullOrEmpty(oldLinkId) || inUse)
             {
-                Util.LogInfo($"Syncing Link ID back to CC/iC: {newLinkId} -> {current.linkId}");
+                Util.LogInfo($"Syncing Link ID back to CC/iC: {sourceLinkId} -> {current.linkId}");
                 // send a relink back with the link id of the Unity character
                 // the Unity character's link id is fixed,
                 // so update the link id in CC/iC (as this is prone to changing)
                 // this way we don't break already tranfered Unity scenes.
-                JsonRelink reply = new JsonRelink(newLinkId, current.linkId, sourceName, current.exportType.ToString());
+                JsonRelink reply = new JsonRelink(sourceLinkId, current.linkId, sourceName, current.exportType.ToString());
                 try
                 {
                     string replyString = JsonConvert.SerializeObject(reply);
