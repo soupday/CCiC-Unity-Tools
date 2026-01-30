@@ -504,6 +504,7 @@ namespace Reallusion.Import
             MOTION = 240,
             REQUEST = 250,
             CONFIRM = 251,
+            RELINK = 300,
 
             // additions for testing
             TEST = 999,
@@ -866,6 +867,11 @@ namespace Reallusion.Import
                         try { qItem.Request = JsonConvert.DeserializeObject<JsonRequest>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; } 
                         break;
                     }
+                case OpCodes.RELINK:
+                    {
+                        try { qItem.Relink = JsonConvert.DeserializeObject<JsonRelink>(dataString); } catch (Exception ex) { Debug.Log(ex); add = false; }
+                        break;
+                    }
             }
 
             WriteIncomingLog(dataString, add);
@@ -1057,10 +1063,15 @@ namespace Reallusion.Import
                         //Debug.Log(next.FrameSync.ToString());
                         break;
                     }
-                    case OpCodes.REQUEST:
+                case OpCodes.REQUEST:
                     {
                         //Debug.LogWarning("The 'Send Scene' function is not yet fully implemented - Use with caution.");
                         RespondToSceneRequest(next);
+                        break;
+                    }
+                case OpCodes.RELINK:
+                    {                        
+                        ActorRelink(next);
                         break;
                     }
             }
@@ -1222,6 +1233,62 @@ namespace Reallusion.Import
                 catch
                 {
                     Debug.Log("Cannot format scene request reply");
+                }
+            }
+        }
+
+        static void ActorRelink(QueueItem item)
+        {
+            // Examine current scene contents
+#if UNITY_2023_OR_NEWER
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+#endif
+            string newLinkId = item.Relink.LinkId;
+
+            List<CharacterInfo> characters = WindowManager.GetCharacterList(true, true);
+            CharacterInfo current = ImporterWindow.Current.Character;
+            if (current == null)
+            {
+                EditorUtility.DisplayDialog("Error",
+                            "No character selected to update Link ID!",
+                            "Ok");
+                return;
+            }
+
+            // make sure no existing characters have this new link id
+            foreach (var c in characters)
+            {
+                if (c.linkId == newLinkId)
+                {
+                    if (c != current)
+                    {
+                        EditorUtility.DisplayDialog("Error",
+                            $"Another Character: {c.name}, already has the Link Id: {newLinkId}!",
+                            "Ok");
+                    }
+                    return;
+                }
+            }
+                        
+            Util.LogInfo($"Relinking Character: {current.name}");
+            // fetch the old link id
+            string oldLinkId = current.linkId;
+            Util.LogInfo($"Old Link Id: {oldLinkId} -> New Link Id: {newLinkId}");
+
+            // set and write the character info to the new link id
+            current.linkId = newLinkId;
+            current.Write();
+
+            // update scene objects with the new link id
+            // TODO: what about other scenes not currently loaded?
+            foreach (var lso in linkedSceneObjects)
+            {
+                if (lso.linkId == oldLinkId)
+                {
+                    Util.LogInfo($"Updaing Scene object: {lso.name} to new link id");
+                    lso.linkId = newLinkId;
                 }
             }
         }
@@ -2303,6 +2370,25 @@ namespace Reallusion.Import
             }
         }
 
+        public class JsonRelink
+        {            
+            [JsonProperty("link_id")]
+            public string LinkId { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            public JsonRelink(string linkId, string name, string type)
+            {
+                LinkId = linkId;
+                Name = name;
+                Type = type;                
+            }
+        }
+
         public class JsonRequestActors
         {
             [JsonProperty("name")]
@@ -2351,6 +2437,7 @@ namespace Reallusion.Import
             public JsonCameraSync CameraSync { get; set; }
             public JsonFrameSync FrameSync { get; set; }
             public JsonRequest Request { get; set; }
+            public JsonRelink Relink { get; set; }
             public string RemoteId {  get; set; }
 
             public QueueItem(OpCodes opCode, Exchange direction)
@@ -2368,6 +2455,7 @@ namespace Reallusion.Import
                 Staging = null;
                 CameraSync = null;
                 FrameSync = null;
+                Relink = null;
             }
         }
 
