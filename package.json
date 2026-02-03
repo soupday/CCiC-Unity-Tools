@@ -5,8 +5,8 @@
   "description": "Unity importer for Character Creator 3, 4 & 5 and iClone 7 and 8.",
   "unity": "2021.3",
   "documentationUrl": "https://soupday.github.io/cc_unity_tools/index.html",
-  "changelogUrl": "https://github.com/soupday/CHANGELOG.md",
-  "licensesUrl": "https://github.com/soupday/cc_unity_tools/blob/stable/LICENSE",
+  "changelogUrl": "https://github.com/soupday/CCiC-Unity-Tools/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/soupday/CCiC-Unity-Tools/blob/main/LICENSE",
   "keywords": [
     "Reallusion",
     "Character Creator",
