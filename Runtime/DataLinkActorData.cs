@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace Reallusion.Import
@@ -13,6 +15,7 @@ namespace Reallusion.Import
         public string fbxGuid;
         public long createdTimeStamp;
 
+#if UNITY_EDITOR
         public void Set(string linkId, GameObject prefabAsset, GameObject fbxAsset)
         {
             this.linkId = linkId;
@@ -42,5 +45,7 @@ namespace Reallusion.Import
         {
             createdTimeStamp = DateTime.Now.Ticks;
         }
+#endif
+
     }
 }
