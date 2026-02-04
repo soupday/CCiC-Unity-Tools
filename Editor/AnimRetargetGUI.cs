@@ -1361,6 +1361,8 @@ namespace Reallusion.Import
             bool useBoneDriver = (info != null && info.FeatureUseBoneDriver) || FeatureUseBoneDriver;
             bool useBlendTranspose = (info != null && info.FeatureUseExpressionTranspose) || FeatureUseExpressionTranspose;
             bool useConstraintData = (info != null && info.FeatureUseConstraintData) || FeatureUseConstraintData;
+            if (!useBoneDriver && !useBlendTranspose && !useConstraintData)
+                legacyFeatureOverride = true;
 
             if (legacyFeatureOverride)
             {
@@ -1418,15 +1420,11 @@ namespace Reallusion.Import
         public static void ApplyBoneDriverSettings(GameObject targetCharacterModel, GameObject bd, bool drive = false, bool transpose = false, bool constrain = false)
         {
             Component boneDrivercomp = BoneEditor.GetBoneDriverComponentReflection(targetCharacterModel);
-
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
 
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PrefabUtility.RecordPrefabInstancePropertyModifications.html
             PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);
-            //PrefabUtility.RecordPrefabInstancePropertyModifications(bd);
-
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            //Util.ApplyIfPrefabInstance(targetCharacterModel);           
         }
 
         public static void SaveBoneDriverChangesToPrefab(GameObject targetCharacterModel)
@@ -1516,6 +1514,7 @@ namespace Reallusion.Import
             if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, drive, transpose, constrain)) return;
             //ApplyBoneDriverSettings(targetCharacterModel, bd, drive, transpose, constrain);
 
+            if (!bd) return;
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
 
@@ -1560,13 +1559,25 @@ namespace Reallusion.Import
                 //Debug.Log($"boneToEvaluate {boneToEvaluate}");
                 bool complete = true;
                 dict.TryGetValue(boneToEvaluate, out List<string> blendShapes);
+                // edge case - avoid purging tracks where the expression list for the bone is empty or null
                 if (blendShapes != null)
                 {
-                    foreach (var blendShape in blendShapes)
+                    if (blendShapes.Count > 0)
                     {
-                        //Debug.Log($"testing blendShape = {blendShape}");
-                        if (smr.sharedMesh.GetBlendShapeIndex(blendShape) == -1) complete = false;
+                        foreach (var blendShape in blendShapes)
+                        {
+                            //Debug.Log($"testing blendShape = {blendShape}");
+                            if (smr.sharedMesh.GetBlendShapeIndex(blendShape) == -1) complete = false;
+                        }
                     }
+                    else
+                    {
+                        complete = false;
+                    }
+                }
+                else
+                {
+                    complete = false;
                 }
                 //Debug.Log($"boneToEvaluate {boneToEvaluate} complete = {complete}");
                 if (complete)
@@ -1597,8 +1608,8 @@ namespace Reallusion.Import
                 }
             }
         }
-
         #region Track Purging
+
         public static void PurgeBindings(EditorCurveBinding[] bindings, AnimationClip clip)
         {
             try

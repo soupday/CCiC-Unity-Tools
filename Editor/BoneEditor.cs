@@ -596,6 +596,16 @@ namespace Reallusion.Import
                 }
             }
 
+            // remove entries that have no valid expressions (cant't be found on the SkinnedMeshRenderer) associated with the bone.
+            try
+            {
+                glossary.ExpressionsByBone.RemoveAll(x => x.Expressions.Count == 0 || x.Expressions == null);
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Failed to remove bones with empty valid expression lists. {e.Message}");
+            }
+
             return glossary;
         }
 
