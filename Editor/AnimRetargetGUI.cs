@@ -476,10 +476,9 @@ namespace Reallusion.Import
             GUI.backgroundColor = Color.Lerp(backgroundColor, tint, 0.25f);
             if (GUILayout.Button(new GUIContent(blendshapeImage, "Retarget Blendshapes."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
-                logOnce = true;
-                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, expressionConstrain, createFullAnimationTrack);
-                AnimPlayerGUI.UpdateAnimator();
+                EditorApplication.delayCall += RetargetButtonAction;
             }
+
             GUI.backgroundColor = backgroundColor;
             GUI.enabled = true;
 
@@ -490,6 +489,13 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
+        }
+
+        private static void RetargetButtonAction()
+        {
+            logOnce = true;
+            RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, expressionConstrain, createFullAnimationTrack);
+            AnimPlayerGUI.UpdateAnimator();
         }
 
         public static void DrawAnimationadjustmentControls()
