@@ -92,7 +92,7 @@ namespace Reallusion.Import
                 }
             }
             else
-            {                
+            {
                 checkIsLocked = true;
                 UpdateChecksComplete -= UpdateChecksDone;
                 UpdateChecksComplete += UpdateChecksDone;
@@ -115,7 +115,7 @@ namespace Reallusion.Import
         }
 
         public static void CheckHttp()
-        {            
+        {
             RLToolUpdateUtil.HttpVersionChecked -= HttpCheckDone;
             RLToolUpdateUtil.HttpVersionChecked += HttpCheckDone;
             SetDeterminationStatusFlag(ActivityStatus.DeterminingHttp, true);
@@ -132,10 +132,10 @@ namespace Reallusion.Import
         {
             ShaderPackageUtil.PackageCheckDone -= PackageCheckDone;
             ShaderPackageUtil.PackageCheckDone += PackageCheckDone;
-                        
+
             SetDeterminationStatusFlag(ActivityStatus.DeterminingPackages, true);
             ShaderPackageUtil.UpdateManagerUpdateCheck();
-            
+
         }
 
         public static void PackageCheckDone(object sender, object e)
@@ -214,7 +214,7 @@ namespace Reallusion.Import
 
                             tmp += projects[i];
                         }
-                    }                    
+                    }
                     tmp += delimiter + projectRef;
 
                     EditorPrefs.SetString(shaderKey, tmp);
@@ -236,7 +236,7 @@ namespace Reallusion.Import
             //Debug.Log("PROJECT REF: " + projectRef);
 
             if (EditorPrefs.HasKey(shaderKey))
-            {                
+            {
                 if ((EditorPrefs.GetString(shaderKey).Contains(projectRef)))
                 {
                     return true;
@@ -274,19 +274,19 @@ namespace Reallusion.Import
                     }
             }
 
-            if(!Version.TryParse(lastUsedToolVersion, out Version last))
+            if (!Version.TryParse(lastUsedToolVersion, out Version last))
             {
                 last = new Version(0, 0, 0);
             }
 
-            if(!Version.TryParse(Pipeline.VERSION, out Version current))
+            if (!Version.TryParse(Pipeline.VERSION, out Version current))
             {
                 current = new Version(0, 0, 0);
             }
 
-            if (last < new Version(2, 1, 1))  // essential breakpoint to move .cs files to runtime package
+            if (last < new Version(2, 2, 2))  // essential update - force most recent runtime and shader packages
             {
-                Debug.Log("Critical package updates for version 2.1.1 and above are required (this will be performed autoatically)");
+                Debug.Log("Critical package updates for version 2.2.2 and above are required (this will be performed autoatically)");
                 return true;
             }
             else
@@ -340,7 +340,7 @@ namespace Reallusion.Import
                 }
 #if UNITY_6000_2_OR_NEWER
                 if (hasLimit && hasOverride)
-                { 
+                {
                     if (inAssetOverrideLimit > 0 && inAssetVariantLimit < shaderVariantLimit) return true;
                 }
 #else
@@ -417,8 +417,8 @@ namespace Reallusion.Import
         {
             //PlayerSettings.productGUID.ToString();
 
-            if(ImporterWindow.GeneralSettings != null)
-                    settings = ImporterWindow.GeneralSettings;
+            if (ImporterWindow.GeneralSettings != null)
+                settings = ImporterWindow.GeneralSettings;
             else
                 Debug.LogError("settings are null");
 
@@ -468,7 +468,7 @@ namespace Reallusion.Import
                         ShaderPackageUtil.InstallRuntimePackage(UpdateManager.currentRuntimePackageManifest, false);
                         SetInitialInstallCompleted();
                         return;
-                    }                    
+                    }
                     else
                     {
                         if (settings != null)
@@ -488,7 +488,7 @@ namespace Reallusion.Import
                     }
                 }
 
-                bool sos = false;                
+                bool sos = false;
                 bool shownOnce = true;
                 bool postInstallShowUpdateWindow = false;
                 bool showWindow = false;
@@ -502,7 +502,7 @@ namespace Reallusion.Import
                 }
                 bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
                 if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
-                
+
                 bool valid = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid;
 
                 bool force = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Error || UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Error || UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.NothingInstalled_Install_force;
