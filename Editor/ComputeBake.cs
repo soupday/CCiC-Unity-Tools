@@ -1852,7 +1852,7 @@ namespace Reallusion.Import
                         null, null, null, null, emissionMap, null,
                         normalStrength, 1f, 1f, 0f, 0.5f, emissiveColor,
                         sourceName,
-                        Pipeline.GetTemplateMaterial(sourceName, MaterialType.Hair,
+                        Pipeline.GetTemplateMaterial(sourceName, MaterialType.HairHQ,
                                     MaterialQuality.Baked, characterInfo,
                                     useDigitalHuman));
 
@@ -1911,7 +1911,7 @@ namespace Reallusion.Import
                         null, null, null, null, emissionMap, null,
                         normalStrength, 1f, 1f, 0f, 0.5f, emissiveColor,
                         sourceName,
-                        Pipeline.GetTemplateMaterial(sourceName, MaterialType.Hair,
+                        Pipeline.GetTemplateMaterial(sourceName, MaterialType.HairHQ,
                                     MaterialQuality.Baked, characterInfo,
                                     useDigitalHuman));
 

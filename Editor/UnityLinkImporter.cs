@@ -699,7 +699,7 @@ namespace Reallusion.Import
 
                 if (characterPrefab != null)
                 {
-                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, motionTargetChar, true, MotionPrefix);
+                    clipListForTimeLine = AnimRetargetGUI.GenerateCharacterTargetedAnimations(uniqueTargetFile, characterPrefab, motionTargetChar, true);
 
                     // determine if PROP or AVATAR from characterID
                     CharacterInfo charInfo = UnityLinkManager.GetCharacterInfoFromLinkId(linkId);

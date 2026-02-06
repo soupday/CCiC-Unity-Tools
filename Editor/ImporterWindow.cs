@@ -996,10 +996,11 @@ namespace Reallusion.Import
             // BUILD BUTTON
             //
             GUIContent buildContent;
+            string labelText = contextCharacter.exportType == CharacterInfo.ExportType.PROP ? "Build Prop" : "Build Character";
             if (contextCharacter.BasicMaterials)
-                buildContent = new GUIContent("Build Materials", iconBuildMaterials, "Setup materials to use the default shaders.");
+                buildContent = new GUIContent(labelText, iconBuildMaterials, "Setup materials and features to use the default shaders.");
             else
-                buildContent = new GUIContent("Build Materials", iconBuildMaterials, "Setup materials to use the high quality shaders.");
+                buildContent = new GUIContent(labelText, iconBuildMaterials, "Setup materials and features to use the high quality shaders.");
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();

@@ -2209,39 +2209,41 @@ namespace Reallusion.Import
         public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath,
             GameObject targetCharacterModel, CharacterInfo info, bool replaceIfExists, string motionPrefix = null)
         {
-
-            List<AnimationClip> animationClips = new List<AnimationClip>();
-
-            AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
-
-            if (info.FeatureUseExtractGeneric)
+            List<AnimationClip> clips = new List<AnimationClip>();
+            List<AnimationClip> processedClips = new List<AnimationClip>();            
+            AnimationClip[] foundClips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
+            
+            foreach (AnimationClip clip in foundClips)
             {
-                Debug.Log("Extracting generic animation data.");
-                clips = GenericAnimProcessing.ProcessGenericClips(info, clips, motionAssetPath);
+                string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
+                string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
+                if (File.Exists(assetPath) && !replaceIfExists) continue;
+                clips.Add(clip);
             }
 
-            if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
-            if (!targetCharacterModel) return null;
-
-            string firstPath = null;
-
-            if (clips.Length > 0)
+            if (clips.Count > 0 && info.FeatureUseExtractGeneric)
             {
+                Debug.Log("Extracting generic animation data.");
+                clips = GenericAnimProcessing.ProcessGenericClips(info, clips.ToArray(), motionAssetPath).ToList();
+            }
+
+            if (clips.Count > 0)
+            {
+                if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
+                if (!targetCharacterModel) return null;
+
+                string firstPath = null;
+            
                 int index = 0;
                 foreach (AnimationClip clip in clips)
                 {
                     string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
                     string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
-                    if (File.Exists(assetPath) && !replaceIfExists)
-                    {
-                        //Debug.Log("FAIL CASE");
-                        continue;
-                    }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
                     RetargetBlendShapes(clip, workingClip, targetCharacterModel, info, false);
                     AnimationClip asset = WriteAnimationToAssetDatabase(workingClip, assetPath, false);
-                    animationClips.Add(asset);
+                    processedClips.Add(asset);
                     index++;
                 }
 
@@ -2254,7 +2256,7 @@ namespace Reallusion.Import
                 Util.LogInfo("No animation clips found.");
             }
 
-            return animationClips;
+            return processedClips;
         }
 
         /// <summary>
