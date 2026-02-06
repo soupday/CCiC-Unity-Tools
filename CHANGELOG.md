@@ -1,6 +1,16 @@
 Changelog
 =========
 
+### 2.2.2
+- Generic animation merge enabled (experimental)
+    - Animated bones not in humanoid skeleton will be combined into the mechanim humanoid animation clip.
+    - e.g. Character animations with animated accessory bones (wings, tails, ears) or spring bones (hair accessories).
+- Better transparency detection & basic hair detection.
+- Fix to calculated blendshape normal distortion.
+- Bone driver fixes.
+- Animation retargeting fixes.
+- Fix to DataLinkActorData editor code.
+
 ### 2.2.1
 - HD Facial profile animation retargeting.
 - Updated Animation Player - Facial Expression Preview for HD facial profile.
