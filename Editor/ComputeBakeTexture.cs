@@ -271,6 +271,7 @@ namespace Reallusion.Import
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.mipmapEnabled = true;
             importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
+            importer.isReadable = false;
             if ((flags & Importer.FLAG_SRGB) > 0)
             {
                 importer.sRGBTexture = true;

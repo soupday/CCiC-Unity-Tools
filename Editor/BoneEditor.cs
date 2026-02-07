@@ -507,6 +507,22 @@ namespace Reallusion.Import
 
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
 
+            foreach (var exp in expressions)
+            {
+                int i = smr.sharedMesh.GetBlendShapeIndex(exp.Key);
+                if (i == -1)
+                {
+                    string bones = "[ ";
+                    foreach (var b in exp.Value)
+                    {
+                        bones += b.Key;
+                        bones += " ";
+                    }
+                    bones += "]";
+                    Debug.Log($"BlendShape {exp.Key} has bone deformation data {bones} but is absent in the model.");
+                }
+            }
+
             SkeletonBone[] skeleton = new SkeletonBone[0];
             Animator anim = sourceObject.GetComponentInChildren<Animator>();
             if (anim != null && anim.avatar != null)
@@ -594,6 +610,17 @@ namespace Reallusion.Import
                         }
                     }
                 }
+            }
+
+            // remove entries that have no valid expressions (cant't be found on the SkinnedMeshRenderer) associated with the bone.
+            try
+            {
+                int num = glossary.ExpressionsByBone.RemoveAll(x => x.Expressions.Count == 0 || x.Expressions == null);
+                Debug.Log($"{num} bones with empty expressions removed from the expression glossary.");
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"Failed to remove bones with empty valid expression lists. {e.Message}");
             }
 
             return glossary;

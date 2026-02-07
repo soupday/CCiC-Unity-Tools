@@ -251,5 +251,15 @@ namespace Reallusion.Import
             bool hasKeyword = mat.IsKeywordEnabled(shaderRef + "_ON");
             return hasKeyword || valueFloat > 0f;
         }
-    }
+
+        public static bool HasAlphaPixels(this Texture2D tex)
+        {
+            Color[] pixels = tex.GetPixels();
+            for (int i = 0; i < pixels.Length; i += 1)
+            {
+                if (pixels[i].a < 1f) return true;
+            }
+            return false;
+        }
+        }
 }

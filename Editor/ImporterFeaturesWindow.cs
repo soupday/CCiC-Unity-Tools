@@ -264,12 +264,13 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ConstraintData, "Use Constraints", SECTION_INDENT))
                 flagChanged = true;
 
-            /*
-            DrawLabelLine(line++, "Extra Generic Animation Data:");
 
-            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExtractGeneric, "Merge extra generic data", SECTION_INDENT))
+            DrawLabelLine(line++, "Experimental:");
+            DrawLabelLine(line++, " - Extra Generic Animation Data:");            
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExtractGeneric, "   Merge extra generic data", SECTION_INDENT))
                 flagChanged = true;
-            */
+            
 
             DrawLabelLine(line++, "");
 

@@ -476,10 +476,9 @@ namespace Reallusion.Import
             GUI.backgroundColor = Color.Lerp(backgroundColor, tint, 0.25f);
             if (GUILayout.Button(new GUIContent(blendshapeImage, "Retarget Blendshapes."), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
-                logOnce = true;
-                RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, expressionConstrain, createFullAnimationTrack);
-                AnimPlayerGUI.UpdateAnimator();
+                EditorApplication.delayCall += RetargetButtonAction;
             }
+
             GUI.backgroundColor = backgroundColor;
             GUI.enabled = true;
 
@@ -490,6 +489,13 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
+        }
+
+        private static void RetargetButtonAction()
+        {
+            logOnce = true;
+            RetargetBlendShapes(OriginalClip, WorkingClip, CharacterAnimator.gameObject, null, false, expressionDrivenBones, expressionBlendShapeTranspose, expressionConstrain, createFullAnimationTrack);
+            AnimPlayerGUI.UpdateAnimator();
         }
 
         public static void DrawAnimationadjustmentControls()
@@ -1355,6 +1361,8 @@ namespace Reallusion.Import
             bool useBoneDriver = (info != null && info.FeatureUseBoneDriver) || FeatureUseBoneDriver;
             bool useBlendTranspose = (info != null && info.FeatureUseExpressionTranspose) || FeatureUseExpressionTranspose;
             bool useConstraintData = (info != null && info.FeatureUseConstraintData) || FeatureUseConstraintData;
+            if (!useBoneDriver && !useBlendTranspose && !useConstraintData)
+                legacyFeatureOverride = true;
 
             if (legacyFeatureOverride)
             {
@@ -1412,15 +1420,11 @@ namespace Reallusion.Import
         public static void ApplyBoneDriverSettings(GameObject targetCharacterModel, GameObject bd, bool drive = false, bool transpose = false, bool constrain = false)
         {
             Component boneDrivercomp = BoneEditor.GetBoneDriverComponentReflection(targetCharacterModel);
-
             BoneEditor.SetupBoneDriverFlags(bd, drive, transpose, constrain);
 
             // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PrefabUtility.RecordPrefabInstancePropertyModifications.html
             PrefabUtility.RecordPrefabInstancePropertyModifications(boneDrivercomp);
-            //PrefabUtility.RecordPrefabInstancePropertyModifications(bd);
-
             LogBoneDriverSettingsChanges(targetCharacterModel, bd, drive, transpose, constrain, false);
-            //Util.ApplyIfPrefabInstance(targetCharacterModel);           
         }
 
         public static void SaveBoneDriverChangesToPrefab(GameObject targetCharacterModel)
@@ -1510,6 +1514,7 @@ namespace Reallusion.Import
             if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, drive, transpose, constrain)) return;
             //ApplyBoneDriverSettings(targetCharacterModel, bd, drive, transpose, constrain);
 
+            if (!bd) return;
             SkinnedMeshRenderer smr = bd.GetComponent<SkinnedMeshRenderer>();
             if (smr == null) return;
 
@@ -1554,13 +1559,25 @@ namespace Reallusion.Import
                 //Debug.Log($"boneToEvaluate {boneToEvaluate}");
                 bool complete = true;
                 dict.TryGetValue(boneToEvaluate, out List<string> blendShapes);
+                // edge case - avoid purging tracks where the expression list for the bone is empty or null
                 if (blendShapes != null)
                 {
-                    foreach (var blendShape in blendShapes)
+                    if (blendShapes.Count > 0)
                     {
-                        //Debug.Log($"testing blendShape = {blendShape}");
-                        if (smr.sharedMesh.GetBlendShapeIndex(blendShape) == -1) complete = false;
+                        foreach (var blendShape in blendShapes)
+                        {
+                            //Debug.Log($"testing blendShape = {blendShape}");
+                            if (smr.sharedMesh.GetBlendShapeIndex(blendShape) == -1) complete = false;
+                        }
                     }
+                    else
+                    {
+                        complete = false;
+                    }
+                }
+                else
+                {
+                    complete = false;
                 }
                 //Debug.Log($"boneToEvaluate {boneToEvaluate} complete = {complete}");
                 if (complete)
@@ -1591,8 +1608,8 @@ namespace Reallusion.Import
                 }
             }
         }
-
         #region Track Purging
+
         public static void PurgeBindings(EditorCurveBinding[] bindings, AnimationClip clip)
         {
             try
@@ -2192,39 +2209,41 @@ namespace Reallusion.Import
         public static List<AnimationClip> GenerateCharacterTargetedAnimations(string motionAssetPath,
             GameObject targetCharacterModel, CharacterInfo info, bool replaceIfExists, string motionPrefix = null)
         {
-
-            List<AnimationClip> animationClips = new List<AnimationClip>();
-
-            AnimationClip[] clips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
-
-            if (info.FeatureUseExtractGeneric)
+            List<AnimationClip> clips = new List<AnimationClip>();
+            List<AnimationClip> processedClips = new List<AnimationClip>();            
+            AnimationClip[] foundClips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
+            
+            foreach (AnimationClip clip in foundClips)
             {
-                Debug.Log("Extracting generic animation data.");
-                clips = GenericAnimProcessing.ProcessGenericClips(info, clips, motionAssetPath);
+                string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
+                string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
+                if (File.Exists(assetPath) && !replaceIfExists) continue;
+                clips.Add(clip);
             }
 
-            if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
-            if (!targetCharacterModel) return null;
-
-            string firstPath = null;
-
-            if (clips.Length > 0)
+            if (clips.Count > 0 && info.FeatureUseExtractGeneric)
             {
+                Debug.Log("Extracting generic animation data.");
+                clips = GenericAnimProcessing.ProcessGenericClips(info, clips.ToArray(), motionAssetPath).ToList();
+            }
+
+            if (clips.Count > 0)
+            {
+                if (!targetCharacterModel) targetCharacterModel = Util.FindCharacterPrefabAsset(motionAssetPath);
+                if (!targetCharacterModel) return null;
+
+                string firstPath = null;
+            
                 int index = 0;
                 foreach (AnimationClip clip in clips)
                 {
                     string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
                     string assetPath = GenerateClipAssetPath(clip, motionAssetPath, clipPrefix, true);
                     if (string.IsNullOrEmpty(firstPath)) firstPath = assetPath;
-                    if (File.Exists(assetPath) && !replaceIfExists)
-                    {
-                        //Debug.Log("FAIL CASE");
-                        continue;
-                    }
                     AnimationClip workingClip = AnimPlayerGUI.CloneClip(clip);
                     RetargetBlendShapes(clip, workingClip, targetCharacterModel, info, false);
                     AnimationClip asset = WriteAnimationToAssetDatabase(workingClip, assetPath, false);
-                    animationClips.Add(asset);
+                    processedClips.Add(asset);
                     index++;
                 }
 
@@ -2237,7 +2256,7 @@ namespace Reallusion.Import
                 Util.LogInfo("No animation clips found.");
             }
 
-            return animationClips;
+            return processedClips;
         }
 
         /// <summary>
