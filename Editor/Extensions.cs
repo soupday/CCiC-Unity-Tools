@@ -252,12 +252,16 @@ namespace Reallusion.Import
             return hasKeyword || valueFloat > 0f;
         }
 
-        public static bool HasAlphaPixels(this Texture2D tex)
+        public static bool HasAlphaPixels(this Texture2D tex, float threshold=0.9f)
         {
             Color[] pixels = tex.GetPixels();
             for (int i = 0; i < pixels.Length; i += 1)
             {
-                if (pixels[i].a < 1f) return true;
+                if (pixels[i].a < threshold)
+                {
+                    //Debug.Log($"{tex.name} alpha: {pixels[i].a}");
+                    return true;
+                }
             }
             return false;
         }
