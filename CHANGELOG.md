@@ -1,6 +1,12 @@
 Changelog
 =========
 
+### 2.2.3
+- Removed all references to PlasticSCM Json in Runtime package.
+- Fix to Camera Proxy inspector.
+- Added Wrinkle Displacement option to character build features.
+- Increased threshold of transparency detection.
+
 ### 2.2.2
 - Generic animation merge enabled (experimental)
     - Animated bones not in humanoid skeleton will be combined into the mechanim humanoid animation clip.

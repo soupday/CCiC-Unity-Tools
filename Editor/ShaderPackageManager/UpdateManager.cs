@@ -284,7 +284,7 @@ namespace Reallusion.Import
                 current = new Version(0, 0, 0);
             }
 
-            if (last < new Version(2, 2, 2))  // essential update - force most recent runtime and shader packages
+            if (last < new Version(2, 2, 3))  // essential update - force most recent runtime and shader packages
             {
                 Debug.Log("Critical package updates for version 2.2.2 and above are required (this will be performed autoatically)");
                 return true;

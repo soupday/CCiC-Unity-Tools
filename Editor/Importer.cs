@@ -2182,11 +2182,21 @@ namespace Reallusion.Import
             bool useCavity = GetTexture(sourceName, "CavityMap",
                                         matJson, "Custom Shader/Image/Cavity Map", true);
 
-            bool useDisplacement = GetTexture(sourceName, "Displacement",
+            bool hasDisplacement = GetTexture(sourceName, "Displacement",
                                               matJson, "Textures/Displacement", true);
 
-            mat.SetEnumKeyword("ENUM_WRINKLE_MODE", hasWrinkle ? 1f : 0f, ENUM_WRINKLE_MODE);
-            mat.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", useDisplacement ? 2f : 0f, ENUM_DISPLACEMENT_MODE);
+            int wrinkleMode = 0;
+            int displacementMode = 0;
+            if (hasDisplacement && characterInfo.FeatureUseDisplacement) displacementMode = 2;
+            if (materialType == MaterialType.Head)
+            {
+                if (hasWrinkle && characterInfo.FeatureUseWrinkleMaps) wrinkleMode = 1;
+                if (hasWrinkle && hasDisplacement && 
+                    characterInfo.FeatureUseWrinkleDisplacement)
+                    wrinkleMode = 2;
+            }
+            mat.SetEnumKeyword("ENUM_WRINKLE_MODE", wrinkleMode, ENUM_WRINKLE_MODE);
+            mat.SetEnumKeyword("ENUM_DISPLACEMENT_MODE", displacementMode, ENUM_DISPLACEMENT_MODE);
 
             ConnectTextureTo(sourceName, mat, "_DiffuseMap", "Diffuse",
                     matJson, "Textures/Base Color",

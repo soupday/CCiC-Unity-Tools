@@ -155,11 +155,32 @@ namespace Reallusion.Import
             }
 
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
+            {
+                if (!contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.WrinkleMaps))
+                {                    
+                    SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, false);
+                }
                 flagChanged = true;
-
+            }
 
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
+            {
+                if (!contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.Displacement))
+                {
+                    SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, false);
+                }
                 flagChanged = true;
+            }
+
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, "Wrinkle Displacement", SECTION_INDENT))
+            {
+                if (contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement))
+                {
+                    SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.WrinkleMaps, true);
+                    SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.Displacement, true);
+                }
+                flagChanged = true;
+            }
 
             if (Pipeline.isHDRP)
             {
