@@ -55,6 +55,7 @@ namespace Reallusion.Import
             ExpressionTranspose = 65536,
             ConstraintData = 131072,
             ExtractGeneric = 262144,
+            WrinkleDisplacement = 524288,
         }
 
         public enum ExportType
@@ -250,6 +251,9 @@ namespace Reallusion.Import
         public bool FeatureUseClothPhysics => (ShaderFlags & ShaderFeatureFlags.ClothPhysics) > 0;
         public bool FeatureUseHairPhysics => (ShaderFlags & ShaderFeatureFlags.HairPhysics) > 0;
         public bool FeatureUseDisplacement => (ShaderFlags & ShaderFeatureFlags.Displacement) > 0;
+        public bool FeatureUseWrinkleDisplacement => ((ShaderFlags & ShaderFeatureFlags.WrinkleMaps) > 0 && 
+                                                      (ShaderFlags & ShaderFeatureFlags.Displacement) > 0 &&
+                                                      (ShaderFlags & ShaderFeatureFlags.WrinkleDisplacement) > 0);
         public bool FeatureUseTexturePacking => (ShaderFlags & ShaderFeatureFlags.TexturePacking) > 0;
         public bool FeatureUseDualSpecularSkin => (ShaderFlags & ShaderFeatureFlags.DualSpecularSkin) > 0;
         public bool FeatureUseAmplifyShaders => (ShaderFlags & ShaderFeatureFlags.AmplifyShaders) > 0;

@@ -161,6 +161,13 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.Displacement, "", SECTION_INDENT))
                 flagChanged = true;
 
+            if (contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.Displacement) &&
+                contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.WrinkleMaps))
+            {
+                if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, "Wrinkle Displacement", SECTION_INDENT))
+                    flagChanged = true;
+            }
+
             if (Pipeline.isHDRP)
             {
                 if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.DualSpecularSkin, "Dual Specular Skin", SECTION_INDENT))
