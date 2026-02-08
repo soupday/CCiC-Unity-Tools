@@ -128,6 +128,19 @@ namespace Reallusion.Import
             SetDeterminationStatusFlag(ActivityStatus.DoneHttp, true);
         }
 
+        public static void CheckPluginHttp()
+        {
+            RLToolUpdateUtil.PluginHttpVersionChecked -= PluginHttpCheckDone;
+            RLToolUpdateUtil.PluginHttpVersionChecked += PluginHttpCheckDone;
+            SetDeterminationStatusFlag(ActivityStatus.DeterminingPluginHttp, true);
+        }
+
+        public static void PluginHttpCheckDone(object sender, object e)
+        {
+            RLToolUpdateUtil.PluginHttpVersionChecked -= PluginHttpCheckDone;
+            SetDeterminationStatusFlag(ActivityStatus.DonePluginHttp, true);
+        }
+
         public static void CheckPackages()
         {
             ShaderPackageUtil.PackageCheckDone -= PackageCheckDone;
@@ -170,7 +183,9 @@ namespace Reallusion.Import
             DeterminingPackages = 1,
             DonePackages = 2,
             DeterminingHttp = 4,
-            DoneHttp = 8
+            DoneHttp = 8,
+            DeterminingPluginHttp = 16,
+            DonePluginHttp = 32,
         }
 
         public static void SetDeterminationStatusFlag(ActivityStatus flag, bool value)
