@@ -20,7 +20,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core;
 
 namespace Reallusion.Import
 {
