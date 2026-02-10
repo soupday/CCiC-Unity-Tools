@@ -24,7 +24,6 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEditor.Rendering.HighDefinition;
 #endif
-using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {

@@ -39,7 +39,6 @@ using UnityEngine.Rendering.Universal;
 #if UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
 #endif
-using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {

@@ -16,13 +16,13 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using UnityEngine;
-using UnityEditor;
-using UnityEditor.SceneManagement;
 using System;
 using System.Collections.Generic;
-using Scene = UnityEngine.SceneManagement.Scene;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
 using UnityEngine.Playables;
+using Scene = UnityEngine.SceneManagement.Scene;
 
 namespace Reallusion.Import
 {
