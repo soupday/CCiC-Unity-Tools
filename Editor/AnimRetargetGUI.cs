@@ -1582,17 +1582,17 @@ namespace Reallusion.Import
                     {
                         case "CC_Base_JawRoot":
                             {
-                                PurgeBindings(sourceCurveBindings, jawCurves, workingClip);
+                                //PurgeBindings(sourceCurveBindings, jawCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_L_Eye":
                             {
-                                PurgeBindings(sourceCurveBindings, lEyeCurves, workingClip);
+                                //PurgeBindings(sourceCurveBindings, lEyeCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_R_Eye":
                             {
-                                PurgeBindings(sourceCurveBindings, rEyeCurves, workingClip);
+                                //PurgeBindings(sourceCurveBindings, rEyeCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_Head":

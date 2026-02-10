@@ -140,6 +140,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool DRIVE_HEAD_BONE
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Drive_Head_Bone"))
+                    return EditorPrefs.GetBool("RL_Drive_Head_Bone");
+                return false;
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Drive_Head_Bone", value);
+            }
+        }
+
         public static bool ANIMPLAYER_ON_BY_DEFAULT
         {
             get
