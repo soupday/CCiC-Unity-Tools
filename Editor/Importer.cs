@@ -125,6 +125,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool DRIVE_BONE_MISSING_BLENDSHAPES
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Drive_Bones_With_Missing_BlendShapes"))
+                    return EditorPrefs.GetBool("RL_Drive_Bones_With_Missing_BlendShapes");
+                return true;
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Drive_Bones_With_Missing_BlendShapes", value);
+            }
+        }
+
         public static bool ANIMPLAYER_ON_BY_DEFAULT
         {
             get
