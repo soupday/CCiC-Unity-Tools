@@ -24,7 +24,6 @@ using System.IO;
 using System.Reflection;
 using System.Collections;
 using Object = UnityEngine.Object;
-using UnityEngine.Diagnostics;
 using static Reallusion.Import.ColliderManager;
 
 namespace Reallusion.Import

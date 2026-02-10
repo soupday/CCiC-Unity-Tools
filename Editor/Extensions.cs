@@ -16,7 +16,6 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -252,18 +251,30 @@ namespace Reallusion.Import
             return hasKeyword || valueFloat > 0f;
         }
 
-        public static bool HasAlphaPixels(this Texture2D tex, float threshold=0.9f)
+        public static bool HasAlphaPixels(this Texture2D tex, bool inAlphaChannel=true, float threshold=0.9f)
         {
             Color[] pixels = tex.GetPixels();
-            for (int i = 0; i < pixels.Length; i += 1)
+            if (inAlphaChannel)
             {
-                if (pixels[i].a < threshold)
+                for (int i = 0; i < pixels.Length; i += 1)
                 {
-                    //Debug.Log($"{tex.name} alpha: {pixels[i].a}");
-                    return true;
+                    if (pixels[i].a < threshold)
+                    {                        
+                        return true;
+                    }
                 }
             }
-            return false;
+            else
+            {
+                for (int i = 0; i < pixels.Length; i += 1)
+                {
+                    if (pixels[i].r < threshold)
+                    {                        
+                        return true;
+                    }
+                }
+            }
+                return false;
         }
         }
 }

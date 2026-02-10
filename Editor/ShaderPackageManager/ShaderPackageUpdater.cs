@@ -18,14 +18,10 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
-using System.Reflection;
 
 namespace Reallusion.Import
 {

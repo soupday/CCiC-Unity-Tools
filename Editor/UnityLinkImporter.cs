@@ -33,11 +33,8 @@ using System.Reflection;
 using UnityEngine.SceneManagement;
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.HighDefinition;
-using UnityEditor.Rendering;
-using System.Linq.Expressions;
 #elif URP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.Universal;
-using UnityEditor.Rendering;
 #endif
 #if UNITY_POST_PROCESSING_3_1_1
 using UnityEngine.Rendering.PostProcessing;
