@@ -131,7 +131,7 @@ namespace Reallusion.Import
             {
                 if (EditorPrefs.HasKey("RL_Drive_Bones_With_Missing_BlendShapes"))
                     return EditorPrefs.GetBool("RL_Drive_Bones_With_Missing_BlendShapes");
-                return true;
+                return false;
             }
 
             set
