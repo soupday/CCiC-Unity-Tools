@@ -6,6 +6,8 @@ Changelog
 - Fix to Camera Proxy inspector.
 - Added Wrinkle Displacement option to character build features.
 - Increased threshold of transparency detection.
+- Clean up of unused usings
+- Fix to object / material names being less than 3 characters.
 
 ### 2.2.2
 - Generic animation merge enabled (experimental)
