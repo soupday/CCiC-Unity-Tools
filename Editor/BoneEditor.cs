@@ -503,7 +503,11 @@ namespace Reallusion.Import
 
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
         {
-            string[] exclusionFilter = new string[]{ };
+            string[] exclusionFilter;
+            if (!Importer.DRIVE_HEAD_BONE)
+                exclusionFilter = new string[] { "CC_Base_Head", "Head", "head" };
+            else
+                exclusionFilter = new string[] { };
 
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
             List<string> badBones = new List<string>();
@@ -546,7 +550,7 @@ namespace Reallusion.Import
 
                 foreach (var bone in expression.Value)
                 {
-                    if (badBones.Contains(bone.Key)) continue;
+                    if (badBones.Contains(bone.Key) || exclusionFilter.Contains(bone.Key)) continue;
                     try
                     {
                         Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
@@ -567,7 +571,9 @@ namespace Reallusion.Import
                 {
                     foreach (var bone in expression.Value)
                     {
-                        if (ebb.BoneName == bone.Key && !badBones.Contains(ebb.BoneName))
+                        if (ebb.BoneName == bone.Key && 
+                            !badBones.Contains(ebb.BoneName) && 
+                            !exclusionFilter.Contains(ebb.BoneName))
                         {
                             bool isViseme = expression.Key.StartsWith("V_");
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);

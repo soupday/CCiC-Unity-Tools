@@ -1384,6 +1384,10 @@ namespace Reallusion.Import
                     new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export."));
             GUILayout.Space(ROW_SPACE);
 
+            Importer.DRIVE_HEAD_BONE = GUILayout.Toggle(Importer.DRIVE_HEAD_BONE,
+                    new GUIContent("Drive Head Bone", "In many exported motions, the head bone isn't always animated correctly from the expression blendshapes, so it is optional."));
+            GUILayout.Space(ROW_SPACE);
+
             Importer.DRIVE_BONE_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.DRIVE_BONE_MISSING_BLENDSHAPES,
                     new GUIContent("Drive Bones with Missing Blendshapes", "If driver blendshapes are missing, the bone driver will prevent full motion. Disable this to allow direct control of the bones with missing blendshapes."));
             GUILayout.Space(ROW_SPACE);
