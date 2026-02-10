@@ -18,19 +18,18 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Formatting = Newtonsoft.Json.Formatting;
-using UnityEngine;
-using UnityEditor;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
-using System.Text;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.Playables;
-using UnityEditor.SceneManagement;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Reallusion.Import
 {

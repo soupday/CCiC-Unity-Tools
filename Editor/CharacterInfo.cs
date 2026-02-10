@@ -16,11 +16,10 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core;
 
 namespace Reallusion.Import
 {
@@ -634,7 +633,9 @@ namespace Reallusion.Import
             // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
             // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
             // (seems to happen mostly on accessories)
-            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            if (objName.Length > 2 && 
+                objName[objName.Length - 2] == '_' && 
+                char.IsDigit(objName[objName.Length - 1]))
             {
                 Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
                 tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
@@ -676,7 +677,9 @@ namespace Reallusion.Import
             List<string> tryObjectNames = new List<string>();
             tryMaterialNames.Add(sourceName);
 
-            if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            if (sourceName.Length > 2 &&
+                sourceName[sourceName.Length - 2] == ' ' && 
+                char.IsDigit(sourceName[sourceName.Length - 1]))
             {
                 Util.LogWarn("Material name has a Unity duplication suffix, there may be more than one material with this name in the character.");
                 tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));
@@ -699,7 +702,9 @@ namespace Reallusion.Import
             // instalod will generate unique suffixes _0/_1/_2 on character objects where object names and container
             // transforms have the same name, try to untangle the object name by speculatively removing this suffix.
             // (seems to happen mostly on accessories)
-            if (objName[objName.Length - 2] == '_' && char.IsDigit(objName[objName.Length - 1]))
+            if (objName.Length > 2 &&
+                objName[objName.Length - 2] == '_' && 
+                char.IsDigit(objName[objName.Length - 1]))
             {
                 Util.LogWarn("Object name " + objName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
                 tryObjectNames.Add(objName.Substring(0, objName.Length - 2));
@@ -707,7 +712,9 @@ namespace Reallusion.Import
                 //realObjName = objectsData.FindKeyName(specObjName);
             }
 
-            if (sourceName[sourceName.Length - 2] == '_' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            if (sourceName.Length > 2 && 
+                sourceName[sourceName.Length - 2] == '_' && 
+                char.IsDigit(sourceName[sourceName.Length - 1]))
             {
                 Util.LogWarn("Material name " + sourceName + " may be incorrectly suffixed by InstaLod exporter. Attempting to untangle...");
                 tryMaterialNames.Add(sourceName.Substring(0, sourceName.Length - 2));

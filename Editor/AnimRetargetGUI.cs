@@ -18,17 +18,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using System.IO;
-using System.Runtime.Remoting.Metadata;
-using UnityEngine.UIElements;
-using UnityEditor.VersionControl;
-using System.Reflection;
-using UnityEditor.SceneManagement;
 
 namespace Reallusion.Import
 {

@@ -16,16 +16,16 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Formatting = Newtonsoft.Json.Formatting;
 using UnityEditor;
 using UnityEngine;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Reallusion.Import
 {

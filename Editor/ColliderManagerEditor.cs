@@ -16,12 +16,12 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using UnityEngine;
-using UnityEditor;
-using ColliderSettings = Reallusion.Import.ColliderManager.ColliderSettings;
-using System.Linq;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
+using ColliderSettings = Reallusion.Import.ColliderManager.ColliderSettings;
 using Object = UnityEngine.Object;
 
 namespace Reallusion.Import

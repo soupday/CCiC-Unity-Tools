@@ -805,7 +805,7 @@ namespace Reallusion.Import
         }
 
         Dictionary<string, bool> hasAlphaPixelsCache = new Dictionary<string, bool>();
-        public bool HasAlphaPixels(string texAssetPath)
+        public bool HasAlphaPixels(string texAssetPath, bool inAlphaChannel=true)
         {            
             if (hasAlphaPixelsCache.TryGetValue(texAssetPath, out bool hasAlphaPixels))
             {
@@ -817,14 +817,14 @@ namespace Reallusion.Import
             TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(texAssetPath);
             if (textureImporter != null)
             {
-                if (textureImporter.DoesSourceTextureHaveAlpha())
+                if (textureImporter.DoesSourceTextureHaveAlpha() || !inAlphaChannel)
                 {
                     textureImporter.maxTextureSize = 256;
                     textureImporter.isReadable = true;
                     AssetDatabase.WriteImportSettingsIfDirty(texAssetPath);
                     textureImporter.SaveAndReimport();  
-                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
-                    hasAlphaPixels =  tex.HasAlphaPixels();
+                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);                    
+                    hasAlphaPixels = tex.HasAlphaPixels(inAlphaChannel);
                     hasAlphaPixelsCache.Add(texAssetPath, hasAlphaPixels);
                     tex = null;
                 }
@@ -843,7 +843,7 @@ namespace Reallusion.Import
                 string customShader = matJson?.GetStringValue("Custom Shader/Shader Name", defaultType);
                 bool hasOpacity = false;
                 bool blendOpacity = false;
-                bool diffuseHasAlpha = false;
+                bool hasAlphaPixels = false;
                 MaterialNodeType nodeType = GetMaterialNodeType(matJson);
 
                 switch (customShader)
@@ -873,10 +873,19 @@ namespace Reallusion.Import
                 string opacityTexturePath = matJson.GetStringValue("Textures/Opacity/Texture Path");
                 string diffuseTexturePath = matJson.GetStringValue("Textures/Base Color/Texture Path", opacityTexturePath);
                 if (!string.IsNullOrEmpty(opacityTexturePath)) hasOpacity = true;
-                if (!string.IsNullOrEmpty(diffuseTexturePath))
+                if (!string.IsNullOrEmpty(opacityTexturePath) &&
+                    !string.IsNullOrEmpty(diffuseTexturePath) &&
+                    opacityTexturePath != diffuseTexturePath)
+                {
+                    // imports from blender will have separate opacity and diffuse
+                    // and the opacity wil be in the RGB channels
+                    string assetPath = Util.CombineJsonTexPath(fbxFolder, opacityTexturePath);
+                    hasAlphaPixels = HasAlphaPixels(assetPath, false);
+                }                
+                else if (!string.IsNullOrEmpty(diffuseTexturePath))
                 {
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, diffuseTexturePath);
-                    diffuseHasAlpha = HasAlphaPixels(assetPath);
+                    hasAlphaPixels = HasAlphaPixels(assetPath, true);
                 }
 
                 float opacity = matJson.GetFloatValue("Opacity");
@@ -893,12 +902,12 @@ namespace Reallusion.Import
                 {
                     if (ObjHasMaterialType(obj, MaterialType.HairHQ, mat))
                     {
-                        if (diffuseHasAlpha) return MaterialType.Scalp;
+                        if (hasAlphaPixels) return MaterialType.Scalp;
                         else return MaterialType.DefaultOpaque;
                     }
                     else
                     {
-                        if (diffuseHasAlpha)
+                        if (hasAlphaPixels)
                         {
                             if (Util.NameContainsKeywords(sourceName, "Scalp", "Clap", "Base", "Color"))
                             {
@@ -910,9 +919,9 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (diffuseHasAlpha)
+                if (hasAlphaPixels)
                 {
-                    if ((diffuseHasAlpha) &&
+                    if ((hasAlphaPixels) &&
                         Util.NameContainsKeywords(sourceName, "Alpha", "Opacity", "Lenses", "Lens", 
                                                               "Glass", "Glasses", "Blend"))
                     {
@@ -942,7 +951,7 @@ namespace Reallusion.Import
                     //    return MaterialType.HairBasic;
                     //}
 
-                    if ((diffuseHasAlpha) &&
+                    if ((hasAlphaPixels) &&
                         Util.NameContainsKeywords(sourceName, "Transparency"))
                     {
                         hasOpacity = true;
@@ -960,7 +969,7 @@ namespace Reallusion.Import
                 }
 
                 if (blendOpacity) return MaterialType.BlendAlpha;
-                else if (hasOpacity || diffuseHasAlpha) return MaterialType.DefaultAlpha;
+                else if (hasOpacity || hasAlphaPixels) return MaterialType.DefaultAlpha;
                 else return MaterialType.DefaultOpaque;
             }
             else
@@ -2861,10 +2870,10 @@ namespace Reallusion.Import
                 if (RP == RenderPipeline.HDRP) // Shader Graph hair shader
                 {
 #if HDRP_17_2_0_OR_NEWER
-                    // set mirror normals in HDRP17.2
-                    mat.SetFloatIf("_DoubleSidedNormalMode", 2f);
+                    // set no normal flipping in HDRP17.2
+                    mat.SetFloatIf("_DoubleSidedNormalMode", 3f);
 #else                    
-                    mat.SetFloatIf("_DoubleSidedNormalMode", 1f);
+                    mat.SetFloatIf("_DoubleSidedNormalMode", 2f);
 #endif
                     float secondarySpecStrength = matJson.GetFloatValue("Custom Shader/Variable/Secondary Specular Strength");
                     SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
@@ -2950,6 +2959,10 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_AlphaClip", alphaClip * 0.666f * opacityStrength);
                 mat.SetFloatIf("_SmoothnessContrast", smoothnessContrast);
                 mat.SetFloatIf("_ShadowClip", 1.0f);
+            }
+            else
+            {
+                mat.SetFloatIf("_ShadowClip", 0.75f);
             }
 
             if (isEyelash)

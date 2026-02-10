@@ -16,16 +16,16 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.IO;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-using System;
+using UnityEditor.SceneManagement; 
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEditor.SceneManagement;
 using Object = UnityEngine.Object;
-using System.Linq;
 
 namespace Reallusion.Import
 {
@@ -417,12 +417,14 @@ namespace Reallusion.Import
             CharacterList = WindowManager.GetCharacterList(true, showProps, null, guidFilter);     
         }
 
-        private void RestoreData()
+        private bool RestoreData()
         {
             if (CharacterList == null)
             {
-                InitData();
+                InitData();                
+                return true;
             }
+            return false;
         }
 
         private void RestoreSelection()
@@ -488,21 +490,22 @@ namespace Reallusion.Import
         public UnityLinkManagerWindow linkModule;
         public float TAB_HEIGHT = 26f;
 
-        private void OnGUI()
-        {
+        private void OnGUI() 
+        {            
+            if (CharacterList == null) InitData();
             if (importerStyles == null) importerStyles = new Styles();
-
-            RestoreData();
-            //RestoreSelection();  // currently suppressed to avoid auto char selection due to CC5 char size
-
             if (tabStyles == null) tabStyles = new TabStyles();
             if (tabCont == null) tabCont = new TabContents();
-
             tabStyles.FixMeh();
+
+            //RestoreData();
+            //RestoreSelection();  // currently suppressed to avoid auto char selection due to CC5 char size
 
             Rect areaRect = new Rect(0f, 0f, position.width, position.height);
             
-            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, datalinkActive, RectHandler);
+            activeTab = TabbedArea(activeTab, areaRect, tabCont.tabCount, TAB_HEIGHT, tabCont.toolTips, 
+                                   tabCont.icons, 20f, 20f, true, tabCont.overrideTab, tabCont.overrideIcons, 
+                                   datalinkActive, RectHandler); 
             
             Rect contentRect = new Rect(0, TAB_HEIGHT, position.width, position.height - TAB_HEIGHT);
                         

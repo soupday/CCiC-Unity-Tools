@@ -27,7 +27,6 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {

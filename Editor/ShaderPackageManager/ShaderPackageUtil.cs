@@ -17,15 +17,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEditor.PackageManager.Requests;
-using UnityEditor.PackageManager;
 using Object = UnityEngine.Object;
 
 namespace Reallusion.Import

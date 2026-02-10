@@ -16,14 +16,14 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.IO;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using Object = UnityEngine.Object;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEditor;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
@@ -579,7 +579,9 @@ namespace Reallusion.Import
                 sourceName = sourceName.Substring(0, sourceName.IndexOf("_2nd_Pass", System.StringComparison.InvariantCultureIgnoreCase));
 
             // remove Unity duplication Suffix
-            //if (sourceName[sourceName.Length - 2] == ' ' && char.IsDigit(sourceName[sourceName.Length - 1]))
+            //if (sourceName.Length > 2 &&
+            //    sourceName[sourceName.Length - 2] == ' ' &&
+            //    char.IsDigit(sourceName[sourceName.Length - 1]))
             //{
             //    sourceName = sourceName.Substring(0, sourceName.Length - 2);
             //}

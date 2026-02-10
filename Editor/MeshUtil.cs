@@ -16,11 +16,11 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using System.IO;
-using System.Collections.Generic;
 
 namespace Reallusion.Import
 {
