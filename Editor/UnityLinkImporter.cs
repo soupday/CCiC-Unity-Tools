@@ -31,6 +31,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using System.Reflection;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 #if HDRP_10_5_0_OR_NEWER
 using UnityEngine.Rendering.HighDefinition;
 #elif URP_10_5_0_OR_NEWER
