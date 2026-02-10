@@ -503,9 +503,11 @@ namespace Reallusion.Import
 
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
         {
-            string[] exclusionFilter = new string[] { "CC_Base_Head" };
+            string[] exclusionFilter = new string[]{ };
 
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
+            List<string> badBones = new List<string>();
+            bool useBadBones = !Importer.DRIVE_BONE_MISSING_BLENDSHAPES;
 
             foreach (var exp in expressions)
             {
@@ -515,10 +517,12 @@ namespace Reallusion.Import
                     string bones = "[ ";
                     foreach (var b in exp.Value)
                     {
+                        if (useBadBones && !badBones.Contains(b.Key))
+                            badBones.Add(b.Key);
                         bones += b.Key;
                         bones += " ";
                     }
-                    bones += "]";
+                    bones += "]";                    
                     Debug.Log($"BlendShape {exp.Key} has bone deformation data {bones} but is absent in the model.");
                 }
             }
@@ -542,7 +546,7 @@ namespace Reallusion.Import
 
                 foreach (var bone in expression.Value)
                 {
-                    if (exclusionFilter.Contains(bone.Key)) continue;
+                    if (badBones.Contains(bone.Key)) continue;
                     try
                     {
                         Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
@@ -563,7 +567,7 @@ namespace Reallusion.Import
                 {
                     foreach (var bone in expression.Value)
                     {
-                        if (ebb.BoneName == bone.Key && !exclusionFilter.Contains(ebb.BoneName))
+                        if (ebb.BoneName == bone.Key && !badBones.Contains(ebb.BoneName))
                         {
                             bool isViseme = expression.Key.StartsWith("V_");
                             int index = smr.sharedMesh.GetBlendShapeIndex(expression.Key);
