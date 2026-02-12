@@ -27,7 +27,6 @@ using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
-
     public class LodSelectionWindow : EditorWindow
     {
         public static LodSelectionWindow Current { get; private set; }
@@ -191,6 +190,20 @@ namespace Reallusion.Import
 
         private void ContainerGUI()
         {
+            if (modelList == null || modelList.Count == 0)
+            {
+                GUILayout.BeginVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("No character prefabs detected in folder or selection.");
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.EndVertical();
+                return;
+            }
+
             if (styles == null) styles = new Styles();
             styles.FixMeh();
             Rect posRect = new Rect(0f, 0f, main.contentRect.width, main.contentRect.height);
@@ -274,19 +287,6 @@ namespace Reallusion.Import
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
                 boxRect = GetNextBox(boxRect, xNum);
-            }
-
-            if (modelList.Count == 0)
-            {
-                GUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("No character prefabs detected in folder or selection.");
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.EndVertical();
             }
 
             GUI.EndScrollView();
