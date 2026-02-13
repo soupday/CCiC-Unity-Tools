@@ -49,12 +49,17 @@ namespace Reallusion.Import
         private Texture2D iconLODMedium;
         private Texture2D iconLODSimple;
         private Texture2D iconLODNone;
-        private GUIStyle boldStyle;
-        private GUIStyle countStyle;
+
+        private Styles styles;
 
         private static float iconSize = 128f;
         private static float boxW = iconSize + 8f;
         private static float boxH = iconSize + 42f;
+
+        private int visibleLabelLength = 17;
+        private double labelUpdateInterval = 0.175f;
+        private double labelEndWait = 2.5f;
+
 
         [MenuItem("Assets/Reallusion/LOD Combiner", false, priority = 2020)]
         public static void InitTool()
@@ -80,6 +85,7 @@ namespace Reallusion.Import
 
         private void OnDestroy()
         {
+            EditorApplication.update -= ScrollingLabelUpdate;
             createButton.clicked -= CreateButtonCallback;
             Current = null;
         }
@@ -98,7 +104,10 @@ namespace Reallusion.Import
             createButton = root.Q<Button>("create-button");
             nameField = root.Q<TextField>("name-field");
 
+            createButton.clicked -= CreateButtonCallback;
             createButton.clicked += CreateButtonCallback;
+            EditorApplication.update -= ScrollingLabelUpdate;
+            EditorApplication.update += ScrollingLabelUpdate;
 
             IMGUIContainer container = new IMGUIContainer(ContainerGUI);
             container.style.flexGrow = 1;
@@ -111,9 +120,6 @@ namespace Reallusion.Import
             iconLODSimple = Util.FindTexture(folders, "RLIcon_LODSimple");
             iconLODNone = Util.FindTexture(folders, "RLIcon_LODNone");
         }
-
-
-        public Styles styles;
 
         public class Styles
         {
@@ -166,7 +172,7 @@ namespace Reallusion.Import
                 countStyle.normal.textColor = countColor;
             }
 
-            public void FixMeh()
+            public void Update()
             {
                 if (!selectedBoxStyle.normal.background)
                 {
@@ -205,9 +211,8 @@ namespace Reallusion.Import
             }
 
             if (styles == null) styles = new Styles();
-            styles.FixMeh();
+            styles.Update();
             Rect posRect = new Rect(0f, 0f, main.contentRect.width, main.contentRect.height);
-
 
             int xNum = (int)Math.Floor(main.contentRect.width / boxW);
             int total = modelList.Count;
@@ -221,8 +226,7 @@ namespace Reallusion.Import
             Rect boxRect = new Rect(0, 0, boxW, boxH);
             foreach (GridModel model in modelList)
             {
-                GUILayout.BeginArea(boxRect);
-                GUILayout.BeginVertical();
+                model.boxRect = new Rect(boxRect.x, boxRect.y, boxRect.width, boxRect.height);
                 SelectionStatus selection = model.Selected ? (model.Baked ? SelectionStatus.SelectedBaked : SelectionStatus.Selected) : SelectionStatus.Unselected;
                 GUIStyle buttonStyle;
                 GUIStyle labelStyle;
@@ -260,7 +264,8 @@ namespace Reallusion.Import
                 else if (model.Tris >= 500) icon = iconLODSimple;
                 else icon = iconLODNone;
                 string isSelected = model.Selected ? "- Selected" : "- Unselected";
-                if (GUILayout.Button(new GUIContent(icon, $"{model.Name} {isSelected}"), buttonStyle))
+                Rect buttonrect = new Rect(model.boxRect.x + 4f, model.boxRect.y + 4f, iconSize, iconSize);
+                if (GUI.Button(buttonrect, new GUIContent(icon, $"{model.Name} {isSelected}"), buttonStyle))
                 {
                     model.Selected = !model.Selected;
                     if (model.Selected)
@@ -278,20 +283,87 @@ namespace Reallusion.Import
                     }
                 }
 
-                GUILayout.Label(model.Name, labelStyle);
+                DrawScrollingLabel(model, labelStyle);
                 string triCount;
                 if (model.Tris >= 1000000) triCount = ((float)model.Tris / 1000000f).ToString("0.0") + "M";
                 else if (model.Tris >= 1000) triCount = ((float)model.Tris / 1000f).ToString("0.0") + "K";
                 else triCount = ((int)(model.Tris)).ToString();
-                GUILayout.Label("(" + triCount + " Triangles)", styles.countStyle);
-                GUILayout.EndVertical();
-                GUILayout.EndArea();
+
+                string trisText = $"({triCount} Triangles)";
+                float w = GetTextWidth("label", trisText);
+                float x = model.boxRect.x + ((model.boxRect.width - w) / 2);
+                Rect trisRect = new Rect(x, model.boxRect.y + iconSize + EditorGUIUtility.singleLineHeight + 6f, w, EditorGUIUtility.singleLineHeight);
+                GUI.Label(trisRect, trisText, styles.countStyle);
+
                 boxRect = GetNextBox(boxRect, xNum);
             }
 
             GUI.EndScrollView();
-
             return;
+        }
+
+        private void DrawScrollingLabel(GridModel model, GUIStyle gUIStyle)
+        {
+            string labelText = string.Empty;
+            Event mouseEvent = Event.current;
+
+            if (model.Name.Length > visibleLabelLength)
+            {
+                if (model.boxRect.Contains(mouseEvent.mousePosition))
+                {
+                    double current = EditorApplication.timeSinceStartup;
+
+                    if (model.labelPosition == model.Name.Length - visibleLabelLength)
+                    {
+                        if (current > model.lastTime + labelEndWait)
+                        {
+                            model.labelWaiting = false;
+                            model.labelPosition = 0;
+                        }
+                        else
+                        {
+                            model.labelWaiting = true;
+                        }
+                    }
+
+                    labelText = model.Name.Substring(model.labelPosition, visibleLabelLength);
+
+                    if (current > model.lastTime + labelUpdateInterval)
+                    {
+                        if (!model.labelWaiting)
+                        {
+                            model.labelPosition++;
+                            model.lastTime = current;
+                        }
+                    }
+                }
+                else
+                {
+                    model.labelPosition = 0;
+                    model.labelWaiting = false;
+                    labelText = model.Name.Substring(0, Math.Min(model.Name.Length, visibleLabelLength));
+                }
+            }
+            else
+            {
+                labelText = model.Name.Substring(0, Math.Min(model.Name.Length, visibleLabelLength));
+            }
+
+            float w = GetTextWidth("label", labelText);
+            float x = model.boxRect.x + ((model.boxRect.width - w) / 2);
+            Rect labelRect = new Rect(x, model.boxRect.y + iconSize + 6f, w, EditorGUIUtility.singleLineHeight);
+            GUI.Label(labelRect, labelText, gUIStyle);
+        }
+
+        private void ScrollingLabelUpdate()
+        {
+            Current.Repaint();
+        }
+
+        private float GetTextWidth(string styleName, string textStr)
+        {
+            Vector2 size = GUI.skin.GetStyle(styleName).CalcSize(new GUIContent(textStr));
+            return size.x;
         }
 
         void CreateButtonCallback()
@@ -320,18 +392,17 @@ namespace Reallusion.Import
         private Rect GetNextBox(Rect lastBox, int xMax)
         {
             Rect newBox = new Rect(0f, 0f, boxW, boxH);
-
             float newX = lastBox.x + lastBox.width;
-            float newY = lastBox.y + lastBox.height;
 
             if ((newX + boxW) > (xMax * boxW))
             {
+                // new line
                 newBox.x = 0f;
-                newBox.y = newY;
+                newBox.y = lastBox.yMax;
             }
             else
             {
-                newBox.x = newX;
+                newBox.x = lastBox.xMax;
                 newBox.y = lastBox.y;
             }
             return newBox;
@@ -499,6 +570,10 @@ namespace Reallusion.Import
             public bool Selected { get; set; }
             public int Tris { get; set; }
             public bool Baked { get; set; }
+            public Rect boxRect { get; set; }
+            public double lastTime { get; set; }
+            public int labelPosition { get; set; }
+            public bool labelWaiting { get; set; }
 
             public GridModel()
             {
