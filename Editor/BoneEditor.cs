@@ -422,7 +422,7 @@ namespace Reallusion.Import
 
                     foreach (var expressionProp in expressionToken.Children<JProperty>())
                     {
-                        string expressionName = expressionProp.Name;
+                        string expressionName = CheckExpressionName(expressionProp.Name);
                         var bones = expressionProp.Value["Bones"] as JObject;
                         if (bones == null) continue;
 
@@ -499,6 +499,19 @@ namespace Reallusion.Import
             }
             */
             return constraints;
+        }
+
+        static Dictionary<string, string> RL_EXPRESSION_REMAP = new Dictionary<string, string>()
+        {
+            { "Ih", "IH" },
+            { "Th", "TH" },
+        };
+        public static string CheckExpressionName(string expressionName)
+        {
+            if (RL_EXPRESSION_REMAP.TryGetValue(expressionName, out string trueName))
+                return trueName;
+
+            return expressionName;
         }
 
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
@@ -648,8 +661,8 @@ namespace Reallusion.Import
 
                 List<int> sourceIndices = new List<int>();
                 foreach (string sourceName in constraint.SourceChannels)
-                {
-                    int i = smr.sharedMesh.GetBlendShapeIndex(sourceName);
+                {                    
+                    int i = smr.sharedMesh.GetBlendShapeIndex(CheckExpressionName(sourceName));
                     if (i > -1)
                         sourceIndices.Add(i);
                 }
