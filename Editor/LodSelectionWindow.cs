@@ -59,6 +59,8 @@ namespace Reallusion.Import
         private int visibleLabelLength = 17;
         private double labelUpdateInterval = 0.175f;
         private double labelEndWait = 2.5f;
+        private double lastRefresh;
+        private double refreshInterval = 0.1f;
 
 
         [MenuItem("Assets/Reallusion/LOD Combiner", false, priority = 2020)]
@@ -357,7 +359,13 @@ namespace Reallusion.Import
 
         private void ScrollingLabelUpdate()
         {
-            Current.Repaint();
+            // rate limit
+            double current = EditorApplication.timeSinceStartup;
+            if (current > lastRefresh + refreshInterval)
+            {
+                lastRefresh = current;
+                Current.Repaint();
+            }
         }
 
         private float GetTextWidth(string styleName, string textStr)
