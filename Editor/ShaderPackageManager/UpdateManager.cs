@@ -287,13 +287,17 @@ namespace Reallusion.Import
                 current = new Version(0, 0, 0);
             }
 
-            if (last < new Version(2, 2, 3))  // essential update - force most recent runtime and shader packages
+            switch (packageType)  // essential update - force most recent runtime and shader packages
             {
                 case PackageType.Shader:
                     {
                         if (last < shaderVersion)  // essential update - force most recent runtime and shader packages
                         {
                             Debug.Log($"Critical package updates for shader version {shaderVersion.ToString()} and above are required (this will be performed autoatically)");
+                            return true;
+                        }
+                        break;
+                    }
                 case PackageType.Runtime:
                     {
                         if (last < runtimeVersion)  // essential update - force most recent runtime and shader packages
