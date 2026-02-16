@@ -28,6 +28,10 @@ namespace Reallusion.Import
 {
     public class UpdateManager
     {
+        // current intended versions of the asset side packages
+        public static readonly Version shaderVersion = new Version(2, 2, 2);
+        public static readonly Version runtimeVersion = new Version(2, 2, 3);
+
         public static bool checkIsLocked = false;
         public static bool showOverride = false;
         public static RLSettingsObject settings;
@@ -285,11 +289,26 @@ namespace Reallusion.Import
 
             if (last < new Version(2, 2, 3))  // essential update - force most recent runtime and shader packages
             {
-                Debug.Log("Critical package updates for version 2.2.2 and above are required (this will be performed autoatically)");
-                return true;
+                case PackageType.Shader:
+                    {
+                        if (last < shaderVersion)  // essential update - force most recent runtime and shader packages
+                        {
+                            Debug.Log($"Critical package updates for shader version {shaderVersion.ToString()} and above are required (this will be performed autoatically)");
+                case PackageType.Runtime:
+                    {
+                        if (last < runtimeVersion)  // essential update - force most recent runtime and shader packages
+                        {
+                            Debug.Log($"Critical package updates for runtime version {runtimeVersion.ToString()} and above are required (this will be performed autoatically)");
+                            return true;
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        return false;
+                    }
             }
-            else
-                return false;
+            return false;
         }
 
         const string variantLimit = "UnityEditor.ShaderGraph.VariantLimit";
@@ -432,11 +451,17 @@ namespace Reallusion.Import
             {
                 if (!settings.criticalUpdateRequired)
                 {
-                    if (IsPackageUpgradeRequired(PackageType.Shader) || IsPackageUpgradeRequired(PackageType.Runtime))
+                    if (IsPackageUpgradeRequired(PackageType.Shader))
                     {
                         settings.updateMessage = string.Empty;
                         settings.criticalUpdateRequired = true;
                         settings.pendingShaderUninstall = true;
+                    }
+
+                    if (IsPackageUpgradeRequired(PackageType.Runtime))
+                    {
+                        settings.updateMessage = string.Empty;
+                        settings.criticalUpdateRequired = true;
                         settings.pendingRuntimeUninstall = true;
                     }
                 }
