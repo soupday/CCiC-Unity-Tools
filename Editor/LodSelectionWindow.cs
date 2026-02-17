@@ -27,21 +27,18 @@ using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
-    
     public class LodSelectionWindow : EditorWindow
-    {       
+    {
         public static LodSelectionWindow Current { get; private set; }
 
         private string mainUxmlName = "RL_LodToolWindowUI";
         private string uxmlExt = ".uxml";
 
         private VisualTreeAsset mainUxmlAsset;
-        //private VisualTreeAsset listAUxmlAsset;
 
         private Button createButton;
         private TextField nameField;
 
-        //private Dictionary<string, string> modelDict;
         private List<GridModel> modelList;
 
         private VisualElement main;
@@ -52,12 +49,19 @@ namespace Reallusion.Import
         private Texture2D iconLODMedium;
         private Texture2D iconLODSimple;
         private Texture2D iconLODNone;
-        private GUIStyle boldStyle;
-        private GUIStyle countStyle;
+
+        private Styles styles;
 
         private static float iconSize = 128f;
         private static float boxW = iconSize + 8f;
-        private static float boxH = iconSize + 42f;        
+        private static float boxH = iconSize + 42f;
+
+        private int visibleLabelLength = 17;
+        private double labelUpdateInterval = 0.175f;
+        private double labelEndWait = 2.5f;
+        private double lastRefresh;
+        private double refreshInterval = 0.1f;
+
 
         [MenuItem("Assets/Reallusion/LOD Combiner", false, priority = 2020)]
         public static void InitTool()
@@ -69,20 +73,21 @@ namespace Reallusion.Import
         {
             LodSelectionWindow window = GetWindow<LodSelectionWindow>("LOD Combining Tool");
 
-            string path = AssetDatabase.GetAssetPath(Selection.activeObject); //.GetInstanceID());
+            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
             if (AssetDatabase.IsValidFolder(path))
                 window.BuildModelPrefabDict(path);
             else
                 window.BuildModelPrefabDict(Selection.objects);
 
             window.minSize = new Vector2(boxW * 3f + 8f, boxH * 2f + 24f);
-            window.Show();            
+            window.Show();
 
             return window;
         }
 
         private void OnDestroy()
         {
+            EditorApplication.update -= ScrollingLabelUpdate;
             createButton.clicked -= CreateButtonCallback;
             Current = null;
         }
@@ -92,16 +97,19 @@ namespace Reallusion.Import
         {
             Current = this;
 
-            mainUxmlAsset = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(GetAssetPath(mainUxmlName, uxmlExt), typeof(VisualTreeAsset));            
+            mainUxmlAsset = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(GetAssetPath(mainUxmlName, uxmlExt), typeof(VisualTreeAsset));
 
             VisualElement root = rootVisualElement;
             mainUxmlAsset.CloneTree(root);
 
             main = root.Q<VisualElement>("main-view");
             createButton = root.Q<Button>("create-button");
-            nameField = root.Q<TextField>("name-field");            
-            
+            nameField = root.Q<TextField>("name-field");
+
+            createButton.clicked -= CreateButtonCallback;
             createButton.clicked += CreateButtonCallback;
+            EditorApplication.update -= ScrollingLabelUpdate;
+            EditorApplication.update += ScrollingLabelUpdate;
 
             IMGUIContainer container = new IMGUIContainer(ContainerGUI);
             container.style.flexGrow = 1;
@@ -113,60 +121,153 @@ namespace Reallusion.Import
             iconLODMedium = Util.FindTexture(folders, "RLIcon_LODMedium");
             iconLODSimple = Util.FindTexture(folders, "RLIcon_LODSimple");
             iconLODNone = Util.FindTexture(folders, "RLIcon_LODNone");
-
-            boldStyle = new GUIStyle();
-            boldStyle.alignment = TextAnchor.MiddleCenter;
-            boldStyle.wordWrap = false;
-            boldStyle.fontStyle = FontStyle.Bold;
-            boldStyle.normal.textColor = Color.white;
-
-            countStyle = new GUIStyle();
-            countStyle.alignment = TextAnchor.MiddleCenter;
-            countStyle.wordWrap = false;
-            countStyle.fontStyle = FontStyle.Normal;
-            countStyle.normal.textColor = Color.Lerp(new Color(0.506f, 0.745f, 0.063f), Color.white, 0.333f);
         }
-        
+
+        public class Styles
+        {
+            public GUIStyle boxStyle;
+            public GUIStyle selectedBoxStyle;
+            public GUIStyle selectedBakedBoxStyle;
+            public GUIStyle boldStyle;
+            public GUIStyle selectedBoldStyle;
+            public GUIStyle selectedBakedBoldStyle;
+            public GUIStyle countStyle;
+
+            public Color selectedColor = new Color(0.506f, 0.745f, 0.063f);
+            public Color selectedBakedColor = new Color(1.0f, 0.745f, 0.063f);
+            public Color countColor = Color.Lerp(new Color(0.506f, 0.745f, 0.063f), Color.white, 0.333f);
+
+            public Styles()
+            {
+                boxStyle = new GUIStyle(EditorStyles.miniButton);
+                boxStyle.margin = new RectOffset(1, 1, 1, 1);
+                boxStyle.fixedHeight = iconSize;
+                boxStyle.fixedWidth = iconSize;
+
+                selectedBoxStyle = new GUIStyle(boxStyle);
+                selectedBoxStyle.normal.background = TextureColor(selectedColor);
+                selectedBakedBoxStyle = new GUIStyle(boxStyle);
+                selectedBakedBoxStyle.normal.background = TextureColor(selectedBakedColor);
+
+                boldStyle = new GUIStyle();
+                boldStyle.alignment = TextAnchor.MiddleCenter;
+                boldStyle.wordWrap = false;
+                boldStyle.fontStyle = FontStyle.Bold;
+                boldStyle.normal.textColor = Color.white;
+
+                selectedBoldStyle = new GUIStyle();
+                selectedBoldStyle.alignment = TextAnchor.MiddleCenter;
+                selectedBoldStyle.wordWrap = false;
+                selectedBoldStyle.fontStyle = FontStyle.Bold;
+                selectedBoldStyle.normal.textColor = selectedColor;
+
+                selectedBakedBoldStyle = new GUIStyle();
+                selectedBakedBoldStyle.alignment = TextAnchor.MiddleCenter;
+                selectedBakedBoldStyle.wordWrap = false;
+                selectedBakedBoldStyle.fontStyle = FontStyle.Bold;
+                selectedBakedBoldStyle.normal.textColor = selectedBakedColor;
+
+                countStyle = new GUIStyle();
+                countStyle.alignment = TextAnchor.MiddleCenter;
+                countStyle.wordWrap = false;
+                countStyle.fontStyle = FontStyle.Normal;
+                countStyle.normal.textColor = countColor;
+            }
+
+            public void Update()
+            {
+                if (!selectedBoxStyle.normal.background)
+                {
+                    selectedBoxStyle.normal.background = TextureColor(selectedColor);
+                }
+
+                if (!selectedBakedBoxStyle.normal.background)
+                {
+                    selectedBakedBoxStyle.normal.background = TextureColor(selectedBakedColor);
+                }
+            }
+        }
+
+        public enum SelectionStatus
+        {
+            None,
+            Unselected,
+            Selected,
+            SelectedBaked,
+        }
+
         private void ContainerGUI()
         {
-            GUIStyle boxStyle = new GUIStyle(EditorStyles.miniButton);
-            boxStyle.margin = new RectOffset(1, 1, 1, 1);
-            
-            //boxStyle.normal.background = TextureColor(Color.red);
-            boxStyle.fixedHeight = iconSize;
-            boxStyle.fixedWidth = iconSize;
+            if (modelList == null || modelList.Count == 0)
+            {
+                GUILayout.BeginVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("No character prefabs detected in folder or selection.");
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.EndVertical();
+                return;
+            }
 
-            GUIStyle selectedBoxStyle = new GUIStyle(boxStyle);
-            selectedBoxStyle.normal.background = TextureColor(new Color(0.506f, 0.745f, 0.063f));
-            GUIStyle selectedBakedBoxStyle = new GUIStyle(boxStyle);
-            selectedBakedBoxStyle.normal.background = TextureColor(new Color(1.0f, 0.745f, 0.063f));
-
+            if (styles == null) styles = new Styles();
+            styles.Update();
             Rect posRect = new Rect(0f, 0f, main.contentRect.width, main.contentRect.height);
 
-            
             int xNum = (int)Math.Floor(main.contentRect.width / boxW);
-            int total = modelList.Count; // modelDict.Count;
+            int total = modelList.Count;
             int yNum = (int)Math.Ceiling((decimal)total / (decimal)xNum);
 
             float viewRectMaxHeight = yNum * boxH;
             Rect viewRect = new Rect(0f, 0f, main.contentRect.width - 16f, viewRectMaxHeight);
-            
+
             scrollPos = GUI.BeginScrollView(posRect, scrollPos, viewRect);
 
             Rect boxRect = new Rect(0, 0, boxW, boxH);
-            //foreach (KeyValuePair<string, string> model in modelDict)
-            foreach (GridModel model in modelList)           
+            foreach (GridModel model in modelList)
             {
-                GUILayout.BeginArea(boxRect);
-                GUILayout.BeginVertical();
-                Texture2D icon;                
+                model.boxRect = new Rect(boxRect.x, boxRect.y, boxRect.width, boxRect.height);
+                SelectionStatus selection = model.Selected ? (model.Baked ? SelectionStatus.SelectedBaked : SelectionStatus.Selected) : SelectionStatus.Unselected;
+                GUIStyle buttonStyle;
+                GUIStyle labelStyle;
+                switch (selection)
+                {
+                    case SelectionStatus.Unselected:
+                        {
+                            buttonStyle = styles.boxStyle;
+                            labelStyle = styles.boldStyle;
+                            break;
+                        }
+                    case SelectionStatus.Selected:
+                        {
+                            buttonStyle = styles.selectedBoxStyle;
+                            labelStyle = styles.selectedBoldStyle;
+                            break;
+                        }
+                    case SelectionStatus.SelectedBaked:
+                        {
+                            buttonStyle = styles.selectedBakedBoxStyle;
+                            labelStyle = styles.selectedBakedBoldStyle;
+                            break;
+                        }
+                    default:
+                        {
+                            buttonStyle = styles.boxStyle;
+                            labelStyle = styles.boldStyle;
+                            break;
+                        }
+                }
+
+                Texture2D icon;
                 if (model.Tris >= 50000) icon = iconLODComplex;
                 else if (model.Tris >= 10000) icon = iconLODMedium;
                 else if (model.Tris >= 500) icon = iconLODSimple;
                 else icon = iconLODNone;
-                if (GUILayout.Button(new GUIContent(icon, ""), 
-                                     model.Selected ? 
-                                        (model.Baked ? selectedBakedBoxStyle : selectedBoxStyle) : boxStyle))
+                string isSelected = model.Selected ? "- Selected" : "- Unselected";
+                Rect buttonrect = new Rect(model.boxRect.x + 4f, model.boxRect.y + 4f, iconSize, iconSize);
+                if (GUI.Button(buttonrect, new GUIContent(icon, $"{model.Name} {isSelected}"), buttonStyle))
                 {
                     model.Selected = !model.Selected;
                     if (model.Selected)
@@ -183,41 +284,99 @@ namespace Reallusion.Import
                         }
                     }
                 }
-                //GUILayout.FlexibleSpace();
-                GUILayout.Label(model.Name, boldStyle);
+
+                DrawScrollingLabel(model, labelStyle);
                 string triCount;
                 if (model.Tris >= 1000000) triCount = ((float)model.Tris / 1000000f).ToString("0.0") + "M";
                 else if (model.Tris >= 1000) triCount = ((float)model.Tris / 1000f).ToString("0.0") + "K";
                 else triCount = ((int)(model.Tris)).ToString();
-                GUILayout.Label("(" + triCount + " Triangles)", countStyle);
-                GUILayout.EndVertical();
-                GUILayout.EndArea();
-                //GUI.Button(boxRect, new GUIContent(EditorGUIUtility.IconContent("HumanTemplate Icon").image, pwd), boxStyle);
-                //GUI.Box(boxRect, new GUIContent("X", "x"));
+
+                string trisText = $"({triCount} Triangles)";
+                float w = GetTextWidth("label", trisText);
+                float x = model.boxRect.x + ((model.boxRect.width - w) / 2);
+                Rect trisRect = new Rect(x, model.boxRect.y + iconSize + EditorGUIUtility.singleLineHeight + 6f, w, EditorGUIUtility.singleLineHeight);
+                GUI.Label(trisRect, trisText, styles.countStyle);
+
                 boxRect = GetNextBox(boxRect, xNum);
             }
 
-            if (modelList.Count == 0)
+            GUI.EndScrollView();
+            return;
+        }
+
+        private void DrawScrollingLabel(GridModel model, GUIStyle gUIStyle)
+        {
+            string labelText = string.Empty;
+            Event mouseEvent = Event.current;
+
+            if (model.Name.Length > visibleLabelLength)
             {
-                GUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("No character prefabs detected in folder or selection.");
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.EndVertical();
+                if (model.boxRect.Contains(mouseEvent.mousePosition))
+                {
+                    double current = EditorApplication.timeSinceStartup;
+
+                    if (model.labelPosition == model.Name.Length - visibleLabelLength)
+                    {
+                        if (current > model.lastTime + labelEndWait)
+                        {
+                            model.labelWaiting = false;
+                            model.labelPosition = 0;
+                        }
+                        else
+                        {
+                            model.labelWaiting = true;
+                        }
+                    }
+
+                    labelText = model.Name.Substring(model.labelPosition, visibleLabelLength);
+
+                    if (current > model.lastTime + labelUpdateInterval)
+                    {
+                        if (!model.labelWaiting)
+                        {
+                            model.labelPosition++;
+                            model.lastTime = current;
+                        }
+                    }
+                }
+                else
+                {
+                    model.labelPosition = 0;
+                    model.labelWaiting = false;
+                    labelText = model.Name.Substring(0, Math.Min(model.Name.Length, visibleLabelLength));
+                }
+            }
+            else
+            {
+                labelText = model.Name.Substring(0, Math.Min(model.Name.Length, visibleLabelLength));
             }
 
-            GUI.EndScrollView();
+            float w = GetTextWidth("label", labelText);
+            float x = model.boxRect.x + ((model.boxRect.width - w) / 2);
+            Rect labelRect = new Rect(x, model.boxRect.y + iconSize + 6f, w, EditorGUIUtility.singleLineHeight);
+            GUI.Label(labelRect, labelText, gUIStyle);
+        }
 
-            return;            
+        private void ScrollingLabelUpdate()
+        {
+            // rate limit
+            double current = EditorApplication.timeSinceStartup;
+            if (current > lastRefresh + refreshInterval)
+            {
+                lastRefresh = current;
+                Current.Repaint();
+            }
+        }
+
+        private float GetTextWidth(string styleName, string textStr)
+        {
+            Vector2 size = GUI.skin.GetStyle(styleName).CalcSize(new GUIContent(textStr));
+            return size.x;
         }
 
         void CreateButtonCallback()
         {
-            List<Object> objects = new List<Object>();            
+            List<Object> objects = new List<Object>();
             foreach (GridModel model in modelList)
             {
                 if (model.Selected)
@@ -241,24 +400,23 @@ namespace Reallusion.Import
         private Rect GetNextBox(Rect lastBox, int xMax)
         {
             Rect newBox = new Rect(0f, 0f, boxW, boxH);
-
             float newX = lastBox.x + lastBox.width;
-            float newY = lastBox.y + lastBox.height;
 
             if ((newX + boxW) > (xMax * boxW))
             {
+                // new line
                 newBox.x = 0f;
-                newBox.y = newY;
+                newBox.y = lastBox.yMax;
             }
             else
             {
-                newBox.x = newX;
+                newBox.x = lastBox.xMax;
                 newBox.y = lastBox.y;
-            }            
+            }
             return newBox;
         }
 
-        Texture2D TextureColor(Color color)
+        public static Texture2D TextureColor(Color color)
         {
             Texture2D texture = new Texture2D(1, 1);
             texture.SetPixel(0, 0, color);
@@ -267,7 +425,7 @@ namespace Reallusion.Import
         }
 
         private void BuildModelPrefabDict(string folder)
-        {            
+        {
             modelList = new List<GridModel>();
             string[] folders = new string[] { folder };
             string search = "t:Prefab";
@@ -303,7 +461,7 @@ namespace Reallusion.Import
                 AssetToModelList(bakedPathSuffix, path, guid, assetName, ref largest);
             }
 
-            nameField.SetValueWithoutNotify(nameHint + "_LOD");            
+            nameField.SetValueWithoutNotify(nameHint + "_LOD");
 
             SortAndAutoSelect();
         }
@@ -320,13 +478,13 @@ namespace Reallusion.Import
                 }
 
                 GameObject o = (GameObject)AssetDatabase.LoadAssetAtPath(path, typeof(GameObject));
-                Object src = Util.FindRootPrefabAsset(o);                
-                
+                Object src = Util.FindRootPrefabAsset(o);
+
                 if (Util.IsCC3Character(src))
-                {                    
+                {
                     GridModel g = new GridModel();
                     g.Guid = guid;
-                    g.Name = assetName;                    
+                    g.Name = assetName;
                     g.Icon = AssetPreview.GetAssetPreview(o);
                     g.Selected = true;
                     g.Baked = baked;
@@ -338,12 +496,12 @@ namespace Reallusion.Import
                     }
                     modelList.Add(g);
                 }
-            }            
+            }
         }
 
         private void SortAndAutoSelect()
         {
-            modelList = modelList.OrderByDescending(o => o.Tris).ToList();             
+            modelList = modelList.OrderByDescending(o => o.Tris).ToList();
 
             // select everything
             foreach (GridModel gm in modelList) gm.Selected = true;
@@ -368,7 +526,7 @@ namespace Reallusion.Import
             foreach (GridModel bgm in modelList)
             {
                 if (bgm.Name == bakedName) return bgm;
-            }            
+            }
 
             return null;
         }
@@ -390,7 +548,7 @@ namespace Reallusion.Import
             {
                 return bgm;
             }
-        }        
+        }
 
         private string GetAssetPath(string name, string extension)
         {
@@ -403,7 +561,7 @@ namespace Reallusion.Import
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (Path.GetExtension(path).Equals(ext, System.StringComparison.InvariantCultureIgnoreCase))
-                {                    
+                {
                     return path;
                 }
             }
@@ -420,6 +578,10 @@ namespace Reallusion.Import
             public bool Selected { get; set; }
             public int Tris { get; set; }
             public bool Baked { get; set; }
+            public Rect boxRect { get; set; }
+            public double lastTime { get; set; }
+            public int labelPosition { get; set; }
+            public bool labelWaiting { get; set; }
 
             public GridModel()
             {

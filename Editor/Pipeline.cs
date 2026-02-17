@@ -41,7 +41,7 @@ namespace Reallusion.Import
 
     public static class Pipeline
     {
-        public const string VERSION = "2.2.3"; // temp change to force upgrade
+        public const string VERSION = "2.2.4"; // temp change to force upgrade
 
 #if HDRP_10_5_0_OR_NEWER
         // version
