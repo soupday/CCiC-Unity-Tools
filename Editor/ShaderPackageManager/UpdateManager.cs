@@ -437,6 +437,7 @@ namespace Reallusion.Import
                     if (settings.criticalUpdateRequired)
                     {                        
                         ShaderPackageUtil.ProcessPendingActions();
+                        return;
                     }
                 }
             }
