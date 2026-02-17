@@ -887,7 +887,7 @@ namespace Reallusion.Import
 
         private void LegacyShaderInstallGUI()
         {
-            bool disabled = UpdateManager.currentLegacyPackageManifest == null;
+            bool disabled = UpdateManager.latestLegacyPackageManifest == null;
             EditorGUI.BeginDisabledGroup(disabled);
             GUILayout.BeginVertical(GUI.skin.box);
 
@@ -1191,7 +1191,7 @@ namespace Reallusion.Import
             GUILayout.Label("Currently Installed Shader Package:  ");
             GUIStyle shaderLabelStyle = GUI.skin.label;
             string shaderLabelTooltip = "";
-            switch (UpdateManager.installedPackageStatus)
+            switch (UpdateManager.installedShaderStatus)
             {
                 case ShaderPackageUtil.InstalledPackageStatus.Absent:
                     shaderLabelStyle = guiStyles.shMismatchLabel;
@@ -1229,7 +1229,7 @@ namespace Reallusion.Import
             GUILayout.Space(HORIZ_INDENT);
 
             string result = string.Empty;
-            result = UpdateManager.determinedShaderAction.ResultString + "(" + UpdateManager.installedPackageStatus + " :: " + UpdateManager.shaderPackageValid + ")";
+            result = UpdateManager.determinedShaderAction.ResultString + "(" + UpdateManager.installedShaderStatus + " :: " + UpdateManager.shaderPackageValid + ")";
 
             GUILayout.Label(result, guiStyles.WrappedInfoLabel);
 
@@ -1261,9 +1261,9 @@ namespace Reallusion.Import
                     version = "Not Installed";
                     break;
                 case ShaderPackageUtil.InstalledPackageStatus.Current:
-                    if (UpdateManager.currentRuntimePackageManifest != null)
+                    if (UpdateManager.latestRuntimePackageManifest != null)
                     {
-                        version = "v" + UpdateManager.currentRuntimePackageManifest.Version;
+                        version = "v" + UpdateManager.latestRuntimePackageManifest.Version;
                         shaderLabelStyle = guiStyles.shCurrentLabel;
                     }
                     else
