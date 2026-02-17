@@ -33,7 +33,8 @@ namespace Reallusion.Import
         public bool postInstallShowPopupNotWindow;
 
         public bool criticalUpdateRequired;
-        public bool updateInProgress;
+        public bool shaderUpdateInProgress;
+        public bool runtimeUpdateInProgress;
 
         public bool pendingShaderUninstall;
         public bool pendingRuntimeUninstall;
@@ -41,7 +42,7 @@ namespace Reallusion.Import
         public bool pendingShaderInstall;
         public bool pendingRuntimeInstall;
 
-        public bool performPostInstallationCheck;
+        public bool performPostInstallationShaderCheck;
         public bool performPostInstallationRuntimeCheck;
 
         public string updateMessage;

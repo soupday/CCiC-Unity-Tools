@@ -95,10 +95,10 @@ namespace Reallusion.Import
             ImporterWindow.SetGeneralSettings(RLSettings.FindRLSettingsObject(), false);
             if (ImporterWindow.GeneralSettings != null)
             {
-                if (ImporterWindow.GeneralSettings.performPostInstallationCheck)
+                if (ImporterWindow.GeneralSettings.performPostInstallationShaderCheck)
                 {
                     ShaderPackageUtil.PostImportShaderPackageItemCompare();
-                    ImporterWindow.GeneralSettings.performPostInstallationCheck = false;
+                    ImporterWindow.GeneralSettings.performPostInstallationShaderCheck = false;
                 }
 
                 if (ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck)
@@ -107,12 +107,13 @@ namespace Reallusion.Import
                     ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck = false;
                 }
 
-                if (!ImporterWindow.GeneralSettings.performPostInstallationCheck &&
-                    !ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck &&
-                    ImporterWindow.GeneralSettings.updateInProgress)
-                    // only clear update in progess after the shaders and runtimes have been installed and check
-                    // until then, no further critical updates can trigger
-                    ImporterWindow.GeneralSettings.updateInProgress = false;
+                if (!ImporterWindow.GeneralSettings.performPostInstallationShaderCheck &&                    
+                    ImporterWindow.GeneralSettings.shaderUpdateInProgress)
+                    ImporterWindow.GeneralSettings.shaderUpdateInProgress = false;
+
+                if (!ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck &&
+                    ImporterWindow.GeneralSettings.runtimeUpdateInProgress)
+                    ImporterWindow.GeneralSettings.runtimeUpdateInProgress = false;
             }
             OnPipelineDetermined -= PipelineDetermined;
             OnPipelineDetermined += PipelineDetermined;
@@ -1238,9 +1239,9 @@ namespace Reallusion.Import
 
             if (ImporterWindow.GeneralSettings != null)
             {
-                ImporterWindow.GeneralSettings.performPostInstallationCheck = true;
+                ImporterWindow.GeneralSettings.performPostInstallationShaderCheck = true;
                 ImporterWindow.GeneralSettings.postInstallShowUpdateWindow = true;
-                ImporterWindow.GeneralSettings.updateInProgress = true;
+                ImporterWindow.GeneralSettings.shaderUpdateInProgress = true;
             }
 
             if (UpdateManager.latestShaderPackageManifest != null)
@@ -1266,7 +1267,7 @@ namespace Reallusion.Import
             {
                 ImporterWindow.GeneralSettings.performPostInstallationRuntimeCheck = true;
                 ImporterWindow.GeneralSettings.postInstallShowUpdateWindow = true;
-                ImporterWindow.GeneralSettings.updateInProgress = true;
+                ImporterWindow.GeneralSettings.runtimeUpdateInProgress = true;
             }
 
             if (UpdateManager.latestRuntimePackageManifest != null)
@@ -1556,7 +1557,7 @@ namespace Reallusion.Import
         {
             if (ImporterWindow.GeneralSettings != null)
             {
-                ImporterWindow.GeneralSettings.updateInProgress = true;
+                ImporterWindow.GeneralSettings.shaderUpdateInProgress = true;
                 ImporterWindow.GeneralSettings.pendingShaderUninstall = false;
 
                 if (flagReinstall)
@@ -1598,7 +1599,7 @@ namespace Reallusion.Import
             }
 
             if (ImporterWindow.GeneralSettings != null && !flagReinstall)
-                ImporterWindow.GeneralSettings.updateInProgress = false;
+                ImporterWindow.GeneralSettings.shaderUpdateInProgress = false;
         }
 
 
@@ -1606,7 +1607,7 @@ namespace Reallusion.Import
         {
             if (ImporterWindow.GeneralSettings != null)
             {
-                ImporterWindow.GeneralSettings.updateInProgress = true;
+                ImporterWindow.GeneralSettings.runtimeUpdateInProgress = true;
                 ImporterWindow.GeneralSettings.pendingRuntimeUninstall = false;
 
                 if (flagReinstall)
@@ -1647,7 +1648,7 @@ namespace Reallusion.Import
             }
 
             if (ImporterWindow.GeneralSettings != null && !flagReinstall)
-                ImporterWindow.GeneralSettings.updateInProgress = false;
+                ImporterWindow.GeneralSettings.runtimeUpdateInProgress = false;
         }
 
         private static bool TryUnInstallPackage(string guid, bool toTrash = true)

@@ -175,7 +175,7 @@ namespace Reallusion.Import
             obj.checkForUpdates = true;
             obj.updateWindowShownOnce = false;
             obj.postInstallShowUpdateWindow = false;
-            obj.performPostInstallationCheck = false;
+            obj.performPostInstallationShaderCheck = false;
             obj.updateAvailable = false;
             obj.lastUpdateCheck = 0;
             obj.jsonTagName = string.Empty;

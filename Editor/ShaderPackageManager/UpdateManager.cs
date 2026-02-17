@@ -414,26 +414,28 @@ namespace Reallusion.Import
             //bool critical = false;
             if (settings != null)
             {
-                if (!settings.criticalUpdateRequired && 
-                    !settings.updateInProgress)
+                if (!settings.criticalUpdateRequired)
                 {
-                    if (IsPackageUpgradeRequired(PackageType.Shader))
+                    if (IsPackageUpgradeRequired(PackageType.Shader) &&
+                        !settings.shaderUpdateInProgress)
                     {
                         settings.updateMessage = string.Empty;
                         settings.criticalUpdateRequired = true;
                         settings.pendingShaderUninstall = true;
+                        settings.shaderUpdateInProgress = true;
                     }
 
-                    if (IsPackageUpgradeRequired(PackageType.Runtime))
+                    if (IsPackageUpgradeRequired(PackageType.Runtime) &&
+                        !settings.runtimeUpdateInProgress)
                     {
                         settings.updateMessage = string.Empty;
                         settings.criticalUpdateRequired = true;
                         settings.pendingRuntimeUninstall = true;
+                        settings.runtimeUpdateInProgress = true;
                     }
 
                     if (settings.criticalUpdateRequired)
-                    {
-                        settings.updateInProgress = true;
+                    {                        
                         ShaderPackageUtil.ProcessPendingActions();
                     }
                 }
