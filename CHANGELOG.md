@@ -1,6 +1,12 @@
 Changelog
 =========
 
+### 2.2.4
+- Lod Combiner UI fixes.
+- Fixes for a possible infinite update loop.
+- Bone driver fix for direct Visemes Ih and Th.
+- HDRP diffusion profiles restored after shader package upgrade.
+
 ### 2.2.3
 - Removed all references to PlasticSCM Json in Runtime package.
 - Fix to Camera Proxy inspector.
