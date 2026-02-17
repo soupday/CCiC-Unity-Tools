@@ -58,7 +58,7 @@ namespace Reallusion.Import
         public string lastPath;
         public string toolVersion;
         public string shaderToolVersion;
-        public Version ShaderToolVersion 
+        public Version VersionShader 
         { 
             get
             {
@@ -74,7 +74,7 @@ namespace Reallusion.Import
             } 
         }
         public string runtimeToolVersion;
-        public Version RuntimeToolVersion
+        public Version VersionRuntime
         {
             get
             {

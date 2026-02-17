@@ -29,8 +29,8 @@ namespace Reallusion.Import
     public class UpdateManager
     {
         // current intended versions of the asset side packages
-        public static readonly Version shaderVersion = new Version(2, 2, 2);
-        public static readonly Version runtimeVersion = new Version(2, 2, 3);
+        public static readonly Version requiredVersionShader = new Version(2, 2, 2);
+        public static readonly Version requiredVersionRuntime = new Version(2, 2, 3);
 
         public static bool checkIsLocked = false;
         public static bool showOverride = false;
@@ -251,23 +251,19 @@ namespace Reallusion.Import
 
         public static bool IsPackageUpgradeRequired(PackageType packageType)
         {
-            Version last = new Version(0,0,0);
-
             switch (packageType)
             {
-                case PackageType.Shader:                    
-                    last = settings.ShaderToolVersion;
-                    if (last < shaderVersion)  // essential update - force most recent runtime and shader packages
+                case PackageType.Shader:                                        
+                    if (settings.VersionShader < requiredVersionShader)  // essential update - force most recent runtime and shader packages
                     {
-                        Debug.Log($"Critical package updates for shader version {shaderVersion.ToString()} and above are required (this will be performed autoatically)");
+                        Debug.Log($"Critical package updates for shader version {requiredVersionShader.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
                     break;                    
-                case PackageType.Runtime:                    
-                    last = settings.RuntimeToolVersion;
-                    if (last < runtimeVersion)  // essential update - force most recent runtime and shader packages
+                case PackageType.Runtime:                                        
+                    if (settings.VersionRuntime < requiredVersionRuntime)  // essential update - force most recent runtime and shader packages
                     {
-                        Debug.Log($"Critical package updates for runtime version {runtimeVersion.ToString()} and above are required (this will be performed autoatically)");
+                        Debug.Log($"Critical package updates for runtime version {requiredVersionRuntime.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
                     break;
