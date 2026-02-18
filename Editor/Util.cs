@@ -1149,11 +1149,16 @@ namespace Reallusion.Import
 
         public static bool TrySerializeAssetToEditorPrefs(Object asset, string editorPrefsKey)
         {
-            int assetInstanceID = asset.GetInstanceID();
+            // the instanceId and now EntityId are only used for logging
+#if UNITY_6000_4_OR_NEWER
+            EntityId assetID = asset.GetEntityId();
+#else
+            int assetID = asset.GetInstanceID();
+#endif
             if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string guid, out long localid))
             {
-                string outString = assetInstanceID.ToString() + delimiterChar + guid.ToString() + delimiterChar + localid.ToString();
-                LogDetail("Instance ID: " + assetInstanceID.ToString());
+                string outString = assetID.ToString() + delimiterChar + guid.ToString() + delimiterChar + localid.ToString();
+                LogDetail("Instance ID: " + assetID.ToString());
                 LogDetail("GUID: " + guid.ToString());
                 LogDetail("localID: " + localid.ToString());
                 LogDetail("outString: " + outString);
@@ -1200,11 +1205,16 @@ namespace Reallusion.Import
 
                 if (split.Length == 3)
                 {
-                    int assetInstanceID = int.Parse(split[0]);
+                    // the instanceId and now EntityId are only used for logging
+#if UNITY_6000_4_OR_NEWER
+                    string assetID = split[0];
+#else
+                    int assetID = int.Parse(split[0]);
+#endif
                     string guid = split[1];
                     long localid = long.Parse(split[2]);
 
-                    LogDetail("Found Instance ID: " + assetInstanceID.ToString());
+                    LogDetail("Found Instance ID: " + assetID.ToString());
                     LogDetail("Found GUID: " + guid.ToString());
                     LogDetail("Found localID: " + localid.ToString());
 
@@ -1469,7 +1479,7 @@ namespace Reallusion.Import
             return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
         }
 
-        public static string RandomString(int length, bool upper=false)
+        public static string RandomString(int length, bool upper = false)
         {
             System.Random random = new System.Random();
 
@@ -1501,5 +1511,18 @@ namespace Reallusion.Import
                 }
             }
         }
+
+        public static object FindObjectsByType<T>(bool includeInactive)
+        {
+#if UNITY_6000_4_OR_NEWER
+            object[] objects = GameObject.FindObjectsByType(typeof(T), includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude);
+#elif UNITY_2023_OR_NEWER
+            object[] objects = GameObject.FindObjectsByType(typeof(T), FindObjectsSortMode.None);
+#else
+            object[] objects = GameObject.FindObjectsOfType(typeof(T), includeInactive);
+#endif
+            return objects;
+        }
+
     }
 }

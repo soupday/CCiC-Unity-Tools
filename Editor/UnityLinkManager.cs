@@ -1181,11 +1181,16 @@ namespace Reallusion.Import
             bool importIntoScene = UnityLinkManager.IMPORT_INTO_SCENE;
 
             // Examine current scene contents
-#if UNITY_2023_OR_NEWER
-            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else
-            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-#endif
+            DataLinkActorData[] linkedSceneObjects = Util.FindObjectsByType<DataLinkActorData>(true) as DataLinkActorData[];
+            /*
+            #if UNITY_6000_4_OR_NEWER
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include);
+            #elif UNITY_2023_OR_NEWER
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            #else
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+            #endif
+            */
             JsonRequest reply = new JsonRequest(item.Request.Type);
 
             if (item.Request != null && item.Request.Actors != null)
@@ -1240,14 +1245,19 @@ namespace Reallusion.Import
         static void ActorRelink(QueueItem item)
         {
             // Examine current scene contents
-#if UNITY_2023_OR_NEWER
-            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else
-            DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-#endif
+            DataLinkActorData[] linkedSceneObjects = Util.FindObjectsByType<DataLinkActorData>(true) as DataLinkActorData[];
+            /*
+            #if UNITY_6000_4_OR_NEWER
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include);
+            #elif UNITY_2023_OR_NEWER
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            #else
+                        DataLinkActorData[] linkedSceneObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+            #endif
+            */
             string newLinkId = item.Relink.LinkId;
             string sourceLinkId = item.Relink.LinkId;
-            string sourceName = item.Relink.Name;            
+            string sourceName = item.Relink.Name;
 
             List<CharacterInfo> characters = WindowManager.GetCharacterList(true, true);
             CharacterInfo current = ImporterWindow.Current.Character;
@@ -1266,10 +1276,10 @@ namespace Reallusion.Import
                 {
                     if (c != current)
                     {
-                        inUse = true;                        
+                        inUse = true;
                         newLinkId = Util.RandomString(20, true);
                         Util.LogWarn($"Link Id is in use, generating new: {newLinkId}");
-                    }                    
+                    }
                 }
             }
 
@@ -1294,7 +1304,7 @@ namespace Reallusion.Import
                     data.Set(newLinkId, prefab, current.Fbx);
                 }
             }
-            
+
             if (!string.IsNullOrEmpty(oldLinkId) || inUse)
             {
                 Util.LogInfo($"Syncing Link ID back to CC/iC: {sourceLinkId} -> {current.linkId}");

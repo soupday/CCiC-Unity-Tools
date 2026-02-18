@@ -90,7 +90,6 @@ namespace Reallusion.Import
 
 #endif
         Type LightProxyType = null;
-
         Type CameraProxyType = null;
         MethodInfo SetupLightMethod = null;
         MethodInfo SetupCameraMethod = null;
@@ -680,7 +679,7 @@ namespace Reallusion.Import
                 if (!targetFileName.StartsWith(motionTargetChar.name + "_"))
                 {
                     targetFileName = motionTargetChar.name + "_" + targetFileName;
-                }                
+                }
                 string targetFile = Path.Combine(targetFolder, targetFileName);
                 string uniqueTargetFile = GetNonDuplicateFileName(targetFile, false);
 
@@ -732,7 +731,7 @@ namespace Reallusion.Import
                     }
 
                     // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
-                    timelineKitList.Add((trackType, false ,null, addToTimeLine, clipListForTimeLine, animatedStatus, linkId));
+                    timelineKitList.Add((trackType, false, null, addToTimeLine, clipListForTimeLine, animatedStatus, linkId));
                 }
                 else
                 {
@@ -903,13 +902,16 @@ namespace Reallusion.Import
         {
             GameObject root = null;
             DataLinkActorData existing = null;
-
-#if UNITY_2023_OR_NEWER
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-#endif
-
+            DataLinkActorData[] linkedObjects = Util.FindObjectsByType<DataLinkActorData>(true) as DataLinkActorData[];
+            /*
+            #if UNITY_6000_4_OR_NEWER
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include);
+            #elif UNITY_2023_OR_NEWER
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            #else
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+            #endif
+            */
             if (linkedObjects != null && linkedObjects.Length > 0)
             {
                 existing = linkedObjects.ToList().Find(x => x.linkId == linkId);
@@ -1022,11 +1024,11 @@ namespace Reallusion.Import
             camera.focalLength = jsonCameraObject.DofFocus;
             HDCameraData.physicalParameters.aperture = initialAperture;
 #elif URP_10_5_0_OR_NEWER
-           UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
+            UniversalAdditionalCameraData URPCameraData = target.GetComponent<UniversalAdditionalCameraData>();
             if (URPCameraData == null) URPCameraData = target.AddComponent<UniversalAdditionalCameraData>();
 
-           URPCameraData.renderPostProcessing = true;
-           URPCameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            URPCameraData.renderPostProcessing = true;
+            URPCameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
 #elif UNITY_POST_PROCESSING_3_1_1
             PostProcessLayer layer = target.GetComponent<PostProcessLayer>();
             if (layer == null) layer = target.AddComponent<PostProcessLayer>();
@@ -1107,7 +1109,7 @@ namespace Reallusion.Import
             ResetDeltas();
             float threshold = 0.0001f;
 
-            int dofActive  = frames.FindAll(x => x.DofEnable == true).Count();
+            int dofActive = frames.FindAll(x => x.DofEnable == true).Count();
             dof_delta = !(dofActive == 0 || dofActive == frames.Count);
             int camEnabled = frames.FindAll(x => x.IsActive == true).Count();
             active_delta = !(camEnabled == 0 || camEnabled == frames.Count());
@@ -1500,10 +1502,10 @@ namespace Reallusion.Import
 #if HDRP_17_0_0_OR_NEWER // HDRP 17 migrated light intensity to the <Light> component from the <HDAdditionalData> component
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
-
-            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
+            bool enableShadows = light.type != LightType.Directional ? true : false;
+            //light.shadows = enableShadows ? LightShadows.Soft : LightShadows.None;
             light.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
-            HDLightData.EnableShadows(true);
+            HDLightData.EnableShadows(enableShadows);
             //HDLightData.shadowResolution.@override = 3;
             HDLightData.shadowResolution.useOverride = false;
             HDLightData.shadowResolution.level = 3;
@@ -1513,11 +1515,11 @@ namespace Reallusion.Import
 #elif HDRP_10_5_0_OR_NEWER
             HDAdditionalLightData HDLightData = target.GetComponent<HDAdditionalLightData>();
             if (HDLightData == null) HDLightData = target.AddComponent<HDAdditionalLightData>();
-
-            light.shadows = light.type != LightType.Directional ? LightShadows.Soft : LightShadows.None;
+            bool enableShadows = light.type != LightType.Directional ? true : false;
+            //light.shadows = enableShadows ? LightShadows.Soft : LightShadows.None;
             HDLightData.intensity = jsonLightObject.Multiplier * HDRP_INTENSITY_SCALE;
             HDLightData.SetShadowResolution(3);
-            HDLightData.EnableShadows(true);
+            HDLightData.EnableShadows(enableShadows);
             //HDLightData.shadowResolution.@override = 3;
             HDLightData.shadowResolution.useOverride = false;
             HDLightData.shadowResolution.level = 3;
@@ -1930,7 +1932,7 @@ namespace Reallusion.Import
                             }
                             break;
                         }
-                        case LightType.Spot:
+                    case LightType.Spot:
                         {
                             try
                             {
@@ -1945,7 +1947,7 @@ namespace Reallusion.Import
                             }
                             break;
                         }
-                        case LightType.Directional:
+                    case LightType.Directional:
                         {
                             // not allowed in iclone
                             break;
@@ -2048,7 +2050,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            catch(Exception e) { Debug.LogWarning(e.Message); }
+            catch (Exception e) { Debug.LogWarning(e.Message); }
             return string.Empty;
         }
 
@@ -2337,7 +2339,7 @@ namespace Reallusion.Import
 
                             List<string> uniquePaths = bindings.Select(x => x.path).Distinct().ToList();
 
-                            foreach(var path in uniquePaths)
+                            foreach (var path in uniquePaths)
                             {
                                 if (map.TryGetValue(path, out Transform t))
                                 {

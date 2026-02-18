@@ -144,14 +144,14 @@ namespace Reallusion.Import
             if (settings != null)
             {
                 // control area
-                if (!string.IsNullOrEmpty(settings.lastExportPath))               
+                if (!string.IsNullOrEmpty(settings.lastExportPath))
                     UnityLinkManager.EXPORTPATH = settings.lastExportPath;
 
                 UnityLinkManager.IS_CLIENT_LOCAL = settings.isClientLocal;
 
                 if (!string.IsNullOrEmpty(settings.lastSuccessfulHost))
                     remoteHost = settings.lastSuccessfulHost;
-                
+
                 if (settings.lastTriedHosts != null)
                     lastTriedHosts = settings.lastTriedHosts;
                 else
@@ -201,7 +201,7 @@ namespace Reallusion.Import
                 // mimic of the connect button's UI control elements (connectInProgress + control vars)
                 // all of the required info recoverred from settings by FetchSettings().
                 UnityLinkManager.reconnect = false;
-                connectInProgress = true;                
+                connectInProgress = true;
                 GUI.FocusControl("connectButton");
                 if (!UnityLinkManager.IS_CLIENT_LOCAL) control = Control.Validating;
                 EditorApplication.delayCall += StartClient;
@@ -224,8 +224,10 @@ namespace Reallusion.Import
                 {
                     EditorPrefs.SetString(UnityLinkManager.connectPrefString, "0");
                     return true;
-                } else return false;
-            } else return false;
+                }
+                else return false;
+            }
+            else return false;
         }
 
         static void StartClient()
@@ -405,7 +407,7 @@ namespace Reallusion.Import
         bool createSceneAfterGUI = false;
 
         public Styles styles;
-        
+
         public class Styles
         {
             public Texture2D toggleLeft;
@@ -448,11 +450,11 @@ namespace Reallusion.Import
                 messageItemStyle.hover.textColor = Color.yellow;
                 messageItemStyle.onHover.textColor = Color.yellow;
                 messageItemStyle.wordWrap = false;
-               
+
                 FoldoutTitleLabel = new GUIStyle(EditorStyles.foldout);
                 FoldoutTitleLabel.fontSize = 14;
                 FoldoutTitleLabel.fontStyle = FontStyle.BoldAndItalic;
-                FoldoutTitleLabel.onFocused.textColor = Color.white;      
+                FoldoutTitleLabel.onFocused.textColor = Color.white;
                 FoldoutTitleLabel.focused.textColor = Color.white;
 
                 smallTitleLabel = new GUIStyle(GUI.skin.label);
@@ -466,7 +468,7 @@ namespace Reallusion.Import
                 unselectedLabel.normal.textColor = Color.white * 0.75f;
 
                 selectedLabel = new GUIStyle(GUI.skin.label);
-                selectedLabel.normal.textColor = new Color(0.5f, 0.75f,  0.06f);
+                selectedLabel.normal.textColor = new Color(0.5f, 0.75f, 0.06f);
                 selectedLabel.onNormal.textColor = new Color(0.5f, 0.75f, 0.06f);
                 selectedLabel.hover.textColor = new Color(0.5f, 0.75f, 0.06f);
                 selectedLabel.onHover.textColor = new Color(0.5f, 0.75f, 0.06f);
@@ -497,14 +499,14 @@ namespace Reallusion.Import
                 errorTextField.normal.background = ImporterWindow.TextureColor(Color.red * 0.35f);
                 errorTextField.onNormal.background = ImporterWindow.TextureColor(Color.red * 0.35f);
 
-                delimTex = ImporterWindow.TextureColor(new Color(0f, 0f, 0f, 0.25f));                
+                delimTex = ImporterWindow.TextureColor(new Color(0f, 0f, 0f, 0.25f));
                 delimBox = new GUIStyle();
                 delimBox.normal.background = delimTex;
                 delimBox.stretchHeight = true;
                 delimBox.stretchWidth = true;
             }
         }
-        
+
         public enum Control
         {
             Idle,
@@ -527,13 +529,13 @@ namespace Reallusion.Import
 
             if (UnityLinkManager.activityQueue == null)
                 UnityLinkManager.activityQueue = new List<UnityLinkManager.QueueItem>();
-            
+
             GUILayout.BeginVertical();
             using (var scrollViewScope = new GUILayout.ScrollViewScope(globalScrollPos, GUILayout.ExpandWidth(true)))
             {
                 globalScrollPos = scrollViewScope.scrollPosition;
 
-                GUILayout.Space(PADDING);               
+                GUILayout.Space(PADDING);
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(PADDING);
@@ -587,7 +589,7 @@ namespace Reallusion.Import
                 GUILayout.Space(PADDING);
             }
             GUILayout.EndVertical();
-            
+
             if (createSceneAfterGUI)
             {
                 EditorApplication.delayCall += OpenEmptyPreviewScene;
@@ -617,7 +619,7 @@ namespace Reallusion.Import
             WindowManager.previewSceneHandle = scene;
             WindowManager.previewScene = PreviewScene.FetchPreviewScene(scene);
 
-            WindowManager.previewScene.PostProcessingAndLighting();            
+            WindowManager.previewScene.PostProcessingAndLighting();
         }
 
         void ControlAreaGUI()
@@ -680,10 +682,10 @@ namespace Reallusion.Import
             }
             bool linkPathExists = Directory.Exists(UnityLinkManager.EXPORTPATH);
             string linkPath = linkPathExists ? UnityLinkManager.EXPORTPATH : "Please select a valid folder";
-            
+
             GUILayout.Label(new GUIContent("Export Folder", "Folder to use as a working directory for file exchange (Try to keep this folder OUTSIDE the Unity project's Assets folder)."), GUILayout.Width(85f));
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_FolderOpened Icon").image, GUILayout.Width(20f), GUILayout.Height(20f)))
-            {   
+            {
                 string proposed = EditorUtility.SaveFolderPanel("Working directory for file export (KEEP OUTISDE UNITY PROJECT)", Path.GetDirectoryName(UnityLinkManager.EXPORTPATH), UnityLinkManager.EXPORTPATH);//
                 if (!string.IsNullOrEmpty(proposed))
                 {
@@ -693,7 +695,7 @@ namespace Reallusion.Import
                     GUI.FocusControl("");
                 }
             }
-            
+
             EditorGUILayout.SelectableLabel(linkPath, linkPathExists ? styles.normalTextField : styles.errorTextField, GUILayout.MinWidth(100f), GUILayout.MaxWidth(165f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
             //UnityLinkManager.EXPORTPATH = GUILayout.TextField(UnityLinkManager.EXPORTPATH, GUILayout.MinWidth(100f), GUILayout.MaxWidth(150f));            
             GUILayout.EndHorizontal();
@@ -838,7 +840,7 @@ namespace Reallusion.Import
         {
             ControlsSelectModeGUI();
             ControlsTextBoxGUI();
-            if (UnityLinkManager.SIMPLE_MODE) 
+            if (UnityLinkManager.SIMPLE_MODE)
                 ImportSimpleControlsGUI();
             else
                 ImportAdvancedControlsGUI();
@@ -864,7 +866,7 @@ namespace Reallusion.Import
                     settings.addToTimeline = UnityLinkManager.ADD_TO_TIMELINE;
                     UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED = true;
                     settings.lockTimelineToLast = UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED;
-                    
+
                 }
                 SaveSettings();
             }
@@ -915,7 +917,7 @@ namespace Reallusion.Import
         }
 
         void ImportAdvancedControlsGUI()
-        { 
+        {
             GUILayout.Space(2f);
 
             GUILayout.BeginHorizontal();
@@ -938,10 +940,10 @@ namespace Reallusion.Import
             EditorGUILayout.SelectableLabel(importPath, importPathExists ? styles.normalTextField : styles.errorTextField, GUILayout.Width(247f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(2f);            
+            GUILayout.Space(2f);
 
             // IMPORT_INTO_SCENE
-            GUILayout.BeginHorizontal();            
+            GUILayout.BeginHorizontal();
             Texture2D sceneImpToggleImg = UnityLinkManager.IMPORT_INTO_SCENE ? styles.toggleRight : styles.toggleLeft;
             if (GUILayout.Button(sceneImpToggleImg, GUI.skin.label, GUILayout.Width(30f), GUILayout.Height(20f)))
             {
@@ -1022,54 +1024,54 @@ namespace Reallusion.Import
                 {
                     //if (sceneTimelines.Count > 0)
                     //{
-                        TIMELINE_BOX_H = lastTLTreeViewHeight + 28f;
-                        GUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(TIMELINE_BOX_W), GUILayout.Height(TIMELINE_BOX_H));
-                        GUILayout.Label("Existing Timelines in scene [Toggle to use]", styles.smallTitleLabel);
-                        
-                        //if (Event.current.type == EventType.Repaint) { timeLinesBoxRect = GUILayoutUtility.GetLastRect(); }
-                        //Rect boundingBox = new Rect(timeLinesBoxRect.x -4f, timeLinesBoxRect.y -3f, TIMELINE_BOX_W, TIMELINE_BOX_H);
-                        //GUI.DrawTexture(boundingBox, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, Color.gray, new Vector4(1, 1, 1, 1), Vector4.zero);
-                                                
-                        GUILayout.Space(0f);
-                        // TreeView for existing TimeLines
-                        if (Event.current.type == EventType.Repaint){timeLinesRect = GUILayoutUtility.GetLastRect();}
+                    TIMELINE_BOX_H = lastTLTreeViewHeight + 28f;
+                    GUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(TIMELINE_BOX_W), GUILayout.Height(TIMELINE_BOX_H));
+                    GUILayout.Label("Existing Timelines in scene [Toggle to use]", styles.smallTitleLabel);
 
-                        if (!havetreeView || timeLineTreeViewState == null) havetreeView = CreateTreeView();
-                        
-                        timeLineTreeViewState.OnGUI(new Rect(timeLinesRect.x, timeLinesRect.y + 4f, TIMELINE_BOX_W - 6f, lastTLTreeViewHeight + 2f));
-                        lastTLTreeViewHeight = timeLineTreeViewState.totalHeight;
+                    //if (Event.current.type == EventType.Repaint) { timeLinesBoxRect = GUILayoutUtility.GetLastRect(); }
+                    //Rect boundingBox = new Rect(timeLinesBoxRect.x -4f, timeLinesBoxRect.y -3f, TIMELINE_BOX_W, TIMELINE_BOX_H);
+                    //GUI.DrawTexture(boundingBox, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, Color.gray, new Vector4(1, 1, 1, 1), Vector4.zero);
 
-                        /*
-                        SceneTimelines change = null;
-                        foreach(var t in sceneTimelines)  // turn into treeview
+                    GUILayout.Space(0f);
+                    // TreeView for existing TimeLines
+                    if (Event.current.type == EventType.Repaint) { timeLinesRect = GUILayoutUtility.GetLastRect(); }
+
+                    if (!havetreeView || timeLineTreeViewState == null) havetreeView = CreateTreeView();
+
+                    timeLineTreeViewState.OnGUI(new Rect(timeLinesRect.x, timeLinesRect.y + 4f, TIMELINE_BOX_W - 6f, lastTLTreeViewHeight + 2f));
+                    lastTLTreeViewHeight = timeLineTreeViewState.totalHeight;
+
+                    /*
+                    SceneTimelines change = null;
+                    foreach(var t in sceneTimelines)  // turn into treeview
+                    {
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button(t.PlayableDirector.playableAsset.name, t.IsSelected ? styles.selectedLabel : styles.whiteLabel))
                         {
-                            GUILayout.BeginHorizontal();
-                            if (GUILayout.Button(t.PlayableDirector.playableAsset.name, t.IsSelected ? styles.selectedLabel : styles.whiteLabel))
-                            {
-                                change = t;
-                                Selection.activeObject = t.PlayableDirector.playableAsset;
-                            }
-                            if (t.IsSelected)
-                            {
-                                GUILayout.Label("[Adding to this Timeline]", styles.highlightLabel);
-                            }
-                            GUILayout.EndHorizontal();
+                            change = t;
+                            Selection.activeObject = t.PlayableDirector.playableAsset;
                         }
-
-                        if (change != null)
+                        if (t.IsSelected)
                         {
-                            useNewSceneRef = false;
-                            foreach (var t in sceneTimelines)
-                            {
-                                t.IsSelected = false;
-                            }
-                            change.IsSelected = true;
+                            GUILayout.Label("[Adding to this Timeline]", styles.highlightLabel);
                         }
-                        */
-                        // Bounding box for treeview timeline section
-                        GUILayout.EndVertical();
-                        if (Event.current.type == EventType.Repaint) { timeLinesBoxRect = GUILayoutUtility.GetLastRect(); }                        
-                        GUI.DrawTexture(timeLinesBoxRect, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, Color.gray * 0.85f, new Vector4(1, 1, 1, 1), Vector4.zero);
+                        GUILayout.EndHorizontal();
+                    }
+
+                    if (change != null)
+                    {
+                        useNewSceneRef = false;
+                        foreach (var t in sceneTimelines)
+                        {
+                            t.IsSelected = false;
+                        }
+                        change.IsSelected = true;
+                    }
+                    */
+                    // Bounding box for treeview timeline section
+                    GUILayout.EndVertical();
+                    if (Event.current.type == EventType.Repaint) { timeLinesBoxRect = GUILayoutUtility.GetLastRect(); }
+                    GUI.DrawTexture(timeLinesBoxRect, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 1f, Color.gray * 0.85f, new Vector4(1, 1, 1, 1), Vector4.zero);
                     //}
 
                     // LOCK_TIMELINE_TO_LAST_USED
@@ -1157,12 +1159,16 @@ namespace Reallusion.Import
 
         public bool CreateTreeView()
         {
-#if UNITY_2023_OR_NEWER
+            PlayableDirector[] playableDirectors = Util.FindObjectsByType<PlayableDirector>(false) as PlayableDirector[];
+            /*
+#if UNITY_6000_4_OR_NEWER
+            PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>();
+#elif UNITY_2023_OR_NEWER
             PlayableDirector[] playableDirectors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsSortMode.None);
 #else
             PlayableDirector[] playableDirectors = GameObject.FindObjectsOfType<PlayableDirector>();
 #endif
-
+*/
 #if UNITY_6000_2_OR_NEWER
             treeViewState = new TreeViewState<int>();
 #else
@@ -1174,7 +1180,7 @@ namespace Reallusion.Import
 
         void RecordAssetCreationSettings()
         {
-            settings.sceneReference = UnityLinkManager.TIMELINE_REFERENCE_STRING;            
+            settings.sceneReference = UnityLinkManager.TIMELINE_REFERENCE_STRING;
             settings.lastSaveFolder = UnityLinkManager.TIMELINE_SAVE_FOLDER;
             Instance.RecordSceneRefHistory(UnityLinkManager.TIMELINE_REFERENCE_STRING);
         }
@@ -1210,10 +1216,10 @@ namespace Reallusion.Import
             }
             GUILayout.EndScrollView();
         }
-#endregion GUI
+        #endregion GUI
 
         #region TextFieldHistory
-        public string[] RecordHistory(string[] array,  string newEntry, int max)
+        public string[] RecordHistory(string[] array, string newEntry, int max)
         {
             if (array == null)
             {
@@ -1267,7 +1273,7 @@ namespace Reallusion.Import
                 SaveSettings();
             }
         }
-        
+
         public bool UpdateRemoteHostName(string newName) // a Func<string, bool> to use as a callback for the field history
         {
             remoteHost = newName;
@@ -1302,10 +1308,10 @@ namespace Reallusion.Import
         void OnDisable()
         {
             AssemblyReloadEvents.beforeAssemblyReload -= Close;
-            textFieldHistory = null;            
+            textFieldHistory = null;
         }
 
-        public static bool ShowAtPosition(Rect buttonRect, Func<string, bool> callBack, string[] contents) 
+        public static bool ShowAtPosition(Rect buttonRect, Func<string, bool> callBack, string[] contents)
         {
             CallBack = callBack;
             Contents = contents;
@@ -1327,12 +1333,12 @@ namespace Reallusion.Import
             }
             return false;
         }
-        
+
         void Init(Rect buttonRect)
         {
             // Has to be done before calling Show / ShowWithMode
             buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
-            
+
             float width = buttonRect.width;
             float height = (Contents.Length > 0 ? buttonRect.height * Contents.Length : buttonRect.height) + 4f;
 
@@ -1360,7 +1366,7 @@ namespace Reallusion.Import
                 lineTex = ImporterWindow.TextureColor(new Color(0.81f, 0.81f, 0.81f));
                 border = new Vector4(1, 1, 1, 1);
 
-                linestyle = new GUIStyle(GUI.skin.label);                
+                linestyle = new GUIStyle(GUI.skin.label);
                 linestyle.normal.textColor = Color.black;
                 linestyle.active.textColor = Color.blue * 0.75f;
                 linestyle.hover.textColor = Color.gray;
@@ -1377,7 +1383,7 @@ namespace Reallusion.Import
         {
             if (styles == null)
                 styles = new Styles();
-            Rect r = new Rect(0,0,position.width,position.height);  
+            Rect r = new Rect(0, 0, position.width, position.height);
             GUI.DrawTexture(r, styles.lineTex, ScaleMode.StretchToFill, false, 1f, Color.black, styles.border, Vector4.zero);
             GUI.DrawTexture(r, styles.lineTex);
 

@@ -46,8 +46,9 @@ namespace Reallusion.Import
 
         // stable valid import list
         public static List<CharacterInfo> validImports;
-        public static List<CharacterInfo> ValidImports {
-            get 
+        public static List<CharacterInfo> ValidImports
+        {
+            get
             {
                 if (validImports == null)
                 {
@@ -55,7 +56,7 @@ namespace Reallusion.Import
                     UpdateImportList();
                 }
                 return validImports;
-            }            
+            }
         }
 
         //unique editorprefs key names
@@ -144,18 +145,18 @@ namespace Reallusion.Import
                         //showRetargetAfterPlayMode = showRetarget;
                         //showPlayer = false;
                         //showRetarget = false;
-                        
+
                         AnimPlayerGUI.ClosePlayer();
-                        AnimRetargetGUI.CloseRetargeter();                        
-                        
+                        AnimRetargetGUI.CloseRetargeter();
+
                         if (Util.TryDeSerializeBoolFromEditorPrefs(out bool val, WindowManager.sceneFocus))
                         {
                             if (val)
                             {
                                 //GrabLastSceneFocus();                                
                                 Util.SerializeBoolToEditorPrefs(false, WindowManager.sceneFocus);
-                                
-                                ShowAnimationPlayer();                                
+
+                                ShowAnimationPlayer();
                                 if (Util.TryDeSerializeFloatFromEditorPrefs(out float timeCode, WindowManager.timeKey))
                                 {
                                     //set the play position
@@ -171,7 +172,7 @@ namespace Reallusion.Import
                             AnimPlayerGUI.controlStateHash = hash;
                         }
 
-                        
+
                         if (Util.TryDeSerializeBoolFromEditorPrefs(out bool track, WindowManager.trackingStatusKey))
                         {
                             AnimPlayerGUI.isTracking = track;
@@ -184,7 +185,7 @@ namespace Reallusion.Import
                             }
                             Util.SerializeBoolToEditorPrefs(false, WindowManager.trackingStatusKey);
                         }
-                       
+
                         break;
                     }
                 case PlayModeStateChange.ExitingPlayMode:
@@ -233,7 +234,7 @@ namespace Reallusion.Import
                 HideAnimationPlayer(true);
                 HideAnimationRetargeter(true);
             }
-            
+
             if (EditorWindow.HasOpenInstances<ShaderPackageUpdater>())
             {
                 ShaderPackageUpdater.Instance.Close();
@@ -259,7 +260,7 @@ namespace Reallusion.Import
 
             previewScene.PostProcessingAndLighting();
             previewScene.ShowPreviewCharacter(prefab);
-            
+
             return previewScene;
         }
 
@@ -268,18 +269,18 @@ namespace Reallusion.Import
             get { return (EditorSceneManager.GetActiveScene() == previewSceneHandle && previewScene.IsValidPreviewScene); }
         }
 
-        public static PreviewScene GetPreviewScene() 
+        public static PreviewScene GetPreviewScene()
         {
-            if (IsPreviewScene) 
+            if (IsPreviewScene)
             {
                 return previewScene;
             }
 
             return default;
-        }        
-                
-        private static void MonitorScene()  
-        {                        
+        }
+
+        private static void MonitorScene()
+        {
             if (timer > 0f)
             {
                 timer -= Time.deltaTime;
@@ -293,17 +294,17 @@ namespace Reallusion.Import
             Scene activeScene = EditorSceneManager.GetActiveScene();
             if (currentScene != activeScene)
             {
-                currentScene = activeScene;                
+                currentScene = activeScene;
                 previewScene = GetPreviewScene();
             }
 
-            bool isPlayerShown = AnimPlayerGUI.IsPlayerShown();            
+            bool isPlayerShown = AnimPlayerGUI.IsPlayerShown();
 
-            if (IsPreviewScene) 
-            {                
+            if (IsPreviewScene)
+            {
                 if (showPlayer && !isPlayerShown)
                 {
-                    ShowAnimationPlayer();                    
+                    ShowAnimationPlayer();
                 }
                 else if (!showPlayer && isPlayerShown)
                 {
@@ -314,7 +315,7 @@ namespace Reallusion.Import
             {
                 if (isPlayerShown)
                 {
-                    HideAnimationPlayer(false);                    
+                    HideAnimationPlayer(false);
                 }
             }
         }
@@ -346,7 +347,7 @@ namespace Reallusion.Import
         }
 
         public static void DoSceneViewOrbitTracking()
-        {            
+        {
             if (!isSceneViewOrbit)
             {
                 trackTarget = Selection.activeTransform;
@@ -367,7 +368,7 @@ namespace Reallusion.Import
 
         private static bool isSceneViewOrbit;
         private static Vector3 pivotDisplacement;
-        private static Transform trackTarget;        
+        private static Transform trackTarget;
 
         static void SceneViewOrbitUpdate()
         {
@@ -382,7 +383,7 @@ namespace Reallusion.Import
                     pivot = trackTarget.position + pivotDisplacement;
                 }
                 float fov = scene.cameraSettings.fieldOfView;
-                float dist = scene.cameraDistance;                
+                float dist = scene.cameraDistance;
                 float size = Mathf.Sin(Mathf.Deg2Rad * fov / 2f) * dist;
 
                 boom = Quaternion.AngleAxis(0.1f, Vector3.up) * boom;
@@ -423,7 +424,7 @@ namespace Reallusion.Import
             }
 
             if (isSceneViewOrbit)
-            {                
+            {
                 EditorApplication.update -= SceneViewOrbitUpdate;
                 isSceneViewOrbit = false;
                 trackTarget = null;
@@ -437,19 +438,19 @@ namespace Reallusion.Import
                 EditorApplication.update -= MatchSceneCameraUpdate;
                 isMatchSceneViewCamera = true;
             }
-        }        
+        }
 
         private static bool isMatchSceneViewCamera;
-        
+
         static void MatchSceneCameraUpdate()
         {
             if (isMatchSceneViewCamera)
             {
                 Transform cam = previewScene.GetCamera();
-                SceneView scene = SceneView.lastActiveSceneView;                
+                SceneView scene = SceneView.lastActiveSceneView;
                 Vector3 pos = scene.camera.transform.position;
                 Quaternion rot = scene.camera.transform.rotation;
-                float fov = scene.camera.fieldOfView;                
+                float fov = scene.camera.fieldOfView;
                 cam.position = pos;
                 cam.rotation = rot;
                 Camera camera = cam.GetComponent<Camera>();
@@ -504,13 +505,17 @@ namespace Reallusion.Import
         }
 
         public static void RecordAndDisableTimelines()
-        { 
-#if UNITY_2023_OR_NEWER
-            PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-#else
-            PlayableDirector[] timelines = GameObject.FindObjectsOfType<PlayableDirector>();
-#endif
-
+        {
+            PlayableDirector[] timelines = Util.FindObjectsByType<PlayableDirector>(true) as PlayableDirector[];
+            /*
+            #if UNITY_6000_4_OR_NEWER
+                        PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude);
+            #elif UNITY_2023_OR_NEWER
+                        PlayableDirector[] timelines = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            #else
+                        PlayableDirector[] timelines = GameObject.FindObjectsOfType<PlayableDirector>();
+            #endif
+            */
             if (timelines.Length > 0)
             {
                 RLSettingsObject currentSettings = null;
@@ -527,9 +532,9 @@ namespace Reallusion.Import
                     else { return; }
                 }
                 else { return; }
-                
+
                 Util.LogInfo("Animation Preview Player: Disabling any active timeline objects, to avoid animation clashes - these will be re-enabled when the animation player is closed.");
-                
+
                 foreach (PlayableDirector dir in timelines)
                 {
                     if (dir.enabled)
@@ -613,7 +618,7 @@ namespace Reallusion.Import
 
             if (AnimPlayerGUI.IsPlayerShown())
             {
-                AnimPlayerGUI.ClosePlayer();                
+                AnimPlayerGUI.ClosePlayer();
             }
             HideAnimationRetargeter(false);
 
@@ -633,18 +638,18 @@ namespace Reallusion.Import
         public static void HideAnimationRetargeter(bool updateShowRetarget)
         {
             AnimRetargetGUI.CloseRetargeter();
-            
+
             if (updateShowRetarget)
                 showRetarget = false;
-        }      
-        
+        }
+
         public static void StartTimer(float delay)
         {
             timer = delay;
         }
 
 
-        
+
 
         public static CharacterInfo FindCharacterByGUID(string GUID)
         {
@@ -658,7 +663,7 @@ namespace Reallusion.Import
             return null;
         }
 
-        public static CharacterInfo FindCharacterByLinkIDAndName(string linkID, string name, bool allowJustName =false)
+        public static CharacterInfo FindCharacterByLinkIDAndName(string linkID, string name, bool allowJustName = false)
         {
             if (ValidImports != null)
             {
@@ -683,12 +688,12 @@ namespace Reallusion.Import
 
             // no matches
             return null;
-        }            
+        }
 
         public static void UpdateImportList()
         {
             if (validImports == null) validImports = new List<CharacterInfo>();
-            
+
             List<string> validCharacterGUIDs = Util.GetValidCharacterGUIDS();
 
             // remove any valid imports not found in the valid character GUIDs
@@ -696,7 +701,7 @@ namespace Reallusion.Import
             {
                 if (!validCharacterGUIDs.Contains(ValidImports[i].guid))
                 {
-                    ValidImports.RemoveAt(i);                    
+                    ValidImports.RemoveAt(i);
                 }
             }
 
@@ -713,14 +718,14 @@ namespace Reallusion.Import
 
         public static List<CharacterInfo> GetCharacterList(bool includeAvatars, bool includeProps, string nameFilter = null, string GUIDFilter = null)
         {
-            List<CharacterInfo> result = new List<CharacterInfo>();            
+            List<CharacterInfo> result = new List<CharacterInfo>();
 
             if (includeAvatars)
             {
                 foreach (CharacterInfo info in ValidImports)
                 {
-                    if (info.exportType == CharacterInfo.ExportType.AVATAR || 
-                        info.exportType == CharacterInfo.ExportType.NONE || 
+                    if (info.exportType == CharacterInfo.ExportType.AVATAR ||
+                        info.exportType == CharacterInfo.ExportType.NONE ||
                         info.exportType == CharacterInfo.ExportType.UNKNOWN)
                     {
                         if (Util.Filter(info.name, nameFilter) &&

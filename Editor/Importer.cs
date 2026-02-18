@@ -38,7 +38,12 @@ namespace Reallusion.Import
         private readonly string characterName;
         private readonly string motionPrefix;
         private readonly bool extEyelash;
+
+#if UNITY_6000_4_OR_NEWER
+        private EntityId id;
+#else
         private readonly int id;
+#endif
         private readonly List<string> textureFolders;
         private readonly ModelImporter importer;
         private readonly List<string> importAssets = new List<string>();
@@ -266,7 +271,11 @@ namespace Reallusion.Import
             // fetch all the asset details for this character fbx object.
             characterInfo = info;
             fbx = info.Fbx;
+#if UNITY_6000_4_OR_NEWER
+            id = fbx.GetEntityId();
+#else
             id = fbx.GetInstanceID();
+#endif
             fbxPath = info.path;
             AssetDatabase.Refresh();
             importer = (ModelImporter)AssetImporter.GetAtPath(fbxPath);
@@ -547,8 +556,8 @@ namespace Reallusion.Import
                         QuickJSON matJson = characterInfo.GetMatJson(obj, sourceName);
 
                         // determine the material type, this dictates the shader and template material.
-                        if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))                        
-                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);                        
+                        if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))
+                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
 
                         Util.LogInfo("    Material name: " + sourceName + ", type:" + materialType.ToString());
 
@@ -592,7 +601,7 @@ namespace Reallusion.Import
 
         private void ProcessObjectDetectPass(Renderer renderer)
         {
-            GameObject obj = renderer.gameObject;            
+            GameObject obj = renderer.gameObject;
 
             if (renderer)
             {
@@ -835,13 +844,13 @@ namespace Reallusion.Import
         }
 
         Dictionary<string, bool> hasAlphaPixelsCache = new Dictionary<string, bool>();
-        public bool HasAlphaPixels(string texAssetPath, bool inAlphaChannel=true)
-        {            
+        public bool HasAlphaPixels(string texAssetPath, bool inAlphaChannel = true)
+        {
             if (hasAlphaPixelsCache.TryGetValue(texAssetPath, out bool hasAlphaPixels))
             {
                 return hasAlphaPixels;
             }
-            
+
             hasAlphaPixels = false;
             // quickly import it as a readable max 256x256 texture and test the alpha pixels
             TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(texAssetPath);
@@ -852,14 +861,14 @@ namespace Reallusion.Import
                     textureImporter.maxTextureSize = 256;
                     textureImporter.isReadable = true;
                     AssetDatabase.WriteImportSettingsIfDirty(texAssetPath);
-                    textureImporter.SaveAndReimport();  
-                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);                    
+                    textureImporter.SaveAndReimport();
+                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
                     hasAlphaPixels = tex.HasAlphaPixels(inAlphaChannel);
                     hasAlphaPixelsCache.Add(texAssetPath, hasAlphaPixels);
                     tex = null;
                 }
             }
-            
+
             return hasAlphaPixels;
         }
 
@@ -911,7 +920,7 @@ namespace Reallusion.Import
                     // and the opacity wil be in the RGB channels
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, opacityTexturePath);
                     hasAlphaPixels = HasAlphaPixels(assetPath, false);
-                }                
+                }
                 else if (!string.IsNullOrEmpty(diffuseTexturePath))
                 {
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, diffuseTexturePath);
@@ -952,7 +961,7 @@ namespace Reallusion.Import
                 if (hasAlphaPixels)
                 {
                     if ((hasAlphaPixels) &&
-                        Util.NameContainsKeywords(sourceName, "Alpha", "Opacity", "Lenses", "Lens", 
+                        Util.NameContainsKeywords(sourceName, "Alpha", "Opacity", "Lenses", "Lens",
                                                               "Glass", "Glasses", "Blend"))
                     {
                         hasOpacity = true;
@@ -969,7 +978,7 @@ namespace Reallusion.Import
                     else if (ObjHasMaterialType(obj, MaterialType.HairBasic, mat))
                     {
                         return MaterialType.HairBasic;
-                    }                    
+                    }
                     else if (Util.NameContainsKeywords(sourceName, "Hair", "PolyTail", "Strand", "Strands",
                                                                    "Tail", "Bangs", "Beard", "Eyelash", "Stubble",
                                                                    "Goatee", "Brow", "Eyebrow"))
@@ -2230,7 +2239,7 @@ namespace Reallusion.Import
             if (materialType == MaterialType.Head)
             {
                 if (hasWrinkle && characterInfo.FeatureUseWrinkleMaps) wrinkleMode = 1;
-                if (hasWrinkle && hasDisplacement && 
+                if (hasWrinkle && hasDisplacement &&
                     characterInfo.FeatureUseWrinkleDisplacement)
                     wrinkleMode = 2;
             }
@@ -2866,7 +2875,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_VertexColorStrength", 1f * matJson.GetFloatValue("Custom Shader/Variable/VertexColorStrength"));
                 float baseStrength = matJson.GetFloatValue("Textures/Base Color/Strength") / 100f;
                 float diffuseStrength = 1f * matJson.GetFloatValue("Custom Shader/Variable/Diffuse Strength", baseStrength);
-                mat.SetFloatIf("_BaseColorStrength", 
+                mat.SetFloatIf("_BaseColorStrength",
                                1f * matJson.GetFloatValue("Custom Shader/Variable/BaseColorMapStrength", baseStrength));
                 mat.SetFloatIf("_DiffuseStrength", diffuseStrength);
 
