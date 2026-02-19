@@ -185,11 +185,11 @@ namespace Reallusion.Import
         #endregion Init/Shutdown
 
         #region Connection Management
-        static string remoteHost = string.Empty;
+        public static string remoteHost = string.Empty;
         static string[] lastTriedHosts = new string[0];
         static string[] recentSceneRefs = new string[0];
 
-        static bool connectInProgress = false;
+        public static bool connectInProgress = false;
 
         // Automated reconnection for assembly reloads        
         public static void AttemptAutoReconnect()
@@ -230,7 +230,7 @@ namespace Reallusion.Import
             else return false;
         }
 
-        static void StartClient()
+        public static void StartClient()
         {
             RepaintOnUpdate();
 
@@ -400,7 +400,7 @@ namespace Reallusion.Import
         //float SCENE_HEIGHT = 100f;
         //float MESSAGE_HEIGHT = 100f;
 
-        static Control control = Control.Idle;
+        public static Control control = Control.Idle;
         Rect remoteHostTextField; // rect of control area remote host text field for history dropdown;
         Rect sceneRefTextField; // rect of scene area scene reference text field for history dropdown;
 
@@ -639,23 +639,7 @@ namespace Reallusion.Import
                                                 UnityLinkManager.IsClientThreadActive ? "Disconnect from Cc/iClone" : "Connect to Cc/iClone"),
                                                 new GUIStyle(), GUILayout.Width(64f), GUILayout.Height(64f)))
             {
-                if (UnityLinkManager.IsClientThreadActive)
-                {
-                    control = Control.Disconnecting;
-                    UnityLinkManager.DisconnectFromServer();
-                    Repaint();
-                }
-                else
-                {
-                    // tell the gui to disable the connect button
-                    connectInProgress = true;
-                    RecordConnectionHistory(remoteHost);
-                    GUI.FocusControl("connectButton");
-                    if (!UnityLinkManager.IS_CLIENT_LOCAL) control = Control.Validating;
-                    Repaint();
-
-                    EditorApplication.delayCall += StartClient;
-                }
+                ConnectionButtonAction();
             }
             EditorGUI.EndDisabledGroup();
             GUILayout.Space(12f);
@@ -822,6 +806,28 @@ namespace Reallusion.Import
 
             GUILayout.EndHorizontal();
         }
+
+        public void ConnectionButtonAction()
+        {
+            if (UnityLinkManager.IsClientThreadActive)
+            {
+                control = Control.Disconnecting;
+                UnityLinkManager.DisconnectFromServer();
+                Repaint();
+            }
+            else
+            {
+                // tell the gui to disable the connect button
+                connectInProgress = true;
+                RecordConnectionHistory(remoteHost);
+                GUI.FocusControl("connectButton");
+                if (!UnityLinkManager.IS_CLIENT_LOCAL) control = Control.Validating;
+                Repaint();
+
+                EditorApplication.delayCall += StartClient;
+            }
+        }
+
 #if UNITY_6000_2_OR_NEWER
         TreeViewState<int> treeViewState;
 #else

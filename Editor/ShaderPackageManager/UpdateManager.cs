@@ -30,7 +30,7 @@ namespace Reallusion.Import
     {
         // current intended versions of the asset side packages
         public static readonly Version requiredVersionShader = new Version(2, 2, 2);
-        public static readonly Version requiredVersionRuntime = new Version(2, 2, 3);
+        public static readonly Version requiredVersionRuntime = new Version(2, 2, 5);
 
         public static bool checkIsLocked = false;
         public static bool showOverride = false;
@@ -253,22 +253,22 @@ namespace Reallusion.Import
         {
             switch (packageType)
             {
-                case PackageType.Shader:                                        
+                case PackageType.Shader:
                     if (settings.VersionShader < requiredVersionShader)  // essential update - force most recent runtime and shader packages
                     {
                         Debug.Log($"Critical package updates for shader version {requiredVersionShader.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
-                    break;                    
-                case PackageType.Runtime:                                        
+                    break;
+                case PackageType.Runtime:
                     if (settings.VersionRuntime < requiredVersionRuntime)  // essential update - force most recent runtime and shader packages
                     {
                         Debug.Log($"Critical package updates for runtime version {requiredVersionRuntime.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
                     break;
-            }            
-            
+            }
+
             return false;
         }
 
@@ -431,7 +431,7 @@ namespace Reallusion.Import
                     }
 
                     if (settings.criticalUpdateRequired)
-                    {                        
+                    {
                         ShaderPackageUtil.ProcessPendingActions();
                         return;
                     }
