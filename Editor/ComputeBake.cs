@@ -202,7 +202,8 @@ namespace Reallusion.Import
         /// </summary>
         private Texture2D CheckDiffuse(Texture2D tex)
         {
-            if (tex) return tex;
+            if (tex)
+                return tex;
             return Texture2D.whiteTexture;
         }
 
@@ -653,9 +654,9 @@ namespace Reallusion.Import
         {
             string[] refs = new string[] {
                 // Tessellation (HDRP 12+)                
-                "_TessellationBackFaceCullEpsilon", "_TessellationFactor", 
+                "_TessellationBackFaceCullEpsilon", "_TessellationFactor",
                 "_TessellationFactorMaxDistance", "_TessellationFactorMinDistance",
-                "_TessellationFactorTriangleSize", "_TessellationMaxDisplacement", 
+                "_TessellationFactorTriangleSize", "_TessellationMaxDisplacement",
                 "_TessellationMode", "_TessellationShapeFactor",
                 // ???
                 "_SSSBlend", "_SSSDistortion", "_SSSTransmission",
@@ -775,7 +776,7 @@ namespace Reallusion.Import
                 }
                 bakedMaterial.SetTextureIf("_EmissionMap", emissionMap);
                 bakedMaterial.SetColorIf("_EmissionColor", emissiveColor);
-                if (emissiveColor.r + emissiveColor.g +  emissiveColor.b > 0f)
+                if (emissiveColor.r + emissiveColor.g + emissiveColor.b > 0f)
                 {
                     bakedMaterial.EnableKeyword("_EMISSION");
                     bakedMaterial.SetTextureIf("_EmissionMap", emissionMap);
@@ -1303,7 +1304,7 @@ namespace Reallusion.Import
                 normalStrength, microNormalTiling, microNormalStrength, 0f, 0.5f, emissiveColor,
                 sourceName,
                 Pipeline.GetTemplateMaterial(sourceName, MaterialType.Teeth,
-                                             MaterialQuality.Baked, 
+                                             MaterialQuality.Baked,
                                              characterInfo, useDigitalHuman));
 
             CopyAdditionalSettings(mat, result);
@@ -1403,7 +1404,7 @@ namespace Reallusion.Import
                 normalStrength, microNormalTiling, microNormalStrength, 0f, 0.5f, emissiveColor,
                 sourceName,
                 Pipeline.GetTemplateMaterial(sourceName, MaterialType.Tongue,
-                                             MaterialQuality.Baked, characterInfo, 
+                                             MaterialQuality.Baked, characterInfo,
                                              useDigitalHuman));
 
             CopyAdditionalSettings(mat, result);
@@ -1638,7 +1639,7 @@ namespace Reallusion.Import
             float vertexColorStrength = mat.GetFloatIf("_VertexColorStrength");
             float baseColorStrength = mat.GetFloatIf("_BaseColorStrength");
             float alphaStrength = mat.GetFloatIf("_AlphaStrength", 1f);
-            float alphaContrast = mat.GetFloatIf("_AlphaContrast");            
+            float alphaContrast = mat.GetFloatIf("_AlphaContrast");
             float alphaClip = mat.GetFloatIf("_AlphaClip");
             if (IS_URP) alphaClip = mat.GetFloatIf("_AlphaClip2");
             float shadowClip = mat.GetFloatIf("_ShadowClip");
@@ -1748,7 +1749,7 @@ namespace Reallusion.Import
             {
                 Action<Material> SetCustom = (bakeMat) =>
                 {
-                    bakeMat.SetFloatIf("_AOOccludeAll", aoOccludeAll);                    
+                    bakeMat.SetFloatIf("_AOOccludeAll", aoOccludeAll);
                     bakeMat.SetTextureIf("_FlowMap", flow);
                     bakeMat.SetFloatIf("_FlowMapFlipGreen", flowMapFlipGreen);
                     bakeMat.SetFloatIf("_Translucency", translucency);
@@ -2080,7 +2081,7 @@ namespace Reallusion.Import
                 bakeShader.SetTexture(kernel, "GreenChannel", greenChannel);
                 bakeShader.SetTexture(kernel, "BlueChannel", blueChannel);
                 bakeShader.SetTexture(kernel, "AlphaChannel", alphaChannel);
-                Dispatch(bakeShader, kernel, bakeTarget);                
+                Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
 
@@ -3150,7 +3151,7 @@ namespace Reallusion.Import
                 bakeShader.SetVector("irisColor", irisColor);
                 bakeShader.SetVector("irisCloudyColor", irisCloudyColor);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
-                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                                
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);
                 bakeShader.SetFloat("limbusContrast", limbusContrast);
                 bakeShader.SetFloat("colorBlendStrength", colorBlendStrength);
                 bakeShader.SetBool("isLeftEye", isLeftEye);
@@ -3214,7 +3215,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("irisRadius", irisRadius);
                 bakeShader.SetFloat("scleraScale", scleraScale);
                 bakeShader.SetFloat("limbusWidth", limbusWidth);
-                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
             }
@@ -3243,7 +3244,7 @@ namespace Reallusion.Import
                 bakeShader.SetFloat("aoStrength", aoStrength);
                 bakeShader.SetFloat("irisSmoothness", irisSmoothness);
                 bakeShader.SetFloat("scleraSmoothness", scleraSmoothness);
-                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);
                 bakeShader.SetFloat("irisRadius", irisRadius);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
@@ -3265,7 +3266,7 @@ namespace Reallusion.Import
             {
                 int kernel = bakeShader.FindKernel("RLCorneaThickness");
                 bakeTarget.Create(bakeShader, kernel);
-                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);                
+                bakeShader.SetFloat("limbusDarkScale", limbusDarkScale);
                 bakeShader.SetFloat("thicknessScale", thicknessScale);
                 Dispatch(bakeShader, kernel, bakeTarget);
                 return bakeTarget.SaveAndReimport();
@@ -3562,26 +3563,50 @@ namespace Reallusion.Import
 
             Texture2D first = textures[0];
 
-            // Create the array with same dims/format
+            // Create the array with same dims/format            
+            /*
             var array = new Texture2DArray(
                 first.width, first.height,
                 sliceCount,
                 first.format,
                 false,
                 linear
+            );*/
+
+            MipmapLimitDescriptor limitDescriptor = new MipmapLimitDescriptor(false, string.Empty);
+            int mipMapLimit = first.activeMipmapLimit;
+            int mipMapCount = first.mipmapCount;
+            if (mipMapLimit > 0)
+            {
+                limitDescriptor = new MipmapLimitDescriptor(true, first.mipmapLimitGroup);
+            }
+            var array = new Texture2DArray(
+                first.width, first.height,
+                sliceCount,
+                first.format, mipMapCount, linear, true, limitDescriptor
             );
 
             string guidInfo = "# Texture array source files\n";
 
+            Util.LogInfo($"Generating Texture Array: {path}\nmipMapLimit: {mipMapLimit}, mipMapCount: {mipMapCount}");
+
             // Copy each texture into its slice
-            int i = 0;
+            int arrayIndex = 0;
+            array.ignoreMipmapLimit = true;
             foreach (Texture2D tex in textures)
             {
-                Graphics.CopyTexture(tex, 0, 0, array, i++, 0);
+                tex.ignoreMipmapLimit = true;
+                for (int miplevel = 0; miplevel < mipMapCount; miplevel++)
+                {
+                    Graphics.CopyTexture(tex, 0, miplevel, array, arrayIndex, miplevel);
+                }
+                arrayIndex++;
                 string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(tex)).ToString();
                 guidInfo += guid + "\n";
+                tex.ignoreMipmapLimit = false;
             }
-            array.Apply();
+            array.Apply(false);
+            array.ignoreMipmapLimit = false;
 
             // Save as .asset so it�s assignable in Inspector
             AssetDatabase.CreateAsset(array, path);
@@ -3658,7 +3683,7 @@ namespace Reallusion.Import
 
         public static Texture2D GuassianBlurTexture(Texture2D tex, int size,
                                                     int radius, float sigma,
-                                                    string suffix, string nameOverride=null)
+                                                    string suffix, string nameOverride = null)
         {
             RenderTexture src;
             RenderTexture dst;

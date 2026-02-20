@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace Reallusion.Import
 {
-    public enum TexCategory { Default = 0, MinimalDetail=1, LowDetail = 2, MediumDetail = 3, HighDetail = 4, MaxDetail = 5 }
+    public enum TexCategory { Default = 0, MinimalDetail = 1, LowDetail = 2, MediumDetail = 3, HighDetail = 4, MaxDetail = 5 }
 
     public class ComputeBakeTexture
     {
@@ -67,7 +67,7 @@ namespace Reallusion.Import
             (TexCategory.MaxDetail, CharacterInfo.TexSizeQuality.HighTextureSize, 8192),
             (TexCategory.MaxDetail, CharacterInfo.TexSizeQuality.MaxTextureSize, 16384),
         };
-               
+
         public static List<(TexCategory, CharacterInfo.TexCompressionQuality, TextureImporterCompression)> categoryQualMatrix = new List<(TexCategory, CharacterInfo.TexCompressionQuality, TextureImporterCompression)>()
         {
             ( TexCategory.Default, CharacterInfo.TexCompressionQuality.NoCompression, TextureImporterCompression.Uncompressed ),
@@ -142,10 +142,10 @@ namespace Reallusion.Import
         }
 
         private string WriteImageFile()
-        {            
+        {
             bool isFloat = (flags & Importer.FLAG_FLOAT) > 0f;
             string ext = isFloat ? ".exr" : ".png";
-            
+
             string filePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), folderPath, textureName + ext);
 
             Util.EnsureAssetsFolderExists(folderPath);
@@ -191,7 +191,7 @@ namespace Reallusion.Import
                 {
                     importer.textureType = IsNormal ? TextureImporterType.NormalMap : TextureImporterType.Default;
                     importer.sRGBTexture = IsRGB;
-                    importer.alphaIsTransparency = IsRGB && !IsAlphaData;                    
+                    importer.alphaIsTransparency = IsRGB && !IsAlphaData;
                     importer.mipmapEnabled = true;
                     importer.mipMapBias = Importer.MIPMAP_BIAS;
                     if (IsHair)
@@ -225,14 +225,14 @@ namespace Reallusion.Import
             }
         }
 
-        public static int GetCategorySize(CharacterInfo charInfo, TexCategory category, 
-                                          int defaultSize=2048)
+        public static int GetCategorySize(CharacterInfo charInfo, TexCategory category,
+                                          int defaultSize = 2048)
         {
             CharacterInfo.TexSizeQuality sizeQuality;
             if (charInfo == null) sizeQuality = CharacterInfo.TexSizeQuality.MaxTextureSize;
             else sizeQuality = charInfo.QualTexSize;
 
-            foreach ((TexCategory, CharacterInfo.TexSizeQuality, int)item in categorySizeMatrix)
+            foreach ((TexCategory, CharacterInfo.TexSizeQuality, int) item in categorySizeMatrix)
             {
                 if (item.Item1 == category && item.Item2 == sizeQuality)
                     return item.Item3;
@@ -241,14 +241,14 @@ namespace Reallusion.Import
             return defaultSize;
         }
 
-        public static TextureImporterCompression GetCategoryQuality(CharacterInfo charInfo, TexCategory category, 
+        public static TextureImporterCompression GetCategoryQuality(CharacterInfo charInfo, TexCategory category,
                                              TextureImporterCompression defaultQuality = TextureImporterCompression.Compressed)
         {
             CharacterInfo.TexCompressionQuality compressionQuality;
 
             if (charInfo == null) compressionQuality = CharacterInfo.TexCompressionQuality.HighTextureQuality;
             else compressionQuality = charInfo.QualTexCompress;
-            
+
             foreach ((TexCategory, CharacterInfo.TexCompressionQuality, TextureImporterCompression) item in categoryQualMatrix)
             {
                 if (item.Item1 == category && item.Item2 == compressionQuality)
@@ -270,6 +270,7 @@ namespace Reallusion.Import
             importer.mipmapEnabled = true;
             importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
             importer.isReadable = false;
+            importer.mipmapLimitGroupName = string.Empty;
             if ((flags & Importer.FLAG_SRGB) > 0)
             {
                 importer.sRGBTexture = true;
@@ -297,7 +298,7 @@ namespace Reallusion.Import
                 importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
                 importer.mipMapBias = Importer.MIPMAP_BIAS;
                 importer.mipMapsPreserveCoverage = false;
-            }            
+            }
 
             if ((flags & Importer.FLAG_HAIR) > 0)
             {
@@ -341,7 +342,7 @@ namespace Reallusion.Import
             else if ((flags & Importer.FLAG_FOR_BAKE) > 0)
             {
                 // turn off texture compression and unlock max size to 8k, for the best possible quality bake
-                importer.textureCompression = TextureImporterCompression.Uncompressed;                
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.maxTextureSize = 8192;
                 importer.crunchedCompression = false;
                 importer.compressionQuality = 0;
@@ -383,8 +384,8 @@ namespace Reallusion.Import
             saveTexture.Apply();
             RenderTexture.active = old;
 
-            string filePath = WriteImageFile();            
-            ApplyImportSettings(filePath);            
+            string filePath = WriteImageFile();
+            ApplyImportSettings(filePath);
 
             Texture2D assetTex = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);
             return assetTex;
