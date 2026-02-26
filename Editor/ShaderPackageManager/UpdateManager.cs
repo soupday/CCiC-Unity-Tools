@@ -45,6 +45,7 @@ namespace Reallusion.Import
         public static ShaderPackageUtil.PipelineVersion installedShaderPipelineVersion = ShaderPackageUtil.PipelineVersion.None;
         public static ShaderPackageUtil.PlatformRestriction platformRestriction = ShaderPackageUtil.PlatformRestriction.None;
         public static Version installedShaderVersion = new Version(0, 0, 0);
+        public static int installedShaderRevision = 0;
         public static ShaderPackageUtil.InstalledPackageStatus installedShaderStatus = ShaderPackageUtil.InstalledPackageStatus.None;
         public static List<ShaderPackageUtil.ShaderPackageManifest> availablePackages;
         public static List<ShaderPackageUtil.ShaderPackageManifest> availableLegacyShaderPackages;
@@ -59,6 +60,7 @@ namespace Reallusion.Import
         //runtime package validation
         public static ShaderPackageUtil.ShaderPackageManifest latestRuntimePackageManifest;
         public static Version installedRuntimeVersion = new Version(0, 0, 0);
+        public static int installedRuntimeRevision = 0;
         public static ShaderPackageUtil.InstalledPackageStatus installedRuntimeStatus;
         public static List<ShaderPackageUtil.ShaderPackageManifest> availableRuntimePackages;
         public static List<ShaderPackageUtil.ShaderPackageItem> missingRuntimePackageItems;
@@ -254,18 +256,30 @@ namespace Reallusion.Import
             switch (packageType)
             {
                 case PackageType.Shader:
+                    if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force)
+                    {
+                        return true;
+                    }
+                    /*
                     if (settings.VersionShader < requiredVersionShader)  // essential update - force most recent runtime and shader packages
                     {
                         Debug.Log($"Critical package updates for shader version {requiredVersionShader.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
+                    */
                     break;
                 case PackageType.Runtime:
+                    if (UpdateManager.determinedRuntimeAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.UninstallReinstall_force)
+                    {
+                        return true;
+                    }
+                    /*
                     if (settings.VersionRuntime < requiredVersionRuntime)  // essential update - force most recent runtime and shader packages
                     {
                         Debug.Log($"Critical package updates for runtime version {requiredVersionRuntime.ToString()} and above are required (this will be performed autoatically)");
                         return true;
                     }
+                    */
                     break;
             }
 

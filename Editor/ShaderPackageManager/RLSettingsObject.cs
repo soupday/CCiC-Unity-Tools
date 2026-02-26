@@ -52,27 +52,28 @@ namespace Reallusion.Import
         public string jsonTagName;
         public string jsonHtmlUrl;
         public string jsonPublishedAt;
-        public string [] jsonBodyLines;
+        public string[] jsonBodyLines;
         //public List<RLToolUpdateUtil.JsonFragment> fullJsonFragment;
         public string fullJsonFragment;
         public string lastPath;
         public string toolVersion;
         public string shaderToolVersion;
-        public Version VersionShader 
-        { 
+        public Version VersionShader
+        {
             get
             {
-                if (string.IsNullOrEmpty(shaderToolVersion))                
+                if (string.IsNullOrEmpty(shaderToolVersion))
                     shaderToolVersion = UpdateManager.installedShaderVersion.ToString();
                 if (Version.TryParse(shaderToolVersion, out var version))
                     return version;
                 return new Version(0, 0, 0);
-            } 
-            set 
-            { 
+            }
+            set
+            {
                 shaderToolVersion = value.ToString();
-            } 
+            }
         }
+        public int InstalledShaderRevision;
         public string runtimeToolVersion;
         public Version VersionRuntime
         {
@@ -89,6 +90,7 @@ namespace Reallusion.Import
                 runtimeToolVersion = value.ToString();
             }
         }
+        public int installedRuntimeRevision;
 
         public bool showProps = true;
 
