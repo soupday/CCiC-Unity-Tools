@@ -229,13 +229,57 @@ namespace Reallusion.Import
                 }
             }
 
-            int invalidItems = shaderPackageManifest.Items.FindAll(x => x.Validated == false).Count();
-            if (invalidItems == 0 && UpdateManager.missingShaderPackageItems.Count == 0)
+            if (UpdateManager.installedShaderPipelineVersion == UpdateManager.activePipelineVersion)
             {
-                // no missing or invalid items -- determine whether an upgrade is available
-                UpdateManager.shaderPackageValid = PackageVailidity.Valid;
+                int invalidItems = shaderPackageManifest.Items.FindAll(x => x.Validated == false).Count();
 
-                if (UpdateManager.installedShaderPipelineVersion == UpdateManager.activePipelineVersion)
+                if (invalidItems == 0 && UpdateManager.missingShaderPackageItems.Count == 0)
+                {
+                    // no missing or invalid items -- determine whether an upgrade is available
+                    UpdateManager.shaderPackageValid = PackageVailidity.Valid;
+
+                    // compare current release version with installed version
+                    Version maxVersion = UpdateManager.latestShaderPackageManifest.Version.ToVersion();
+                    int revision = UpdateManager.latestShaderPackageManifest.Revision;
+
+                    if (UpdateManager.installedShaderVersion == maxVersion)
+                    {
+                        if (revision > UpdateManager.installedShaderRevision)
+                        {
+                            UpdateManager.installedShaderStatus = InstalledPackageStatus.Upgradeable;
+                        }
+                        else
+                        {
+                            UpdateManager.installedShaderStatus = InstalledPackageStatus.Current;
+                        }
+                    }
+                    else if (UpdateManager.installedShaderVersion < maxVersion)
+                    {
+                        UpdateManager.installedShaderStatus = InstalledPackageStatus.Upgradeable; // action rule: Status: Upgradeable  Vailidity: Valid
+                    }
+                    else if (UpdateManager.installedShaderVersion > maxVersion)
+                    {
+                        UpdateManager.installedShaderStatus = InstalledPackageStatus.VersionTooHigh; // action rule: Status: VersionTooHigh  Vailidity: Valid
+                    }
+                }
+                else
+                {
+                    // shader has missing files
+                    UpdateManager.installedShaderStatus = InstalledPackageStatus.MissingFiles;
+                    UpdateManager.shaderPackageValid = PackageVailidity.Invalid;
+                    return;  // action rule: Status: MissingFiles  Vailidity: Invalid
+                }
+            }
+            else // mismatch between installed and active shader pipeline version
+            {
+                UpdateManager.installedShaderStatus = InstalledPackageStatus.Mismatch;
+                return; // action rule: Status: Mismatch  Vailidity: Valid
+            }
+
+
+
+            /*
+            if (UpdateManager.installedShaderPipelineVersion == UpdateManager.activePipelineVersion)
                 {
                     // compare current release version with installed version
                     Version maxVersion = UpdateManager.latestShaderPackageManifest.Version.ToVersion();
@@ -251,7 +295,7 @@ namespace Reallusion.Import
                     UpdateManager.installedShaderStatus = InstalledPackageStatus.Mismatch;
                     return; // action rule: Status: Mismatch  Vailidity: Valid
                 }
-            }
+            }            
             else
             {
                 // shader has missing files
@@ -259,6 +303,7 @@ namespace Reallusion.Import
                 UpdateManager.shaderPackageValid = PackageVailidity.Invalid;
                 return;  // action rule: Status: MissingFiles  Vailidity: Invalid
             }
+            */
 
             // required rules summary (the only state combinations that can be returned NB: versioning is only examined when the package is valid):
             // action rule: Status: Absent  Vailidity: Absent
@@ -473,7 +518,7 @@ namespace Reallusion.Import
                 ActionRule(DeterminedAction.NothingInstalled_Install_force, InstalledPackageStatus.Absent, PackageVailidity.Absent, freshInstall),
                 ActionRule(DeterminedAction.Error, InstalledPackageStatus.Multiple, PackageVailidity.Invalid, multiple),
                 ActionRule(DeterminedAction.CurrentValid, InstalledPackageStatus.Current, PackageVailidity.Valid, currentValid),
-                ActionRule(DeterminedAction.UninstallReinstall_optional, InstalledPackageStatus.Upgradeable, PackageVailidity.Valid, normalUpgrade),
+                ActionRule(DeterminedAction.UninstallReinstall_force, InstalledPackageStatus.Upgradeable, PackageVailidity.Valid, normalUpgrade),
                 ActionRule(DeterminedAction.UninstallReinstall_optional, InstalledPackageStatus.VersionTooHigh, PackageVailidity.Valid, normalDowngrade),
                 ActionRule(DeterminedAction.UninstallReinstall_force, InstalledPackageStatus.Mismatch, PackageVailidity.Valid, mismatch),
                 ActionRule(DeterminedAction.UninstallReinstall_force, InstalledPackageStatus.Mismatch, PackageVailidity.Invalid, mismatch),
