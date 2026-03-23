@@ -757,11 +757,9 @@ namespace Reallusion.Import
                     return true;
             }
 
-            if (sourceName.iContains("_merge"))
+            if (sourceName.iContains("_meshes_merge"))
             {
-                Material singleMaterial = RL.GetActorBuildSingleMaterial(info.Fbx);
-                if (singleMaterial && singleMaterial.name == sourceName)
-                    return true;
+                return true;
             }
 
             return false;

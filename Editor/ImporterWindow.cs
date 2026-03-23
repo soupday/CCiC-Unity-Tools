@@ -157,6 +157,9 @@ namespace Reallusion.Import
         private Texture2D iconLinkedPropG;
         private Texture2D iconBlenderPropG;
 
+        private string[] materialTypeNames;
+        private string[] materialTypeDisplayNames;
+
         // SerializeField is used to ensure the view state is written to the window 
         // layout file. This means that the state survives restarting Unity as long as the window
         // is not closed. If the attribute is omitted then the state is still serialized/deserialized.
@@ -1288,13 +1291,57 @@ namespace Reallusion.Import
 
             GUILayout.FlexibleSpace();
 
+            GUILayout.BeginVertical();
+
             GUILayout.BeginHorizontal();
 
-            GUILayout.FlexibleSpace();
-            SELECT_LINKED = GUILayout.Toggle(SELECT_LINKED, "Select Linked");
-            GUILayout.FlexibleSpace();
+            List<Material> selectedMaterials = characterTreeView.GetSelectedMaterials();
+            if (selectedMaterials.Count > 0)
+            {
+                if (materialTypeNames == null || materialTypeNames.Length == 0)
+                {
+                    materialTypeNames = Enum.GetNames(typeof(MaterialType)).ToArray();
+                    materialTypeDisplayNames = Enum.GetNames(typeof(MaterialType)).ToArray();
+                    for (int i = 0; i < materialTypeDisplayNames.Length; i++)
+                    {
+                        string mrdn = materialTypeDisplayNames[i];
+                        if (mrdn == "None") mrdn = "Auto";
+                        if (mrdn == "DefaultAlpha") mrdn = "AlphaCutout";
+                        if (mrdn == "BlendAlpha") mrdn = "AlphaBlend";
+                        materialTypeDisplayNames[i] = Util.CamelCaseToSpaces(mrdn);
+                    }
+                }
+                GUILayout.Label("Type: ", GUILayout.Width(50f));
+                MaterialType optionType = MaterialType.None;
+                foreach (var m in selectedMaterials)
+                {
+                    var ccom = contextCharacter.GetMaterialOverride(m);
+                    if (ccom != MaterialType.None)
+                        optionType = ccom;
+                }
+                int optionIndex = Array.IndexOf(materialTypeNames, optionType.ToString());
+                void UpdateMaterialType(object value)
+                {
+                    int index = (int)value;
+                    MaterialType t = (MaterialType)Enum.Parse(typeof(MaterialType), materialTypeNames[index]);
+                    foreach (var m in selectedMaterials)
+                    {
+                        contextCharacter.SetMaterialOverride(m, t);
+                    }
+                }
+                DropDownBox(materialTypeDisplayNames, optionIndex, UpdateMaterialType);
+                GUILayout.FlexibleSpace();
+            }
+            else
+            {
+                GUILayout.FlexibleSpace();
+            }
+
+            SELECT_LINKED = GUILayout.Toggle(SELECT_LINKED, "Linked");
 
             GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
 
             GUILayout.EndVertical();
 
@@ -1386,6 +1433,7 @@ namespace Reallusion.Import
                     new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export."));
             GUILayout.Space(ROW_SPACE);
 
+            /*
             Importer.DRIVE_HEAD_BONE = GUILayout.Toggle(Importer.DRIVE_HEAD_BONE,
                     new GUIContent("Drive Head Bone", "In many exported motions, the head bone isn't always animated correctly from the expression blendshapes, so it is optional."));
             GUILayout.Space(ROW_SPACE);
@@ -1393,6 +1441,7 @@ namespace Reallusion.Import
             Importer.DRIVE_BONE_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.DRIVE_BONE_MISSING_BLENDSHAPES,
                     new GUIContent("Drive Bones with Missing Blendshapes", "If driver blendshapes are missing, the bone driver will prevent full motion. Disable this to allow direct control of the bones with missing blendshapes."));
             GUILayout.Space(ROW_SPACE);
+            */
 
             GUILayout.Space(10f);
             GUILayout.BeginVertical(new GUIContent("", "Override mip-map bias for all textures setup for the characters."), importerStyles.labelStyle);

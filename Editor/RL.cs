@@ -22,6 +22,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace Reallusion.Import
@@ -289,202 +290,208 @@ namespace Reallusion.Import
                 List<HumanBone> boneList = new List<HumanBone>();
 
                 #region HumanBoneDescription
-                if (info.Generation == BaseGeneration.G3 ||
-                    info.Generation == BaseGeneration.G3Plus ||
-                    info.Generation == BaseGeneration.ActorCore ||
-                    info.Generation == BaseGeneration.ActorBuild)
+                // Unity does a better job if it does it automatically these days
+                // and it fixes the t-pose ...
+                bool buildHumanBoneDescription = false;
+                if (buildHumanBoneDescription)
                 {
-                    boneList = new List<HumanBone> {
-                        Bone("Chest", "CC_Base_Spine01"),
-                        Bone("Head", "CC_Base_Head"),
-                        Bone("Hips", "CC_Base_Hip"),
-                        Bone("Jaw", "CC_Base_JawRoot"),
-                        Bone("Left Index Distal", "CC_Base_L_Index3"),
-                        Bone("Left Index Intermediate", "CC_Base_L_Index2"),
-                        Bone("Left Index Proximal", "CC_Base_L_Index1"),
-                        Bone("Left Little Distal","CC_Base_L_Pinky3"),
-                        Bone("Left Little Intermediate","CC_Base_L_Pinky2"),
-                        Bone("Left Little Proximal","CC_Base_L_Pinky1"),
-                        Bone("Left Middle Distal", "CC_Base_L_Mid3"),
-                        Bone("Left Middle Intermediate", "CC_Base_L_Mid2"),
-                        Bone("Left Middle Proximal", "CC_Base_L_Mid1"),
-                        Bone("Left Ring Distal", "CC_Base_L_Ring3"),
-                        Bone("Left Ring Intermediate", "CC_Base_L_Ring2"),
-                        Bone("Left Ring Proximal", "CC_Base_L_Ring1"),
-                        Bone("Left Thumb Distal", "CC_Base_L_Thumb3"),
-                        Bone("Left Thumb Intermediate", "CC_Base_L_Thumb2"),
-                        Bone("Left Thumb Proximal", "CC_Base_L_Thumb1"),
-                        Bone("LeftEye","CC_Base_L_Eye"),
-                        Bone("LeftFoot", "CC_Base_L_Foot"),
-                        Bone("LeftHand", "CC_Base_L_Hand"),
-                        Bone("LeftLowerArm", "CC_Base_L_Forearm"),
-                        Bone("LeftLowerLeg", "CC_Base_L_Calf"),
-                        Bone("LeftShoulder", "CC_Base_L_Clavicle"),
-                        Bone("LeftToes", "CC_Base_L_ToeBase"),
-                        Bone("LeftUpperArm", "CC_Base_L_Upperarm"),
-                        Bone("LeftUpperLeg", "CC_Base_L_Thigh"),
-                        Bone("Neck", "CC_Base_NeckTwist01"),
-                        Bone("Right Index Distal", "CC_Base_R_Index3"),
-                        Bone("Right Index Intermediate", "CC_Base_R_Index2"),
-                        Bone("Right Index Proximal", "CC_Base_R_Index1"),
-                        Bone("Right Little Distal","CC_Base_R_Pinky3"),
-                        Bone("Right Little Intermediate","CC_Base_R_Pinky2"),
-                        Bone("Right Little Proximal","CC_Base_R_Pinky1"),
-                        Bone("Right Middle Distal", "CC_Base_R_Mid3"),
-                        Bone("Right Middle Intermediate", "CC_Base_R_Mid2"),
-                        Bone("Right Middle Proximal", "CC_Base_R_Mid1"),
-                        Bone("Right Ring Distal", "CC_Base_R_Ring3"),
-                        Bone("Right Ring Intermediate", "CC_Base_R_Ring2"),
-                        Bone("Right Ring Proximal", "CC_Base_R_Ring1"),
-                        Bone("Right Thumb Distal", "CC_Base_R_Thumb3"),
-                        Bone("Right Thumb Intermediate", "CC_Base_R_Thumb2"),
-                        Bone("Right Thumb Proximal", "CC_Base_R_Thumb1"),
-                        Bone("RightEye","CC_Base_R_Eye"),
-                        Bone("RightFoot", "CC_Base_R_Foot"),
-                        Bone("RightHand", "CC_Base_R_Hand"),
-                        Bone("RightLowerArm", "CC_Base_R_Forearm"),
-                        Bone("RightLowerLeg", "CC_Base_R_Calf"),
-                        Bone("RightShoulder", "CC_Base_R_Clavicle"),
-                        Bone("RightToes", "CC_Base_R_ToeBase"),
-                        Bone("RightUpperArm", "CC_Base_R_Upperarm"),
-                        Bone("RightUpperLeg", "CC_Base_R_Thigh"),
-                        Bone("Spine", "CC_Base_Waist"),
-                        Bone("UpperChest", "CC_Base_Spine02"),
-                    };
-                }
-                else if (info.Generation == BaseGeneration.G1)
-                {
-                    boneList = new List<HumanBone> {
-                        Bone("Chest", "CC_Base_Spine01"),
-                        Bone("Head", "CC_Base_Head"),
-                        Bone("Hips", "CC_Base_Hip"),
-                        Bone("Jaw", "CC_Base_JawRoot"),
-                        Bone("Left Index Distal", "CC_Base_L_Finger12"),
-                        Bone("Left Index Intermediate", "CC_Base_L_Finger11"),
-                        Bone("Left Index Proximal", "CC_Base_L_Finger10"),
-                        Bone("Left Little Distal","CC_Base_L_Finger42"),
-                        Bone("Left Little Intermediate","CC_Base_L_Finger41"),
-                        Bone("Left Little Proximal","CC_Base_L_Finger40"),
-                        Bone("Left Middle Distal", "CC_Base_L_Finger22"),
-                        Bone("Left Middle Intermediate", "CC_Base_L_Finger21"),
-                        Bone("Left Middle Proximal", "CC_Base_L_Finger20"),
-                        Bone("Left Ring Distal", "CC_Base_L_Finger32"),
-                        Bone("Left Ring Intermediate", "CC_Base_L_Finger31"),
-                        Bone("Left Ring Proximal", "CC_Base_L_Finger30"),
-                        Bone("Left Thumb Distal", "CC_Base_L_Finger02"),
-                        Bone("Left Thumb Intermediate", "CC_Base_L_Finger01"),
-                        Bone("Left Thumb Proximal", "CC_Base_L_Finger00"),
-                        Bone("LeftEye","CC_Base_L_Eye"),
-                        Bone("LeftFoot", "CC_Base_L_Foot"),
-                        Bone("LeftHand", "CC_Base_L_Hand"),
-                        Bone("LeftLowerArm", "CC_Base_L_Forearm"),
-                        Bone("LeftLowerLeg", "CC_Base_L_Calf"),
-                        Bone("LeftShoulder", "CC_Base_L_Clavicle"),
-                        Bone("LeftToes", "CC_Base_L_ToeBase"),
-                        Bone("LeftUpperArm", "CC_Base_L_Upperarm"),
-                        Bone("LeftUpperLeg", "CC_Base_L_Thigh"),
-                        Bone("Neck", "CC_Base_NeckTwist01"),
-                        Bone("Right Index Distal", "CC_Base_R_Finger12"),
-                        Bone("Right Index Intermediate", "CC_Base_R_Finger11"),
-                        Bone("Right Index Proximal", "CC_Base_R_Finger10"),
-                        Bone("Right Little Distal","CC_Base_R_Finger42"),
-                        Bone("Right Little Intermediate","CC_Base_R_Finger41"),
-                        Bone("Right Little Proximal","CC_Base_R_Finger40"),
-                        Bone("Right Middle Distal", "CC_Base_R_Finger22"),
-                        Bone("Right Middle Intermediate", "CC_Base_R_Finger21"),
-                        Bone("Right Middle Proximal", "CC_Base_R_Finger20"),
-                        Bone("Right Ring Distal", "CC_Base_R_Finger32"),
-                        Bone("Right Ring Intermediate", "CC_Base_R_Finger31"),
-                        Bone("Right Ring Proximal", "CC_Base_R_Finger30"),
-                        Bone("Right Thumb Distal", "CC_Base_R_Finger02"),
-                        Bone("Right Thumb Intermediate", "CC_Base_R_Finger01"),
-                        Bone("Right Thumb Proximal", "CC_Base_R_Finger00"),
-                        Bone("RightEye","CC_Base_R_Eye"),
-                        Bone("RightFoot", "CC_Base_R_Foot"),
-                        Bone("RightHand", "CC_Base_R_Hand"),
-                        Bone("RightLowerArm", "CC_Base_R_Forearm"),
-                        Bone("RightLowerLeg", "CC_Base_R_Calf"),
-                        Bone("RightShoulder", "CC_Base_R_Clavicle"),
-                        Bone("RightToes", "CC_Base_R_ToeBase"),
-                        Bone("RightUpperArm", "CC_Base_R_Upperarm"),
-                        Bone("RightUpperLeg", "CC_Base_R_Thigh"),
-                        Bone("Spine", "CC_Base_Waist"),
-                        Bone("UpperChest", "CC_Base_Spine02"),
-                    };
-                }
-                else if (info.Generation == BaseGeneration.GameBase)
-                {
-                    boneList = new List<HumanBone> {
-                        Bone("Chest", "spine_02"),
-                        Bone("Head", "head"),
-                        Bone("Hips", "pelvis"),
-                        Bone("Jaw", "CC_Base_JawRoot"),
-                        Bone("Left Index Distal", "index_03_l"),
-                        Bone("Left Index Intermediate", "index_02_l"),
-                        Bone("Left Index Proximal", "index_01_l"),
-                        Bone("Left Little Distal","pinky_03_l"),
-                        Bone("Left Little Intermediate","pinky_02_l"),
-                        Bone("Left Little Proximal","pinky_01_l"),
-                        Bone("Left Middle Distal", "middle_03_l"),
-                        Bone("Left Middle Intermediate", "middle_02_l"),
-                        Bone("Left Middle Proximal", "middle_01_l"),
-                        Bone("Left Ring Distal", "ring_03_l"),
-                        Bone("Left Ring Intermediate", "ring_02_l"),
-                        Bone("Left Ring Proximal", "ring_01_l"),
-                        Bone("Left Thumb Distal", "thumb_03_l"),
-                        Bone("Left Thumb Intermediate", "thumb_02_l"),
-                        Bone("Left Thumb Proximal", "thumb_01_l"),
-                        Bone("LeftEye","CC_Base_L_Eye"),
-                        Bone("LeftFoot", "foot_l"),
-                        Bone("LeftHand", "hand_l"),
-                        Bone("LeftLowerArm", "lowerarm_l"),
-                        Bone("LeftLowerLeg", "calf_l"),
-                        Bone("LeftShoulder", "clavicle_l"),
-                        Bone("LeftToes", "ball_l"),
-                        Bone("LeftUpperArm", "upperarm_l"),
-                        Bone("LeftUpperLeg", "thigh_l"),
-                        Bone("Neck", "neck_01"),
-                        Bone("Right Index Distal", "index_03_r"),
-                        Bone("Right Index Intermediate", "index_02_r"),
-                        Bone("Right Index Proximal", "index_01_r"),
-                        Bone("Right Little Distal","pinky_03_r"),
-                        Bone("Right Little Intermediate","pinky_02_r"),
-                        Bone("Right Little Proximal","pinky_01_r"),
-                        Bone("Right Middle Distal", "middle_03_r"),
-                        Bone("Right Middle Intermediate", "middle_02_r"),
-                        Bone("Right Middle Proximal", "middle_01_r"),
-                        Bone("Right Ring Distal", "ring_03_r"),
-                        Bone("Right Ring Intermediate", "ring_02_r"),
-                        Bone("Right Ring Proximal", "ring_01_r"),
-                        Bone("Right Thumb Distal", "thumb_03_r"),
-                        Bone("Right Thumb Intermediate", "thumb_02_r"),
-                        Bone("Right Thumb Proximal", "thumb_01_r"),
-                        Bone("RightEye","CC_Base_R_Eye"),
-                        Bone("RightFoot", "foot_r"),
-                        Bone("RightHand", "hand_r"),
-                        Bone("RightLowerArm", "lowerarm_r"),
-                        Bone("RightLowerLeg", "calf_r"),
-                        Bone("RightShoulder", "clavicle_r"),
-                        Bone("RightToes", "ball_r"),
-                        Bone("RightUpperArm", "upperarm_r"),
-                        Bone("RightUpperLeg", "thigh_r"),
-                        Bone("Spine", "spine_01"),
-                        Bone("UpperChest", "spine_03"),
-                    };
-                }
-
-                // clean up bone list for missing bones (from bone LOD exports)
-                for (int b = 0; b < boneList.Count; b++)
-                {
-                    if (Util.FindChildRecursive(fbx.transform, boneList[b].boneName) == null)
+                    if (info.Generation == BaseGeneration.G3 ||
+                        info.Generation == BaseGeneration.G3Plus ||
+                        info.Generation == BaseGeneration.ActorCore ||
+                        info.Generation == BaseGeneration.ActorBuild)
                     {
-                        //Debug.LogWarning("Missing bone: " + boneList[b].boneName);
-                        boneList.RemoveAt(b--);
+                        boneList = new List<HumanBone> {
+                            Bone("Chest", "CC_Base_Spine01"),
+                            Bone("Head", "CC_Base_Head"),
+                            Bone("Hips", "CC_Base_Hip"),
+                            Bone("Jaw", "CC_Base_JawRoot"),
+                            Bone("Left Index Distal", "CC_Base_L_Index3"),
+                            Bone("Left Index Intermediate", "CC_Base_L_Index2"),
+                            Bone("Left Index Proximal", "CC_Base_L_Index1"),
+                            Bone("Left Little Distal","CC_Base_L_Pinky3"),
+                            Bone("Left Little Intermediate","CC_Base_L_Pinky2"),
+                            Bone("Left Little Proximal","CC_Base_L_Pinky1"),
+                            Bone("Left Middle Distal", "CC_Base_L_Mid3"),
+                            Bone("Left Middle Intermediate", "CC_Base_L_Mid2"),
+                            Bone("Left Middle Proximal", "CC_Base_L_Mid1"),
+                            Bone("Left Ring Distal", "CC_Base_L_Ring3"),
+                            Bone("Left Ring Intermediate", "CC_Base_L_Ring2"),
+                            Bone("Left Ring Proximal", "CC_Base_L_Ring1"),
+                            Bone("Left Thumb Distal", "CC_Base_L_Thumb3"),
+                            Bone("Left Thumb Intermediate", "CC_Base_L_Thumb2"),
+                            Bone("Left Thumb Proximal", "CC_Base_L_Thumb1"),
+                            Bone("LeftEye","CC_Base_L_Eye"),
+                            Bone("LeftFoot", "CC_Base_L_Foot"),
+                            Bone("LeftHand", "CC_Base_L_Hand"),
+                            Bone("LeftLowerArm", "CC_Base_L_Forearm"),
+                            Bone("LeftLowerLeg", "CC_Base_L_Calf"),
+                            Bone("LeftShoulder", "CC_Base_L_Clavicle"),
+                            Bone("LeftToes", "CC_Base_L_ToeBase"),
+                            Bone("LeftUpperArm", "CC_Base_L_Upperarm"),
+                            Bone("LeftUpperLeg", "CC_Base_L_Thigh"),
+                            Bone("Neck", "CC_Base_NeckTwist01"),
+                            Bone("Right Index Distal", "CC_Base_R_Index3"),
+                            Bone("Right Index Intermediate", "CC_Base_R_Index2"),
+                            Bone("Right Index Proximal", "CC_Base_R_Index1"),
+                            Bone("Right Little Distal","CC_Base_R_Pinky3"),
+                            Bone("Right Little Intermediate","CC_Base_R_Pinky2"),
+                            Bone("Right Little Proximal","CC_Base_R_Pinky1"),
+                            Bone("Right Middle Distal", "CC_Base_R_Mid3"),
+                            Bone("Right Middle Intermediate", "CC_Base_R_Mid2"),
+                            Bone("Right Middle Proximal", "CC_Base_R_Mid1"),
+                            Bone("Right Ring Distal", "CC_Base_R_Ring3"),
+                            Bone("Right Ring Intermediate", "CC_Base_R_Ring2"),
+                            Bone("Right Ring Proximal", "CC_Base_R_Ring1"),
+                            Bone("Right Thumb Distal", "CC_Base_R_Thumb3"),
+                            Bone("Right Thumb Intermediate", "CC_Base_R_Thumb2"),
+                            Bone("Right Thumb Proximal", "CC_Base_R_Thumb1"),
+                            Bone("RightEye","CC_Base_R_Eye"),
+                            Bone("RightFoot", "CC_Base_R_Foot"),
+                            Bone("RightHand", "CC_Base_R_Hand"),
+                            Bone("RightLowerArm", "CC_Base_R_Forearm"),
+                            Bone("RightLowerLeg", "CC_Base_R_Calf"),
+                            Bone("RightShoulder", "CC_Base_R_Clavicle"),
+                            Bone("RightToes", "CC_Base_R_ToeBase"),
+                            Bone("RightUpperArm", "CC_Base_R_Upperarm"),
+                            Bone("RightUpperLeg", "CC_Base_R_Thigh"),
+                            Bone("Spine", "CC_Base_Waist"),
+                            Bone("UpperChest", "CC_Base_Spine02"),
+                        };
                     }
-                }
+                    else if (info.Generation == BaseGeneration.G1)
+                    {
+                        boneList = new List<HumanBone> {
+                            Bone("Chest", "CC_Base_Spine01"),
+                            Bone("Head", "CC_Base_Head"),
+                            Bone("Hips", "CC_Base_Hip"),
+                            Bone("Jaw", "CC_Base_JawRoot"),
+                            Bone("Left Index Distal", "CC_Base_L_Finger12"),
+                            Bone("Left Index Intermediate", "CC_Base_L_Finger11"),
+                            Bone("Left Index Proximal", "CC_Base_L_Finger10"),
+                            Bone("Left Little Distal","CC_Base_L_Finger42"),
+                            Bone("Left Little Intermediate","CC_Base_L_Finger41"),
+                            Bone("Left Little Proximal","CC_Base_L_Finger40"),
+                            Bone("Left Middle Distal", "CC_Base_L_Finger22"),
+                            Bone("Left Middle Intermediate", "CC_Base_L_Finger21"),
+                            Bone("Left Middle Proximal", "CC_Base_L_Finger20"),
+                            Bone("Left Ring Distal", "CC_Base_L_Finger32"),
+                            Bone("Left Ring Intermediate", "CC_Base_L_Finger31"),
+                            Bone("Left Ring Proximal", "CC_Base_L_Finger30"),
+                            Bone("Left Thumb Distal", "CC_Base_L_Finger02"),
+                            Bone("Left Thumb Intermediate", "CC_Base_L_Finger01"),
+                            Bone("Left Thumb Proximal", "CC_Base_L_Finger00"),
+                            Bone("LeftEye","CC_Base_L_Eye"),
+                            Bone("LeftFoot", "CC_Base_L_Foot"),
+                            Bone("LeftHand", "CC_Base_L_Hand"),
+                            Bone("LeftLowerArm", "CC_Base_L_Forearm"),
+                            Bone("LeftLowerLeg", "CC_Base_L_Calf"),
+                            Bone("LeftShoulder", "CC_Base_L_Clavicle"),
+                            Bone("LeftToes", "CC_Base_L_ToeBase"),
+                            Bone("LeftUpperArm", "CC_Base_L_Upperarm"),
+                            Bone("LeftUpperLeg", "CC_Base_L_Thigh"),
+                            Bone("Neck", "CC_Base_NeckTwist01"),
+                            Bone("Right Index Distal", "CC_Base_R_Finger12"),
+                            Bone("Right Index Intermediate", "CC_Base_R_Finger11"),
+                            Bone("Right Index Proximal", "CC_Base_R_Finger10"),
+                            Bone("Right Little Distal","CC_Base_R_Finger42"),
+                            Bone("Right Little Intermediate","CC_Base_R_Finger41"),
+                            Bone("Right Little Proximal","CC_Base_R_Finger40"),
+                            Bone("Right Middle Distal", "CC_Base_R_Finger22"),
+                            Bone("Right Middle Intermediate", "CC_Base_R_Finger21"),
+                            Bone("Right Middle Proximal", "CC_Base_R_Finger20"),
+                            Bone("Right Ring Distal", "CC_Base_R_Finger32"),
+                            Bone("Right Ring Intermediate", "CC_Base_R_Finger31"),
+                            Bone("Right Ring Proximal", "CC_Base_R_Finger30"),
+                            Bone("Right Thumb Distal", "CC_Base_R_Finger02"),
+                            Bone("Right Thumb Intermediate", "CC_Base_R_Finger01"),
+                            Bone("Right Thumb Proximal", "CC_Base_R_Finger00"),
+                            Bone("RightEye","CC_Base_R_Eye"),
+                            Bone("RightFoot", "CC_Base_R_Foot"),
+                            Bone("RightHand", "CC_Base_R_Hand"),
+                            Bone("RightLowerArm", "CC_Base_R_Forearm"),
+                            Bone("RightLowerLeg", "CC_Base_R_Calf"),
+                            Bone("RightShoulder", "CC_Base_R_Clavicle"),
+                            Bone("RightToes", "CC_Base_R_ToeBase"),
+                            Bone("RightUpperArm", "CC_Base_R_Upperarm"),
+                            Bone("RightUpperLeg", "CC_Base_R_Thigh"),
+                            Bone("Spine", "CC_Base_Waist"),
+                            Bone("UpperChest", "CC_Base_Spine02"),
+                        };
+                    }
+                    else if (info.Generation == BaseGeneration.GameBase)
+                    {
+                        boneList = new List<HumanBone> {
+                            Bone("Chest", "spine_02"),
+                            Bone("Head", "head"),
+                            Bone("Hips", "pelvis"),
+                            Bone("Jaw", "CC_Base_JawRoot"),
+                            Bone("Left Index Distal", "index_03_l"),
+                            Bone("Left Index Intermediate", "index_02_l"),
+                            Bone("Left Index Proximal", "index_01_l"),
+                            Bone("Left Little Distal","pinky_03_l"),
+                            Bone("Left Little Intermediate","pinky_02_l"),
+                            Bone("Left Little Proximal","pinky_01_l"),
+                            Bone("Left Middle Distal", "middle_03_l"),
+                            Bone("Left Middle Intermediate", "middle_02_l"),
+                            Bone("Left Middle Proximal", "middle_01_l"),
+                            Bone("Left Ring Distal", "ring_03_l"),
+                            Bone("Left Ring Intermediate", "ring_02_l"),
+                            Bone("Left Ring Proximal", "ring_01_l"),
+                            Bone("Left Thumb Distal", "thumb_03_l"),
+                            Bone("Left Thumb Intermediate", "thumb_02_l"),
+                            Bone("Left Thumb Proximal", "thumb_01_l"),
+                            Bone("LeftEye","CC_Base_L_Eye"),
+                            Bone("LeftFoot", "foot_l"),
+                            Bone("LeftHand", "hand_l"),
+                            Bone("LeftLowerArm", "lowerarm_l"),
+                            Bone("LeftLowerLeg", "calf_l"),
+                            Bone("LeftShoulder", "clavicle_l"),
+                            Bone("LeftToes", "ball_l"),
+                            Bone("LeftUpperArm", "upperarm_l"),
+                            Bone("LeftUpperLeg", "thigh_l"),
+                            Bone("Neck", "neck_01"),
+                            Bone("Right Index Distal", "index_03_r"),
+                            Bone("Right Index Intermediate", "index_02_r"),
+                            Bone("Right Index Proximal", "index_01_r"),
+                            Bone("Right Little Distal","pinky_03_r"),
+                            Bone("Right Little Intermediate","pinky_02_r"),
+                            Bone("Right Little Proximal","pinky_01_r"),
+                            Bone("Right Middle Distal", "middle_03_r"),
+                            Bone("Right Middle Intermediate", "middle_02_r"),
+                            Bone("Right Middle Proximal", "middle_01_r"),
+                            Bone("Right Ring Distal", "ring_03_r"),
+                            Bone("Right Ring Intermediate", "ring_02_r"),
+                            Bone("Right Ring Proximal", "ring_01_r"),
+                            Bone("Right Thumb Distal", "thumb_03_r"),
+                            Bone("Right Thumb Intermediate", "thumb_02_r"),
+                            Bone("Right Thumb Proximal", "thumb_01_r"),
+                            Bone("RightEye","CC_Base_R_Eye"),
+                            Bone("RightFoot", "foot_r"),
+                            Bone("RightHand", "hand_r"),
+                            Bone("RightLowerArm", "lowerarm_r"),
+                            Bone("RightLowerLeg", "calf_r"),
+                            Bone("RightShoulder", "clavicle_r"),
+                            Bone("RightToes", "ball_r"),
+                            Bone("RightUpperArm", "upperarm_r"),
+                            Bone("RightUpperLeg", "thigh_r"),
+                            Bone("Spine", "spine_01"),
+                            Bone("UpperChest", "spine_03"),
+                        };
+                    }
 
-                if (boneList.Count > 0)
-                    human.human = boneList.ToArray();
+                    // clean up bone list for missing bones (from bone LOD exports)
+                    for (int b = 0; b < boneList.Count; b++)
+                    {
+                        if (Util.FindRealBone(fbx.transform, boneList[b].boneName) == null)
+                        {
+                            //Debug.LogWarning("Missing bone: " + boneList[b].boneName);
+                            boneList.RemoveAt(b--);
+                        }
+                    }
+
+                    if (boneList.Count > 0)
+                        human.human = boneList.ToArray();
+                }
 
                 #endregion
 
@@ -510,21 +517,29 @@ namespace Reallusion.Import
                     human.hasTranslationDoF = true;
                 }
 
-                if (info.JsonData != null)
+                if (buildHumanBoneDescription)
                 {
-                    Transform[] transforms = fbx.GetComponentsInChildren<Transform>();
-                    SkeletonBone[] bones = new SkeletonBone[transforms.Length];
-                    for (int i = 0; i < transforms.Length; i++)
+                    if (info.JsonData != null)
                     {
-                        bones[i].name = transforms[i].name;
-                        bones[i].position = transforms[i].localPosition;
-                        bones[i].rotation = transforms[i].localRotation;
-                        bones[i].scale = transforms[i].localScale;
+                        Transform[] transforms = fbx.GetComponentsInChildren<Transform>();
+                        List<SkeletonBone> bones = new List<SkeletonBone>();
+                        foreach (Transform t in transforms)
+                        {
+                            if (Util.IsRealBone(fbx.transform, t))
+                            {
+                                SkeletonBone bone = new SkeletonBone();
+                                bone.name = t.name;
+                                bone.position = t.localPosition;
+                                bone.rotation = t.localRotation;
+                                bone.scale = t.localScale;
+                                bones.Add(bone);
+                            }
+                        }
+                        human.skeleton = bones.ToArray();
                     }
-                    human.skeleton = bones;
-                }
 
-                importer.humanDescription = human;
+                    importer.humanDescription = human;
+                }
             }
         }
 
@@ -828,7 +843,7 @@ namespace Reallusion.Import
 
             lodLevels += 1;
             LOD[] lods = new LOD[lodLevels];
-            GameObject sceneLODInstance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;            
+            GameObject sceneLODInstance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
             LODGroup lodGroup = sceneLODInstance.GetComponent<LODGroup>();
             if (!lodGroup) lodGroup = sceneLODInstance.AddComponent<LODGroup>();
             Renderer[] prefabRenderers = sceneLODInstance.transform.GetComponentsInChildren<Renderer>(true);
@@ -1016,7 +1031,7 @@ namespace Reallusion.Import
         }
 
         public static GameObject FindExpressionSourceMesh(GameObject root)
-        {            
+        {
             SkinnedMeshRenderer[] skinnedMeshRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>();
             GameObject bestExpressionsMesh = null;
             int bestExpressionCount = 0;

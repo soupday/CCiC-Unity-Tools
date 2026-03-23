@@ -3563,19 +3563,13 @@ namespace Reallusion.Import
 
             Texture2D first = textures[0];
 
-            // Create the array with same dims/format            
-            /*
-            var array = new Texture2DArray(
-                first.width, first.height,
-                sliceCount,
-                first.format,
-                false,
-                linear
-            );*/
+            string guidInfo = "# Texture array source files\n";
 
-            MipmapLimitDescriptor limitDescriptor = new MipmapLimitDescriptor(false, string.Empty);
+#if UNITY_2022_3_OR_NEWER
             int mipMapLimit = first.activeMipmapLimit;
             int mipMapCount = first.mipmapCount;
+#if UNITY_6000_0_OR_NEWER
+            MipmapLimitDescriptor limitDescriptor = new MipmapLimitDescriptor(false, string.Empty);
             if (mipMapLimit > 0)
             {
                 limitDescriptor = new MipmapLimitDescriptor(true, first.mipmapLimitGroup);
@@ -3585,17 +3579,24 @@ namespace Reallusion.Import
                 sliceCount,
                 first.format, mipMapCount, linear, true, limitDescriptor
             );
-
-            string guidInfo = "# Texture array source files\n";
+#else
+            var array = new Texture2DArray(
+                first.width, first.height,
+                sliceCount,
+                first.format, mipMapCount, linear, true
+            );
+#endif
 
             Util.LogInfo($"Generating Texture Array: {path}\nmipMapLimit: {mipMapLimit}, mipMapCount: {mipMapCount}");
 
             // Copy each texture into its slice
             int arrayIndex = 0;
+#if UNITY_6000_0_OR_NEWER
             array.ignoreMipmapLimit = true;
+#endif
             foreach (Texture2D tex in textures)
             {
-                tex.ignoreMipmapLimit = true;
+                if (tex.isReadable) tex.ignoreMipmapLimit = true;
                 for (int miplevel = 0; miplevel < mipMapCount; miplevel++)
                 {
                     Graphics.CopyTexture(tex, 0, miplevel, array, arrayIndex, miplevel);
@@ -3603,10 +3604,32 @@ namespace Reallusion.Import
                 arrayIndex++;
                 string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(tex)).ToString();
                 guidInfo += guid + "\n";
-                tex.ignoreMipmapLimit = false;
+                if (tex.isReadable) tex.ignoreMipmapLimit = false;
             }
             array.Apply(false);
+#if UNITY_6000_0_OR_NEWER
             array.ignoreMipmapLimit = false;
+#endif
+#else
+            // Create the array with same dims/format
+            var array = new Texture2DArray(
+                first.width, first.height,
+                sliceCount,
+                first.format,
+                false,
+                linear
+            );
+
+            // Copy each texture into its slice
+            int i = 0;
+            foreach (Texture2D tex in textures)
+            {
+                Graphics.CopyTexture(tex, 0, 0, array, i++, 0);
+                string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(tex)).ToString();
+                guidInfo += guid + "\n";
+            }
+            array.Apply();
+#endif
 
             // Save as .asset so it�s assignable in Inspector
             AssetDatabase.CreateAsset(array, path);
@@ -3722,7 +3745,7 @@ namespace Reallusion.Import
             bakeShader.SetBuffer(kernelH, "_BlurWeights", weightsBuffer);
             bakeShader.SetTexture(kernelH, "_BlurSource", src);
             bakeShader.SetTexture(kernelH, "_BlurResult", temp);
-            BlurDispatch(bakeShader, src.width, src.height, kernelH);
+            Dispatch(bakeShader, src.width, src.height, kernelH);
 
             // 2) Vertical
             int kernelV = bakeShader.FindKernel("VerticalBlur");
@@ -3730,7 +3753,7 @@ namespace Reallusion.Import
             bakeShader.SetBuffer(kernelV, "_BlurWeights", weightsBuffer);
             bakeShader.SetTexture(kernelV, "_BlurSource", temp);
             bakeShader.SetTexture(kernelV, "_BlurResult", dst);
-            BlurDispatch(bakeShader, src.width, src.height, kernelV);
+            Dispatch(bakeShader, src.width, src.height, kernelV);
 
             weightsBuffer.Dispose();
 
@@ -3773,13 +3796,45 @@ namespace Reallusion.Import
             return texOut;
         }
 
-        static void BlurDispatch(ComputeShader bakeShader, int width, int height, int kernel)
+        static void Dispatch(ComputeShader bakeShader, int width, int height, int kernel)
         {
             uint tx, ty, tz;
             bakeShader.GetKernelThreadGroupSizes(kernel, out tx, out ty, out tz);
             int gx = Mathf.CeilToInt((float)width / tx);
             int gy = Mathf.CeilToInt((float)height / ty);
             bakeShader.Dispatch(kernel, gx, gy, 1);
+        }
+
+        public static uint[] ComputeHistogramAlpha(Texture2D tex, int count = 20)
+        {
+            ComputeShader bakeShader = Util.FindComputeShader(COMPUTE_SHADER);
+            int kernel = bakeShader.FindKernel("HistogramAlpha");
+            ComputeBuffer histogramBuffer = new ComputeBuffer(count, 4, ComputeBufferType.Default);
+            uint[] histogram = new uint[count];
+            histogramBuffer.SetData(histogram);
+            bakeShader.SetBuffer(kernel, "HistogramBuffer", histogramBuffer);
+            bakeShader.SetTexture(kernel, "HistogramTexture", tex);
+            bakeShader.SetInt("HistogramCount", count);
+            Dispatch(bakeShader, tex.width, tex.height, kernel);
+            histogramBuffer.GetData(histogram);
+            histogramBuffer.Release();
+            return histogram;
+        }
+
+        public static uint[] ComputeHistogramRed(Texture2D tex, int count = 20)
+        {
+            ComputeShader bakeShader = Util.FindComputeShader(COMPUTE_SHADER);
+            int kernel = bakeShader.FindKernel("HistogramRed");
+            ComputeBuffer histogramBuffer = new ComputeBuffer(count, 4, ComputeBufferType.Default);
+            uint[] histogram = new uint[count];
+            histogramBuffer.SetData(histogram);
+            bakeShader.SetBuffer(kernel, "HistogramBuffer", histogramBuffer);
+            bakeShader.SetTexture(kernel, "HistogramTexture", tex);
+            bakeShader.SetInt("HistogramCount", count);
+            Dispatch(bakeShader, tex.width, tex.height, kernel);
+            histogramBuffer.GetData(histogram);
+            histogramBuffer.Release();
+            return histogram;
         }
     }
 }

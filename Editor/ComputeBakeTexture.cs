@@ -270,7 +270,9 @@ namespace Reallusion.Import
             importer.mipmapEnabled = true;
             importer.mipmapFilter = TextureImporterMipFilter.BoxFilter;
             importer.isReadable = false;
+#if UNITY_2022_3_OR_NEWER
             importer.mipmapLimitGroupName = string.Empty;
+#endif
             if ((flags & Importer.FLAG_SRGB) > 0)
             {
                 importer.sRGBTexture = true;

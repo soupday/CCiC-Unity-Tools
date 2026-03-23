@@ -1034,17 +1034,61 @@ namespace Reallusion.Import
             }
         }
 
-        public static Transform FindChildRecursive(Transform root, string search)
+        public static Transform FindChildRecursive(Transform root, string search,
+                                                   bool dontFollowDuplicates = false,
+                                                   List<string> names = null)
         {
-            if (root.name.iEquals(search)) return root;
+            if (dontFollowDuplicates)
+            {
+                if (names == null)
+                {
+                    names = new List<string>();
+                }
+
+                if (names.Contains(root.name))
+                {
+                    return null;
+                }
+
+                names.Add(root.name);
+            }
+
+            if (root.name.iEquals(search))
+            {
+                return root;
+            }
 
             for (int i = 0; i < root.childCount; i++)
             {
-                Transform found = FindChildRecursive(root.GetChild(i), search);
+                Transform child = root.GetChild(i);
+                Transform found = FindChildRecursive(child, search, dontFollowDuplicates, names);
                 if (found) return found;
             }
 
             return null;
+        }
+
+        public static Transform FindRealBone(Transform root, string search)
+        {
+            return FindChildRecursive(root, search, true);
+        }
+
+        public static Transform FindAnyBone(Transform root, string search)
+        {
+            return FindChildRecursive(root, search, false);
+        }
+
+        public static bool IsRealBone(Transform root, Transform bone, List<string> names = null)
+        {
+            if (names == null) names = new List<string>();
+
+            // if we can trace parents back to the root transform without 
+            // encountering any duplicates this should be a real original bone.
+            if (names.Contains(bone.name)) return false;
+            if (bone == root) return true;
+
+            names.Add(bone.name);
+            return IsRealBone(root, bone.parent, names);
         }
 
         public static bool AssetPathExists(string assetPath)
@@ -1523,6 +1567,5 @@ namespace Reallusion.Import
 #endif
             return objects;
         }
-
     }
 }

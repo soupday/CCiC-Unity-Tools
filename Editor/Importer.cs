@@ -557,7 +557,7 @@ namespace Reallusion.Import
 
                         // determine the material type, this dictates the shader and template material.
                         if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))
-                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
 
                         Util.LogInfo("    Material name: " + sourceName + ", type:" + materialType.ToString());
 
@@ -611,7 +611,7 @@ namespace Reallusion.Import
                     if (!sharedMat) continue;
                     string sourceName = Util.GetSourceMaterialName(fbxPath, sharedMat);
                     QuickJSON matJson = characterInfo.GetMatJson(obj, sourceName);
-                    MaterialType materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                    MaterialType materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
                     materialTypes[sharedMat] = materialType;
                 }
 
@@ -621,7 +621,7 @@ namespace Reallusion.Import
                     if (!sharedMat) continue;
                     string sourceName = Util.GetSourceMaterialName(fbxPath, sharedMat);
                     QuickJSON matJson = characterInfo.GetMatJson(obj, sourceName);
-                    MaterialType materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                    MaterialType materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
                     materialTypes[sharedMat] = materialType;
                 }
             }
@@ -642,7 +642,7 @@ namespace Reallusion.Import
                     {
                         QuickJSON matJson = characterInfo.GetMatJson(obj, sourceName);
                         if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))
-                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
 
                         if (matJson != null)
                         {
@@ -706,7 +706,7 @@ namespace Reallusion.Import
                     {
                         QuickJSON matJson = characterInfo.GetMatJson(obj, sourceName);
                         if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))
-                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                            materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
 
                         if (matJson != null)
                         {
@@ -748,11 +748,14 @@ namespace Reallusion.Import
                 ProcessObjectPostPass(renderer, obj);
             }
 
-            if (characterInfo.IsRLCharacter())
+            if (characterInfo.HasExpressionBones())
             {
                 GameObject go = RL.FindExpressionSourceMesh(obj);
                 if (go != null)
                 {
+                    List<string> blendShapeNames = BoneEditor.GetExpressionBlendShapes(characterInfo.jsonFilepath);
+                    MeshUtil.AddBodyMeshBlendShapes(go, blendShapeNames);
+
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
                     if (smr != null)
                     {
@@ -788,7 +791,7 @@ namespace Reallusion.Import
 
                     // determine the material type, this dictates the shader and template material.
                     if (!materialTypes.TryGetValue(sharedMat, out MaterialType materialType))
-                        materialType = GetMaterialType(obj, sharedMat, sourceName, matJson);
+                        materialType = GetMaterialType(obj, sharedMat, sourceName, matJson, characterInfo);
 
                     // Fix ray tracing and shadow casting
                     FixRayTracing(obj, sharedMat, materialType);
@@ -843,37 +846,98 @@ namespace Reallusion.Import
             return false;
         }
 
-        Dictionary<string, bool> hasAlphaPixelsCache = new Dictionary<string, bool>();
-        public bool HasAlphaPixels(string texAssetPath, bool inAlphaChannel = true)
+        public AlphaType AnalyseAlphaType(uint[] histogram, Texture2D tex)
         {
-            if (hasAlphaPixelsCache.TryGetValue(texAssetPath, out bool hasAlphaPixels))
+            const int WIDTH = 4;
+            const float OPAQUE_THRESHOLD = 0.99f;
+            const float CUTOUT_THRESHOLD = 0.90f;
+            const float GRADIENT_THRESHOLD = 0.80f;
+            const float TRANSLUCENT_THRESHOLD = 0.70f;
+
+            int tot = 0;
+            int L = histogram.Length;
+
+            float[] percs = new float[L];
+            for (int i = 0; i < L; i++)
             {
-                return hasAlphaPixels;
+                tot += (int)histogram[i];
+            }
+            for (int i = 0; i < L; i++)
+            {
+                percs[i] = (float)(histogram[i]) / (float)tot;
             }
 
-            hasAlphaPixels = false;
-            // quickly import it as a readable max 256x256 texture and test the alpha pixels
+            // ~all opaque - Opaque
+            if (percs[L - 1] >= OPAQUE_THRESHOLD) return AlphaType.Opaque;
+
+            // ~all opaque or fully transparent, more opaque than transparent - Cutout
+            if (percs[0] + percs[L - 1] >= CUTOUT_THRESHOLD && percs[L - 1] > percs[0]) return AlphaType.Cutout;
+
+            // ~mostly clustered in a range of values around fully opaque or transparent
+            float p0 = 0f;
+            float p1 = 0f;
+            for (int i = 0; i < WIDTH; i++)
+            {
+                p0 += percs[i];
+                p1 += percs[L - 1 - i];
+            }
+            if (p0 + p1 >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
+
+            // ~mostly clustered around a mid range value - Translucent
+            for (int i = 1; i < L - WIDTH; i++)
+            {
+                float p = 0f;
+                for (int j = 0; j < WIDTH; j++) p += percs[i + j];
+                if (p >= TRANSLUCENT_THRESHOLD) return AlphaType.Translucent;
+            }
+
+            // default to gradient
+            return AlphaType.Gradient;
+        }
+
+        public enum AlphaType { Opaque, Cutout, Gradient, Translucent };
+        Dictionary<string, AlphaType> AlphaTypeCache = new Dictionary<string, AlphaType>();
+        public AlphaType GetAlphaType(string texAssetPath, bool inAlphaChannel = true)
+        {
+            AlphaType alphaType = AlphaType.Opaque;
+
+            if (AlphaTypeCache.TryGetValue(texAssetPath, out alphaType))
+            {
+                return alphaType;
+            }
+
             TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(texAssetPath);
             if (textureImporter != null)
             {
+                uint[] histogram;
+
                 if (textureImporter.DoesSourceTextureHaveAlpha() || !inAlphaChannel)
                 {
-                    textureImporter.maxTextureSize = 256;
-                    textureImporter.isReadable = true;
-                    AssetDatabase.WriteImportSettingsIfDirty(texAssetPath);
-                    textureImporter.SaveAndReimport();
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
-                    hasAlphaPixels = tex.HasAlphaPixels(inAlphaChannel);
-                    hasAlphaPixelsCache.Add(texAssetPath, hasAlphaPixels);
-                    tex = null;
+                    histogram = ComputeBake.ComputeHistogramAlpha(tex);
+                    alphaType = AnalyseAlphaType(histogram, tex);
+                    AlphaTypeCache.Add(texAssetPath, alphaType);
+                }
+                else if (!inAlphaChannel)
+                {
+                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
+                    histogram = ComputeBake.ComputeHistogramRed(tex);
+                    alphaType = AnalyseAlphaType(histogram, tex);
+                    AlphaTypeCache.Add(texAssetPath, alphaType);
                 }
             }
 
-            return hasAlphaPixels;
+            return alphaType;
         }
 
-        private MaterialType GetMaterialType(GameObject obj, Material mat, string sourceName, QuickJSON matJson)
+        private MaterialType GetMaterialType(GameObject obj, Material mat, string sourceName, QuickJSON matJson, CharacterInfo info = null)
         {
+            if (characterInfo != null)
+            {
+                MaterialType overrideType = characterInfo.GetMaterialOverride(mat);
+                if (overrideType != MaterialType.None) return overrideType;
+            }
+
             string objectName = obj.name;
 
             if (matJson != null)
@@ -882,7 +946,8 @@ namespace Reallusion.Import
                 string customShader = matJson?.GetStringValue("Custom Shader/Shader Name", defaultType);
                 bool hasOpacity = false;
                 bool blendOpacity = false;
-                bool hasAlphaPixels = false;
+                AlphaType alphaType = AlphaType.Opaque;
+
                 MaterialNodeType nodeType = GetMaterialNodeType(matJson);
 
                 switch (customShader)
@@ -919,12 +984,14 @@ namespace Reallusion.Import
                     // imports from blender will have separate opacity and diffuse
                     // and the opacity wil be in the RGB channels
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, opacityTexturePath);
-                    hasAlphaPixels = HasAlphaPixels(assetPath, false);
+                    alphaType = GetAlphaType(assetPath, false);
+                    Debug.Log($"AlphaType: {assetPath} - {alphaType}");
                 }
                 else if (!string.IsNullOrEmpty(diffuseTexturePath))
                 {
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, diffuseTexturePath);
-                    hasAlphaPixels = HasAlphaPixels(assetPath, true);
+                    alphaType = GetAlphaType(assetPath, true);
+                    Debug.Log($"AlphaType: {assetPath} - {alphaType}");
                 }
 
                 float opacity = matJson.GetFloatValue("Opacity");
@@ -939,45 +1006,38 @@ namespace Reallusion.Import
                 if (nodeType == MaterialNodeType.Hair || nodeType == MaterialNodeType.Brow ||
                     nodeType == MaterialNodeType.Beard || nodeType == MaterialNodeType.Eyelash)
                 {
-                    if (ObjHasMaterialType(obj, MaterialType.HairHQ, mat))
+                    if (alphaType != AlphaType.Opaque)
                     {
-                        if (hasAlphaPixels) return MaterialType.Scalp;
-                        else return MaterialType.DefaultOpaque;
-                    }
-                    else
-                    {
-                        if (hasAlphaPixels)
+                        if (ObjHasMaterialType(obj, MaterialType.HairHQ, mat) ||
+                            ObjHasMaterialType(obj, MaterialType.HairBasic, mat))
                         {
-                            if (Util.NameContainsKeywords(sourceName, "Scalp", "Clap", "Base", "Color"))
+                            if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Color"))
                             {
                                 return MaterialType.Scalp;
                             }
-                            return MaterialType.HairBasic;
+                            else
+                            {
+                                if (alphaType == AlphaType.Gradient || alphaType == AlphaType.Translucent) return MaterialType.Scalp;
+                                return MaterialType.DefaultAlpha;
+                            }
                         }
-                        else return MaterialType.DefaultOpaque;
+                        else
+                        {
+                            if (alphaType == AlphaType.Gradient) return MaterialType.HairBasic;
+                            return MaterialType.DefaultAlpha;
+                        }
+                    }
+                    else
+                    {
+                        return MaterialType.DefaultOpaque;
                     }
                 }
 
-                if (hasAlphaPixels)
+                if (alphaType != AlphaType.Opaque)
                 {
-                    if ((hasAlphaPixels) &&
-                        Util.NameContainsKeywords(sourceName, "Alpha", "Opacity", "Lenses", "Lens",
-                                                              "Glass", "Glasses", "Blend"))
-                    {
-                        hasOpacity = true;
-                        blendOpacity = true;
-                    }
-                    else if (ObjHasMaterialType(obj, MaterialType.HairHQ, mat))
+                    if (Util.NameContainsKeywords(sourceName, "Scalp", "Base", "Color"))
                     {
                         return MaterialType.Scalp;
-                    }
-                    else if (Util.NameContainsKeywords(sourceName, "Scalp", "Clap", "Base", "Color"))
-                    {
-                        return MaterialType.Scalp;
-                    }
-                    else if (ObjHasMaterialType(obj, MaterialType.HairBasic, mat))
-                    {
-                        return MaterialType.HairBasic;
                     }
                     else if (Util.NameContainsKeywords(sourceName, "Hair", "PolyTail", "Strand", "Strands",
                                                                    "Tail", "Bangs", "Beard", "Eyelash", "Stubble",
@@ -985,15 +1045,20 @@ namespace Reallusion.Import
                     {
                         return MaterialType.HairBasic;
                     }
-                    //else if (Util.NameContainsKeywords(objectName, "HairMesh", "Hair"))
-                    //{
-                    //    return MaterialType.HairBasic;
-                    //}
-
-                    if ((hasAlphaPixels) &&
-                        Util.NameContainsKeywords(sourceName, "Transparency"))
+                    else if (alphaType == AlphaType.Translucent || alphaType == AlphaType.Gradient)
                     {
                         hasOpacity = true;
+                        blendOpacity = true;
+                    }
+                    else if (alphaType == AlphaType.Cutout)
+                    {
+                        hasOpacity = true;
+                        blendOpacity = false;
+                    }
+                    else
+                    {
+                        hasOpacity = true;
+                        blendOpacity = false;
                     }
                 }
 
@@ -1008,7 +1073,7 @@ namespace Reallusion.Import
                 }
 
                 if (blendOpacity) return MaterialType.BlendAlpha;
-                else if (hasOpacity || hasAlphaPixels) return MaterialType.DefaultAlpha;
+                else if (hasOpacity) return MaterialType.DefaultAlpha;
                 else return MaterialType.DefaultOpaque;
             }
             else
@@ -1747,6 +1812,7 @@ namespace Reallusion.Import
                 if (matJson.GetBoolValue("Two Side"))
                 {
                     mat.SetFloatIf("_DoubleSidedEnable", 1f);
+                    mat.SetFloatIf("_TransparentBackfaceEnable", 1f);
                     mat.EnableKeyword("_DOUBLESIDED_ON");
                 }
             }
@@ -3253,7 +3319,8 @@ namespace Reallusion.Import
                         }
                         else
                         {
-                            mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)
+                            mat.EnableKeyword("_VERTEX_DISPLACEMENT");
+                            mat.SetFloatIf("_DisplacementMode", 1f);  // 1 - Vertex displacement, 2 - pixel displacement (bump?)                            
 
                             ConnectTextureTo(sourceName, mat, "_HeightMap", "Displacement",
                                 matJson, "Textures/Displacement",
@@ -3278,6 +3345,16 @@ namespace Reallusion.Import
                     ConnectTextureTo(sourceName, mat, "_DisplacementMap", "Displacement",
                         matJson, "Textures/Displacement",
                         TexCategory.MaxDetail);
+                }
+                else
+                {
+                    mat.DisableKeyword("_HEIGHTMAP");
+                    mat.DisableKeyword("_VERTEX_DISPLACEMENT");
+                    mat.DisableKeyword("_TESSELLATION_DISPLACEMENT");
+                    mat.DisableKeyword("_TESSELLATION_PHONG");
+                    mat.DisableKeyword("_VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE");
+                    mat.DisableKeyword("_DISPLACEMENT_LOCK_TILING_SCALE");
+                    mat.SetFloatIf("_DisplacementMode", 0f);
                 }
 
                 // apply json settings to tessellation and displacement
