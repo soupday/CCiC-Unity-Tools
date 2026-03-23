@@ -1,6 +1,6 @@
 namespace Reallusion.Import
 {
-    public class RunTimeRevision
+    public class RuntimeRevision
     {
         public static int Revision = 3;
     }
