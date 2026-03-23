@@ -145,6 +145,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool ADD_MISSING_BLENDSHAPES
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Add_Missing_BlendShapes"))
+                    return EditorPrefs.GetBool("RL_Add_Missing_BlendShapes");
+                return true;
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Add_Missing_BlendShapes", value);
+            }
+        }
+
         public static bool DRIVE_HEAD_BONE
         {
             get
@@ -753,8 +768,11 @@ namespace Reallusion.Import
                 GameObject go = RL.FindExpressionSourceMesh(obj);
                 if (go != null)
                 {
-                    List<string> blendShapeNames = BoneEditor.GetExpressionBlendShapes(characterInfo.jsonFilepath);
-                    MeshUtil.AddBodyMeshBlendShapes(go, blendShapeNames);
+                    if (ADD_MISSING_BLENDSHAPES)
+                    {
+                        List<string> blendShapeNames = BoneEditor.GetExpressionBlendShapes(characterInfo.jsonFilepath);
+                        MeshUtil.AddBodyMeshBlendShapes(go, blendShapeNames);
+                    }
 
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
                     if (smr != null)

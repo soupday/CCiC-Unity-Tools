@@ -1399,22 +1399,22 @@ namespace Reallusion.Import
             GUILayout.Space(ROW_SPACE);
 
             Importer.BUILD_MODE = GUILayout.Toggle(Importer.BUILD_MODE,
-                new GUIContent("Automatically Build Animations", "Always build animations when building materials."));
+                new GUIContent("Automatically Build Animations", "Always build animations when building materials.\nDefault: On"));
             GUILayout.Space(ROW_SPACE);
 
             Importer.RECONSTRUCT_FLOW_NORMALS = GUILayout.Toggle(Importer.RECONSTRUCT_FLOW_NORMALS,
                 new GUIContent("Reconstruct Flow Map Normals", "Rebuild missing Normal maps from Flow Maps in hair materials. " +
-                "Reconstructed Normals add extra detail to the lighting models."));
+                "Reconstructed Normals add extra detail to the lighting models.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
 
             Importer.REBAKE_BLENDER_UNITY_MAPS = GUILayout.Toggle(Importer.REBAKE_BLENDER_UNITY_MAPS,
                 new GUIContent("Rebake Blender Unity Maps", "Always re-bake the blender to unity Diffuse+Alpha, HDRP Mask and Metallic+Gloss maps. " +
-                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
+                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
 
             Importer.REBAKE_PACKED_TEXTURE_MAPS = GUILayout.Toggle(Importer.REBAKE_PACKED_TEXTURE_MAPS,
                 new GUIContent("Rebake Packed Texture Maps", "Always re-bake the packed texture maps. " +
-                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed."));
+                "Otherwise subsequent material rebuilds will try to re-use existing bakes. Only needed if the source textures are changed.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
 
             /*if (Pipeline.isHDRP)
@@ -1426,18 +1426,22 @@ namespace Reallusion.Import
             }*/
 
             Importer.ANIMPLAYER_ON_BY_DEFAULT = GUILayout.Toggle(Importer.ANIMPLAYER_ON_BY_DEFAULT,
-                    new GUIContent("Animation Player On", "Always show the animation player when opening the preview scene."));
+                    new GUIContent("Animation Player On", "Always show the animation player when opening the preview scene.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
 
             Importer.USE_SELF_COLLISION = GUILayout.Toggle(Importer.USE_SELF_COLLISION,
-                    new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export."));
+                    new GUIContent("Use Self Collision", "Use the self collision distances from the Character Creator export.\nDefault: Off"));
+            GUILayout.Space(ROW_SPACE);
+
+            Importer.DRIVE_HEAD_BONE = GUILayout.Toggle(Importer.DRIVE_HEAD_BONE,
+                    new GUIContent("Drive Head Bone", "In many exported motions, the head bone isn't animated entirely from the expression BlendShapes, so this is not enabled by default. This should only be enabled if animating the head from the BlendShapes *only*.\nDefault: Off"));
+            GUILayout.Space(ROW_SPACE);
+
+            Importer.ADD_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.ADD_MISSING_BLENDSHAPES,
+                    new GUIContent("Add Missing Driver BlendShapes", "If driver Blend Shapes are missing, the bone driver will prevent full motion. Enable this to add the missing blendshapes back to the main body mesh.\nDefault: On"));
             GUILayout.Space(ROW_SPACE);
 
             /*
-            Importer.DRIVE_HEAD_BONE = GUILayout.Toggle(Importer.DRIVE_HEAD_BONE,
-                    new GUIContent("Drive Head Bone", "In many exported motions, the head bone isn't always animated correctly from the expression blendshapes, so it is optional."));
-            GUILayout.Space(ROW_SPACE);
-
             Importer.DRIVE_BONE_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.DRIVE_BONE_MISSING_BLENDSHAPES,
                     new GUIContent("Drive Bones with Missing Blendshapes", "If driver blendshapes are missing, the bone driver will prevent full motion. Disable this to allow direct control of the bones with missing blendshapes."));
             GUILayout.Space(ROW_SPACE);
