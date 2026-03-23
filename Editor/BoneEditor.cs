@@ -151,7 +151,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool) },
+                                    new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool) },
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -168,7 +168,7 @@ namespace Reallusion.Import
 
             try
             {
-                SetupBoneDriver.Invoke(boneDriver, new object[] { glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrainEnable });
+                SetupBoneDriver.Invoke(boneDriver, new object[] { glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrainEnable, Importer.DRIVE_HEAD_BONE });
             }
             catch
             {
@@ -583,12 +583,12 @@ namespace Reallusion.Import
 
                 foreach (var bone in expression.Value)
                 {
-                    if ((excludeBadBones && badBones.Contains(bone.Key)) || 
-                        exclusionFilter.Contains(bone.Key)) 
+                    if ((excludeBadBones && badBones.Contains(bone.Key)) ||
+                        exclusionFilter.Contains(bone.Key))
                         continue;
 
                     try
-                    {                        
+                    {
                         Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
                         Quaternion skeletonRotation = skeleton.FirstOrDefault(x => x.name == bone.Key).rotation;
 
