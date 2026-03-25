@@ -864,13 +864,12 @@ namespace Reallusion.Import
             return false;
         }
 
-        public AlphaType AnalyseAlphaType(uint[] histogram, Texture2D tex)
+        public AlphaType AnalyseAlphaType(uint[] histogram, Texture2D tex, int width = 4)
         {
-            const int WIDTH = 4;
             const float OPAQUE_THRESHOLD = 0.99f;
             const float CUTOUT_THRESHOLD = 0.90f;
-            const float GRADIENT_THRESHOLD = 0.80f;
-            const float TRANSLUCENT_THRESHOLD = 0.70f;
+            const float GRADIENT_THRESHOLD = 0.10f;
+            const float TRANSLUCENT_THRESHOLD = 0.50f;
 
             int tot = 0;
             int L = histogram.Length;
@@ -885,29 +884,34 @@ namespace Reallusion.Import
                 percs[i] = (float)(histogram[i]) / (float)tot;
             }
 
-            // ~all opaque - Opaque
-            if (percs[L - 1] >= OPAQUE_THRESHOLD) return AlphaType.Opaque;
-
-            // ~all opaque or fully transparent, more opaque than transparent - Cutout
-            if (percs[0] + percs[L - 1] >= CUTOUT_THRESHOLD && percs[L - 1] > percs[0]) return AlphaType.Cutout;
-
-            // ~mostly clustered in a range of values around fully opaque or transparent
-            float p0 = 0f;
-            float p1 = 0f;
-            for (int i = 0; i < WIDTH; i++)
-            {
-                p0 += percs[i];
-                p1 += percs[L - 1 - i];
-            }
-            if (p0 + p1 >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
-
-            // ~mostly clustered around a mid range value - Translucent
-            for (int i = 1; i < L - WIDTH; i++)
+            float opaqueScore = percs[L - 1];
+            float cutoutScore = percs[0] + percs[L - 1];
+            float gradientScore = 1f - cutoutScore;
+            float translucentScore = 0f;
+            for (int i = 1; i < L - width; i++)
             {
                 float p = 0f;
-                for (int j = 0; j < WIDTH; j++) p += percs[i + j];
-                if (p >= TRANSLUCENT_THRESHOLD) return AlphaType.Translucent;
+                for (int j = 0; j < width; j++) p += percs[i + j];
+                if (p > translucentScore) translucentScore = p;
             }
+
+            Util.LogDetail($"AlphaType: OS={opaqueScore} CS={cutoutScore} GS={gradientScore} TS={translucentScore}");
+
+            if (opaqueScore >= 0.9999f) return AlphaType.Opaque;
+            if (cutoutScore >= 0.9999f) return AlphaType.Cutout;
+
+            if (gradientScore >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
+
+            // ~all opaque or fully transparent, more opaque than transparent - Cutout
+            if (cutoutScore > opaqueScore &&
+                cutoutScore >= CUTOUT_THRESHOLD &&
+                percs[L - 1] > percs[0]) return AlphaType.Cutout;
+
+            // ~all opaque - Opaque
+            if (opaqueScore >= OPAQUE_THRESHOLD) return AlphaType.Opaque;
+
+            // ~mostly clustered around a mid range value - Translucent
+            if (translucentScore > TRANSLUCENT_THRESHOLD) return AlphaType.Translucent;
 
             // default to gradient
             return AlphaType.Gradient;
@@ -932,15 +936,15 @@ namespace Reallusion.Import
                 if (textureImporter.DoesSourceTextureHaveAlpha() || !inAlphaChannel)
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
-                    histogram = ComputeBake.ComputeHistogramAlpha(tex);
-                    alphaType = AnalyseAlphaType(histogram, tex);
+                    histogram = ComputeBake.ComputeHistogramAlpha(tex, 64);
+                    alphaType = AnalyseAlphaType(histogram, tex, 8);
                     AlphaTypeCache.Add(texAssetPath, alphaType);
                 }
                 else if (!inAlphaChannel)
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
-                    histogram = ComputeBake.ComputeHistogramRed(tex);
-                    alphaType = AnalyseAlphaType(histogram, tex);
+                    histogram = ComputeBake.ComputeHistogramRed(tex, 64);
+                    alphaType = AnalyseAlphaType(histogram, tex, 8);
                     AlphaTypeCache.Add(texAssetPath, alphaType);
                 }
             }
@@ -1035,7 +1039,7 @@ namespace Reallusion.Import
                             }
                             else
                             {
-                                if (alphaType == AlphaType.Gradient || alphaType == AlphaType.Translucent) return MaterialType.Scalp;
+                                if (alphaType == AlphaType.Gradient || alphaType == AlphaType.Translucent) return MaterialType.HairBasic;
                                 return MaterialType.DefaultAlpha;
                             }
                         }
