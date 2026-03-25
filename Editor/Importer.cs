@@ -900,7 +900,8 @@ namespace Reallusion.Import
             if (opaqueScore >= 0.9999f) return AlphaType.Opaque;
             if (cutoutScore >= 0.9999f) return AlphaType.Cutout;
 
-            if (gradientScore >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
+            if (gradientScore > translucentScore &&
+                gradientScore >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
 
             // ~all opaque or fully transparent, more opaque than transparent - Cutout
             if (cutoutScore > opaqueScore &&
