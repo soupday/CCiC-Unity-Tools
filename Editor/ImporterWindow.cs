@@ -353,7 +353,10 @@ namespace Reallusion.Import
             showProps = generalSettings.showProps;
             RefreshCharacterList();
 
-            if (UnityLinkManagerWindow.control == UnityLinkManagerWindow.Control.Connected) datalinkActive = true;
+            if (UnityLinkManagerWindow.control == UnityLinkManagerWindow.Control.Connected)
+                datalinkActive = true;
+            else
+                datalinkActive = false;
 
             if (titleContent.text != windowTitle) titleContent.text = windowTitle;
         }
