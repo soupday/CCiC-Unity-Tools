@@ -151,7 +151,7 @@ namespace Reallusion.Import
                                     BindingFlags.Public | BindingFlags.Instance,
                                     null,
                                     CallingConventions.Any,
-                                    new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool) },
+                                    new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool) },
                                     null);
 
                 if (SetupBoneDriver == null)
@@ -168,7 +168,7 @@ namespace Reallusion.Import
 
             try
             {
-                SetupBoneDriver.Invoke(boneDriver, new object[] { glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrainEnable });
+                SetupBoneDriver.Invoke(boneDriver, new object[] { glossarySetupString, constraintSetupString, bonesEnable, expressionEnable, constrainEnable, Importer.DRIVE_HEAD_BONE });
             }
             catch
             {
@@ -405,6 +405,26 @@ namespace Reallusion.Import
             return null;
         }
 
+        public static List<string> GetExpressionBlendShapes(string jsonPath)
+        {
+            List<string> blendShapeNames = new List<string>();
+
+            if (File.Exists(jsonPath))
+            {
+                TextAsset jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
+                if (jsonAsset)
+                {
+                    Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(jsonAsset.text);
+                    foreach (var exp in expressions)
+                    {
+                        string blendShapeName = exp.Key;
+                        blendShapeNames.Add(blendShapeName);
+                    }
+                }
+            }
+            return blendShapeNames;
+        }
+
         public static Dictionary<string, Dictionary<string, BoneData>> ExtractExpressionData(string jsonString)
         {
             var result = new Dictionary<string, Dictionary<string, BoneData>>();
@@ -517,14 +537,15 @@ namespace Reallusion.Import
         static ExpressionGlossary BuildExpressionGlossary(GameObject sourceObject, SkinnedMeshRenderer smr, string json)
         {
             string[] exclusionFilter;
-            if (!Importer.DRIVE_HEAD_BONE)
-                exclusionFilter = new string[] { "CC_Base_Head", "Head", "head" };
-            else
-                exclusionFilter = new string[] { };
+            //if (!Importer.DRIVE_HEAD_BONE)
+            //    exclusionFilter = new string[] { "CC_Base_Head", "Head", "head" };
+            //else
+            exclusionFilter = new string[] { };
 
             Dictionary<string, Dictionary<string, BoneData>> expressions = ExtractExpressionData(json);
             List<string> badBones = new List<string>();
-            bool useBadBones = !Importer.DRIVE_BONE_MISSING_BLENDSHAPES;
+            //bool excludeBadBones = !Importer.DRIVE_BONE_MISSING_BLENDSHAPES;
+            bool excludeBadBones = false;
 
             foreach (var exp in expressions)
             {
@@ -534,12 +555,11 @@ namespace Reallusion.Import
                     string bones = "[ ";
                     foreach (var b in exp.Value)
                     {
-                        if (useBadBones && !badBones.Contains(b.Key))
-                            badBones.Add(b.Key);
+                        if (!badBones.Contains(b.Key)) badBones.Add(b.Key);
                         bones += b.Key;
                         bones += " ";
                     }
-                    bones += "]";                    
+                    bones += "]";
                     Debug.Log($"BlendShape {exp.Key} has bone deformation data {bones} but is absent in the model.");
                 }
             }
@@ -563,7 +583,10 @@ namespace Reallusion.Import
 
                 foreach (var bone in expression.Value)
                 {
-                    if (badBones.Contains(bone.Key) || exclusionFilter.Contains(bone.Key)) continue;
+                    if ((excludeBadBones && badBones.Contains(bone.Key)) ||
+                        exclusionFilter.Contains(bone.Key))
+                        continue;
+
                     try
                     {
                         Vector3 skeletonPosition = skeleton.FirstOrDefault(x => x.name == bone.Key).position;
@@ -584,8 +607,8 @@ namespace Reallusion.Import
                 {
                     foreach (var bone in expression.Value)
                     {
-                        if (ebb.BoneName == bone.Key && 
-                            !badBones.Contains(ebb.BoneName) && 
+                        if (ebb.BoneName == bone.Key &&
+                            !badBones.Contains(ebb.BoneName) &&
                             !exclusionFilter.Contains(ebb.BoneName))
                         {
                             bool isViseme = expression.Key.StartsWith("V_");
@@ -661,7 +684,7 @@ namespace Reallusion.Import
 
                 List<int> sourceIndices = new List<int>();
                 foreach (string sourceName in constraint.SourceChannels)
-                {                    
+                {
                     int i = smr.sharedMesh.GetBlendShapeIndex(CheckExpressionName(sourceName));
                     if (i > -1)
                         sourceIndices.Add(i);

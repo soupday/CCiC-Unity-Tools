@@ -1381,8 +1381,9 @@ namespace Reallusion.Import
                 }
                 if (useBoneDriver)
                 {
+                    // Note: No pruning bone tracks ...
                     // remove animated constraint tracks and any tracks for bones that are now driven by expressions
-                    PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose, useConstraintData);
+                    // PruneTargettedMechanimTracks(originalClip, workingClip, targetCharacterModel, useBoneDriver, useBlendTranspose, useConstraintData);
                 }
 
                 if (useBlendTranspose)
@@ -1582,22 +1583,22 @@ namespace Reallusion.Import
                     {
                         case "CC_Base_JawRoot":
                             {
-                                //PurgeBindings(sourceCurveBindings, jawCurves, workingClip);
+                                PurgeBindings(sourceCurveBindings, jawCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_L_Eye":
                             {
-                                //PurgeBindings(sourceCurveBindings, lEyeCurves, workingClip);
+                                PurgeBindings(sourceCurveBindings, lEyeCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_R_Eye":
                             {
-                                //PurgeBindings(sourceCurveBindings, rEyeCurves, workingClip);
+                                PurgeBindings(sourceCurveBindings, rEyeCurves, workingClip);
                                 break;
                             }
                         case "CC_Base_Head":
                             {
-                                //PurgeBindings(sourceCurveBindings, headCurves, workingClip);
+                                PurgeBindings(sourceCurveBindings, headCurves, workingClip);
                                 break;
                             }
                     }
@@ -2206,9 +2207,9 @@ namespace Reallusion.Import
             GameObject targetCharacterModel, CharacterInfo info, bool replaceIfExists, string motionPrefix = null)
         {
             List<AnimationClip> clips = new List<AnimationClip>();
-            List<AnimationClip> processedClips = new List<AnimationClip>();            
+            List<AnimationClip> processedClips = new List<AnimationClip>();
             AnimationClip[] foundClips = Util.GetAllAnimationClipsFromCharacter(motionAssetPath);
-            
+
             foreach (AnimationClip clip in foundClips)
             {
                 string clipPrefix = string.IsNullOrEmpty(motionPrefix) ? RETARGET_SOURCE_PREFIX : motionPrefix;
@@ -2229,7 +2230,7 @@ namespace Reallusion.Import
                 if (!targetCharacterModel) return null;
 
                 string firstPath = null;
-            
+
                 int index = 0;
                 foreach (AnimationClip clip in clips)
                 {

@@ -41,7 +41,7 @@ namespace Reallusion.Import
 
     public static class Pipeline
     {
-        public const string VERSION = "2.2.4"; // temp change to force upgrade
+        public const string VERSION = "2.2.5";
 
 #if HDRP_10_5_0_OR_NEWER
         // version
@@ -757,11 +757,9 @@ namespace Reallusion.Import
                     return true;
             }
 
-            if (sourceName.iContains("_merge"))
+            if (sourceName.iContains("_meshes_merge"))
             {
-                Material singleMaterial = RL.GetActorBuildSingleMaterial(info.Fbx);
-                if (singleMaterial && singleMaterial.name == sourceName)
-                    return true;
+                return true;
             }
 
             return false;

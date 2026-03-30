@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
@@ -49,7 +50,7 @@ namespace Reallusion.Import
 
         [MenuItem("Reallusion/Mesh Tools/Prune Blend Shapes", priority = 101)]
         private static void DoPrune()
-        {            
+        {
             if (Selection.gameObjects.Length > 1)
                 foreach (GameObject go in Selection.gameObjects)
                     PruneBlendShapes(go);
@@ -79,7 +80,7 @@ namespace Reallusion.Import
             else
                 AutoSmoothMesh(Selection.activeObject);
 
-            if (playerOpen)  
+            if (playerOpen)
                 WindowManager.ShowAnimationPlayer();
         }
 
@@ -121,7 +122,7 @@ namespace Reallusion.Import
 
         [MenuItem("Reallusion/Mesh Tools/Eye/Look Left", true)]
         private static bool ValidateDoLookLeft()
-        {            
+        {
             return WindowManager.IsPreviewScene && WindowManager.GetPreviewScene().GetPreviewCharacter() != null;
         }
 
@@ -173,7 +174,7 @@ namespace Reallusion.Import
             return WindowManager.IsPreviewScene && WindowManager.GetPreviewScene().GetPreviewCharacter() != null;
         }
 
-        public static bool GetSourcePrefab(Object obj, string folderName, 
+        public static bool GetSourcePrefab(Object obj, string folderName,
             out string characterName, out string meshFolder, out Object prefabObject)
         {
             characterName = "";
@@ -195,7 +196,7 @@ namespace Reallusion.Import
             {
                 Debug.LogWarning("Object: " + obj.name + " is not part of prefab asset!");
                 return false;
-            }            
+            }
 
             string fbxPath = AssetDatabase.GetAssetPath(fbxAsset);
             characterName = Path.GetFileNameWithoutExtension(fbxPath);
@@ -220,13 +221,13 @@ namespace Reallusion.Import
                 {
                     Mesh m = go.GetComponent<Mesh>();
                     if (m) return m;
-                    
+
                     MeshFilter mf = go.GetComponent<MeshFilter>();
                     if (mf)
                     {
                         return mf.mesh;
                     }
-                    
+
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
                     if (smr)
                     {
@@ -239,7 +240,7 @@ namespace Reallusion.Import
         }
 
         public static bool ReplaceMesh(Object obj, Mesh mesh)
-        {          
+        {
             bool replaced = false;
             Object o = null;
 
@@ -250,10 +251,10 @@ namespace Reallusion.Import
                 {
                     MeshFilter mf = go.GetComponent<MeshFilter>();
                     if (mf)
-                    {                        
+                    {
                         mf.mesh = mesh;
                         o = mf;
-                        replaced = true;                        
+                        replaced = true;
                     }
 
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
@@ -267,7 +268,7 @@ namespace Reallusion.Import
             }
 
             if (replaced)
-            {                                
+            {
                 GameObject sceneRoot = Util.GetScenePrefabInstanceRoot(obj);
                 // this doesn't work...
                 //PrefabUtility.ApplyObjectOverride(obj, prefabPath, InteractionMode.UserAction);
@@ -294,7 +295,7 @@ namespace Reallusion.Import
                     Util.LogError("No mesh found in selected object.");
                     return;
                 }
-                
+
                 Mesh dstMesh = new Mesh();
                 dstMesh.indexFormat = srcMesh.indexFormat;
                 dstMesh.vertices = srcMesh.vertices;
@@ -387,7 +388,7 @@ namespace Reallusion.Import
                 SubMeshDescriptor submesh = srcMesh.GetSubMesh(s);
                 dstMesh.SetSubMesh(s, submesh);
             }
-            
+
             if (srcMesh.blendShapeCount > 0)
             {
                 Vector3[] bufVerts = new Vector3[srcMesh.vertexCount];
@@ -528,12 +529,12 @@ namespace Reallusion.Import
             }
 
             return null;
-        }        
+        }
 
         public static GameObject FindCharacterBone(GameObject gameObject, string name1, string name2)
         {
             if (gameObject)
-            {                
+            {
                 if (gameObject.name.iEndsWith(name1) || gameObject.name.iEndsWith(name2))
                     return gameObject;
 
@@ -548,7 +549,7 @@ namespace Reallusion.Import
             return null;
         }
 
-        public static void FindCharacterBones(GameObject gameObject, List<GameObject> bones, params string [] searchNames)
+        public static void FindCharacterBones(GameObject gameObject, List<GameObject> bones, params string[] searchNames)
         {
             if (gameObject && !bones.Contains(gameObject))
             {
@@ -577,7 +578,7 @@ namespace Reallusion.Import
                 bool isOpen = true;
 
                 // find the jaw bone and change it's rotation
-                GameObject jawBone = FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");                
+                GameObject jawBone = FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
                 if (jawBone)
                 {
                     Transform jaw = jawBone.transform;
@@ -669,7 +670,7 @@ namespace Reallusion.Import
                                 if (renderer.GetBlendShapeWeight(shapeIndexS) > 0f) isOpen = false;
                                 else isOpen = true;
 
-                                renderer.SetBlendShapeWeight(shapeIndexS, isOpen ? 100f : 0f);                                
+                                renderer.SetBlendShapeWeight(shapeIndexS, isOpen ? 100f : 0f);
                             }
                         }
                     }
@@ -713,6 +714,59 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool AddBodyMeshBlendShapes(GameObject bodyObject, List<string> blendShapes)
+        {
+            if (GetSourcePrefab(bodyObject, MESH_FOLDER_NAME, out string characterName, out string meshFolder, out Object srcObj))
+            {
+                Mesh srcMesh = GetMeshFrom(srcObj);
+
+                if (!srcMesh)
+                {
+                    Util.LogError("No mesh found in selected object.");
+                    return false;
+                }
+
+                List<string> missingBlendShapes = new List<string>();
+                string debugList = "";
+                foreach (var name in blendShapes)
+                {
+                    if (srcMesh.GetBlendShapeIndex(name) == -1)
+                    {
+                        missingBlendShapes.Add(name);
+                        if (debugList.Length > 0) debugList += ", ";
+                        debugList += name;
+                    }
+                }
+
+                if (missingBlendShapes.Count == 0) return false;
+
+                Util.LogWarn($"Body Mesh: {srcMesh.name} has missing BlendShapes. \nAdding placeholders ({debugList})");
+
+                Mesh dstMesh = CopyMesh(srcMesh);
+
+                Vector3[] bufVerts = new Vector3[dstMesh.vertexCount];
+                Vector3[] bufNormals = new Vector3[dstMesh.vertexCount];
+                Vector3[] bufTangents = new Vector3[dstMesh.vertexCount];
+
+                foreach (var name in missingBlendShapes)
+                {
+                    dstMesh.AddBlendShapeFrame(name, 100.0f, bufVerts, bufNormals, bufTangents);
+                }
+
+                // Save the mesh asset.
+                if (Util.EnsureAssetsFolderExists(meshFolder))
+                {
+                    string meshPath = Path.Combine(meshFolder, srcObj.name + ".mesh");
+                    AssetDatabase.CreateAsset(dstMesh, meshPath);
+                    Mesh createdMesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+                    ReplaceMesh(bodyObject, createdMesh);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /*
         [MenuItem("Reallusion/Tools/Setup Dual Material Hair", priority = 700)]
         private static void DoEHM()
@@ -723,7 +777,7 @@ namespace Reallusion.Import
 
         public static Mesh ExtractSubMesh(Mesh srcMesh, int index)
         {
-            SubMeshDescriptor extractMeshDesc = srcMesh.GetSubMesh(index);            
+            SubMeshDescriptor extractMeshDesc = srcMesh.GetSubMesh(index);
 
             // operate on a local copy of the source mesh data (much faster)
             Vector3[] srcVertices = srcMesh.vertices;
@@ -745,7 +799,7 @@ namespace Reallusion.Import
             int maxVerts = srcMesh.vertexCount;
             int[] remapping = new int[maxVerts];
             for (int i = 0; i < maxVerts; i++) remapping[i] = -1;
-            int pointer = 0;            
+            int pointer = 0;
             for (int tIndex = extractMeshDesc.indexStart; tIndex < extractMeshDesc.indexStart + extractMeshDesc.indexCount; tIndex++)
             {
                 int vertIndex = srcTriangles[tIndex];
@@ -769,10 +823,10 @@ namespace Reallusion.Import
             Vector3[] normals = new Vector3[srcNormals.Length > 0 ? numNewVerts : 0];
             Color[] colors = new Color[srcColors.Length > 0 ? numNewVerts : 0];
             BoneWeight[] boneWeights = new BoneWeight[srcBoneWeights.Length > 0 ? numNewVerts : 0];
-            Vector4[] tangents = new Vector4[srcTangents.Length > 0 ? numNewVerts : 0];            
+            Vector4[] tangents = new Vector4[srcTangents.Length > 0 ? numNewVerts : 0];
             // copy and remap all the submesh vert data into the new mesh
             for (int vertIndex = 0; vertIndex < maxVerts; vertIndex++)
-            {                
+            {
                 int remappedIndex = remapping[vertIndex];
                 if (remappedIndex >= 0)
                 {
@@ -793,7 +847,7 @@ namespace Reallusion.Import
                         uv7[remappedIndex] = srcUv7[vertIndex];
                     if (srcUv8.Length > 0)
                         uv8[remappedIndex] = srcUv8[vertIndex];
-                    if (srcNormals.Length >0)
+                    if (srcNormals.Length > 0)
                         normals[remappedIndex] = srcNormals[vertIndex];
                     if (srcColors.Length > 0)
                         colors[remappedIndex] = srcColors[vertIndex];
@@ -802,7 +856,7 @@ namespace Reallusion.Import
                     if (srcBoneWeights.Length > 0)
                         tangents[remappedIndex] = srcTangents[vertIndex];
                 }
-            }            
+            }
             newMesh.vertices = vertices;
             newMesh.uv = uv;
             newMesh.uv2 = uv2;
@@ -877,8 +931,8 @@ namespace Reallusion.Import
             newMeshDesc.firstVertex = 0;
             newMeshDesc.indexStart = 0;
             newMeshDesc.indexCount = extractMeshDesc.indexCount;
-            newMeshDesc.vertexCount = numNewVerts;            
-            newMesh.SetSubMesh(0, newMeshDesc);            
+            newMeshDesc.vertexCount = numNewVerts;
+            newMesh.SetSubMesh(0, newMeshDesc);
 
             return newMesh;
         }
@@ -886,7 +940,7 @@ namespace Reallusion.Import
 
 
         public static Mesh RemoveSubMeshes(Mesh srcMesh, List<int> indices)
-        {            
+        {
             // operate on a local copy of the source mesh data (much faster)
             Vector3[] srcVertices = srcMesh.vertices;
             Vector2[] srcUv = srcMesh.uv;
@@ -941,7 +995,7 @@ namespace Reallusion.Import
             Vector3[] normals = new Vector3[srcNormals.Length > 0 ? numNewVerts : 0];
             Color[] colors = new Color[srcColors.Length > 0 ? numNewVerts : 0];
             BoneWeight[] boneWeights = new BoneWeight[srcBoneWeights.Length > 0 ? numNewVerts : 0];
-            Vector4[] tangents = new Vector4[srcTangents.Length > 0 ? numNewVerts : 0];            
+            Vector4[] tangents = new Vector4[srcTangents.Length > 0 ? numNewVerts : 0];
             // copy and remap all the submesh vert data into the new mesh
             for (int vertIndex = 0; vertIndex < maxVerts; vertIndex++)
             {
@@ -965,7 +1019,7 @@ namespace Reallusion.Import
                         uv7[remappedIndex] = srcUv7[vertIndex];
                     if (srcUv8.Length > 0)
                         uv8[remappedIndex] = srcUv8[vertIndex];
-                    if (srcNormals.Length >0)
+                    if (srcNormals.Length > 0)
                         normals[remappedIndex] = srcNormals[vertIndex];
                     if (srcColors.Length > 0)
                         colors[remappedIndex] = srcColors[vertIndex];
@@ -983,7 +1037,7 @@ namespace Reallusion.Import
             newMesh.boneWeights = boneWeights;
             newMesh.tangents = tangents;
             newMesh.bindposes = srcMesh.bindposes;
-            newMesh.bounds = srcMesh.bounds;            
+            newMesh.bounds = srcMesh.bounds;
             // finally copy and remap the triangle data last
             int[] triangles = new int[numNewTriangles];
             pointer = 0;
@@ -994,7 +1048,7 @@ namespace Reallusion.Import
                 {
                     SubMeshDescriptor meshDesc = srcMesh.GetSubMesh(s);
                     for (int tIndex = meshDesc.indexStart; tIndex < meshDesc.indexStart + meshDesc.indexCount; tIndex++)
-                    {                    
+                    {
                         int vertIndex = srcTriangles[tIndex];
                         int remappedIndex = remapping[vertIndex];
                         if (remappedIndex >= 0)
@@ -1055,11 +1109,11 @@ namespace Reallusion.Import
                     newMeshDesc.firstVertex = remapping[meshDesc.firstVertex];
                     newMeshDesc.indexStart = indexStart;
                     newMeshDesc.indexCount = meshDesc.indexCount;
-                    newMeshDesc.vertexCount = meshDesc.vertexCount;                    
+                    newMeshDesc.vertexCount = meshDesc.vertexCount;
                     newMesh.SetSubMesh(pointer++, newMeshDesc);
                     indexStart += meshDesc.indexCount;
                 }
-            }            
+            }
 
             return newMesh;
         }
@@ -1097,13 +1151,13 @@ namespace Reallusion.Import
                 */
 
                 firstPass.SetFloat("_SurfaceType", 0f);
-                firstPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);                
+                firstPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);
                 Pipeline.ResetMaterial(firstPass);
 
                 // transparent surface
                 secondPass.SetFloat("_SurfaceType", 1f);
                 // alpha clip
-                secondPass.SetFloat("_AlphaCutoffEnable", 1f);                
+                secondPass.SetFloat("_AlphaCutoffEnable", 1f);
                 // prepass & postpass
                 secondPass.SetFloat("_TransparentDepthPostpassEnable", 0f);
                 secondPass.SetFloat("_TransparentDepthPrepassEnable", 0f);
@@ -1113,14 +1167,14 @@ namespace Reallusion.Import
                 secondPass.SetFloat("_ZTestDepthEqualForOpaque", 2f);
                 secondPass.SetFloat("_ZTestTransparent", 2f);
                 // keywords
-                secondPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);                
+                secondPass.SetFloat("_ENUMCLIPQUALITY_ON", 0f);
                 Pipeline.ResetMaterial(secondPass);
 
                 /*
                 aif.SaveAndReimport();
                 ais.SaveAndReimport();
                 */
-            }            
+            }
         }
 
         public struct TwoPassPair
@@ -1145,7 +1199,7 @@ namespace Reallusion.Import
             string name = info.name;
             string fbxFolder = info.folder;
             string materialFolder = Path.Combine(fbxFolder, Importer.MATERIALS_FOLDER, name);
-            string meshFolder = Path.Combine(fbxFolder, MESH_FOLDER_NAME, name);                                    
+            string meshFolder = Path.Combine(fbxFolder, MESH_FOLDER_NAME, name);
 
             int processCount = 0;
 
@@ -1156,7 +1210,7 @@ namespace Reallusion.Import
             // TODO this needs to the use the mat json to determine scalp/hair 
             foreach (Renderer r in renderers)
             {
-                bool hasHairMaterial = false;                
+                bool hasHairMaterial = false;
                 bool hasScalpMaterial = false;
                 int countScalpMaterials = 0;
                 int subMeshCount = 0;
@@ -1200,10 +1254,10 @@ namespace Reallusion.Import
                             float alphaClipValue = 0.666f;
                             if (Pipeline.is3D) alphaClipValue = 0.55f;
                             float shadowClip = oldMat.GetFloatIf("_ShadowClip", 0.5f);
-                                                        
+
                             oldMat.SetFloatIf("_AlphaClip", alphaClipValue);
-                            oldMat.SetFloatIf("_AlphaClip2", alphaClipValue);                            
-                            oldMat.SetFloatIf("_ShadowClip", shadowClip);                            
+                            oldMat.SetFloatIf("_AlphaClip2", alphaClipValue);
+                            oldMat.SetFloatIf("_ShadowClip", shadowClip);
                         }
 
                         bool useTessellation = oldMat.shader.name.iContains("_Tessellation");
@@ -1211,7 +1265,7 @@ namespace Reallusion.Import
 
                         if (subMeshCount > 1 && oldMat.shader.name.iContains(Pipeline.SHADER_HQ_HAIR))
                         {
-                            Util.LogInfo("Extracting subMesh(" + index.ToString() +  ") from Object: " + oldObj.name);
+                            Util.LogInfo("Extracting subMesh(" + index.ToString() + ") from Object: " + oldObj.name);
 
                             // extract mesh into two new meshes, the old mesh without the extracted submesh
                             // and just the extracted submesh
@@ -1278,7 +1332,7 @@ namespace Reallusion.Import
                         {
                             Util.LogInfo("Leaving subMesh(" + index.ToString() + ") in Object: " + oldObj.name);
 
-                            Material[] sharedMaterials = new Material[2];                            
+                            Material[] sharedMaterials = new Material[2];
                             if (done.ContainsKey(oldMat))
                             {
                                 sharedMaterials[0] = done[oldMat].firstPassMaterial;
@@ -1309,11 +1363,11 @@ namespace Reallusion.Import
                             // add the 1st and 2nd pass materials to the mesh renderer
                             // a single submesh with multiple materials will render itself again with each material
                             // effectively acting as a multi-pass shader which fully complies with any SRP batching.
-                            oldSmr.sharedMaterials = sharedMaterials;                            
+                            oldSmr.sharedMaterials = sharedMaterials;
                             // as we have replaced the materials completely, don't remove any later when removing any submeshes...
                             dontRemoveMaterials = true;
                             processCount++;
-                        }                        
+                        }
                     }
 
                     if (indicesToRemove.Count > 0)
@@ -1346,11 +1400,11 @@ namespace Reallusion.Import
                         {
                             Pipeline.DisableRayTracing(oldSmr);
                             oldSmr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                        }                        
+                        }
 
                         processCount++;
                     }
-                }                
+                }
             }
 
             if (processCount > 0) return true;
@@ -1366,12 +1420,12 @@ namespace Reallusion.Import
             public SmoothVertData(int i, Vector3 n)
             {
                 index = i;
-                normal = n;                
+                normal = n;
             }
         }
 
         public static void SmoothNormals2(Mesh mesh, float angle)
-        {            
+        {
             Vector3[] vertices = mesh.vertices;
             Vector3[] normals = mesh.normals;
             int[] triangles = mesh.triangles;
@@ -1379,7 +1433,7 @@ namespace Reallusion.Import
             float threshold = Mathf.Cos(angle * Mathf.PI / 180f);
 
             Dictionary<long, List<SmoothVertData>> uniqueVerts = new Dictionary<long, List<SmoothVertData>>();
-                    
+
             for (int t = 0; t < numTriangles; t++)
             {
                 int t0 = t * 3 + 0;
@@ -1400,7 +1454,7 @@ namespace Reallusion.Import
                 Vector3 edge21 = p1 - p2;
                 Vector3 normal3 = Vector3.Cross(edge20, edge21);
                 Vector3 normal = (normal1 + normal2 + normal3).normalized;
-                                
+
                 for (int i = 0; i < 3; i++)
                 {
                     int index = triangles[t * 3 + i];
@@ -1409,29 +1463,29 @@ namespace Reallusion.Import
                     if (uniqueVerts.TryGetValue(hash, out List<SmoothVertData> verts)) verts.Add(vertData);
                     else uniqueVerts[hash] = new List<SmoothVertData> { vertData };
                 }
-            }            
+            }
 
             foreach (KeyValuePair<long, List<SmoothVertData>> pair in uniqueVerts)
             {
                 List<SmoothVertData> vertData = pair.Value;
 
-                for (int i = 0; i < vertData.Count; i++)                
+                for (int i = 0; i < vertData.Count; i++)
                 {
-                    SmoothVertData svdTest = vertData[i];                    
-                    Vector3 smoothedNormal = Vector3.zero;                    
+                    SmoothVertData svdTest = vertData[i];
+                    Vector3 smoothedNormal = Vector3.zero;
 
                     for (int j = 0; j < vertData.Count; j++)
                     {
-                        SmoothVertData svdCompare = vertData[j];                        
-                        if (i == j) 
-                            smoothedNormal += svdTest.normal;                        
-                        else                        
+                        SmoothVertData svdCompare = vertData[j];
+                        if (i == j)
+                            smoothedNormal += svdTest.normal;
+                        else
                             if (Vector3.Dot(svdTest.normal, svdCompare.normal) > threshold)
-                                smoothedNormal += svdCompare.normal;
+                            smoothedNormal += svdCompare.normal;
                     }
 
                     normals[svdTest.index] = smoothedNormal.normalized;
-                }                
+                }
             }
 
             mesh.normals = normals;
@@ -1446,10 +1500,10 @@ namespace Reallusion.Import
             int numVertices = vertices.Length;
 
             List<Vector3> uniqueVerts = new List<Vector3>(numVertices);
-            int[] uniqueIndices = new int[numVertices];            
+            int[] uniqueIndices = new int[numVertices];
 
             for (int i = 0; i < numVertices; i++)
-            {                
+            {
                 bool foundUnique = false;
 
                 for (int m = 0; m < uniqueVerts.Count; m++)
@@ -1458,7 +1512,7 @@ namespace Reallusion.Import
                     {
                         uniqueIndices[i] = m;
                         foundUnique = true;
-                    }                    
+                    }
                 }
 
                 if (!foundUnique)
@@ -1466,11 +1520,11 @@ namespace Reallusion.Import
                     uniqueIndices[i] = uniqueVerts.Count;
                     uniqueVerts.Add(vertices[i]);
                 }
-            }         
-            
+            }
+
             Vector3[] uniqueNormals = new Vector3[uniqueVerts.Count];
 
-            for (int t = 0; t < numTriangles; t++) 
+            for (int t = 0; t < numTriangles; t++)
             {
                 int t0 = t * 3 + 0;
                 int t1 = t * 3 + 1;
@@ -1490,7 +1544,7 @@ namespace Reallusion.Import
 
                 uniqueNormals[unique0] += normal;
                 uniqueNormals[unique1] += normal;
-                uniqueNormals[unique2] += normal;                
+                uniqueNormals[unique2] += normal;
             }
 
             for (int i = 0; i < uniqueVerts.Count; i++)
@@ -1519,7 +1573,7 @@ namespace Reallusion.Import
             long y = (long)(v.y * discrete);
             long z = (long)(v.z * discrete);
 
-            return (x * p1) ^ (y * p2) ^ (z * p3);            
+            return (x * p1) ^ (y * p2) ^ (z * p3);
         }
 
         public static void AutoSmoothMesh(Object obj)
@@ -1585,7 +1639,7 @@ namespace Reallusion.Import
                     boneTotals[bw.boneIndex2] += bw.weight2;
                     boneTotals[bw.boneIndex3] += bw.weight3;
                 }
-                
+
                 float weight = boneTotals[index];
                 for (int i = 1; i < boneTotals.Length; i++)
                 {
@@ -1662,7 +1716,7 @@ namespace Reallusion.Import
                 {
                     return false;
                 }
-                else */ 
+                else */
                 if (Util.HasMaterialKeywords(obj, "base", "brow", "beard",
                                                   "mustache", "goatee", "stubble",
                                                   "bushy", "sword", "eyebrow", "eyelash", "lash"))

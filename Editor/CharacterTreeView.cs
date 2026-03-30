@@ -69,7 +69,7 @@ namespace Reallusion.Import
             //indicies
             int mDepth = -1;//root level
             int mId = 0;
-            
+
             objList.Clear();
             objList.Add(null);
 #if UNITY_6000_2_OR_NEWER
@@ -81,7 +81,7 @@ namespace Reallusion.Import
 #endif
             linkedIndices = new List<int>[NUM_LINKED_INDICES];
             for (int i = 0; i < linkedIndices.Length; i++)
-                linkedIndices[i] = new List<int>();            
+                linkedIndices[i] = new List<int>();
 
             mDepth = 0;//base level        
 
@@ -95,7 +95,7 @@ namespace Reallusion.Import
             //applicable objects
             DoThing(objectInContext.transform, allItems, ref mId);
 
-            SetupParentsAndChildrenFromDepths(root, allItems);            
+            SetupParentsAndChildrenFromDepths(root, allItems);
             return root;
         }
 
@@ -188,7 +188,7 @@ namespace Reallusion.Import
         }
 
         public void SelectLinked(int index)
-        {            
+        {
             if (ImporterWindow.SELECT_LINKED)
             {
                 for (int i = 0; i < linkedIndices.Length; i++)
@@ -215,26 +215,49 @@ namespace Reallusion.Import
                             selectedObjects.Add(firstPass);
                             selectedObjects.Add(secondPass);
                             return true;
-                        }                 
+                        }
                     }
-                }                
+                }
             }
             return false;
+        }
+
+        public List<Object> GetSelectedObjects()
+        {
+            selectedIndices = GetSelection();
+            List<Object> selectedObjects = new List<Object>(selectedIndices.Count);
+            foreach (int i in selectedIndices)
+            {
+                selectedObjects.Add(objList[i]);
+            }
+            return selectedObjects;
+        }
+
+        public List<Material> GetSelectedMaterials()
+        {
+            selectedIndices = GetSelection();
+            List<Material> selectedMaterials = new List<Material>();
+            foreach (int i in selectedIndices)
+            {
+                Material mat = objList[i] as Material;
+                if (mat) selectedMaterials.Add(mat);
+            }
+            return selectedMaterials;
         }
 
         protected override void SelectionChanged(IList<int> selectedIds)
         {
             if (selectedIds.Count == 1)
-            {                
+            {
                 SelectLinked(selectedIds[0]);
             }
 
             if (HasSelection())
-            {                
+            {
                 selectedIndices = GetSelection();
                 List<Object> selectedObjects = new List<Object>(selectedIndices.Count);
                 if (selectedIndices.Count > 1)
-                {                    
+                {
                     foreach (int i in selectedIndices)
                     {
                         if (!TrySelectMultiPassMaterial(i, selectedObjects))
@@ -280,12 +303,12 @@ namespace Reallusion.Import
                     ExpandToDepth(child, depth + 1, maxDepth);
                 }
             }
-        }        
+        }
 
         public void ExpandToDepth(int maxDepth)
         {
-            ExpandToDepth(rootItem, 0, maxDepth);            
-        }        
+            ExpandToDepth(rootItem, 0, maxDepth);
+        }
 
         public void Release()
         {

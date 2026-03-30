@@ -45,7 +45,7 @@ namespace Reallusion.Import
 {
     public class UnityLinkSceneManagement
     {
-#region Timeline Asset
+        #region Timeline Asset
         // initiated from ui
         public static PlayableDirector CreateTimelineAsset()
         {
@@ -102,19 +102,23 @@ namespace Reallusion.Import
         {
             //Debug.LogWarning("TryGetSceneTimeLine");
             director = null;
-
-#if UNITY_2023_OR_NEWER
+            PlayableDirector[] directors = Util.FindObjectsByType<PlayableDirector>(true) as PlayableDirector[];
+            /*
+#if UNITY_6000_4_OR_NEWER
+            PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include);
+#elif UNITY_2023_OR_NEWER
             PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else       
             PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
 #endif
+*/
             if (directors.Length > 0)
             {
                 var valids = directors.ToList().FindAll(y => y.playableAsset != null);
                 if (valids.Count > 0)
                 {
                     List<DataLinkActorData> actorData = new List<DataLinkActorData>();
-                    foreach (var pd  in valids)
+                    foreach (var pd in valids)
                     {
                         var data = pd.gameObject.GetComponent<DataLinkActorData>();
                         if (data != null)
@@ -154,7 +158,7 @@ namespace Reallusion.Import
             string stamp = TimeStampString();
 
             UnityLinkManager.TIMELINE_REFERENCE_STRING = "Timeline Object (" + stamp + ")";
-            
+
             string validatedDestFolder = string.IsNullOrEmpty(UnityLinkManager.IMPORT_DESTINATION_FOLDER) ? UnityLinkManager.IMPORT_DEFAULT_DESTINATION_FOLDER : UnityLinkManager.IMPORT_DESTINATION_FOLDER;
 
             UnityLinkManager.TIMELINE_SAVE_FOLDER = Path.Combine(validatedDestFolder, UnityLinkManager.SCENE_ASSETS);
@@ -170,9 +174,9 @@ namespace Reallusion.Import
             DateTime now = DateTime.Now;
             return now.Day.ToString("00") + "." + now.Month.ToString("00") + "-" + now.Hour.ToString("00") + "." + now.Minute.ToString("00");
         }
-#endregion
+        #endregion
 
-#region Add to Scene and Timeline
+        #region Add to Scene and Timeline
         // https://discussions.unity.com/t/how-can-i-access-an-animation-playable-asset-from-script/920958
         // TrackType, InstantiateInScene, SourceGameObject, AddToTimeline, AnimationClipList, AnimatedStatus LinkID
         public static void AddToSceneAndTimeLine((TrackType, bool, GameObject, bool, List<AnimationClip>, AnimatedStatus, string) objectTuple)
@@ -183,7 +187,7 @@ namespace Reallusion.Import
             bool addToTimeline = objectTuple.Item4;
             List<AnimationClip> animClipList = objectTuple.Item5;
             AnimatedStatus animatedStatus = objectTuple.Item6;
-            string linkId = objectTuple.Item7;            
+            string linkId = objectTuple.Item7;
 
             GameObject sceneObject = null;
 
@@ -235,7 +239,7 @@ namespace Reallusion.Import
 
             if (trackType.HasFlag(TrackType.AnimationTrackUpdate)) // updating the animation track - no input sceneObject needed - sceneObject should be the GameObject bound to the existing track for the linkid
             {
-                if(!TryGetBoundSceneObjectByLinkId(director, linkId, out sceneObject, out bool hasTrack))
+                if (!TryGetBoundSceneObjectByLinkId(director, linkId, out sceneObject, out bool hasTrack))
                 {
                     return;
                 }
@@ -261,7 +265,7 @@ namespace Reallusion.Import
                     ClearTrackFromTimelineByLinkId<AnimationTrack>(director, linkId, sceneObject);
                 }
             }
-            
+
             if (trackType.HasFlag(TrackType.ActivationTrack)) // ActivationTrack permitted for this object
             {
                 if (animatedStatus.HasFlag(AnimatedStatus.Activation)) // Has detected animation data
@@ -303,13 +307,17 @@ namespace Reallusion.Import
             if (workingtrack == null)
             {
                 // no track to update
-                // 
-#if UNITY_2023_OR_NEWER
-                DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else
-                DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-#endif
-
+                //
+                DataLinkActorData[] linkedObjects = Util.FindObjectsByType<DataLinkActorData>(true) as DataLinkActorData[];
+                /*
+                #if UNITY_6000_4_OR_NEWER
+                                DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include);
+                #elif UNITY_2023_OR_NEWER
+                                DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                #else
+                                DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+                #endif
+                */
                 if (linkedObjects.Length > 0)
                 {
                     foreach (var linkedObject in linkedObjects)
@@ -322,7 +330,7 @@ namespace Reallusion.Import
                             return true;
                         }
                     }
-                }                
+                }
             }
             else
             {
@@ -506,13 +514,16 @@ namespace Reallusion.Import
         public static void PurgeLinkedSceneObject(string linkId)
         {
             DataLinkActorData existing = null;
-
-#if UNITY_2023_OR_NEWER
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else
-            DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
-#endif
-
+            DataLinkActorData[] linkedObjects = Util.FindObjectsByType<DataLinkActorData>(true) as DataLinkActorData[];
+            /*
+            #if UNITY_6000_4_OR_NEWER
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include);
+            #elif UNITY_2023_OR_NEWER
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsByType<DataLinkActorData>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            #else
+                        DataLinkActorData[] linkedObjects = GameObject.FindObjectsOfType<DataLinkActorData>();
+            #endif
+            */
             if (linkedObjects != null && linkedObjects.Length > 0)
             {
                 existing = linkedObjects.ToList().Find(x => x.linkId == linkId);
@@ -521,7 +532,7 @@ namespace Reallusion.Import
             if (existing != null)
             {
                 GameObject.DestroyImmediate(existing.gameObject);
-            }            
+            }
         }
 
 
@@ -546,7 +557,7 @@ namespace Reallusion.Import
             Selection.activeGameObject = director.gameObject;
             if (UnityLinkManager.LOCK_TIMELINE_TO_LAST_USED) LockStateTimeLineWindow(true);
         }
-            
+
 
         public static void LockStateTimeLineWindow(bool locked)
         {
@@ -606,9 +617,9 @@ namespace Reallusion.Import
                 TimelineEditor.inspectedDirector.Evaluate();
             }
         }
-#endregion Add To Scene and Timeline
+        #endregion Add To Scene and Timeline
 
-#region Scene Dependencies 
+        #region Scene Dependencies 
         public static void CreateStagingSceneDependencies(bool dofEnabled)
         {
 #if HDRP_10_5_0_OR_NEWER
@@ -628,13 +639,16 @@ namespace Reallusion.Import
             string defaultProfileToClone = "CinematicDark";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
-
-#if UNITY_2023_OR_NEWER
+            Volume[] volumes = Util.FindObjectsByType<Volume>(true) as Volume[];
+            /*
+#if UNITY_6000_4_OR_NEWER
+            Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include);
+#elif UNITY_2023_OR_NEWER
             Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
             Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
 #endif
-
+*/
             foreach (Volume volume in volumes)
             {
                 if (volume.isGlobal)
@@ -695,8 +709,8 @@ namespace Reallusion.Import
 
                 // total failure case
                 if (sharedProfile == null)
-                { 
-                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return; 
+                {
+                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
                 }
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
@@ -708,8 +722,8 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    
-                }          
+
+                }
                 global.sharedProfile = sharedProfile;
                 global.runInEditMode = true;
             }
@@ -718,7 +732,7 @@ namespace Reallusion.Import
                 sharedProfile = global.sharedProfile;
                 global.runInEditMode = true;
             }
-            
+
             // From Volume.cs
             // Modifying sharedProfile changes every Volumes that uses this Profile and also changes
             // the Profile settings stored in the Project.            
@@ -779,7 +793,7 @@ namespace Reallusion.Import
             if (dpl != null)
             {
                 if (dpl.diffusionProfiles.value != null)
-                {                    
+                {
                     if (dpl.diffusionProfiles.value.Length == 0)
                     {
                         addDiffProfiles = true;
@@ -840,13 +854,16 @@ namespace Reallusion.Import
             string defaultProfileToClone = "RL_URP Post Processing Profile";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             Volume global = null;
             VolumeProfile sharedProfile = null;
-
-#if UNITY_2023_OR_NEWER
+            Volume[] volumes = Util.FindObjectsByType<Volume>(true) as Volume[];
+            /*
+#if UNITY_6000_4_OR_NEWER
+            Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include);
+#elif UNITY_2023_OR_NEWER
             Volume[] volumes = GameObject.FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
             Volume[] volumes = GameObject.FindObjectsOfType<Volume>();
 #endif
-
+*/
             foreach (Volume volume in volumes)
             {
                 if (volume.isGlobal)
@@ -979,13 +996,16 @@ namespace Reallusion.Import
             string defaultProfileToClone = "Post Processing Volume Profile";// "FAILOVERCHECK"; // search term for a default profile if one needs to be created
             PostProcessVolume global = null;
             PostProcessProfile sharedProfile = null;
-
-#if UNITY_2023_OR_NEWER
+            PostProcessVolume[] volumes = Util.FindObjectsByType<PostProcessVolume>(true) as PostProcessVolume[];
+            /*
+#if UNITY_6000_4_OR_NEWER
+            PostProcessVolume[] volumes = GameObject.FindObjectsByType<PostProcessVolume>(FindObjectsInactive.Include);
+#elif UNITY_2023_OR_NEWER
             PostProcessVolume[] volumes = GameObject.FindObjectsByType<PostProcessVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
             PostProcessVolume[] volumes = GameObject.FindObjectsOfType<PostProcessVolume>(true);
 #endif
-
+            */
             foreach (PostProcessVolume volume in volumes)
             {
                 if (volume.isGlobal)
@@ -1123,7 +1143,7 @@ namespace Reallusion.Import
 #endif
         #endregion Scene Dependencies
 
-#region Enum
+        #region Enum
 
         [Flags]
         public enum TrackType
@@ -1144,6 +1164,6 @@ namespace Reallusion.Import
             Animation = 2,
             Activation = 4,
         }
-#endregion Enum
+        #endregion Enum
     }
 }

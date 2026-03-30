@@ -50,11 +50,16 @@ namespace Reallusion.Import
 
             if (!camera)
             {
-#if UNITY_2023_OR_NEWER
+                Camera[] cams = Util.FindObjectsByType<Camera>(false) as Camera[];
+                /*
+#if UNITY_6000_4_OR_NEWER
+                Camera[] cams = GameObject.FindObjectsByType<Camera>();
+#elif UNITY_2023_OR_NEWER
                 Camera[] cams = GameObject.FindObjectsByType<Camera>(FindObjectsSortMode.None);
 #else
                 Camera[] cams = GameObject.FindObjectsOfType<Camera>();
 #endif
+*/
                 foreach (Camera cam in cams)
                 {
                     if (cam.isActiveAndEnabled)
@@ -65,7 +70,7 @@ namespace Reallusion.Import
             }
 
             return camera;
-        }        
+        }
 
         public static PreviewScene FetchPreviewScene(Scene scene)
         {
@@ -76,11 +81,11 @@ namespace Reallusion.Import
             ps.character = GameObject.Find("Character Container")?.transform;
             ps.baked = GameObject.Find("Baked Character Container")?.transform;
             ps.stage = GameObject.Find("Stage")?.transform;
-            ps.lighting = GameObject.Find("Lighting")?.transform;            
-            ps.camera = GameObject.Find("Main Camera")?.transform;            
+            ps.lighting = GameObject.Find("Lighting")?.transform;
+            ps.camera = GameObject.Find("Main Camera")?.transform;
             return ps;
-        }        
-        
+        }
+
         public static void CycleLighting()
         {
             if (WindowManager.IsPreviewScene)
@@ -124,7 +129,7 @@ namespace Reallusion.Import
             }
             Transform head = headExact ? headExact : headPossible;
             if (head)
-            {                
+            {
                 float height = head.position.y;
                 Vector3 position = lighting.position;
                 position.y = -(1.45f - height);
@@ -178,8 +183,8 @@ namespace Reallusion.Import
                 {
                     lightingContainers[i].SetActive(false);
                     lightingContainers[i].SetActive(true);
-                }                        
-            }                
+                }
+            }
         }
 
         public GameObject GetPreviewCharacter()
@@ -261,7 +266,7 @@ namespace Reallusion.Import
 
         public GameObject ShowBakedCharacter(GameObject bakedAsset)
         {
-            if (!bakedAsset) return null;            
+            if (!bakedAsset) return null;
 
             ClearBaked();
 
@@ -274,14 +279,14 @@ namespace Reallusion.Import
 
             return null;
         }
-    
+
 
         public GameObject UpdatePreviewCharacter(GameObject prefabAsset)
         {
-            if (!prefabAsset) return null;            
+            if (!prefabAsset) return null;
 
             ClearCharacter();
-            
+
             GameObject clone = PrefabUtility.InstantiatePrefab(prefabAsset, character.transform) as GameObject;
             if (clone)
             {

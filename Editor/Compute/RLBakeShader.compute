@@ -64,6 +64,9 @@
 #pragma kernel HorizontalBlur
 #pragma kernel VerticalBlur
 
+#pragma kernel HistogramAlpha
+#pragma kernel HistogramRed
+
 #pragma multi_compile _ _MAC_OS
 
 // Defines
@@ -425,7 +428,7 @@ float sRGBToLinear(float In)
 
 float2 GetUV(int2 xy)
 {
-    int w, h;
+    uint w, h;
     Result.GetDimensions(w, h);
     return float2(float(xy.x + 0.5) / float(w), float(xy.y + 0.5) / float(h));
 }
@@ -1722,3 +1725,34 @@ void VerticalBlur(uint3 id : SV_DispatchThreadID)
 
     _BlurResult[uv] = LinearTosRGB(sum);
 }
+
+TEX2D(HistogramTexture);
+RWStructuredBuffer<uint> HistogramBuffer;
+int HistogramCount;
+
+[numthreads(16,16,1)]
+void HistogramAlpha(uint3 id : SV_DispatchThreadID)
+{       
+    uint w, h;
+    HistogramTexture.GetDimensions(w, h);    
+    if (id.x >= w || id.y >= h) return;
+    float2 uv = float2(float(id.x + 0.5) / float(w), float(id.y + 0.5) / float(h));
+        
+    float4 c = SAMPLE(HistogramTexture, uv);
+    uint bin = (uint)min(c.a * HistogramCount, HistogramCount-1);
+    InterlockedAdd(HistogramBuffer[bin], 1);
+}
+
+[numthreads(16,16,1)]
+void HistogramRed(uint3 id : SV_DispatchThreadID)
+{       
+    uint w, h;
+    HistogramTexture.GetDimensions(w, h);    
+    if (id.x >= w || id.y >= h) return;
+    float2 uv = float2(float(id.x + 0.5) / float(w), float(id.y + 0.5) / float(h));
+        
+    float4 c = SAMPLE(HistogramTexture, uv);
+    uint bin = (uint)min(c.r * HistogramCount, HistogramCount-1);
+    InterlockedAdd(HistogramBuffer[bin], 1);
+}
+
