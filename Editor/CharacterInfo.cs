@@ -917,7 +917,7 @@ namespace Reallusion.Import
 
             if (HasExpressionBones())
             {
-                ShaderFlags |= ShaderFeatureFlags.BoneDriver;
+                if (ShouldUseExpressionBones()) ShaderFlags |= ShaderFeatureFlags.BoneDriver;
                 ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
             }
 
@@ -973,7 +973,7 @@ namespace Reallusion.Import
             {
                 if (HasExpressionBones())
                 {
-                    ShaderFlags |= ShaderFeatureFlags.BoneDriver;
+                    if (ShouldUseExpressionBones()) ShaderFlags |= ShaderFeatureFlags.BoneDriver;
                     ShaderFlags |= ShaderFeatureFlags.ExpressionTranspose;
                 }
 
@@ -1100,6 +1100,21 @@ namespace Reallusion.Import
         {
             string jsonPath = name + "/Object/" + name + "/Expression";
             return JsonData.PathExists(jsonPath);
+        }
+
+        public bool ShouldUseExpressionBones()
+        {
+            BaseGeneration generation = Generation;
+            ExpressionProfile ep = FaceProfile.expressionProfile;
+
+            // no known facial profile - no
+            if (ep == ExpressionProfile.None) return false;
+
+            // unknown generations (none standard) - no
+            // i.e. Coyote T-rex, bone drivers don't work for these ...
+            if (generation == BaseGeneration.Unknown) return false;
+
+            return true;
         }
 
         public bool HasConstraintData()

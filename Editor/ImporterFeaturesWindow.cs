@@ -157,7 +157,7 @@ namespace Reallusion.Import
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.WrinkleMaps, "Wrinkle Maps", SECTION_INDENT))
             {
                 if (!contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.WrinkleMaps))
-                {                    
+                {
                     SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, false);
                 }
                 flagChanged = true;
@@ -287,11 +287,11 @@ namespace Reallusion.Import
 
 
             DrawLabelLine(line++, "Experimental:");
-            DrawLabelLine(line++, " - Extra Generic Animation Data:");            
+            DrawLabelLine(line++, " - Extra Generic Animation Data:");
 
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.ExtractGeneric, "   Merge extra generic data", SECTION_INDENT))
                 flagChanged = true;
-            
+
 
             DrawLabelLine(line++, "");
 
