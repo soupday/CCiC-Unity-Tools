@@ -1,6 +1,15 @@
 Changelog
 =========
 
+### 2.2.5
+- Bone driver update:
+    - Toggle bone groups to enable / disable driving certain bones.
+    - Missing blendshapes for driver facial expressions are re-added to mesh.
+- Enhanced alpha blending type detection between cutout, gradient and opaque.
+- Material type overrides - for when the auto-detection gets it wrong.
+- Fix some OnGUI error spam at start up.
+- Updates for Unity 6.4.
+
 ### 2.2.4
 - Lod Combiner UI fixes.
 - Fixes for a possible infinite update loop.
