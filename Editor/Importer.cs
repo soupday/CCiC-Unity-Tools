@@ -22,6 +22,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace Reallusion.Import
 {
@@ -864,7 +865,7 @@ namespace Reallusion.Import
             return false;
         }
 
-        public AlphaType AnalyseAlphaType(uint[] histogram, Texture2D tex, int width = 4)
+        public (AlphaType, float, float, float, float, float) AnalyseAlphaType(uint[] histogram, Texture2D tex, int width = 4)
         {
             const float OPAQUE_THRESHOLD = 0.99f;
             const float CUTOUT_THRESHOLD = 0.90f;
@@ -895,38 +896,42 @@ namespace Reallusion.Import
                 if (p > translucentScore) translucentScore = p;
             }
 
-            Util.LogDetail($"AlphaType: OS={opaqueScore} CS={cutoutScore} GS={gradientScore} TS={translucentScore}");
+            //Util.LogDetail($"AlphaType: {tex.name} OS={opaqueScore} CS={cutoutScore} GS={gradientScore} TS={translucentScore}");
 
-            if (opaqueScore >= 0.9999f) return AlphaType.Opaque;
-            if (cutoutScore >= 0.9999f) return AlphaType.Cutout;
+            if (opaqueScore >= 0.9999f) return (AlphaType.Opaque, opaqueScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
+            if (cutoutScore >= 0.9999f) return (AlphaType.Cutout, cutoutScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
 
             if (gradientScore > translucentScore &&
-                gradientScore >= GRADIENT_THRESHOLD) return AlphaType.Gradient;
+                gradientScore >= GRADIENT_THRESHOLD) return (AlphaType.Gradient, gradientScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
 
             // ~all opaque or fully transparent, more opaque than transparent - Cutout
             if (cutoutScore > opaqueScore &&
                 cutoutScore >= CUTOUT_THRESHOLD &&
-                percs[L - 1] > percs[0]) return AlphaType.Cutout;
+                percs[L - 1] > percs[0]) return (AlphaType.Cutout, cutoutScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
 
             // ~all opaque - Opaque
-            if (opaqueScore >= OPAQUE_THRESHOLD) return AlphaType.Opaque;
+            if (opaqueScore >= OPAQUE_THRESHOLD) return (AlphaType.Opaque, opaqueScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
 
             // ~mostly clustered around a mid range value - Translucent
-            if (translucentScore > TRANSLUCENT_THRESHOLD) return AlphaType.Translucent;
+            if (translucentScore > TRANSLUCENT_THRESHOLD) return (AlphaType.Translucent, translucentScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
 
             // default to gradient
-            return AlphaType.Gradient;
+            return (AlphaType.Gradient, gradientScore, opaqueScore, cutoutScore, gradientScore, translucentScore);
         }
 
         public enum AlphaType { Opaque, Cutout, Gradient, Translucent };
-        Dictionary<string, AlphaType> AlphaTypeCache = new Dictionary<string, AlphaType>();
-        public AlphaType GetAlphaType(string texAssetPath, bool inAlphaChannel = true)
+        Dictionary<string, (AlphaType, float, float, float, float, float)> AlphaTypeCache = new Dictionary<string, (AlphaType, float, float, float, float, float)>();
+
+        public (AlphaType, float) GetAlphaType(string texAssetPath, bool inAlphaChannel = true)
         {
             AlphaType alphaType = AlphaType.Opaque;
+            float alphaScore = 1f;
 
-            if (AlphaTypeCache.TryGetValue(texAssetPath, out alphaType))
+            if (AlphaTypeCache.TryGetValue(texAssetPath, out var res))
             {
-                return alphaType;
+                alphaType = res.Item1;
+                alphaScore = res.Item2;
+                return (alphaType, alphaScore);
             }
 
             TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(texAssetPath);
@@ -938,19 +943,27 @@ namespace Reallusion.Import
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
                     histogram = ComputeBake.ComputeHistogramAlpha(tex, 64);
-                    alphaType = AnalyseAlphaType(histogram, tex, 8);
-                    AlphaTypeCache.Add(texAssetPath, alphaType);
+                    res = AnalyseAlphaType(histogram, tex, 8);
+                    alphaType = res.Item1;
+                    alphaScore = res.Item2;
+                    Debug.Log($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
+                              $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
+                    AlphaTypeCache.Add(texAssetPath, res);
                 }
                 else if (!inAlphaChannel)
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
                     histogram = ComputeBake.ComputeHistogramRed(tex, 64);
-                    alphaType = AnalyseAlphaType(histogram, tex, 8);
-                    AlphaTypeCache.Add(texAssetPath, alphaType);
+                    res = AnalyseAlphaType(histogram, tex, 8);
+                    alphaType = res.Item1;
+                    alphaScore = res.Item2;
+                    Debug.Log($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
+                              $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
+                    AlphaTypeCache.Add(texAssetPath, res);
                 }
             }
 
-            return alphaType;
+            return (alphaType, alphaScore);
         }
 
         private MaterialType GetMaterialType(GameObject obj, Material mat, string sourceName, QuickJSON matJson, CharacterInfo info = null)
@@ -970,6 +983,7 @@ namespace Reallusion.Import
                 bool hasOpacity = false;
                 bool blendOpacity = false;
                 AlphaType alphaType = AlphaType.Opaque;
+                float alphaScore = 1f;
 
                 MaterialNodeType nodeType = GetMaterialNodeType(matJson);
 
@@ -995,7 +1009,13 @@ namespace Reallusion.Import
 
                     return MaterialType.Eyelash;
                 }
-                if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R")) return MaterialType.Eye;
+                if (Util.NameContainsKeywords(sourceName, "Std_Eye_L", "Std_Eye_R"))
+                {
+                    if (ObjHasMaterialType(obj, MaterialType.Cornea, mat))
+                        return MaterialType.Eye;
+                    else
+                        return MaterialType.DefaultOpaque;
+                }
 
                 string opacityTexturePath = matJson.GetStringValue("Textures/Opacity/Texture Path");
                 string diffuseTexturePath = matJson.GetStringValue("Textures/Base Color/Texture Path", opacityTexturePath);
@@ -1007,14 +1027,16 @@ namespace Reallusion.Import
                     // imports from blender will have separate opacity and diffuse
                     // and the opacity wil be in the RGB channels
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, opacityTexturePath);
-                    alphaType = GetAlphaType(assetPath, false);
-                    Debug.Log($"AlphaType: {assetPath} - {alphaType}");
+                    var res = GetAlphaType(assetPath, false);
+                    alphaType = res.Item1;
+                    alphaScore = res.Item2;
                 }
                 else if (!string.IsNullOrEmpty(diffuseTexturePath))
                 {
                     string assetPath = Util.CombineJsonTexPath(fbxFolder, diffuseTexturePath);
-                    alphaType = GetAlphaType(assetPath, true);
-                    Debug.Log($"AlphaType: {assetPath} - {alphaType}");
+                    var res = GetAlphaType(assetPath, true);
+                    alphaType = res.Item1;
+                    alphaScore = res.Item2;
                 }
 
                 float opacity = matJson.GetFloatValue("Opacity");
@@ -2997,12 +3019,8 @@ namespace Reallusion.Import
 
                 if (RP == RenderPipeline.HDRP) // Shader Graph hair shader
                 {
-#if HDRP_17_2_0_OR_NEWER
-                    // set no normal flipping in HDRP17.2
-                    mat.SetFloatIf("_DoubleSidedNormalMode", 3f);
-#else                    
+                    // double sided normal mirror
                     mat.SetFloatIf("_DoubleSidedNormalMode", 2f);
-#endif
                     float secondarySpecStrength = matJson.GetFloatValue("Custom Shader/Variable/Secondary Specular Strength");
                     SetFloatPowerRange(mat, "_SmoothnessMin", smoothnessStrength, 0f, smoothnessMax, smoothnessContrast);
                     SetFloatPowerRange(mat, "_SpecularMultiplier", specMapStrength * specStrength, specularMin, specularMax, specularPowerMod);

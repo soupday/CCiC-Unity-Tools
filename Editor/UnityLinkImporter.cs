@@ -1539,7 +1539,7 @@ namespace Reallusion.Import
             light.intensity = jsonLightObject.Multiplier * BASE_INTENSITY_SCALE;
 #endif
             light.useColorTemperature = false;
-            light.color = jsonLightObject.Color;
+            light.color = Util.LinearTosRGB(jsonLightObject.Color);
             light.spotAngle = jsonLightObject.Angle;
             light.innerSpotAngle = GetInnerAngle(jsonLightObject.Falloff, jsonLightObject.Attenuation);
             light.range = jsonLightObject.Range * RANGE_SCALE;
