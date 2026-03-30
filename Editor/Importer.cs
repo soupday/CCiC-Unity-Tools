@@ -2516,6 +2516,7 @@ namespace Reallusion.Import
                 mat.SetFloatIf("_UnmaskedSmoothnessMod", -matJson.GetFloatValue("Custom Shader/Variable/Unmasked Roughness Scale"));
                 mat.SetFloatIf("_UnmaskedScatterScale", matJson.GetFloatValue("Custom Shader/Variable/Unmasked Scatter Scale"));
                 mat.SetColorIf("_DiffuseColor", Util.LinearTosRGB(matJson.GetColorValue("Diffuse Color")));
+                mat.SetFloatIf("_SSSBlend", 0.35f);
 
                 if (materialType == MaterialType.Head)
                 {
