@@ -172,6 +172,7 @@ namespace Reallusion.Import
 
         public static void HumanoidImportSettings(GameObject fbx, ModelImporter importer, CharacterInfo info, Avatar avatar = null)
         {
+            ModelImporterAnimationType oldType = importer.animationType;
             // import normals to avoid mesh smoothing issues            
             // importing blend shape normals gives disasterously bad results, they need to be recalculated,
             // ideally using the legacy blend shape normals option, but this has not been exposed to scripts so...
@@ -233,6 +234,7 @@ namespace Reallusion.Import
 
             importer.autoGenerateAvatarMappingIfUnspecified = true;
 
+
             if (info.Generation == BaseGeneration.Unknown)
             {
                 switch (info.UnknownRigType)
@@ -277,7 +279,7 @@ namespace Reallusion.Import
 
                 importer.sourceAvatar = avatar;
             }
-            else
+            else if (oldType != ModelImporterAnimationType.Human) // don't replace existing avatar ...
             {
                 importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
 
@@ -291,8 +293,8 @@ namespace Reallusion.Import
 
                 #region HumanBoneDescription
                 // Unity does a better job if it does it automatically these days
-                // and it fixes the t-pose ...
-                bool buildHumanBoneDescription = false;
+                // and it fixes the t-pose ... but it gets the eyes wrong for motions ...
+                bool buildHumanBoneDescription = true;
                 if (buildHumanBoneDescription)
                 {
                     if (info.Generation == BaseGeneration.G3 ||
