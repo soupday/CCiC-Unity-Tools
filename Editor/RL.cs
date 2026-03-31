@@ -521,7 +521,7 @@ namespace Reallusion.Import
 
                 if (buildHumanBoneDescription)
                 {
-                    if (info.JsonData != null)
+                    if (info.IsValidJsonData())
                     {
                         Transform[] transforms = fbx.GetComponentsInChildren<Transform>();
                         List<SkeletonBone> bones = new List<SkeletonBone>();

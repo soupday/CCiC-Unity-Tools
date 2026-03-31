@@ -193,7 +193,8 @@ namespace Reallusion.Import
                 }
                 catch
                 {
-                    Util.LogError($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
+                    throw new Exception($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
+                    //Util.LogError($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
                 }
             }
 

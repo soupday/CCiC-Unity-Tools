@@ -314,13 +314,12 @@ namespace Reallusion.Import
             materialsFolder = Util.CreateFolder(parentMaterialsFolder, characterName);
             Util.LogInfo("Using material folder: " + materialsFolder);
 
-            // fetch the character json export data.
-            jsonData = info.JsonData;
-            if (jsonData == null)
+            // fetch the character json export data.            
+            if (!info.IsValidJsonData())
             {
-                throw new Exception($"Unable to find Json data for character: {characterName}!");
+                throw new Exception($"Unable to find valid Json data for character: {characterName}! Aborting setup.");
             }
-
+            jsonData = info.JsonData;
             jsonPhysicsData = info.PhysicsJsonData;
             if (jsonPhysicsData == null)
             {

@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
@@ -512,16 +513,53 @@ namespace Reallusion.Import
             return null;
         }
 
+        public bool ReadJsonData()
+        {
+            try
+            {
+                jsonData = Util.GetJsonData(jsonFilepath);
+                return true;
+            }
+            catch
+            {
+                Util.LogError($"Json File: {jsonFilepath} is invalid!");
+                jsonData = null;
+                return false;
+            }
+        }
+
         public QuickJSON JsonData
         {
             get
             {
                 if (jsonData == null)
                 {
-                    jsonData = Util.GetJsonData(jsonFilepath);
+                    ReadJsonData();
                 }
                 return jsonData;
             }
+        }
+
+        public bool IsValidJsonData()
+        {
+            if (JsonData == null) return false;
+
+            string jsonPath = name + "/Version";
+            string jsonVersion = JsonData.GetStringValue(jsonPath);
+
+            // Unity exports version start with 1.10.
+            if (!jsonVersion.StartsWith("1.10."))
+            {
+                Util.LogError($"Json File: {jsonFilepath}, is *not* from a Unity compatible export! (Maya/3dsMax)");
+                return false;
+            }
+            if (AnyJsonMaterialPathExists("Textures/ORM"))
+            {
+                Util.LogError($"Json File: {jsonFilepath}, is *not* from a Unity compatible export! (UE4/5)");
+                return false;
+            }
+
+            return true;
         }
 
         public bool JsonLoaded { get { return jsonData != null; } }
@@ -637,6 +675,8 @@ namespace Reallusion.Import
 
         public QuickJSON GetObjJson(GameObject obj)
         {
+            if (JsonData == null) return null;
+
             QuickJSON objectsData = ObjectsJsonData;
 
             if (objectsData == null) return null;
@@ -697,6 +737,8 @@ namespace Reallusion.Import
 
         public QuickJSON GetMatJson(GameObject obj, string sourceName)
         {
+            if (JsonData == null) return null;
+
             QuickJSON objectsData = ObjectsJsonData;
             QuickJSON matJson = null;
 
@@ -840,7 +882,7 @@ namespace Reallusion.Import
 
         public void Refresh()
         {
-            if (jsonData != null) jsonData = Util.GetJsonData(jsonFilepath);
+            if (jsonData != null) ReadJsonData();
         }
 
         public BaseGeneration Generation
@@ -881,32 +923,33 @@ namespace Reallusion.Import
             BaseGeneration oldGen = generation;
             string gen = "";
 
-            if (JsonData == null) return;
-
-            string generationPath = name + "/Object/" + name + "/Generation";
-            if (JsonData.PathExists(generationPath))
+            if (IsValidJsonData())
             {
-                gen = JsonData.GetStringValue(generationPath);
-            }
+                string generationPath = name + "/Object/" + name + "/Generation";
+                if (JsonData.PathExists(generationPath))
+                {
+                    gen = JsonData.GetStringValue(generationPath);
+                }
 
-            generation = RL.GetCharacterGeneration(Fbx, gen);
-            CheckOverride();
-            bool setBlender = CheckBlenderProject();
-            bool setSubDB = CheckSubDLevel();
+                generation = RL.GetCharacterGeneration(Fbx, gen);
+                CheckOverride();
+                bool setBlender = CheckBlenderProject();
+                bool setSubDB = CheckSubDLevel();
 
-            // new character detected, initialize settings
-            if (oldGen == BaseGeneration.None)
-            {
-                InitSettings();
-                InitPhysics();
-            }
+                // new character detected, initialize settings
+                if (oldGen == BaseGeneration.None)
+                {
+                    InitSettings();
+                    InitPhysics();
+                }
 
-            bool versionUpgraded = VersionUpgrade();
+                bool versionUpgraded = VersionUpgrade();
 
-            if (generation != oldGen || versionUpgraded || setBlender || setSubDB)
-            {
-                Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
-                Write();
+                if (generation != oldGen || versionUpgraded || setBlender || setSubDB)
+                {
+                    Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
+                    Write();
+                }
             }
         }
 
@@ -1028,8 +1071,6 @@ namespace Reallusion.Import
 
         public void InitPhysics()
         {
-            if (JsonData == null) return;
-
             string jsonPath = name + "/Object/" + name + "/Physics/Soft Physics";
             bool hasPhysics = JsonData.PathExists(jsonPath);
 
@@ -1175,6 +1216,8 @@ namespace Reallusion.Import
 
         public bool AnyJsonMaterialPathExists(string path, bool requireValue = false)
         {
+            if (JsonData == null) return false;
+
             QuickJSON objectsJson = ObjectsJsonData;
 
             if (objectsJson == null) return false;
