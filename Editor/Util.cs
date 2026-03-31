@@ -184,9 +184,17 @@ namespace Reallusion.Import
         {
             if (File.Exists(jsonPath))
             {
-                TextAsset jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
-                QuickJSON jsonData = new QuickJSON(jsonAsset.text);
-                return jsonData;
+                try
+                {
+                    TextAsset jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
+                    QuickJSON jsonData = new QuickJSON(jsonAsset);
+                    Util.LogDetail($"JsonData Fetched: {jsonPath}");
+                    return jsonData;
+                }
+                catch
+                {
+                    Util.LogError($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
+                }
             }
 
             return null;

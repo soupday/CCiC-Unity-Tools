@@ -16,9 +16,13 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 namespace Reallusion.Import
 {
@@ -26,6 +30,7 @@ namespace Reallusion.Import
     {
         public List<MultiValue> values;
         public bool isArray = false;
+        public bool isValid = true;
 
         public int index = 0;
         private string text;
@@ -45,7 +50,29 @@ namespace Reallusion.Import
             }
             catch
             {
-                Util.LogError("Unable to Parse JSON text...");
+                isValid = false;
+                throw new Exception("Error parsing Json Data!");
+            }
+            text = null;
+        }
+
+        public QuickJSON(TextAsset textAsset)
+        {
+            isArray = false;
+            text = textAsset.text;
+            string assetPath = AssetDatabase.GetAssetPath(textAsset);
+            index = 0;
+            values = new List<MultiValue>();
+            try
+            {
+                if (index == 0) Brace();
+                Parse();
+                isValid = true;
+            }
+            catch
+            {
+                isValid = false;
+                throw new Exception($"Error parsing Json Data: {assetPath}");
             }
             text = null;
         }
@@ -105,6 +132,10 @@ namespace Reallusion.Import
                     case NextType.Alpha:
                         ParseAlpha(name);
                         break;
+
+                    default:
+                        isValid = false;
+                        throw new Exception("Error parsing Json Data!");
                 }
             }
         }
@@ -114,14 +145,14 @@ namespace Reallusion.Import
             string value = Value();
 
             if (int.TryParse(value,
-                    System.Globalization.NumberStyles.Integer, 
-                    System.Globalization.CultureInfo.InvariantCulture, 
+                    System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture,
                     out int tryInt))
                 values.Add(new MultiValue(name, tryInt));
 
-            else if (float.TryParse(value, 
-                    System.Globalization.NumberStyles.Number, 
-                    System.Globalization.CultureInfo.InvariantCulture, 
+            else if (float.TryParse(value,
+                    System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture,
                     out float tryFloat))
                 values.Add(new MultiValue(name, tryFloat));
         }
@@ -213,7 +244,7 @@ namespace Reallusion.Import
         public MultiValue GetValue(string name, bool spaceFix = false)
         {
             foreach (MultiValue mv in values)
-                if (mv.Key.iEquals(name)) return mv;                        
+                if (mv.Key.iEquals(name)) return mv;
 
             return new MultiValue("None");
         }
@@ -221,7 +252,7 @@ namespace Reallusion.Import
         public MultiValue GetValue(int index)
         {
             if (values.Count > index)
-                return values[index];            
+                return values[index];
 
             return new MultiValue("None");
         }
@@ -290,7 +321,7 @@ namespace Reallusion.Import
                     return mv.ObjectValue.PathExists(paths.Skip(1).ToArray());
                 else if (mv.Type != MultiType.None)
                     return true;
-            }            
+            }
 
             return false;
         }
@@ -334,7 +365,7 @@ namespace Reallusion.Import
                     return mv.ObjectValue.GetObjectAtPath(paths.Skip(1).ToArray());
                 else if (mv.Type == MultiType.Object)
                     return mv.ObjectValue;
-            }            
+            }
 
             return null;
         }
@@ -360,14 +391,14 @@ namespace Reallusion.Import
             return false;
         }
 
-        public int GetIntValue(string path, int defaultValue=0)
+        public int GetIntValue(string path, int defaultValue = 0)
         {
             string[] paths = path.Split('/');
 
             return GetIntValue(paths, defaultValue);
         }
 
-        public int GetIntValue(string[] paths, int defaultValue=0)
+        public int GetIntValue(string[] paths, int defaultValue = 0)
         {
             if (paths.Length > 0)
             {
@@ -381,14 +412,14 @@ namespace Reallusion.Import
             return defaultValue;
         }
 
-        public float GetFloatValue(string path, float defaultValue=0.0f)
+        public float GetFloatValue(string path, float defaultValue = 0.0f)
         {
             string[] paths = path.Split('/');
 
             return GetFloatValue(paths, defaultValue);
         }
 
-        public float GetFloatValue(string[] paths, float defaultValue=0.0f)
+        public float GetFloatValue(string[] paths, float defaultValue = 0.0f)
         {
             if (paths.Length > 0)
             {
@@ -402,14 +433,14 @@ namespace Reallusion.Import
             return defaultValue;
         }
 
-        public string GetStringValue(string path, string defaultValue="")
+        public string GetStringValue(string path, string defaultValue = "")
         {
             string[] paths = path.Split('/');
 
             return GetStringValue(paths, defaultValue);
         }
 
-        public string GetStringValue(string[] paths, string defaultValue="")
+        public string GetStringValue(string[] paths, string defaultValue = "")
         {
             if (paths.Length > 0)
             {
@@ -571,7 +602,7 @@ namespace Reallusion.Import
                 if (isArray && values.Count == 2)
                 {
                     value.x = values[0].FloatValue;
-                    value.y = values[1].FloatValue;                    
+                    value.y = values[1].FloatValue;
                 }
 
                 return value;
@@ -613,49 +644,49 @@ namespace Reallusion.Import
         public MultiType Type { get; }
         public string Key { get; }
         public bool BoolValue
-        { 
-            get 
-            { 
-                return Type == MultiType.Bool ? 
-                    (bool)objectValue : false; 
-            } 
+        {
+            get
+            {
+                return Type == MultiType.Bool ?
+                    (bool)objectValue : false;
+            }
         }
-        public string StringValue 
-        { 
-            get 
-            { 
-                return Type == MultiType.String ? 
-                    (string)objectValue : null; 
-            } 
+        public string StringValue
+        {
+            get
+            {
+                return Type == MultiType.String ?
+                    (string)objectValue : null;
+            }
         }
         public int IntValue
         {
             get
             {
                 return Type == MultiType.Integer ?
-                    (int)objectValue : 
-                        (Type == MultiType.Float ? 
+                    (int)objectValue :
+                        (Type == MultiType.Float ?
                             (int)((float)objectValue) : 0);
             }
         }
         public float FloatValue
-        { 
-            get 
-            { 
-                return Type == MultiType.Float ? 
-                    (float)objectValue : 
-                        (Type == MultiType.Integer ? 
-                            (float)((int)objectValue) : 0); 
-            } 
+        {
+            get
+            {
+                return Type == MultiType.Float ?
+                    (float)objectValue :
+                        (Type == MultiType.Integer ?
+                            (float)((int)objectValue) : 0);
+            }
         }
-        public QuickJSON ObjectValue 
-        { 
-            get 
-            { 
-                return Type == MultiType.Object ? 
-                    (QuickJSON)objectValue : null; 
-            } 
-        }        
+        public QuickJSON ObjectValue
+        {
+            get
+            {
+                return Type == MultiType.Object ?
+                    (QuickJSON)objectValue : null;
+            }
+        }
 
         public MultiValue(string name)
         {
@@ -667,7 +698,7 @@ namespace Reallusion.Import
         public MultiValue(string name, bool value)
         {
             Key = name;
-            Type = MultiType.Bool;            
+            Type = MultiType.Bool;
             objectValue = value;
         }
 
@@ -704,10 +735,10 @@ namespace Reallusion.Import
             switch (Type)
             {
                 case MultiType.Object:
-                    return ObjectValue == null;                    
-                case MultiType.Bool:                    
-                case MultiType.Integer:                    
-                case MultiType.Float:                
+                    return ObjectValue == null;
+                case MultiType.Bool:
+                case MultiType.Integer:
+                case MultiType.Float:
                     return false;
                 case MultiType.String:
                     return string.IsNullOrEmpty(StringValue);

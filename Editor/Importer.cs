@@ -316,11 +316,16 @@ namespace Reallusion.Import
 
             // fetch the character json export data.
             jsonData = info.JsonData;
-            if (jsonData == null) Util.LogError("Unable to find Json data!");
+            if (jsonData == null)
+            {
+                throw new Exception($"Unable to find Json data for character: {characterName}!");
+            }
 
             jsonPhysicsData = info.PhysicsJsonData;
             if (jsonPhysicsData == null)
-                Util.LogWarn("Unable to find Json physics data!");
+            {
+                Util.LogWarn($"Unable to find Json physics data for character: {characterName}!");
+            }
 
             string jsonVersion = jsonData?.GetStringValue(characterName + "/Version");
             if (!string.IsNullOrEmpty(jsonVersion))
