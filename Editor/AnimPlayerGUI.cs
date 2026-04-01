@@ -2039,6 +2039,7 @@ namespace Reallusion.Import
                     float lookDownValue = Mathf.Max(0f, eyeShapeVal.y);
                     float lookRightValue = -Mathf.Min(0f, eyeShapeVal.x);
                     float lookLeftValue = Mathf.Max(0f, eyeShapeVal.x);
+
                     SetIndividualBlendShape("A06_Eye_Look_Up_Left", lookUpValue);
                     SetIndividualBlendShape("A07_Eye_Look_Up_Right", lookUpValue);
                     SetIndividualBlendShape("A08_Eye_Look_Down_Left", lookDownValue);
@@ -2123,6 +2124,12 @@ namespace Reallusion.Import
 
             SetCharacterBlendShape(root, new string[] {"A14_Eye_Blink_Left", "Eye_Blink_L"}, input);
             SetCharacterBlendShape(root, new string[] {"A15_Eye_Blink_Right", "Eye_Blink_R"}, input);
+            SetIndividualBlendShape("Eye_Wide_L", 0f);
+            SetIndividualBlendShape("Eye_Wide_R", 0f);
+            SetIndividualBlendShape("Eye_Widen_L", 0f);
+            SetIndividualBlendShape("Eye_Widen_R", 0f);
+            SetIndividualBlendShape("A18_Eye_Wide_Left", 0f);
+            SetIndividualBlendShape("A19_Eye_Wide_Right", 0f);
         }
 
         private static bool SetCharacterBlendShape(GameObject characterRoot, string[] blendShapeNames, float weight)
