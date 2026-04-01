@@ -1,23 +1,24 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -31,12 +32,14 @@ namespace Reallusion.Import
         public bool isValid = true;
 
         public int index = 0;
+        public int depth = 0;
         private string text;
 
-        public enum NextType { None, OpenBrace, CloseBrace, OpenSquare, CloseSquare, Number, Alpha, String, Seperator, Comma }
+        public enum NextType { None, OpenBrace, CloseBrace, OpenSquare, CloseSquare, Number, Alpha, String, Seperator, Comma, EOF }
 
-        public QuickJSON(string jsonText, int startIndex = 0, bool array = false)
+        public QuickJSON(string jsonText, int depth, int startIndex = 0, bool array = false)
         {
+            this.depth = depth;
             isArray = array;
             text = jsonText;
             index = startIndex;
@@ -60,6 +63,7 @@ namespace Reallusion.Import
             text = textAsset.text;
             string assetPath = AssetDatabase.GetAssetPath(textAsset);
             index = 0;
+            depth = 0;
             values = new List<MultiValue>();
             try
             {
@@ -102,13 +106,13 @@ namespace Reallusion.Import
                         return;
 
                     case NextType.OpenBrace:
-                        QuickJSON childObject = new QuickJSON(text, index);
+                        QuickJSON childObject = new QuickJSON(text, depth + 1, index);
                         index = childObject.index;
                         values.Add(new MultiValue(name, childObject));
                         break;
 
                     case NextType.OpenSquare:
-                        QuickJSON childArray = new QuickJSON(text, index, true);
+                        QuickJSON childArray = new QuickJSON(text, depth + 1, index, true);
                         index = childArray.index;
                         values.Add(new MultiValue(name, childArray));
                         break;
@@ -131,9 +135,9 @@ namespace Reallusion.Import
                         ParseAlpha(name);
                         break;
 
+                    case NextType.EOF:
                     default:
-                        isValid = false;
-                        throw new Exception("Error parsing Json Data!");
+                        throw new Exception("Error parsing Json Data: Premature EOF!");
                 }
             }
         }
@@ -196,7 +200,7 @@ namespace Reallusion.Import
                 }
             }
 
-            return NextType.None;
+            return NextType.EOF;
         }
 
         bool IsAlpha(char c)

@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -273,7 +273,7 @@ namespace Reallusion.Import
         {
             // <<<Magic>>>
 
-            // use a placeholder fixed list 
+            // use a placeholder fixed list
             return springColliderBones;
         }
 
@@ -417,7 +417,7 @@ namespace Reallusion.Import
         private bool DYNAMIC_BONE_AVAILABLE = false;
 
 #if UNITY_2020_1_OR_NEWER
-        // post 2020.1 version - the PrefabUtility class was updated for 2020.1 
+        // post 2020.1 version - the PrefabUtility class was updated for 2020.1
         // uses a disposable helper struct for automatically loading the contents of a Prefab file, saving the contents and unloading the contents again.
         // see: https://docs.unity3d.com/ScriptReference/PrefabUtility.EditPrefabContentsScope.html
         private void AddCollidersToPrefabContents()
@@ -690,7 +690,7 @@ namespace Reallusion.Import
 
         public void SaveReferenceAbstractColliders(ColliderManager colliderManager)
         {
-            // create a reference list of abstract colliders to be used as a 'reset to defaults' resource             
+            // create a reference list of abstract colliders to be used as a 'reset to defaults' resource
             CreateAbstractColliders(colliderManager, out List<ColliderManager.AbstractCapsuleCollider> abstractColliders);
             PhysicsSettingsStore.SaveAbstractColliderSettings(colliderManager, abstractColliders, true);
         }
@@ -994,7 +994,7 @@ namespace Reallusion.Import
 
                         if (data.isHair)
                         {
-                            // hair meshes degenerate quickly if less than full stiffness 
+                            // hair meshes degenerate quickly if less than full stiffness
                             // (too dense, too many verts?)
                             settings.bending = 0f;
                             settings.stretch = 0f;
@@ -1060,7 +1060,7 @@ namespace Reallusion.Import
                                 if (CanAddMagicaCloth(obj, meshName))
                                 {
                                     obj.AddComponent<PrefabNavigation>();
-                                    var cloth = AddMagicaClothInstance(0, obj); // typeValue 0 == create magic mesh cloth 
+                                    var cloth = AddMagicaClothInstance(0, obj); // typeValue 0 == create magic mesh cloth
                                     SetComponentEnabled(cloth, data.activate);
                                     if (!data.activate)
                                         Debug.Log("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
@@ -1191,7 +1191,7 @@ namespace Reallusion.Import
                 enabledProperty.SetValue(component, enabled);
 
                 bool isEnabled = (bool)enabledProperty.GetValue(component);
-                //Debug.Log(component.name + " enabled status: " + isEnabled);                
+                //Debug.Log(component.name + " enabled status: " + isEnabled);
             }
         }
 
@@ -1485,13 +1485,18 @@ namespace Reallusion.Import
             if (!string.IsNullOrEmpty(jsonTexturePath))
             {
                 // try to load the texture asset directly from the json path.
-                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(Util.CombineJsonTexPath(fbxFolder, jsonTexturePath));
-                name = Path.GetFileNameWithoutExtension(jsonTexturePath);
+                string path = characterInfo.GetTexPath(jsonTexturePath);
+                if (File.Exists(path))
+                {
+                    tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                    name = Path.GetFileNameWithoutExtension(path);
+                }
 
                 // if that fails, try to find the texture by name in the texture folders.
                 if (!tex && search)
                 {
                     tex = Util.FindTexture(textureFolders.ToArray(), name);
+                    if (tex) Util.LogWarn($"Unable to find texture specified in Json: {path}\nFound alternative by name: {name}");
                 }
             }
 
@@ -1500,6 +1505,7 @@ namespace Reallusion.Import
             {
                 name = materialName + "_" + suffix;
                 tex = Util.FindTexture(textureFolders.ToArray(), name);
+                if (tex) Util.LogInfo($"Found texture in material folder: {name}");
             }
 
             return tex;
@@ -1706,12 +1712,12 @@ namespace Reallusion.Import
 
             if (MagicaCloth2IsAvailable())
             {
-                colliderManager.magicaColliderType = GetTypeInAssemblies("MagicaCloth2.MagicaCapsuleCollider"); // very slow                
+                colliderManager.magicaColliderType = GetTypeInAssemblies("MagicaCloth2.MagicaCapsuleCollider"); // very slow
             }
 
             if (DynamicBoneIsAvailable())
             {
-                colliderManager.dynamicBoneColliderType = GetTypeInAssemblies("DynamicBoneCollider"); // very slow                
+                colliderManager.dynamicBoneColliderType = GetTypeInAssemblies("DynamicBoneCollider"); // very slow
             }
             // create an array of the in-scene transforms in the character hierarchy
             Transform[] allChildTransforms = colliderManager.gameObject.GetComponentsInChildren<Transform>(true);

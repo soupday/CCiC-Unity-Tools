@@ -1,17 +1,17 @@
-﻿/* 
+﻿/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 using Object = UnityEngine.Object;
@@ -45,7 +46,7 @@ namespace Reallusion.Import
             WrinkleMaps = 16,
             MagicaCloth = 32, // Magica Mesh Cloth for clothing items
             MagicaBone = 64, // Magica Bone Cloth for hair
-            UnityClothPhysics = 128, // Unity Cloth for clothing items 
+            UnityClothPhysics = 128, // Unity Cloth for clothing items
             UnityClothHairPhysics = 256, // Unity Cloth for hair items
             MagicaClothHairPhysics = 512, // Magica Mesh Cloth for hair items
             SpringBonePhysics = 1024,  // group flag to allow selection between SpringBoneHair & MagicaBone
@@ -106,6 +107,9 @@ namespace Reallusion.Import
         public string jsonFilepath;
         public string name;
         public string folder;
+        public readonly string texFolder;
+        public readonly string fbmFolder;
+        public readonly List<string> textureFolders;
 
         public bool isLOD = false;
         public bool bakeIsBaked = false;
@@ -263,7 +267,7 @@ namespace Reallusion.Import
         public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
         public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         public bool FeatureUseExtractGeneric => (ShaderFlags & ShaderFeatureFlags.ExtractGeneric) > 0;
-        //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
+        //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
         public EyeQuality QualEyes { get { return qualEyes; } set { qualEyes = value; } }
@@ -279,7 +283,7 @@ namespace Reallusion.Import
         public TexSizeQuality QualTexSize { get { return qualTexSize; } set { qualTexSize = value; } }
         public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
-        // these are the settings the character has been built to.  
+        // these are the settings the character has been built to.
         private ProcessingType builtLogType = ProcessingType.None;
         private EyeQuality builtQualEyes = EyeQuality.Parallax;
         private HairQuality builtQualHair = HairQuality.TwoPass;
@@ -370,6 +374,10 @@ namespace Reallusion.Import
             folder = Path.GetDirectoryName(path);
             infoFilepath = Path.Combine(folder, name + "_ImportInfo.txt");
             jsonFilepath = Path.Combine(folder, name + ".json");
+            // construct the texture folder list for the character.
+            fbmFolder = Path.Combine(folder, name + ".fbm");
+            texFolder = Path.Combine(folder, "textures", name);
+            textureFolders = new List<string>() { fbmFolder, texFolder };
             if (path.iContains("_lod")) isLOD = true;
             guidRemaps = new List<GUIDRemap>();
             materialOverrides = new List<Tuple<string, MaterialType>>();
@@ -1726,5 +1734,26 @@ namespace Reallusion.Import
             }
         }
 
+        public string GetTexPath(string jsonTexPath)
+        {
+            string fileName = Path.GetFileName(jsonTexPath);
+            string dirName = Path.GetDirectoryName(jsonTexPath);
+
+            // embedded texture does not have a valid json path to fbmFolder
+            if (fileName == jsonTexPath || string.IsNullOrEmpty(dirName))
+            {
+                return Path.Combine(fbmFolder, jsonTexPath);
+            }
+
+            // remove any ./ .\ prefix from the start of the json texture path
+            if (jsonTexPath.iStartsWith("./") || jsonTexPath.iStartsWith(".\\"))
+                jsonTexPath = jsonTexPath.Substring(2);
+
+            // convert slashes/backslashes to OS dependant separator
+            if (Path.DirectorySeparatorChar != '\\') jsonTexPath = jsonTexPath.Replace('\\', Path.DirectorySeparatorChar);
+            if (Path.DirectorySeparatorChar != '/') jsonTexPath = jsonTexPath.Replace('/', Path.DirectorySeparatorChar);
+
+            return Path.Combine(folder, jsonTexPath);
+        }
     }
 }
