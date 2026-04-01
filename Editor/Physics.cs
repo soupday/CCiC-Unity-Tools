@@ -722,7 +722,7 @@ namespace Reallusion.Import
 
             if (dynamicBoneType == null)
             {
-                Debug.LogWarning("Warning: DynamicBone not found in project assembly.");
+                Util.LogWarn("Warning: DynamicBone not found in project assembly.");
                 return;
             }
 
@@ -747,7 +747,7 @@ namespace Reallusion.Import
 
                 if (dynamicBoneComponent == null)
                 {
-                    Debug.LogError("Unable to add DynamicBone Component!");
+                    Util.LogError("Unable to add DynamicBone Component!");
                     return;
                 }
 
@@ -917,7 +917,7 @@ namespace Reallusion.Import
                                 {
                                     cloth.enabled = data.activate;
                                     if (!data.activate)
-                                        Debug.Log("Physics setup for " + meshName + " added. Unity Cloth component is currently set to inactive (using settings from Character Creator export).");
+                                        Util.LogInfo("Physics setup for " + meshName + " added. Unity Cloth component is currently set to inactive (using settings from Character Creator export).");
                                     clothMeshes.Add(new EnableStatusGameObject(obj, data.activate));
                                 }
                             }
@@ -931,7 +931,7 @@ namespace Reallusion.Import
                                 {
                                     cloth.enabled = data.activate;
                                     if (!data.activate)
-                                        Debug.Log("Physics setup for " + meshName + " added. Unity Cloth component is currently set to inactive (using settings from Character Creator export).");
+                                        Util.LogInfo("Physics setup for " + meshName + " added. Unity Cloth component is currently set to inactive (using settings from Character Creator export).");
                                     clothMeshes.Add(new EnableStatusGameObject(obj, data.activate));
                                 }
                             }
@@ -1063,7 +1063,7 @@ namespace Reallusion.Import
                                     var cloth = AddMagicaClothInstance(0, obj); // typeValue 0 == create magic mesh cloth
                                     SetComponentEnabled(cloth, data.activate);
                                     if (!data.activate)
-                                        Debug.Log("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
+                                        Util.LogInfo("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
                                     DoMagicaCloth(cloth, obj, data);
                                     SetMagicaParameters(cloth);
                                     //magicaClothMeshes.Add(obj);
@@ -1078,7 +1078,7 @@ namespace Reallusion.Import
                                     var cloth = AddMagicaClothInstance(0, obj);
                                     SetComponentEnabled(cloth, data.activate);
                                     if (!data.activate)
-                                        Debug.Log("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
+                                        Util.LogInfo("Physics setup for " + meshName + " added. Magica Cloth component is currently set to inactive (using settings from Character Creator export).");
                                     DoMagicaCloth(cloth, obj, data);
                                     SetMagicaParameters(cloth, true);
                                     //magicaClothMeshes.Add(obj);

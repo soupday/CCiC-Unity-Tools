@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -160,7 +160,7 @@ namespace Reallusion.Import
         private string[] materialTypeNames;
         private string[] materialTypeDisplayNames;
 
-        // SerializeField is used to ensure the view state is written to the window 
+        // SerializeField is used to ensure the view state is written to the window
         // layout file. This means that the state survives restarting Unity as long as the window
         // is not closed. If the attribute is omitted then the state is still serialized/deserialized.
 #if UNITY_6000_2_OR_NEWER
@@ -279,7 +279,7 @@ namespace Reallusion.Import
 
         public static void RemoteInit()
         {
-            Debug.LogWarning("**** DOING REMOTEINIT ***");
+            Util.LogWarn("**** DOING REMOTEINIT ***");
             ImporterWindow window;
             if (!EditorWindow.HasOpenInstances<EditorWindow>())
             {
@@ -372,7 +372,7 @@ namespace Reallusion.Import
                 }
             }
             else
-            {                
+            {
                 ShaderPackageUtil.GetInstalledPipelineVersion();
                 FrameTimer.CreateTimer(10, FrameTimer.initShaderUpdater, ShaderPackageUtil.ImporterWindowInitCallback);
             }
@@ -381,7 +381,7 @@ namespace Reallusion.Import
         public static void InitSoftwareUpdateCheck()
         {
             if (Application.isPlaying)
-            {                
+            {
                 if (EditorWindow.HasOpenInstances<RLToolUpdateWindow>())
                 {
                     EditorWindow.GetWindow<RLToolUpdateWindow>().Close();
@@ -478,7 +478,7 @@ namespace Reallusion.Import
         {
             if (contextCharacter != null)
             {
-                // Check whether there is already a serialized view state (state 
+                // Check whether there is already a serialized view state (state
                 // that survived assembly reloading)
                 if (treeViewState == null)
                 {
@@ -685,7 +685,7 @@ namespace Reallusion.Import
                 RefreshGUI(RefreshMessage.NoneSelected, refreshBlock);
             }
 
-            // functions to run after the GUI has finished...             
+            // functions to run after the GUI has finished...
             if (previewCharacterAfterGUI)
             {
                 EditorApplication.delayCall += PreviewCharacter;
@@ -1153,7 +1153,7 @@ namespace Reallusion.Import
             GUILayout.Space(ACTION_BUTTON_SPACE);
 
             if (!contextCharacter.BuiltHQMaterials || contextCharacter.BuiltDualMaterialHair) GUI.enabled = false;
-            if (GUILayout.Button(new GUIContent(iconAction2Pass, "Convert hair meshes to use two material passes. Two pass hair is generally higher quality, where the hair is first drawn opaque with alpha cutout and the remaing edges drawn in softer alpha blending, but can come at a performance cost."), 
+            if (GUILayout.Button(new GUIContent(iconAction2Pass, "Convert hair meshes to use two material passes. Two pass hair is generally higher quality, where the hair is first drawn opaque with alpha cutout and the remaing edges drawn in softer alpha blending, but can come at a performance cost."),
                 GUILayout.Width(ACTION_BUTTON_SIZE), GUILayout.Height(ACTION_BUTTON_SIZE)))
             {
                 contextCharacter.DualMaterialHair = true;
@@ -1552,10 +1552,10 @@ namespace Reallusion.Import
             GUILayout.Space(10f);
             GUILayout.BeginVertical(new GUIContent("", "When assigning weight maps, the system analyses the weights of the mesh to determine which colliders affect the cloth simulation.Only cloth weights above this threshold will be considered for collider detection. Note: This is the default value supplied to the WeightMapper component, it can be further modified there."), importerStyles.labelStyle);
             GUILayout.Label("Collider Detection Threshold");
-            GUILayout.Space(ROW_SPACE);            
+            GUILayout.Space(ROW_SPACE);
             GUILayout.BeginHorizontal();
             Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD = GUILayout.HorizontalSlider(Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD, 0f, 1f);
-            GUILayout.Label(Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD.ToString("0.00"), 
+            GUILayout.Label(Physics.PHYSICS_WEIGHT_MAP_DETECT_COLLIDER_THRESHOLD.ToString("0.00"),
                             GUILayout.Width(40f));
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -2492,7 +2492,7 @@ namespace Reallusion.Import
 
         private void CheckAvailableAddons()
         {
-            // init simple bools for the GUI to use to avoid repeatedly iterating through 
+            // init simple bools for the GUI to use to avoid repeatedly iterating through
             // AppDomain.CurrentDomain.GetAssemblies() -- ALWAYS make these checks before any reflection code
             dynamicBoneAvailable = Physics.DynamicBoneIsAvailable();
             magicaCloth2Available = Physics.MagicaCloth2IsAvailable();
@@ -2729,7 +2729,7 @@ namespace Reallusion.Import
                         UnityEngine.Object[] refs = DragAndDrop.objectReferences;
                         if (DragAndDrop.objectReferences.Length > 0)
                         {
-                            Debug.Log("Tab Id: " + TabId);
+                            Util.LogDetail("Tab Id: " + TabId);
                             //CharacterInfo obj = (CharacterInfo)DragAndDrop.GetGenericData("DragTypeExampleString");
                             //Debug.Log("Tab Id: " + TabId +  " Character Name: " + obj.CharacterName);
                             //Debug.Log(refs[0].name);

@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -68,7 +68,7 @@ namespace Reallusion.Import
                     {
                         //Debug.Log(" ### Rejecting: " + path + " it has " + Path.GetExtension(path) + " extension");
                         // flagging
-                        Debug.LogWarning(path + " Found -- CC/iC tools are incorrectly installed -- see documentation for details");
+                        Util.LogWarn(path + " Found -- CC/iC tools are incorrectly installed -- see documentation for details");
                     }
                 }
                 else
@@ -137,7 +137,7 @@ namespace Reallusion.Import
                         // version upgrade
                         result.toolVersion = Pipeline.VERSION;
                         return result;
-                        //MoveGuidToTrash(objGuid);                        
+                        //MoveGuidToTrash(objGuid);
                         //return CreateSettingsObject();
                     }
                 }
@@ -165,10 +165,10 @@ namespace Reallusion.Import
         public static void MoveGuidToTrash(string guid) // unless the Unity version is before 2021.3
         {
 #if UNITY_2021_3_OR_NEWER
-            Debug.Log("Removing (file will be moved to the operating system's trashcan): " + AssetDatabase.GUIDToAssetPath(guid));
+            Util.LogInfo("Removing (file will be moved to the operating system's trashcan): " + AssetDatabase.GUIDToAssetPath(guid));
             AssetDatabase.MoveAssetToTrash(AssetDatabase.GUIDToAssetPath(guid));
 #else
-            Debug.Log("Deleteing: " + AssetDatabase.GUIDToAssetPath(guid));
+            Util.LogInfo("Deleteing: " + AssetDatabase.GUIDToAssetPath(guid));
             AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
 #endif
         }
@@ -237,7 +237,7 @@ namespace Reallusion.Import
                 if (assetPath != obj.lastPath)
                 {
                     // object has moved - update last path
-                    Debug.Log("Asset has moved updating paths from: " + obj.lastPath + " to: " + assetPath);
+                    Util.LogInfo("Asset has moved updating paths from: " + obj.lastPath + " to: " + assetPath);
                     obj.lastPath = assetPath;
                 }
 

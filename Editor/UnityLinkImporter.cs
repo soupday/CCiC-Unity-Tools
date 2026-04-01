@@ -144,7 +144,7 @@ namespace Reallusion.Import
                 {
                     if (selectedTimeline == null || selectedTimeline.playableAsset == null)
                     {
-                        //Debug.LogWarning("UnityLinkImporter selectedTimeline || selectedTimeline.playableAsset = null");
+                        //Util.LogWarn("UnityLinkImporter selectedTimeline || selectedTimeline.playableAsset = null");
                         if (UnityLinkSceneManagement.TryGetSceneTimeLine(out PlayableDirector sceneTimeLine)) // if there isnt one - find one in scene
                         {
                             UnityLinkManager.SCENE_TIMELINE_ASSET = sceneTimeLine;
@@ -187,7 +187,7 @@ namespace Reallusion.Import
                 }
 
                 UnityLinkManager.SCENE_FOLDER = UnityLinkManager.SCENE_FOLDER.Replace("\\", "/");
-                //Debug.LogWarning("UnityLinkManager.SCENE_FOLDER has been set to: " + UnityLinkManager.SCENE_FOLDER);
+                //Util.LogWarn("UnityLinkManager.SCENE_FOLDER has been set to: " + UnityLinkManager.SCENE_FOLDER);
             }
 
             if (string.IsNullOrEmpty(item.RemoteId))
@@ -278,7 +278,7 @@ namespace Reallusion.Import
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError("Error extracting remote zip to directory:\n" +
+                    Util.LogError("Error extracting remote zip to directory:\n" +
                                     zipPath + "\n" +
                                     zipFolder + "\n" +
                                     e.Message);
@@ -287,7 +287,7 @@ namespace Reallusion.Import
                 //System.IO.Compression.FileSystem.ZipFile.ExtractToDirectory(zipPath, zipFolder);
                 // either use nuget < PackageReference Include = "System.IO.Compression.ZipFile" Version = "4.3.0" />
                 // or requires a reference to System.IO.Compression.FileSystem to be added to the solution
-                Debug.LogError("Cannot process files from a remote host in Unity versions prior to 2021.1");
+                Util.LogError("Cannot process files from a remote host in Unity versions prior to 2021.1");
 #endif
                 File.Delete(zipPath);
                 fbxPath = RetrieveDiskAsset(zipFolder, name);
@@ -395,7 +395,7 @@ namespace Reallusion.Import
             CharacterInfo characterMatch = WindowManager.ValidImports.FirstOrDefault(x => x.linkId == linkId);
             if (characterMatch != null)
             {
-                Debug.Log($"Existing linked character found at: {characterMatch.path} for linkId: {linkId}");
+                Util.LogInfo($"Existing linked character found at: {characterMatch.path} for linkId: {linkId}");
                 string fbxPath = characterMatch.path;
                 if (!string.IsNullOrEmpty(fbxPath))
                 {
@@ -430,7 +430,7 @@ namespace Reallusion.Import
         {
             string inProjectAssetPath = string.Empty;
             string assetFolderName = name;
-            //Debug.LogWarning("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
+            //Util.LogWarn("RetrieveDiskAsset - assetFolder " + assetFolder + " name " + name);
 
             // for FileUtil.CopyFileOrDirectory the target directory must not have any contents
             // UnityLinkManager.IMPORT_DESTINATION_FOLDER is obtained as a full path from EditorUtility.OpenFolderPanel
@@ -439,25 +439,25 @@ namespace Reallusion.Import
 
             string proposedDestinationFolder = Path.Combine(validatedDestFolder.FullPathToUnityAssetPath(), assetFolderName);
 
-            //Debug.LogWarning("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
+            //Util.LogWarn("RetrieveDiskAsset - proposedDestinationFolder " + proposedDestinationFolder);
 
             string destinationFolder = GetNonDuplicateFolderName(proposedDestinationFolder, true);
-            //Debug.LogWarning("RetrieveDiskAsset - destinationFolder " + destinationFolder);
+            //Util.LogWarn("RetrieveDiskAsset - destinationFolder " + destinationFolder);
 
             if (string.IsNullOrEmpty(destinationFolder))
             {
-                Debug.LogWarning($"Cannot find a folder to import into {proposedDestinationFolder} has too many copies");
+                Util.LogWarn($"Cannot find a folder to import into {proposedDestinationFolder} has too many copies");
                 return string.Empty;
             }
 
-            if (Directory.GetFiles(assetFolder).Length == 0) { Debug.LogWarning("Asset source folder is empty!"); return string.Empty; }
-            //if (Directory.GetFiles(destinationFolder).Length > 0) { Debug.LogWarning("Destination folder: " + destinationFolder +  " has files in it!"); return string.Empty; }
+            if (Directory.GetFiles(assetFolder).Length == 0) { Util.LogWarn("Asset source folder is empty!"); return string.Empty; }
+            //if (Directory.GetFiles(destinationFolder).Length > 0) { Util.LogWarn("Destination folder: " + destinationFolder +  " has files in it!"); return string.Empty; }
             try
             {
                 //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
                 if (string.IsNullOrEmpty(existingLinkedCharFolder))
                 {
-                    //Debug.Log("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
+                    //Util.LogInfo("FileUtil.CopyFileOrDirectory " + assetFolder + " to " + destinationFolder);
 
                     FileUtil.CopyFileOrDirectory(assetFolder, destinationFolder);
                     // or
@@ -468,7 +468,7 @@ namespace Reallusion.Import
                 else
                 {
                     string targetFolder = existingLinkedCharFolder.UnityAssetPathToFullPath();
-                    Debug.Log($"Importing to existing linked folder {targetFolder}.");
+                    Util.LogInfo($"Importing to existing linked folder {targetFolder}.");
 
                     string prevParentName = "Previous_Imports";
                     string prevParentPath = Path.Combine(existingLinkedCharFolder, prevParentName);
@@ -480,7 +480,7 @@ namespace Reallusion.Import
                     string prev_name = Path.GetFileNameWithoutExtension(existingLinkedFbxPath);
 
                     string uniqueFolder = GetNonDuplicateFolderName(Path.Combine(prevParentPath, prev_name), true);
-                    Debug.Log($"Moving previous FBX: {prev_fbx} to new folder: {uniqueFolder}");
+                    Util.LogInfo($"Moving previous FBX: {prev_fbx} to new folder: {uniqueFolder}");
                     string prev_dest = Path.Combine(uniqueFolder, prev_fbx);
 
                     if (!AssetDatabase.IsValidFolder(uniqueFolder))
@@ -503,7 +503,7 @@ namespace Reallusion.Import
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Cannot copy asset to AssetDatabase! Error: {ex.Message}"); return string.Empty;
+                Util.LogWarn($"Cannot copy asset to AssetDatabase! Error: {ex.Message}"); return string.Empty;
             }
 
             if (opCode == UnityLinkManager.OpCodes.STAGING) // non-fbx imports
@@ -598,7 +598,7 @@ namespace Reallusion.Import
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"Error copying file {f.FullName}: {ex.Message}");
+                    Util.LogWarn($"Error copying file {f.FullName}: {ex.Message}");
                 }
             }
 
@@ -656,7 +656,7 @@ namespace Reallusion.Import
             // requires a unity asset path
             string fullCleanupPath = path.UnityAssetPathToFullPath();
             string cleanupMetaFile = fullCleanupPath + ".meta";
-            //Debug.LogWarning("CLEANING UP: " + fullCleanupPath + " & Meta " + cleanupMetaFile);
+            //Util.LogWarn("CLEANING UP: " + fullCleanupPath + " & Meta " + cleanupMetaFile);
             Directory.Delete(fullCleanupPath, true);
             File.Delete(cleanupMetaFile);
             AssetDatabase.Refresh();
@@ -666,7 +666,7 @@ namespace Reallusion.Import
         #region Motion Import
         public void ImportMotion(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Util.LogWarn("Cannot import asset..."); return; }
 
             if (motionTargetChar != null && !string.IsNullOrEmpty(motionTargetChar.path))
             {
@@ -735,12 +735,12 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.Log("Cannot generate animation clips for avatar.");
+                    Util.LogWarn("Cannot generate animation clips for avatar.");
                 }
             }
             else
             {
-                Debug.Log("No suitable target can be found for motion.");
+                Util.LogWarn("No suitable target can be found for motion.");
             }
         }
         #endregion
@@ -748,7 +748,7 @@ namespace Reallusion.Import
         #region Prop Import
         public void ImportProp(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Util.LogWarn("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
 
             WindowManager.HideAnimationRetargeter(true);
@@ -786,7 +786,7 @@ namespace Reallusion.Import
         #region Avatar Import
         public void ImportAvatar(string fbxPath, string linkId)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Util.LogWarn("Cannot import asset..."); return; }
             string guid = AssetDatabase.AssetPathToGUID(fbxPath);
 
             WindowManager.HideAnimationRetargeter(true);
@@ -832,7 +832,7 @@ namespace Reallusion.Import
         #region Staging Import
         public void ImportStaging(string folderPath, UnityLinkManager.JsonStaging stagedManifest)
         {
-            if (string.IsNullOrEmpty(fbxPath)) { Debug.LogWarning("Cannot import asset..."); return; }
+            if (string.IsNullOrEmpty(fbxPath)) { Util.LogWarn("Cannot import asset..."); return; }
 
             //UnityLinkSceneManagement.CreateStagingSceneDependencies();
 
@@ -892,7 +892,7 @@ namespace Reallusion.Import
                     }
                 default:
                     {
-                        Debug.LogWarning("Error identifying the staging item type.");
+                        Util.LogWarn("Error identifying the staging item type.");
                         break;
                     }
             }
@@ -965,10 +965,10 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.LogWarning(e.Message); return;
+                Util.LogWarn(e.Message); return;
             }
 
-            if (jsonCameraObject == null) { Debug.LogWarning("MakeAnimatedCamera: Could not deserialize embedded json"); return; }
+            if (jsonCameraObject == null) { Util.LogWarn("MakeAnimatedCamera: Could not deserialize embedded json"); return; }
 
             //UnityLinkSceneManagement.CreateStagingSceneDependencies(jsonCameraObject.DofEnable);
 
@@ -997,7 +997,7 @@ namespace Reallusion.Import
                 CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
                 if (CameraProxyType == null)
                 {
-                    Debug.LogWarning("Cannot create a <CameraProxy> component on the <Light> object.");
+                    Util.LogWarn("Cannot create a <CameraProxy> component on the <Light> object.");
                     return;
                 }
             }
@@ -1036,10 +1036,10 @@ namespace Reallusion.Import
             //Set Initial CameraProperties
             if (camera != null)
             {
-                //Debug.LogWarning("Camera component is NOT null");
+                //Util.LogWarn("Camera component is NOT null");
                 camera.usePhysicalProperties = true;
                 camera.focalLength = jsonCameraObject.FocalLength;
-                //Debug.LogWarning("focalLength = " + jsonCameraObject.FocalLength);
+                //Util.LogWarn("focalLength = " + jsonCameraObject.FocalLength);
                 camera.sensorSize = new Vector2(jsonCameraObject.Width, jsonCameraObject.Height);
 
                 const string horizontal = "HORIZONTAL";
@@ -1069,7 +1069,7 @@ namespace Reallusion.Import
             }
             else
             {
-                //Debug.LogWarning("Camera component is null");
+                //Util.LogWarn("Camera component is null");
             }
             target.transform.position = Vector3.zero;
             target.transform.rotation = Quaternion.identity;
@@ -1358,17 +1358,17 @@ namespace Reallusion.Import
                 CameraProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.CameraProxy");
                 if (CameraProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <CameraProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupLight cannot find the <CameraProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
                 else
                 {
-                    //Debug.LogWarning("Found " + CameraProxyType.GetType().ToString());
+                    //Util.LogWarn("Found " + CameraProxyType.GetType().ToString());
                 }
             }
             else
             {
-                //Debug.LogWarning("Already had " + CameraProxyType.GetType().ToString());
+                //Util.LogWarn("Already had " + CameraProxyType.GetType().ToString());
             }
 
             Component proxy = root.GetComponentInChildren(CameraProxyType);
@@ -1383,13 +1383,13 @@ namespace Reallusion.Import
 
                 if (SetupCameraMethod == null)
                 {
-                    Debug.LogWarning("SetupLight MethodInfo cannot be determined");
+                    Util.LogWarn("SetupLight MethodInfo cannot be determined");
                     return;// null;
                 }
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 
@@ -1435,10 +1435,10 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.LogWarning(e.Message); return;
+                Util.LogWarn(e.Message); return;
             }
 
-            if (jsonLightObject == null) { Debug.LogWarning("MakeAnimatedLight: Could not deserialize embedded json"); return; }
+            if (jsonLightObject == null) { Util.LogWarn("MakeAnimatedLight: Could not deserialize embedded json"); return; }
 
             if (importIntoScene)
                 UnityLinkSceneManagement.CreateStagingSceneDependencies(false);
@@ -1468,7 +1468,7 @@ namespace Reallusion.Import
                 LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
                 if (LightProxyType == null)
                 {
-                    Debug.LogWarning("Cannot create a <LightProxy> component on the <Light> object.");
+                    Util.LogWarn("Cannot create a <LightProxy> component on the <Light> object.");
                     return;
                 }
             }
@@ -1840,7 +1840,7 @@ namespace Reallusion.Import
                 LightProxyType = Physics.GetTypeInAssemblies("Reallusion.Runtime.LightProxy");
                 if (LightProxyType == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <LightProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupLight cannot find the <LightProxy> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;// null;
                 }
             }
@@ -1857,13 +1857,13 @@ namespace Reallusion.Import
 
                 if (SetupLightMethod == null)
                 {
-                    Debug.LogWarning("SetupLight MethodInfo cannot be determined");
+                    Util.LogWarn("SetupLight MethodInfo cannot be determined");
                     return;// null;
                 }
             }
             else
             {
-                Debug.LogWarning("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("SetupLight cannot find the <LightProxy> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;// null;
             }
 
@@ -1928,7 +1928,7 @@ namespace Reallusion.Import
                             }
                             catch
                             {
-                                Debug.Log($"IES file for light: {Name} cannot be read");
+                                Util.LogError($"IES file for light: {Name} cannot be read");
                             }
                             break;
                         }
@@ -1943,7 +1943,7 @@ namespace Reallusion.Import
                             }
                             catch
                             {
-                                Debug.Log($"IES file for light: {Name} cannot be read");
+                                Util.LogError($"IES file for light: {Name} cannot be read");
                             }
                             break;
                         }
@@ -1983,7 +1983,7 @@ namespace Reallusion.Import
                 string clipAssetPath = fullClipAssetPath.FullPathToUnityAssetPath();
                 CheckUnityPath(Path.GetDirectoryName(clipAssetPath));
 
-                //Debug.LogWarning("Saving RLX animation to " + clipAssetPath);
+                //Util.LogWarn("Saving RLX animation to " + clipAssetPath);
                 if (File.Exists(fullClipAssetPath))
                 {
                     AssetDatabase.DeleteAsset(clipAssetPath);
@@ -2050,7 +2050,7 @@ namespace Reallusion.Import
                     }
                 }
             }
-            catch (Exception e) { Debug.LogWarning(e.Message); }
+            catch (Exception e) { Util.LogWarn(e.Message); }
             return string.Empty;
         }
 
@@ -2137,7 +2137,7 @@ namespace Reallusion.Import
             string[] strings = path.Split(new char[] { '\\', '/' });
             if (!strings[0].Equals("Assets", StringComparison.InvariantCultureIgnoreCase))
             {
-                Debug.LogWarning("Not a Unity path.");
+                Util.LogWarn("Not a Unity path.");
             }
             if (strings.Length == 1) return; // just Assets
 
@@ -2230,7 +2230,7 @@ namespace Reallusion.Import
                     else
                     {
                         clipToUse = animClip;
-                        Debug.Log($"Animation Clip: {animClip}");
+                        Util.LogInfo($"Animation Clip: {animClip}");
                         break;
                     }
                 }
@@ -2274,7 +2274,7 @@ namespace Reallusion.Import
                             List<EditorCurveBinding> partials = staticBindings.FindAll(x => x.path == binding.path && x.propertyName.Split('.')[0] == binding.propertyName.Split('.')[0]);
                             foreach (var partial in partials)
                             {
-                                Debug.Log("Animation curve: " + partial.path + "  " + partial.propertyName + " in clip: " + clipToUse.name + " is partially animated and will be retained.");
+                                Util.LogDetail("Animation curve: " + partial.path + "  " + partial.propertyName + " in clip: " + clipToUse.name + " is partially animated and will be retained.");
                             }
                             // remove the static bindings that have an animated common path+property from the static list
                             IEnumerable<EditorCurveBinding> trimmed = staticBindings.Except(partials);
@@ -2287,7 +2287,7 @@ namespace Reallusion.Import
                     {
                         foreach (var binding in staticBindings)
                         {
-                            Debug.Log("Animation curve: " + binding.path + "  " + binding.propertyName + " in clip: " + clipToUse.name + " is redundant and will be removed.  Type: " + binding.type.ToString());
+                            Util.LogDetail("Animation curve: " + binding.path + "  " + binding.propertyName + " in clip: " + clipToUse.name + " is redundant and will be removed.  Type: " + binding.type.ToString());
                             AnimationUtility.SetEditorCurve(clipToUse, binding, null);
                         }
                     }
@@ -2390,7 +2390,7 @@ namespace Reallusion.Import
                                 }
                             }
                         }
-                        catch (Exception e) { Debug.Log(e.Message); }
+                        catch (Exception e) { Util.LogError(e.Message); }
                     }
 
                     // will purge the existing object in the scene and reinstatiate the modified prefab
@@ -2405,7 +2405,7 @@ namespace Reallusion.Import
             for (int i = 0; i < transform.childCount; i++)
             {
                 string childPath = fullPath + (string.IsNullOrEmpty(fullPath) ? "" : "/") + transform.GetChild(i).name;
-                Debug.Log($"Adding {childPath}");
+                Util.LogDetail($"Adding {childPath}");
                 map.Add(childPath, transform.GetChild(i));
                 IterateOverHierarchy(transform.GetChild(i), childPath);
             }
@@ -2421,11 +2421,11 @@ namespace Reallusion.Import
             }
             catch
             {
-                Debug.Log("JToken didn't parse");
+                Util.LogError("JToken didn't parse");
                 beautifiedJson = jsonString;
             }
 
-            Debug.LogWarning(beautifiedJson);
+            Util.LogWarn(beautifiedJson);
         }
 
         #endregion

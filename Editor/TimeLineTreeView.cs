@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -27,7 +27,7 @@ using Object = UnityEngine.Object;
 
 namespace Reallusion.Import
 {
-#if UNITY_6000_2_OR_NEWER 
+#if UNITY_6000_2_OR_NEWER
     // 'TreeViewItem' is obsolete: 'TreeViewItem is now deprecated. You can likely now use TreeViewItem<int> instead and not think more about it. But if you were using that identifier to store InstanceID data, you should instead opt to upgrade your TreeViews to use TreeViewItem<InstanceID> to get the proper typing.'
     public class TimeLineTreeView : TreeView<int>
 #else
@@ -35,15 +35,15 @@ namespace Reallusion.Import
 #endif
     {
         /*
-         * Root                                                     depth = -1  
+         * Root                                                     depth = -1
          *   |
-         *   |--  <PlayableDirector> Object (playable asset name)   depth = 0   // EditorGUIUtility.IconContent("TimelineAsset Icon") 
+         *   |--  <PlayableDirector> Object (playable asset name)   depth = 0   // EditorGUIUtility.IconContent("TimelineAsset Icon")
          *                  |
          *                  |-- Animation Track                     depth = 1   // EditorGUIUtility.IconContent("Animator Icon")  typeof(Animator)
          *                  |        |-- Animation Override         depth = 2   // EditorGUIUtility.IconContent("AnimatorOverrideController Icon")
          *                  |-- Activation Track                    depth = 1   // EditorGUIUtility.IconContent("TestPassed")  typeof(GameObject)
          *                  |-- Audio Track                         depth = 1   // EditorGUIUtility.IconContent("d_AudioSource Icon") typeof(AudioSource)
-         * 
+         *
          */
 
         PlayableDirector[] playableDirectors;
@@ -75,7 +75,7 @@ namespace Reallusion.Import
             var root = new TreeViewItem<int> { id = mId++, depth = mDepth, displayName = "Root" };
             var allItems = new List<TreeViewItem<int>>();
 #else
-            var root = new TreeViewItem { id = mId++, depth = mDepth, displayName = "Root" };                     
+            var root = new TreeViewItem { id = mId++, depth = mDepth, displayName = "Root" };
             var allItems = new List<TreeViewItem>();
 #endif
             tracked = new List<TrackItemStatus>();
@@ -101,7 +101,7 @@ namespace Reallusion.Import
 
             foreach (PlayableDirector obj in playableDirectors)
             {
-                mDepth = 0;//base level     
+                mDepth = 0;//base level
 
                 if (obj.playableAsset == null)
                 {
@@ -205,7 +205,7 @@ namespace Reallusion.Import
             SetupParentsAndChildrenFromDepths(root, allItems);
             return root;
         }
-                
+
         public List<TrackItemStatus> tracked;
 
         public class TrackItemStatus
@@ -266,12 +266,12 @@ namespace Reallusion.Import
                 }
                 //args.rowRect.x += 0f;  // += 22f
             }
-            base.RowGUI(args);            
+            base.RowGUI(args);
         }
 
         protected override void SelectionChanged(IList<int> selectedIds)
         {
-            Debug.Log("Selection has changed: " + selectedIds.Count + " items.");
+            Util.LogDetail("Selection has changed: " + selectedIds.Count + " items.");
             List<Object> selectedObjects = new List<Object>();
             foreach (int id in selectedIds)
             {

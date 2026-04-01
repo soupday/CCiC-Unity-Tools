@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -37,7 +37,7 @@ namespace Reallusion.Import
 		private const string settingsDir = "Settings";
 		private const string settingsFileName = "PhysicsSettingsStore";
 		private const string settingsSuffix = ".asset";
-		// additions        
+		// additions
 		public List<ColliderManager.AbstractCapsuleCollider> abstractColliderSettings;
 		public ColliderManager.GizmoState gizmoState;
 		//public string[] gizmosToRestore;
@@ -323,7 +323,7 @@ namespace Reallusion.Import
 			List<ColliderManager.AbstractCapsuleCollider> target = new List<ColliderManager.AbstractCapsuleCollider>();
 
 			foreach (ColliderManager.AbstractCapsuleCollider c in abstractColliders)
-			{                
+			{
                 target.Add(new ColliderManager.AbstractCapsuleCollider(null, c.transform.localPosition, c.transform.localRotation, c.height, c.radius, c.name, c.axis, c.isEnabled));
             }
 
@@ -438,7 +438,7 @@ namespace Reallusion.Import
 					return Path.Combine(characterFolder, settingsDir, characterName, settingsFileName + settingsSuffix);
 			}
             return null;
-        }		
+        }
         // end of additions
 #endif
     }

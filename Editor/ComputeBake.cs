@@ -653,7 +653,7 @@ namespace Reallusion.Import
         private void CopyAdditionalSettings(Material source, Material dest)
         {
             string[] refs = new string[] {
-                // Tessellation (HDRP 12+)                
+                // Tessellation (HDRP 12+)
                 "_TessellationBackFaceCullEpsilon", "_TessellationFactor",
                 "_TessellationFactorMaxDistance", "_TessellationFactorMinDistance",
                 "_TessellationFactorTriangleSize", "_TessellationMaxDisplacement",
@@ -3784,7 +3784,7 @@ namespace Reallusion.Import
             texOut = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
 
             // Cleanup
-            Debug.Log($"RenderTexture saved to {path}");
+            Util.LogInfo($"RenderTexture saved to {path}");
 
             src.Release();
             UnityEngine.Object.DestroyImmediate(src);

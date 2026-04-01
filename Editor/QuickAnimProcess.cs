@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2022 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/cc_unity_tools_HDRP>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -19,13 +19,13 @@
 /*
  * Simple Utility to close the jaw of animations imported into Unity
  * Usage:  Right-click on any imported model file
- * select 'Quick Animation Processing/Process Jaw Animations'  
+ * select 'Quick Animation Processing/Process Jaw Animations'
  * This will then find any humanoid animations in the model file
  * and create a duplicate animations in the same folder
  * which have a closed jaw. Should any jaw data be already present
- * then use the 'Process Jaw Animations (Force)' option to 
+ * then use the 'Process Jaw Animations (Force)' option to
  * overwrite the existing jaw data with a closed jaw.
- * 
+ *
  * NB: This script must be placed in a folder called 'Editor'
  * or in a subfolder of 'Editor' e.g. Editor/Tools/<this script>.cs
  * 'Editor' can be anywhere in the project.
@@ -50,7 +50,7 @@ public class QuickAnimProcess : Editor
     [MenuItem("Assets/Quick Animation Processing/Process Jaw Animations", true)]
     public static bool ValidateInitAssetProcessing()
     {
-        return IsModel(Selection.activeObject);         
+        return IsModel(Selection.activeObject);
     }
 
     [MenuItem("Assets/Quick Animation Processing/Process Jaw Animations (Force)", priority = 2002)]
@@ -95,7 +95,7 @@ public class QuickAnimProcess : Editor
     {
         string assetPath = AssetDatabase.GetAssetPath(o).ToLower();
         if (string.IsNullOrEmpty(assetPath)) return false;
-        
+
         string extension = Path.GetExtension(assetPath);
         foreach (string ext in modelFileExtensions)
         {
@@ -109,7 +109,7 @@ public class QuickAnimProcess : Editor
     }
 
     public static bool IsHumanoidModel(Object o)
-    {        
+    {
         string assetPath = AssetDatabase.GetAssetPath(o).ToLower();
         string extension = Path.GetExtension(assetPath);
 
@@ -121,13 +121,13 @@ public class QuickAnimProcess : Editor
                 ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(assetPath);
                 return (importer.animationType == ModelImporterAnimationType.Human);
             }
-        }        
+        }
         return false;
     }
 
     public static void ProcessModel(Object o, bool force)
     {
-        if (!IsHumanoidModel(o)) 
+        if (!IsHumanoidModel(o))
         {
             Debug.LogWarning(o.name + " is not a humanoid model. Please change the Rig type to 'Humanoid' in the model importer.");
             return;
@@ -135,7 +135,7 @@ public class QuickAnimProcess : Editor
 
         string assetPath = AssetDatabase.GetAssetPath(o).ToLower();
         Object[] data = AssetDatabase.LoadAllAssetRepresentationsAtPath(assetPath);
-                
+
         foreach (Object subObject in data)
         {
             if (subObject.GetType().Equals(typeof(AnimationClip)))
@@ -151,8 +151,8 @@ public class QuickAnimProcess : Editor
                     Debug.LogWarning("Jaw Curve data found in: " + subObject.name + ". Use the force option to overwrite data.");
                 }
 
-                if (process)                
-                    WriteAnimationClip(o, ProcessAnimation(workingClip));                             
+                if (process)
+                    WriteAnimationClip(o, ProcessAnimation(workingClip));
             }
         }
     }
@@ -224,7 +224,7 @@ public class QuickAnimProcess : Editor
         string animName = SanitizeName(o.name + " - " + animationClip.name);
         string fullOutputPath = workingDirectory + "/" + animName + ".anim";
 
-        
+
         if (AssetPathIsEmpty(fullOutputPath))
         {
             for (int i = 0; i < 999; i++)
@@ -234,12 +234,12 @@ public class QuickAnimProcess : Editor
                 if (AssetPathIsEmpty(fullOutputPath)) break;
             }
         }
-        Util.LogInfo("Writing Asset: " + fullOutputPath);
+        Debug.Log("Writing Asset: " + fullOutputPath);
         AssetDatabase.CreateAsset(animationClip, fullOutputPath);
     }
 
     private static string SanitizeName(string inputName)
-    { 
+    {
         inputName = inputName.Replace("(Clone)", "");
         string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
         Regex r = new Regex(string.Format("[{0}]", Regex.Escape(invalid)));

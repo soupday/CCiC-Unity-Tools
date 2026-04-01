@@ -1516,7 +1516,7 @@ namespace Reallusion.Import
             }
             catch
             {
-                Debug.Log("Unable to deserialize expression data, example facial expressions will be unavailable.");
+                Util.LogWarn("Unable to deserialize expression data, example facial expressions will be unavailable.");
             }
         }
 
@@ -1752,7 +1752,6 @@ namespace Reallusion.Import
                                                 rightTopRowSlider.y + rightTopRowSlider.height - yPadding * 6, 32f, 32f);
 
                 eyeShapeVal = CatchMouse(eyeControlRect, Vector2.zero, false, false);
-                Debug.Log(eyeShapeVal);
 
                 GUI.DrawTexture(rightTopRowIcon, jawIconImage);
                 EditorGUI.BeginChangeCheck();

@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -184,7 +184,7 @@ namespace Reallusion.Import
             {
                 if (!determinationStatus.HasFlag(flag))
                 {
-                    determinationStatus |= flag; // toggle changed to ON => bitwise OR to add flag                    
+                    determinationStatus |= flag; // toggle changed to ON => bitwise OR to add flag
                 }
             }
             else
@@ -315,7 +315,7 @@ namespace Reallusion.Import
                             string[] strings = trimmedLine.Split(':');
                             if (!int.TryParse(strings[1].Trim(), out inAssetVariantLimit))
                             {
-                                Debug.Log("Cannot parse ShaderGraphProjectSettings");
+                                Util.LogWarn("Cannot parse ShaderGraphProjectSettings");
                             }
                         }
 #if UNITY_6000_2_OR_NEWER
@@ -325,7 +325,7 @@ namespace Reallusion.Import
                             string[] strings = trimmedLine.Split(':');
                             if (!int.TryParse(strings[1].Trim(), out inAssetOverrideLimit))
                             {
-                                Debug.Log("Cannot parse ShaderGraphProjectSettings");
+                                Util.LogWarn("Cannot parse ShaderGraphProjectSettings");
                             }
                         }
 #endif
@@ -391,12 +391,12 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.Log(ShaderGraphProjectSettings + " not found.");
+                    Util.LogWarn(ShaderGraphProjectSettings + " not found.");
                 }
             }
             catch (Exception e)
             {
-                Debug.Log(e);
+                Util.LogError(e.Message);
             }
         }
 
@@ -413,9 +413,9 @@ namespace Reallusion.Import
             if (ImporterWindow.GeneralSettings != null)
                 settings = ImporterWindow.GeneralSettings;
             else
-                Debug.LogError("settings are null");
+                Util.LogError("settings are null");
 
-            // reset the shown once flag in the settings and reset when the application quits                            
+            // reset the shown once flag in the settings and reset when the application quits
             if (settings != null) settings.updateWindowShownOnce = true;
 
             EditorApplication.quitting -= HandleQuitEvent;
@@ -502,7 +502,7 @@ namespace Reallusion.Import
                     settings.postInstallShowUpdateWindow = false;
                 }
                 bool swUpdateAvailable = UpdateManager.determinedSoftwareAction == RLToolUpdateUtil.DeterminedSoftwareAction.Software_update_available;
-                if (swUpdateAvailable) Debug.LogWarning("A software update is available.");
+                if (swUpdateAvailable) Util.LogWarn("A software update is available.");
 
                 bool valid = UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.CurrentValid;
 
@@ -516,7 +516,7 @@ namespace Reallusion.Import
 
                 bool pipelineActionRequired = incompatible;
 
-                bool shaderActionRequired = force || (optional && sos) || incompatible; // || shaderGraphActionRequired; // suppressing the shadergraph error reporting for the moment - leaving the UI available          
+                bool shaderActionRequired = force || (optional && sos) || incompatible; // || shaderGraphActionRequired; // suppressing the shadergraph error reporting for the moment - leaving the UI available
 
                 //if (critical) Debug.LogWarning("Critical package updates are required.");
                 //else if (optional) Debug.LogWarning("An optional shader package is available.");

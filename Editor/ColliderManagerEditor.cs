@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -166,7 +166,7 @@ namespace Reallusion.Import
                     if (colliderManager.selectedAbstractCapsuleCollider == c)
                     {
                         selectedName = c.name;
-                        //small floating annotation near the collider                        
+                        //small floating annotation near the collider
                         Handles.Label(c.transform.position + Vector3.up * 0.1f + Vector3.left * 0.1f, c.name, colliderManagerStyles.objectLabelText);
                         if (c.isEnabled)
                             DrawWireCapsule(c.transform.position, c.transform.rotation, c.radius, c.height, c.axis, drawCol);
@@ -308,7 +308,7 @@ namespace Reallusion.Import
                 // always writes screen text when in edit mode or a collider is selected for editing
                 if (activeEdit || editMode)
                 {
-                    //large fixed text on the scene view 
+                    //large fixed text on the scene view
                     Handles.BeginGUI();
                     string lockString = ActiveEditorTracker.sharedTracker.isLocked ? "Locked" : "Unlocked";
                     string modeString = colliderManager.manipulatorArray[(int)colliderManager.manipulator];
@@ -1007,7 +1007,7 @@ namespace Reallusion.Import
             {
                 // save prefab asset
                 PrefabUtility.ApplyPrefabInstance(prefabRoot, InteractionMode.UserAction);
-                Debug.Log("ALL changes have been comitted to the character prefab.");
+                Util.LogInfo("ALL changes have been comitted to the character prefab.");
                 enableStatusDirty = false;
             }
         }
@@ -1198,7 +1198,7 @@ namespace Reallusion.Import
         {
 			Bounds framingBounds;
             float mult = 0.35f;
-            
+
             if (colliderManager.transformSymmetrically && colliderManager.frameSymmetryPair && !ColliderManager.AbstractCapsuleCollider.IsNullOrEmpty(colliderManager.mirrorImageAbstractCapsuleCollider))
             {
                 Vector3 diff = colliderManager.mirrorImageAbstractCapsuleCollider.transform.position + colliderManager.selectedAbstractCapsuleCollider.transform.position;
@@ -1277,7 +1277,7 @@ namespace Reallusion.Import
 							else if (info.name == "MagicaSphereCollider") { cachedGizmoState.magicaSphereEnabled = gizmoState; cachedGizmoState.magicaSphereIconEnabled = iconState; }
 							else if (info.name == "MagicaPlaneCollider") { cachedGizmoState.magicaPlaneEnabled = gizmoState; cachedGizmoState.magicaPlaneIconEnabled = iconState; }
 						}
-					} 
+					}
 				}
             }
 #endif

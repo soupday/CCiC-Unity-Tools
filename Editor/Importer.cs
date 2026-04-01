@@ -939,8 +939,8 @@ namespace Reallusion.Import
                     res = AnalyseAlphaType(histogram, tex, 8);
                     alphaType = res.Item1;
                     alphaScore = res.Item2;
-                    Debug.Log($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
-                              $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
+                    Util.LogInfo($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
+                                 $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
                     AlphaTypeCache.Add(texAssetPath, res);
                 }
                 else if (!inAlphaChannel)
@@ -950,8 +950,8 @@ namespace Reallusion.Import
                     res = AnalyseAlphaType(histogram, tex, 8);
                     alphaType = res.Item1;
                     alphaScore = res.Item2;
-                    Debug.Log($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
-                              $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
+                    Util.LogInfo($"AlphaType: {tex.name} - {alphaType} : {Mathf.Round(alphaScore * 1000f) / 10f}%\n" +
+                                 $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
                     AlphaTypeCache.Add(texAssetPath, res);
                 }
             }

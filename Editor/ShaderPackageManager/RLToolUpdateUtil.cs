@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -42,7 +42,7 @@ namespace Reallusion.Import
 
         public static void UpdateManagerUpdateCheck()
         {
-            //Debug.LogWarning("STARTING RLToolUpdateUtil CHECKS");
+            //Util.LogWarn("STARTING RLToolUpdateUtil CHECKS");
             InitUpdateCheck();
         }
 
@@ -55,12 +55,12 @@ namespace Reallusion.Import
 
         public static void UpdaterWindowCheckForUpdatesDone(object sender, EventArgs e)
         {
-            
+
             HttpVersionChecked -= UpdaterWindowCheckForUpdatesDone;
         }
 
         public static void InitUpdateCheck()
-        {            
+        {
             RLSettingsObject currentSettings = (ImporterWindow.GeneralSettings == null) ? RLSettings.FindRLSettingsObject() : ImporterWindow.GeneralSettings;
             if (currentSettings != null)
             {
@@ -74,7 +74,7 @@ namespace Reallusion.Import
 
                     if (TimeCheck(univ, checkInterval))
                     {
-                        Debug.Log("Checking GitHub for 'CC/iC Unity Tools' update.");
+                        Util.LogInfo("Checking GitHub for 'CC/iC Unity Tools' update.");
                         currentSettings.lastUpdateCheck = now.Ticks;
                         ImporterWindow.SetGeneralSettings(currentSettings, true);
                         GitHubHttpVersionCheck();
@@ -84,12 +84,12 @@ namespace Reallusion.Import
                         if (currentSettings.updateAvailable)
                         {
                             UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.Software_update_available;
-                            Debug.LogWarning("Settings object shows update availabe.");
+                            Util.LogWarn("Settings object shows update availabe.");
                         }
                         if (HttpVersionChecked != null)
                             HttpVersionChecked.Invoke(null, null);
                         //Debug.Log("TIME NOT ELAPSED " + last.Ticks + "    now: " + now.Ticks + "  last: " + last + "  now: " + now);
-                    }                    
+                    }
                 }
                 else
                 {
@@ -102,7 +102,7 @@ namespace Reallusion.Import
 
         public static bool TimeCheck(long timeStamp, TimeSpan time)
         {
-            DateTime now = DateTime.Now.ToLocalTime();            
+            DateTime now = DateTime.Now.ToLocalTime();
             DateTime last = new DateTime(timeStamp);
 
             if (last + time <= now)
@@ -133,7 +133,7 @@ namespace Reallusion.Import
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("Error accessing Github to check for new 'CC/iC Unity Tools' version. Error: " + ex);
+                Util.LogWarn("Error accessing Github to check for new 'CC/iC Unity Tools' version. Error: " + ex);
             }
 
             RLSettingsObject currentSettings = ImporterWindow.GeneralSettings;
@@ -161,7 +161,7 @@ namespace Reallusion.Import
                         Version installed = TagToVersion(Pipeline.VERSION);
                         if (gitHubLatestVersion > installed)
                         {
-                            Debug.LogWarning("A newer version of CC/iC Unity Tools is available on GitHub. Current ver: " + installed.ToString() + " Latest ver: " + gitHubLatestVersion.ToString());
+                            Util.LogWarn("A newer version of CC/iC Unity Tools is available on GitHub. Current ver: " + installed.ToString() + " Latest ver: " + gitHubLatestVersion.ToString());
 
                             currentSettings.updateAvailable = true;
                             UpdateManager.determinedSoftwareAction = DeterminedSoftwareAction.Software_update_available;
@@ -172,7 +172,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    Debug.LogWarning("Cannot parse JSON release data from GitHub - aborting version check.");
+                    Util.LogWarn("Cannot parse JSON release data from GitHub - aborting version check.");
 
                     WriteDummyReleaseInfo(currentSettings);
                 }
@@ -186,7 +186,7 @@ namespace Reallusion.Import
             else
             {
                 // cant find a release json from github's api
-                Debug.LogWarning("Cannot find a release JSON from GitHub - aborting version check.");
+                Util.LogWarn("Cannot find a release JSON from GitHub - aborting version check.");
 
                 WriteDummyReleaseInfo(currentSettings);
 
@@ -227,7 +227,7 @@ namespace Reallusion.Import
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("Error with Github data on latest 'CC/iC Unity Tools' version. Error: " + ex);
+                Util.LogWarn("Error with Github data on latest 'CC/iC Unity Tools' version. Error: " + ex);
                 return null;
             }
         }
@@ -261,8 +261,8 @@ namespace Reallusion.Import
             {
                 return null;
             }
-            if (list != null && list.Count > 0)            
-                return list;            
+            if (list != null && list.Count > 0)
+                return list;
             else
                 return null;
         }
@@ -316,7 +316,7 @@ namespace Reallusion.Import
                     int[] time = new int[3];
                     for (int i = 0; i < 3; i++)
                     {
-                        Debug.Log("i: " + i + " date: " + date[i] + " parse: " + int.Parse(dateS[i]));
+                        Util.LogDetail("i: " + i + " date: " + date[i] + " parse: " + int.Parse(dateS[i]));
                         date[i] = int.Parse(dateS[i]);
                         time[i] = int.Parse(timeS[i]);
                     }
@@ -325,7 +325,7 @@ namespace Reallusion.Import
                 }
                 catch (Exception ex)
                 {
-                    Debug.Log("Unable to parse date information from GitHub. Error: " + ex.ToString());
+                    Util.LogError("Unable to parse date information from GitHub. Error: " + ex.ToString());
                     return false;
                 }
             }

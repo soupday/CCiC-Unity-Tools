@@ -829,7 +829,7 @@ namespace Reallusion.Import
                         matJson = objectsData.GetObjectAtPath(jsonPath);
                         if (matJson != null)
                         {
-                            Debug.LogWarning($"Material {obj.name}/{sourceName} detected as: {findObjectName}/{materialName} on ");
+                            Util.LogWarn($"Material {obj.name}/{sourceName} detected as: {findObjectName}/{materialName} on ");
                             return matJson;
                         }
                     }
@@ -843,7 +843,7 @@ namespace Reallusion.Import
                             matJson = objectsData.GetObjectAtPath(jsonPath);
                             if (matJson != null)
                             {
-                                Debug.LogWarning($"Material {obj.name}/{sourceName} detected as: {objectName}/{realMaterialName} on ");
+                                Util.LogWarn($"Material {obj.name}/{sourceName} detected as: {objectName}/{realMaterialName} on ");
                                 return matJson;
                             }
                         }
@@ -961,7 +961,7 @@ namespace Reallusion.Import
 
         public void CheckGenerationQuick()
         {
-            Debug.Log("CheckGenerationQuick: " + name);
+            Util.LogDetail("CheckGenerationQuick: " + name);
             BaseGeneration oldGen = generation;
             string gen = Util.GetJsonGenerationString(jsonFilepath);
             generation = RL.GetCharacterGeneration(Fbx, gen);

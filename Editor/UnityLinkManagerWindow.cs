@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -46,10 +46,10 @@ namespace Reallusion.Import
         {
             return !EditorWindow.HasOpenInstances<UnityLinkManagerWindow>();
         }
-        
+
         public static void OpenWindow()
         {
-            
+
         }
         */
 
@@ -137,7 +137,7 @@ namespace Reallusion.Import
 
             if (settings == null)
             {
-                //Debug.LogWarning("getting settings directly");
+                //Util.LogWarn("getting settings directly");
                 settings = RLSettings.FindRLSettingsObject();
             }
 
@@ -191,7 +191,7 @@ namespace Reallusion.Import
 
         public static bool connectInProgress = false;
 
-        // Automated reconnection for assembly reloads        
+        // Automated reconnection for assembly reloads
         public static void AttemptAutoReconnect()
         {
             //Debug.Log("OnEnable - AutoReconnect");
@@ -250,7 +250,7 @@ namespace Reallusion.Import
 
         static void StartConnection()
         {
-            //Debug.LogWarning("Starting StartConnection ");
+            //Util.LogWarn("Starting StartConnection ");
             // if a remote connection is needed then validate the address string as IP
             // if the address string cant be validated check if it can be resolved by Dns
             //UnityLinkManager.IS_CLIENT_LOCAL = isClientLocal;
@@ -260,12 +260,12 @@ namespace Reallusion.Import
                 bool valid = false;
                 control = Control.Validating;
 
-                Debug.Log("Testing host");
+                Util.LogInfo("Testing host");
 
                 // validate IP address
                 if (IPAddress.TryParse(remoteHost, out IPAddress ip))
                 {
-                    Debug.Log("Supplied IP address is a valid IPv4 address.");
+                    Util.LogInfo("Supplied IP address is a valid IPv4 address.");
                     valid = true;
                     UnityLinkManager.REMOTE_HOST = remoteHost;
                 }
@@ -286,9 +286,9 @@ namespace Reallusion.Import
                             IPAddress[] hosts = addr.Result;
                             if (hosts.Length > 0)
                             {
-                                //Debug.LogWarning("Dns name resolves (async)");
+                                //Util.LogWarn("Dns name resolves (async)");
 
-                                // ensure the IPv4 address is being used (eg 127.0.0.1 rather than ::1 - which would map to 0.0.0.1) 
+                                // ensure the IPv4 address is being used (eg 127.0.0.1 rather than ::1 - which would map to 0.0.0.1)
                                 IPAddress remote = hosts.FirstOrDefault(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).MapToIPv4();
 
                                 if (remote != null)
@@ -300,7 +300,7 @@ namespace Reallusion.Import
                                 else
                                 {
                                     UnityLinkManager.NotifyInternalQueue($"DNS resolution of hostname: {remoteHost} could not find a valid IPv4 address.");
-                                    Debug.LogWarning($"Hostname: {remoteHost} does not resolve to a vaid IPv4 address.");
+                                    Util.LogWarn($"Hostname: {remoteHost} does not resolve to a vaid IPv4 address.");
                                     valid = false;
                                     control = Control.InValid;
                                 }
@@ -309,19 +309,19 @@ namespace Reallusion.Import
                         else // Task timed out
                         {
                             UnityLinkManager.NotifyInternalQueue($"DNS resolution of hostname: {remoteHost} timed out.");
-                            Debug.LogWarning($"Dns name resolution of hostname: {remoteHost} timed out.");
+                            Util.LogWarn($"Dns name resolution of hostname: {remoteHost} timed out.");
                         }
                     }
                     catch
                     {
                         UnityLinkManager.NotifyInternalQueue($"Error resolving hostname: {remoteHost}");
-                        Debug.LogWarning($"Error resolving hostname: {remoteHost}");
+                        Util.LogWarn($"Error resolving hostname: {remoteHost}");
                         valid = false;
                         control = Control.InValid;
                     }
                 }
                 connectInProgress = valid;
-                //Debug.LogWarning("connectInProgress = " + connectInProgress);
+                //Util.LogWarn("connectInProgress = " + connectInProgress);
             }
             if (connectInProgress)
             {
@@ -345,16 +345,16 @@ namespace Reallusion.Import
                 if (!UnityLinkManager.IS_CLIENT_LOCAL)
                 {
                     // since the last remote ip connected properly, save it in settings
-                    settings.lastSuccessfulHost = remoteHost; // UnityLinkManager.REMOTE_HOST; 
+                    settings.lastSuccessfulHost = remoteHost; // UnityLinkManager.REMOTE_HOST;
                     SaveSettings();
                 }
             }
             else
             {
-                Debug.LogWarning("No settings available");
+                Util.LogWarn("No settings available");
             }
 
-            Debug.LogWarning("Connected to server");
+            Util.LogWarn("Connected to server");
         }
 
         static void DisconnectedFromServer(object sender, EventArgs e)
@@ -368,22 +368,22 @@ namespace Reallusion.Import
             RepaintOnUpdate(stop: true);
             UnityLinkManager.StopQueue();
 
-            Debug.LogWarning("Disconnected from server");
+            Util.LogWarn("Disconnected from server");
         }
 
         static void OnImportStarted(object sender, EventArgs e)
         {
             UnityLinkImporter.ImportStarted -= OnImportStarted;
-            //Debug.LogWarning("Import Started Event");
+            //Util.LogWarn("Import Started Event");
             if (UnityLinkManager.ADD_TO_TIMELINE)
             {
                 if (settings != null)
                 {
-                    //Debug.LogWarning("Import Started Event  settings != null");                    
+                    //Util.LogWarn("Import Started Event  settings != null");
                 }
                 else
                 {
-                    //Debug.LogWarning("Import Started Event  settings == null");
+                    //Util.LogWarn("Import Started Event  settings == null");
                 }
             }
         }
@@ -681,7 +681,7 @@ namespace Reallusion.Import
             }
 
             EditorGUILayout.SelectableLabel(linkPath, linkPathExists ? styles.normalTextField : styles.errorTextField, GUILayout.MinWidth(100f), GUILayout.MaxWidth(165f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
-            //UnityLinkManager.EXPORTPATH = GUILayout.TextField(UnityLinkManager.EXPORTPATH, GUILayout.MinWidth(100f), GUILayout.MaxWidth(150f));            
+            //UnityLinkManager.EXPORTPATH = GUILayout.TextField(UnityLinkManager.EXPORTPATH, GUILayout.MinWidth(100f), GUILayout.MaxWidth(150f));
             GUILayout.EndHorizontal();
 
             GUILayout.Space(3f);
@@ -1271,7 +1271,7 @@ namespace Reallusion.Import
 
         public void RecordSceneRefHistory(string newEntry)
         {
-            //if (UnityLinkManager.ADD_TO_TIMELINE) 
+            //if (UnityLinkManager.ADD_TO_TIMELINE)
             recentSceneRefs = RecordHistory(recentSceneRefs, newEntry, 6);
             if (settings != null)
             {

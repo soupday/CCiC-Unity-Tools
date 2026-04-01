@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -84,7 +84,7 @@ namespace Reallusion.Import
         private static Vector3 animatorPosition;
         private static Quaternion animatorRotation;
 
-        // Function variables        
+        // Function variables
         public const string ANIM_FOLDER_NAME = "Animations";
         public const string RETARGET_FOLDER_NAME = "Retargeted";
         public const string RETARGET_SOURCE_PREFIX = "Imported";
@@ -105,7 +105,7 @@ namespace Reallusion.Import
                 //so we switch to overlays starting from an earlier version
                 AnimRetargetOverlay.ShowAll();
 #else
-                //2020 LTS            
+                //2020 LTS
                 AnimRetargetWindow.ShowPlayer();
 #endif
 
@@ -123,10 +123,10 @@ namespace Reallusion.Import
                 //EditorApplication.update -= UpdateDelegate;
 
 #if SCENEVIEW_OVERLAY_COMPATIBLE
-                //2021.2.0a17+          
+                //2021.2.0a17+
                 AnimRetargetOverlay.HideAll();
 #else
-                //2020 LTS            
+                //2020 LTS
                 AnimRetargetWindow.HidePlayer();
 #endif
 
@@ -143,7 +143,7 @@ namespace Reallusion.Import
             //2021.2.0a17+
             return AnimRetargetOverlay.Visibility;
 #else
-            //2020 LTS            
+            //2020 LTS
             return AnimRetargetWindow.isShown;
 #endif
         }
@@ -162,7 +162,7 @@ namespace Reallusion.Import
 
             RebuildClip();
 
-            // reset all the clip flags to their default vaules            
+            // reset all the clip flags to their default vaules
             // set the animation player's Foot IK to off
             AnimPlayerGUI.ForceSettingsReset();
             AnimPlayerGUI.UpdateAnimator();
@@ -532,7 +532,7 @@ namespace Reallusion.Import
 
             GUILayout.FlexibleSpace();
 
-            GUILayout.BeginVertical();// ("box"); // Jaw control box       
+            GUILayout.BeginVertical();// ("box"); // Jaw control box
             if (GUILayout.Button(new GUIContent(closeMouth ? closedMouthImage : openMouthImage, string.Format("STATUS: " + (closeMouth ? "ON" : "OFF") + ":  Toggle to CLOSE THE JAW of any animation imported without proper jaw information.  Toggling this ON will overwrite any jaw animation.  Toggling OFF will use the jaw animation from the selected animation clip.")), GUILayout.Width(largeIconDim), GUILayout.Height(largeIconDim)))
             {
                 closeMouth = !closeMouth;
@@ -679,7 +679,7 @@ namespace Reallusion.Import
                 string legacyStr = legacy ? "Both 'Expressions Drive Face Bones' and Expressions are copied to all face parts' are now DISABLED in the existing BoneDriver" : string.Empty;
                 string constrainStr = constrain ? "\nExpression 'Constraints' and 'Limits' will be applied." : string.Empty;
                 string text = $"Settings in the BoneDriver on {bd.name} in the {root.name} prefab will be changed and applied to the prefab.\n{driveStr}{conj}{transposeStr}{legacyStr}{constrainStr}";
-                Debug.Log(text);
+                Util.LogInfo(text);
                 logOnce = false;
             }
         }
@@ -1242,7 +1242,7 @@ namespace Reallusion.Import
 
         static float EvaluateValue(float currentKeyValue, float deltaValue)
         {
-            //if currently above zero   
+            //if currently above zero
             if (currentKeyValue >= 0f)
             {
                 //if it ends up below zero then the negative contribution must be x2
@@ -1371,7 +1371,7 @@ namespace Reallusion.Import
 
                     if (!CheckBoneDriver(targetCharacterModel, out GameObject bd, useBoneDriver, useBlendTranspose, useConstraintData))
                     {
-                        Debug.Log("RetargetBlendShapes - No BoneDriver available."); EditorUtility.ClearProgressBar();
+                        Util.LogWarn("RetargetBlendShapes - No BoneDriver available."); EditorUtility.ClearProgressBar();
                         return;
                     }
                     else
@@ -1433,7 +1433,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;
                 }
             }
@@ -1500,7 +1500,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.Log($"Unable to retrieve Bonedriver info: {e.Message}");
+                Util.LogWarn($"Unable to retrieve Bonedriver info: {e.Message}");
                 return (false, false, false);
             }
         }
@@ -1516,7 +1516,7 @@ namespace Reallusion.Import
             if (smr == null) return;
 
             Dictionary<string, List<string>> dict = BoneEditor.RetrieveBoneDictionary(bd);
-            // check CC_Base_Body (implicitly the bonedriver bearing gameobject) for blendshapes -  if 
+            // check CC_Base_Body (implicitly the bonedriver bearing gameobject) for blendshapes -  if
             // all blendshapes are present which influence a bone then purge the mechanim tracks
             // associated with that bone - to allow only the expression to deform the bone
 
@@ -1547,7 +1547,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.Log(e.Message);
+                Util.LogError(e.Message);
             }
             PurgeBindings(animatedConstraintBindings.ToArray(), workingClip);
 
@@ -1613,12 +1613,12 @@ namespace Reallusion.Import
             {
                 AnimationCurve[] curves = new AnimationCurve[bindings.Length];
                 for (int i = 0; i < curves.Length; i++) { curves[i] = null; }
-                Debug.Log($"Purging Bindings (Length {curves.Length})");
+                Util.LogDetail($"Purging Bindings (Length {curves.Length})");
                 AnimationUtility.SetEditorCurves(clip, bindings, curves);
             }
             catch (Exception e)
             {
-                Debug.Log($"Purging Bindings Error: {e.Message}");
+                Util.LogError($"Purging Bindings Error: {e.Message}");
             }
         }
 
@@ -1644,7 +1644,7 @@ namespace Reallusion.Import
                     }
                     else
                     {
-                        Debug.Log($"INFO: Cannot Find {binding}");
+                        Util.LogWarn($"INFO: Cannot Find {binding}");
                     }
                 }
                 EditorUtility.DisplayProgressBar($"Removing unnecessary tracks...", $"Working...", 0.5f);
@@ -1652,7 +1652,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Purging Error {e.Message}");
+                Util.LogWarn($"Purging Error {e.Message}");
             }
         }
         #endregion
@@ -1702,7 +1702,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.Log(e.Message);
+                Util.LogError(e.Message);
             }
             // match the path of each binding in the working clip to a list member of allMeshes and store the binding of the first instance of that blendshape.
             Dictionary<string, EditorCurveBinding> uniqueBindings = new Dictionary<string, EditorCurveBinding>();
@@ -1788,14 +1788,14 @@ namespace Reallusion.Import
                     }
                     else
                     {
-                        Debug.Log("Retaining blendshape " + binding.propertyName);
+                        Util.LogInfo("Retaining blendshape " + binding.propertyName);
                     }
                 }
                 PurgeBindings(purgeList.ToArray(), workingClip);
             }
             catch (Exception e)
             {
-                Debug.Log(e.Message);
+                Util.LogError(e.Message);
             }
         }
         #endregion
@@ -1816,28 +1816,27 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.Log($"{workingClip.name} {curve.length}");
-                Debug.Log(e.Message);
+                Util.LogWarn($"{workingClip.name} {curve.length}");
+                Util.LogError(e.Message);
             }
             return newBinding;
         }
 
         public static void RetargetBlendShapesToAllMeshes(AnimationClip originalClip, AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool log = true)
         {
-            Debug.Log("RetargetBlendShapesToAllMeshes");
             GameObject bd = BoneEditor.GetBoneDriverGameObjectReflection(targetCharacterModel);
             if (bd != null)
             {
                 ApplyBoneDriverSettings(targetCharacterModel, bd, false, false, false);
             }
-            else { Debug.Log("No Bonedriver found - Can safely ignore when retargetting to all meshes"); }
+            else { Util.LogWarn("No Bonedriver found - Can safely ignore when retargetting to all meshes"); }
 
             EditorCurveBinding[] sourceCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
             Transform[] targetAssetData = targetCharacterModel.GetComponentsInChildren<Transform>();
 
             const string blendShapePrefix = "blendShape.";
 
-            // Find all of the blendshape relevant binding paths that are not needed in the target animation        
+            // Find all of the blendshape relevant binding paths that are not needed in the target animation
             List<string> uniqueSourcePaths = new List<string>();
             foreach (EditorCurveBinding binding in sourceCurveBindings)
             {
@@ -1955,7 +1954,7 @@ namespace Reallusion.Import
             if (log) Util.LogAlways(reportHeader + report);
 
             bool PURGE = true;
-            // Purge all curves from the animation that dont have a valid path in the target object                    
+            // Purge all curves from the animation that dont have a valid path in the target object
             if (PURGE)
             {
                 EditorCurveBinding[] targetCurveBindings = AnimationUtility.GetCurveBindings(workingClip);
@@ -2035,14 +2034,14 @@ namespace Reallusion.Import
                 // the original clip's settings should be copied to the output clip and the loop flag set as
                 // per the user preference to auto loop the animation.
 
-                // record the user preferred loop status 
+                // record the user preferred loop status
                 AnimationClipSettings outputClipSettings = AnimationUtility.GetAnimationClipSettings(outputClip);
                 bool isLooping = outputClipSettings.loopTime;
 
                 // obtain the original settings
                 AnimationClipSettings originalClipSettings = AnimationUtility.GetAnimationClipSettings(OriginalClip);
 
-                // re-impose the loop status            
+                // re-impose the loop status
                 originalClipSettings.loopTime = isLooping;
 
                 //update the output clip with the looping modified original settings
@@ -2220,7 +2219,7 @@ namespace Reallusion.Import
 
             if (clips.Count > 0 && info.FeatureUseExtractGeneric)
             {
-                Debug.Log("Extracting generic animation data.");
+                Util.LogDetail("Extracting generic animation data.");
                 clips = GenericAnimProcessing.ProcessGenericClips(info, clips.ToArray(), motionAssetPath).ToList();
             }
 
@@ -2257,7 +2256,7 @@ namespace Reallusion.Import
         }
 
         /// <summary>
-        /// Tries to get the retargeted version of the animation clip from the given source animation clip, 
+        /// Tries to get the retargeted version of the animation clip from the given source animation clip,
         /// usually from the original character fbx.
         /// </summary>
         public static AnimationClip TryGetRetargetedAnimationClip(GameObject fbxAsset, AnimationClip clip)
