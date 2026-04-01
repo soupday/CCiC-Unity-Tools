@@ -20,9 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using UnityEditor.UI;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using Object = UnityEngine.Object;
 
 namespace Reallusion.Import

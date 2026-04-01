@@ -1,17 +1,17 @@
-﻿/* 
+﻿/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -41,7 +41,7 @@ namespace Reallusion.Import
 
     public static class Pipeline
     {
-        public const string VERSION = "2.2.5";
+        public const string VERSION = "2.2.6";
 
 #if HDRP_10_5_0_OR_NEWER
         // version
@@ -169,7 +169,7 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_HDRP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_HDRP";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCustom_HDRP";
-        // 2 pass        
+        // 2 pass
         public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_HDRP";
         public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_HDRP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_HDRP";
@@ -303,7 +303,7 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_URP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_URP";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCoverageCustom_URP";
-        // 2 pass        
+        // 2 pass
         public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_URP";
         public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_URP";
         public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_URP";
@@ -437,13 +437,13 @@ namespace Reallusion.Import
         public const string MATERIAL_BAKED_EYE_OCCLUSION_PLUS_CUSTOM = "RL5_Template_Baked_EyeOcclusionPlusCustom_3D";
         public const string MATERIAL_BAKED_HAIR_CUSTOM = "RL5_Template_Baked_HairCustom_3D";
         public const string MATERIAL_BAKED_HAIR_COVERAGE_CUSTOM = "RL5_Template_Baked_HairCoverageCustom_3D";
-        // 2 pass        
+        // 2 pass
         public const string MATERIAL_BAKED_HAIR_1ST_PASS = "RL5_Template_Baked_Hair_1st_Pass_3D";
         public const string MATERIAL_BAKED_HAIR_2ND_PASS = "RL5_Template_Baked_Hair_2nd_Pass_3D";
         public const string MATERIAL_BAKED_HAIR_CUSTOM_1ST_PASS = "RL5_Template_Baked_HairCustom_1st_Pass_3D";
         public const string MATERIAL_BAKED_HAIR_CUSTOM_2ND_PASS = "RL5_Template_Baked_HairCustom_2nd_Pass_3D";
         // wrinkle map
-        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL5_Template_Baked_HeadWrinkleCustom_3D";       
+        public const string MATERIAL_BAKED_HEAD_WRINKLE_CUSTOM = "RL5_Template_Baked_HeadWrinkleCustom_3D";
 #endif
 
         private static Dictionary<MaterialType, string> DICT_SHADERS = new Dictionary<MaterialType, string>
@@ -679,11 +679,11 @@ namespace Reallusion.Import
                 AssetDatabase.SaveAssetIfDirty(pipelineSettings);
             }
 #else
-            SerializedProperty list = hdrp.FindProperty("diffusionProfileSettingsList");            
+            SerializedProperty list = hdrp.FindProperty("diffusionProfileSettingsList");
 
             if (list == null) return modified;
 
-            SerializedProperty item;            
+            SerializedProperty item;
 
             foreach (string profile in profiles)
             {
@@ -955,8 +955,8 @@ namespace Reallusion.Import
 
                 /*
                 Dictionary<string, string> amplifyMappings = new Dictionary<string, string>()
-                {                    
-                    { "", "" },                    
+                {
+                    { "", "" },
                 };
                 */
 

@@ -22,8 +22,6 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Categorization;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace Reallusion.Import
 {
