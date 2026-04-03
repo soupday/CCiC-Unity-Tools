@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -106,6 +106,7 @@ namespace Reallusion.Import
                 if (active >= lightingContainers.Count) active = 0;
 
                 lightingContainers[active].SetActive(true);
+                ApplyLighting(lightingContainers[active]);
 
                 EditorPrefs.SetString("RL_Lighting_Preset", lightingContainers[active].name);
             }
@@ -154,6 +155,7 @@ namespace Reallusion.Import
                     if (lightingContainers[i].name == presetName)
                     {
                         lightingContainers[i].SetActive(true);
+                        ApplyLighting(lightingContainers[i]);
                         found = true;
                     }
                     else
@@ -166,6 +168,50 @@ namespace Reallusion.Import
                 {
                     lightingContainers[0].SetActive(true);
                     EditorPrefs.SetString("RL_Lighting_Preset", lightingContainers[0].name);
+                }
+            }
+        }
+
+        public static void ApplyLighting(GameObject container)
+        {
+            if (Pipeline.isURP)
+            {
+                float exposure = 1.0f;
+                float atmosphere = 1.0f;
+
+                for (int i = 0; i < container.transform.childCount; i++)
+                {
+                    var child = container.transform.GetChild(i);
+                    string name = child.name;
+                    if (name.iStartsWith("SBP:"))
+                    {
+                        int E0 = name.IndexOf("E", 3);
+                        if (E0 > 0)
+                        {
+                            int E1 = name.IndexOf(",", E0);
+                            if (E1 > E0)
+                            {
+                                string E = name.Substring(E0+1, E1-E0-1);
+                                float.TryParse(E, out exposure);
+                            }
+                        }
+
+                        int A0 = name.IndexOf("AT", 3);
+                        if (A0 > 0)
+                        {
+                            int A1 = name.IndexOf(",", A0);
+                            if (A1 == -1) A1 = name.Length;
+                            string A = name.Substring(A0+2, A1-A0-2);
+                            float.TryParse(A, out atmosphere);
+                        }
+                    }
+                }
+
+                Material skybox = (Material)Util.FindAsset("RL Preview Procedural Skybox");
+                if (skybox)
+                {
+                    skybox.SetFloatIf("_AtmosphereThickness", atmosphere);
+                    skybox.SetFloatIf("_Exposure", exposure);
                 }
             }
         }
@@ -183,6 +229,7 @@ namespace Reallusion.Import
                 {
                     lightingContainers[i].SetActive(false);
                     lightingContainers[i].SetActive(true);
+                    ApplyLighting(lightingContainers[i]);
                 }
             }
         }
@@ -303,7 +350,7 @@ namespace Reallusion.Import
             Util.LogInfo("PostProcessingAndLighting");
             if (Pipeline.is3D || Pipeline.isURP)
             {
-                Material skybox = (Material)Util.FindAsset("RL Preview Gradient Skybox");
+                Material skybox = (Material)Util.FindAsset("RL Preview Procedural Skybox");
                 if (skybox)
                 {
                     RenderSettings.skybox = skybox;
@@ -320,7 +367,7 @@ namespace Reallusion.Import
                 ppl.volumeTrigger = camera.transform;
                 LayerMask everything = ~0;
                 ppl.volumeLayer = everything;
-                ppl.antialiasingMode = PostProcessLayer.Antialiasing.TemporalAntialiasing;                
+                ppl.antialiasingMode = PostProcessLayer.Antialiasing.TemporalAntialiasing;
                 ppv.isGlobal = true;
                 //ppv.profile = volume;
                 ppv.sharedProfile = volume;
