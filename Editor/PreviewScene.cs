@@ -351,6 +351,7 @@ namespace Reallusion.Import
             if (Pipeline.is3D || Pipeline.isURP)
             {
                 Material skybox = (Material)Util.FindAsset("RL Preview Procedural Skybox");
+                if (!skybox) skybox = (Material)Util.FindAsset("RL Preview Gradient Skybox");
                 if (skybox)
                 {
                     RenderSettings.skybox = skybox;
