@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -187,14 +187,14 @@ namespace Reallusion.Import
 
             if (!fbxAsset)
             {
-                Debug.LogWarning("Object: " + obj.name + " is not part of an imported CC3/4 character!");
+                Util.LogWarn("Object: " + obj.name + " is not part of an imported CC3/4 character!");
                 return false;
             }
 
             prefabObject = PrefabUtility.GetCorrespondingObjectFromSource(obj);
             if (!prefabObject || !AssetDatabase.GetAssetPath(prefabObject).iEndsWith(".prefab"))
             {
-                Debug.LogWarning("Object: " + obj.name + " is not part of prefab asset!");
+                Util.LogWarn("Object: " + obj.name + " is not part of prefab asset!");
                 return false;
             }
 
@@ -285,7 +285,7 @@ namespace Reallusion.Import
             {
                 //GameObject sceneRoot = Util.GetScenePrefabInstanceRoot(obj);
                 //GameObject asset = PrefabUtility.GetCorrespondingObjectFromSource(sceneRoot);
-                //Object srcObj = PrefabUtility.GetCorrespondingObjectFromSource(obj);                
+                //Object srcObj = PrefabUtility.GetCorrespondingObjectFromSource(obj);
                 //string path = AssetDatabase.GetAssetPath(asset);
 
                 Mesh srcMesh = GetMeshFrom(srcObj);
@@ -772,7 +772,7 @@ namespace Reallusion.Import
         private static void DoEHM()
         {
             MeshUtil.Extract2PassHairMeshes(Selection.activeObject);
-        }        
+        }
         */
 
         public static Mesh ExtractSubMesh(Mesh srcMesh, int index)
@@ -873,7 +873,7 @@ namespace Reallusion.Import
             newMesh.bindposes = srcMesh.bindposes;
             newMesh.bounds = srcMesh.bounds;
             newMesh.subMeshCount = 1;
-            // finally copy and remap the triangle data last 
+            // finally copy and remap the triangle data last
             int[] triangles = new int[extractMeshDesc.indexCount];
             pointer = 0;
             for (int tIndex = extractMeshDesc.indexStart; tIndex < extractMeshDesc.indexStart + extractMeshDesc.indexCount; tIndex++)
@@ -957,7 +957,7 @@ namespace Reallusion.Import
             Vector4[] srcTangents = srcMesh.tangents;
             int[] srcTriangles = srcMesh.triangles;
 
-            // first determine which vertices are used in the faces of *ALL SUBMESHES EXCEPT* the indexed submesh 
+            // first determine which vertices are used in the faces of *ALL SUBMESHES EXCEPT* the indexed submesh
             // and remap their indices to the new mesh.
             int maxVerts = srcMesh.vertexCount;
             int[] remapping = new int[maxVerts];
@@ -1207,7 +1207,7 @@ namespace Reallusion.Import
 
             Renderer[] renderers = prefabInstance.GetComponentsInChildren<Renderer>();
 
-            // TODO this needs to the use the mat json to determine scalp/hair 
+            // TODO this needs to the use the mat json to determine scalp/hair
             foreach (Renderer r in renderers)
             {
                 bool hasHairMaterial = false;
@@ -1351,7 +1351,7 @@ namespace Reallusion.Import
                                 CopyMaterialParameters(oldMat, firstPass);
                                 CopyMaterialParameters(oldMat, secondPass);
                                 FixHDRP2PassMaterials(firstPass, secondPass);
-                                // save the materials to the asset database.   
+                                // save the materials to the asset database.
                                 AssetDatabase.CreateAsset(firstPass, Path.Combine(materialFolder, oldMat.name + "_1st_Pass.mat"));
                                 AssetDatabase.CreateAsset(secondPass, Path.Combine(materialFolder, oldMat.name + "_2nd_Pass.mat"));
                                 sharedMaterials[0] = firstPass;
@@ -1374,7 +1374,7 @@ namespace Reallusion.Import
                     {
                         Util.LogInfo("Removing submeshes from Object: " + oldObj.name);
                         Mesh remainingMesh = RemoveSubMeshes(oldMesh, indicesToRemove);
-                        // Save the mesh asset.                        
+                        // Save the mesh asset.
                         string meshPath = Path.Combine(meshFolder, oldObj.name + "_Remaining.mesh");
                         AssetDatabase.CreateAsset(remainingMesh, meshPath);
                         remainingMesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);

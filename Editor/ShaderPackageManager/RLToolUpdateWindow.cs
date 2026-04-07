@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -59,8 +59,8 @@ namespace Reallusion.Import
                     window.ShowUtility();
                 else
                     window.Show();
-            }           
-                
+            }
+
             window.minSize = new Vector2(600f, 300f);
 
             return window;
@@ -159,7 +159,7 @@ namespace Reallusion.Import
 
         void OnDestroy()
         {
-            
+
         }
 
         Styles style;
@@ -219,13 +219,13 @@ namespace Reallusion.Import
             if (style == null) style = new Styles();
 
             //if (waitingForCheck) return;
-            
+
             if (!initInfo) InitInfo();
 
             if (settings == null) InitInfo();
 
             if (string.IsNullOrEmpty(settings.jsonTagName)) return;
-                        
+
             FullReleaseHistoryGui();
         }
 
@@ -258,7 +258,7 @@ namespace Reallusion.Import
             texture.Apply(true);
             return texture;
         }
-        
+
         Vector2 posReleaseHistory = new Vector2();
         int index;
         bool[] foldouts;
@@ -275,7 +275,7 @@ namespace Reallusion.Import
 
             posReleaseHistory = GUILayout.BeginScrollView(posReleaseHistory, GUILayout.Height(INITIAL_DROPDOWN_HEIGHT - 4f));
             GUILayout.BeginVertical();
-            
+
             if (fullJsonFragment.Count > 0)
             {
                 index = 0;
@@ -286,10 +286,10 @@ namespace Reallusion.Import
                     RLToolUpdateUtil.TryParseISO8601toDateTime(fragment.PublishedAt, out DateTime verTime);
                     string verString = RLToolUpdateUtil.TagToVersion(fragment.TagName).ToString();
                     string versionLabelString = "Version: " + verString + " [Released: " + verTime.ToShortDateString() + "]";
-                    GUILayout.Label(versionLabelString, style.infoText);              
+                    GUILayout.Label(versionLabelString, style.infoText);
                     GUILayout.FlexibleSpace();
                     GUILayout.EndHorizontal();
-                    
+
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Web Link: ", style.infoText);
                     if (GUILayout.Button("Visit v" + verString + " release webpage"))
@@ -307,7 +307,7 @@ namespace Reallusion.Import
                     GUILayout.EndHorizontal();
 
                     if (foldouts[index])
-                    {                        
+                    {
                         foreach (string line in RLToolUpdateUtil.LineSplit(fragment.Body))
                         {
                             GUILayout.BeginHorizontal();
@@ -315,10 +315,10 @@ namespace Reallusion.Import
                             GUILayout.FlexibleSpace();
                             GUILayout.EndHorizontal();
                         }
-                    }                    
+                    }
 
                     GUILayout.Space(16f);
-                    
+
                     GUILayout.EndVertical();
                     index++;
                 }
@@ -375,7 +375,6 @@ namespace Reallusion.Import
                     dragging = true;
 
                     diff += mouseEvent.delta.y;
-                    Debug.Log(diff);
                     if (diff > 10f || diff < -10f)
                     {
                         Instance.minSize = new Vector2(position.width, position.height + diff);

@@ -1,17 +1,17 @@
-﻿/* 
+﻿/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -44,7 +44,7 @@ namespace Reallusion.Import
             WrinkleMaps = 16,
             MagicaCloth = 32, // Magica Mesh Cloth for clothing items
             MagicaBone = 64, // Magica Bone Cloth for hair
-            UnityClothPhysics = 128, // Unity Cloth for clothing items 
+            UnityClothPhysics = 128, // Unity Cloth for clothing items
             UnityClothHairPhysics = 256, // Unity Cloth for hair items
             MagicaClothHairPhysics = 512, // Magica Mesh Cloth for hair items
             SpringBonePhysics = 1024,  // group flag to allow selection between SpringBoneHair & MagicaBone
@@ -105,6 +105,9 @@ namespace Reallusion.Import
         public string jsonFilepath;
         public string name;
         public string folder;
+        public readonly string texFolder;
+        public readonly string fbmFolder;
+        public readonly List<string> textureFolders;
 
         public bool isLOD = false;
         public bool bakeIsBaked = false;
@@ -262,7 +265,7 @@ namespace Reallusion.Import
         public bool FeatureUseExpressionTranspose => (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) > 0;
         public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         public bool FeatureUseExtractGeneric => (ShaderFlags & ShaderFeatureFlags.ExtractGeneric) > 0;
-        //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;        
+        //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
         public EyeQuality QualEyes { get { return qualEyes; } set { qualEyes = value; } }
@@ -278,7 +281,7 @@ namespace Reallusion.Import
         public TexSizeQuality QualTexSize { get { return qualTexSize; } set { qualTexSize = value; } }
         public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
-        // these are the settings the character has been built to.  
+        // these are the settings the character has been built to.
         private ProcessingType builtLogType = ProcessingType.None;
         private EyeQuality builtQualEyes = EyeQuality.Parallax;
         private HairQuality builtQualHair = HairQuality.TwoPass;
@@ -320,10 +323,13 @@ namespace Reallusion.Import
         public BoolEnum isBlenderProject = BoolEnum.NotSet;
         public bool CheckBlenderProject()
         {
-            if (isBlenderProject == BoolEnum.NotSet)
+            if (JsonData != null)
             {
-                isBlenderProject = JsonData.GetBoolValue(CharacterName + "/Blender_Project") ? BoolEnum.True : BoolEnum.False;
-                return true;
+                if (isBlenderProject == BoolEnum.NotSet)
+                {
+                    isBlenderProject = JsonData.GetBoolValue(CharacterName + "/Blender_Project") ? BoolEnum.True : BoolEnum.False;
+                    return true;
+                }
             }
             return false;
         }
@@ -366,6 +372,10 @@ namespace Reallusion.Import
             folder = Path.GetDirectoryName(path);
             infoFilepath = Path.Combine(folder, name + "_ImportInfo.txt");
             jsonFilepath = Path.Combine(folder, name + ".json");
+            // construct the texture folder list for the character.
+            fbmFolder = Path.Combine(folder, name + ".fbm");
+            texFolder = Path.Combine(folder, "textures", name);
+            textureFolders = new List<string>() { fbmFolder, texFolder };
             if (path.iContains("_lod")) isLOD = true;
             guidRemaps = new List<GUIDRemap>();
             materialOverrides = new List<Tuple<string, MaterialType>>();
@@ -509,17 +519,53 @@ namespace Reallusion.Import
             return null;
         }
 
+        public bool ReadJsonData()
+        {
+            try
+            {
+                jsonData = Util.GetJsonData(jsonFilepath);
+                return true;
+            }
+            catch
+            {
+                Util.LogError($"Json File: {jsonFilepath} is invalid!");
+                jsonData = null;
+                return false;
+            }
+        }
+
         public QuickJSON JsonData
         {
             get
             {
                 if (jsonData == null)
                 {
-                    jsonData = Util.GetJsonData(jsonFilepath);
-                    Util.LogDetail("CharInfo: " + name + " JsonData Fetched");
+                    ReadJsonData();
                 }
                 return jsonData;
             }
+        }
+
+        public bool IsValidJsonData()
+        {
+            if (JsonData == null) return false;
+
+            string jsonPath = name + "/Version";
+            string jsonVersion = JsonData.GetStringValue(jsonPath);
+
+            // Unity exports version start with 1.10.
+            if (!jsonVersion.StartsWith("1.10."))
+            {
+                Util.LogError($"Json File: {jsonFilepath}, is *not* from a Unity compatible export! (Maya/3dsMax)");
+                return false;
+            }
+            if (AnyJsonMaterialPathExists("Textures/ORM"))
+            {
+                Util.LogError($"Json File: {jsonFilepath}, is *not* from a Unity compatible export! (UE4/5)");
+                return false;
+            }
+
+            return true;
         }
 
         public bool JsonLoaded { get { return jsonData != null; } }
@@ -528,9 +574,13 @@ namespace Reallusion.Import
         {
             get
             {
-                string jsonPath = name;
-                if (JsonData.PathExists(jsonPath))
-                    return JsonData.GetObjectAtPath(jsonPath);
+                if (JsonData != null)
+                {
+                    string jsonPath = name;
+                    if (JsonData.PathExists(jsonPath))
+                        return JsonData.GetObjectAtPath(jsonPath);
+                }
+                Util.LogError($"Unable to find Root in Json! Json file: {jsonFilepath} may be corrupt!");
                 return null;
             }
         }
@@ -539,9 +589,13 @@ namespace Reallusion.Import
         {
             get
             {
-                string jsonPath = name + "/Version";
-                if (JsonData.PathExists(jsonPath))
-                    return JsonData.GetStringValue(jsonPath);
+                if (JsonData != null)
+                {
+                    string jsonPath = name + "/Version";
+                    if (JsonData.PathExists(jsonPath))
+                        return JsonData.GetStringValue(jsonPath);
+                }
+                Util.LogError($"Unable to find Version in Json! Json file: {jsonFilepath} may be corrupt!");
                 return "";
             }
         }
@@ -550,9 +604,13 @@ namespace Reallusion.Import
         {
             get
             {
-                string jsonPath = name + "/Object/" + name;
-                if (JsonData.PathExists(jsonPath))
-                    return JsonData.GetObjectAtPath(jsonPath);
+                if (JsonData != null)
+                {
+                    string jsonPath = name + "/Object/" + name;
+                    if (JsonData.PathExists(jsonPath))
+                        return JsonData.GetObjectAtPath(jsonPath);
+                }
+                Util.LogError($"Unable to find Character data in Json! Json file: {jsonFilepath} may be corrupt!");
                 return null;
             }
         }
@@ -561,18 +619,26 @@ namespace Reallusion.Import
         {
             get
             {
-                if (JsonVersion.StartsWith("1.20."))
+                if (JsonData != null)
                 {
-                    string jsonPath = name + "/Object/" + name + "/Nodes";
-                    if (JsonData.PathExists(jsonPath))
-                        return JsonData.GetObjectAtPath(jsonPath);
+                    try
+                    {
+                        if (JsonVersion.StartsWith("1.20."))
+                        {
+                            string jsonPath = name + "/Object/" + name + "/Nodes";
+                            if (JsonData.PathExists(jsonPath))
+                                return JsonData.GetObjectAtPath(jsonPath);
+                        }
+                        else
+                        {
+                            string jsonPath = name + "/Object/" + name + "/Meshes";
+                            if (JsonData.PathExists(jsonPath))
+                                return JsonData.GetObjectAtPath(jsonPath);
+                        }
+                    }
+                    catch { }
                 }
-                else
-                {
-                    string jsonPath = name + "/Object/" + name + "/Meshes";
-                    if (JsonData.PathExists(jsonPath))
-                        return JsonData.GetObjectAtPath(jsonPath);
-                }
+                Util.LogError($"Unable to find Object data in Json! Json file: {jsonFilepath} may be corrupt!");
                 return null;
             }
         }
@@ -615,7 +681,12 @@ namespace Reallusion.Import
 
         public QuickJSON GetObjJson(GameObject obj)
         {
+            if (JsonData == null) return null;
+
             QuickJSON objectsData = ObjectsJsonData;
+
+            if (objectsData == null) return null;
+
             string objName = obj.name;
             List<string> tryObjectNames = new List<string>();
 
@@ -672,8 +743,13 @@ namespace Reallusion.Import
 
         public QuickJSON GetMatJson(GameObject obj, string sourceName)
         {
+            if (JsonData == null) return null;
+
             QuickJSON objectsData = ObjectsJsonData;
             QuickJSON matJson = null;
+
+            if (objectsData == null) return null;
+
             string objName = obj.name;
             string jsonPath = "";
             List<string> tryMaterialNames = new List<string>();
@@ -753,7 +829,7 @@ namespace Reallusion.Import
                         matJson = objectsData.GetObjectAtPath(jsonPath);
                         if (matJson != null)
                         {
-                            Debug.LogWarning($"Material {obj.name}/{sourceName} detected as: {findObjectName}/{materialName} on ");
+                            Util.LogWarn($"Material {obj.name}/{sourceName} detected as: {findObjectName}/{materialName} on ");
                             return matJson;
                         }
                     }
@@ -767,7 +843,7 @@ namespace Reallusion.Import
                             matJson = objectsData.GetObjectAtPath(jsonPath);
                             if (matJson != null)
                             {
-                                Debug.LogWarning($"Material {obj.name}/{sourceName} detected as: {objectName}/{realMaterialName} on ");
+                                Util.LogWarn($"Material {obj.name}/{sourceName} detected as: {objectName}/{realMaterialName} on ");
                                 return matJson;
                             }
                         }
@@ -787,9 +863,12 @@ namespace Reallusion.Import
         {
             get
             {
-                string jsonPath = name + "/Object/" + name + "/Physics";
-                if (JsonData.PathExists(jsonPath))
-                    return JsonData.GetObjectAtPath(jsonPath);
+                if (JsonData != null)
+                {
+                    string jsonPath = name + "/Object/" + name + "/Physics";
+                    if (JsonData.PathExists(jsonPath))
+                        return JsonData.GetObjectAtPath(jsonPath);
+                }
                 return null;
             }
         }
@@ -809,7 +888,7 @@ namespace Reallusion.Import
 
         public void Refresh()
         {
-            if (jsonData != null) jsonData = Util.GetJsonData(jsonFilepath);
+            if (jsonData != null) ReadJsonData();
         }
 
         public BaseGeneration Generation
@@ -850,36 +929,39 @@ namespace Reallusion.Import
             BaseGeneration oldGen = generation;
             string gen = "";
 
-            string generationPath = name + "/Object/" + name + "/Generation";
-            if (JsonData.PathExists(generationPath))
+            if (IsValidJsonData())
             {
-                gen = JsonData.GetStringValue(generationPath);
-            }
+                string generationPath = name + "/Object/" + name + "/Generation";
+                if (JsonData.PathExists(generationPath))
+                {
+                    gen = JsonData.GetStringValue(generationPath);
+                }
 
-            generation = RL.GetCharacterGeneration(Fbx, gen);
-            CheckOverride();
-            bool setBlender = CheckBlenderProject();
-            bool setSubDB = CheckSubDLevel();
+                generation = RL.GetCharacterGeneration(Fbx, gen);
+                CheckOverride();
+                bool setBlender = CheckBlenderProject();
+                bool setSubDB = CheckSubDLevel();
 
-            // new character detected, initialize settings
-            if (oldGen == BaseGeneration.None)
-            {
-                InitSettings();
-                InitPhysics();
-            }
+                // new character detected, initialize settings
+                if (oldGen == BaseGeneration.None)
+                {
+                    InitSettings();
+                    InitPhysics();
+                }
 
-            bool versionUpgraded = VersionUpgrade();
+                bool versionUpgraded = VersionUpgrade();
 
-            if (generation != oldGen || versionUpgraded || setBlender || setSubDB)
-            {
-                Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
-                Write();
+                if (generation != oldGen || versionUpgraded || setBlender || setSubDB)
+                {
+                    Util.LogDetail("CharInfo: " + name + " Generation detected: " + generation.ToString());
+                    Write();
+                }
             }
         }
 
         public void CheckGenerationQuick()
         {
-            Debug.Log("CheckGenerationQuick: " + name);
+            Util.LogDetail("CheckGenerationQuick: " + name);
             BaseGeneration oldGen = generation;
             string gen = Util.GetJsonGenerationString(jsonFilepath);
             generation = RL.GetCharacterGeneration(Fbx, gen);
@@ -1098,8 +1180,12 @@ namespace Reallusion.Import
 
         public bool HasExpressionBones()
         {
-            string jsonPath = name + "/Object/" + name + "/Expression";
-            return JsonData.PathExists(jsonPath);
+            if (JsonData != null)
+            {
+                string jsonPath = name + "/Object/" + name + "/Expression";
+                return JsonData.PathExists(jsonPath);
+            }
+            return false;
         }
 
         public bool ShouldUseExpressionBones()
@@ -1119,10 +1205,14 @@ namespace Reallusion.Import
 
         public bool HasConstraintData()
         {
-            string jsonPath = name + "/Object/" + name + "/Constraint";
-            QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
-            bool hasData = data != null && data.values.Count > 0;
-            return hasData;
+            if (JsonData != null)
+            {
+                string jsonPath = name + "/Object/" + name + "/Constraint";
+                QuickJSON data = JsonData.GetObjectAtPath(jsonPath);
+                bool hasData = data != null && data.values.Count > 0;
+                return hasData;
+            }
+            return false;
         }
 
         public bool HasWrinkleDisplacement()
@@ -1132,7 +1222,11 @@ namespace Reallusion.Import
 
         public bool AnyJsonMaterialPathExists(string path, bool requireValue = false)
         {
+            if (JsonData == null) return false;
+
             QuickJSON objectsJson = ObjectsJsonData;
+
+            if (objectsJson == null) return false;
 
             foreach (MultiValue mvMesh in objectsJson.values)
             {
@@ -1180,6 +1274,8 @@ namespace Reallusion.Import
             QuickJSON objectsJson = ObjectsJsonData;
             const string path = "Node Type";
 
+            if (objectsJson == null) return false;
+
             foreach (MultiValue mvMesh in objectsJson.values)
             {
                 if (mvMesh.Type == MultiType.Object)
@@ -1214,6 +1310,8 @@ namespace Reallusion.Import
             QuickJSON objectsJson = ObjectsJsonData;
             const string path = "SubD Level";
             int maxLevel = 0;
+
+            if (objectsJson == null) return 0;
 
             foreach (MultiValue mvMesh in objectsJson.values)
             {
@@ -1634,5 +1732,26 @@ namespace Reallusion.Import
             }
         }
 
+        public string GetTexPath(string jsonTexPath)
+        {
+            string fileName = Path.GetFileName(jsonTexPath);
+            string dirName = Path.GetDirectoryName(jsonTexPath);
+
+            // embedded texture does not have a valid json path to fbmFolder
+            if (fileName == jsonTexPath || string.IsNullOrEmpty(dirName))
+            {
+                return Path.Combine(fbmFolder, jsonTexPath);
+            }
+
+            // remove any ./ .\ prefix from the start of the json texture path
+            if (jsonTexPath.iStartsWith("./") || jsonTexPath.iStartsWith(".\\"))
+                jsonTexPath = jsonTexPath.Substring(2);
+
+            // convert slashes/backslashes to OS dependant separator
+            if (Path.DirectorySeparatorChar != '\\') jsonTexPath = jsonTexPath.Replace('\\', Path.DirectorySeparatorChar);
+            if (Path.DirectorySeparatorChar != '/') jsonTexPath = jsonTexPath.Replace('/', Path.DirectorySeparatorChar);
+
+            return Path.Combine(folder, jsonTexPath);
+        }
     }
 }

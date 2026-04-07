@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -110,7 +110,7 @@ namespace Reallusion.Import
             //Debug.Log("ShaderPackageUpdater.OnAfterAssemblyReload");
             FrameTimer.CreateTimer(15, FrameTimer.onAfterAssemblyReload, GetInstanceAfterReload);
         }
-    
+
         public static void GetInstanceAfterReload(object obj, FrameTimerArgs args)
         {
             // broken? ???
@@ -287,7 +287,7 @@ namespace Reallusion.Import
             iconInstallRuntimeR = Util.FindTexture(folders, "RLIcon-RuntimeStatus-R");
             iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");
             iconInstallLegacyW = Util.FindTexture(folders, "RLIcon_Install_Shader_W");
-            
+
             initGUI = false;
         }
 
@@ -361,9 +361,9 @@ namespace Reallusion.Import
             bool test = true;
             if (test)
             {
-                FoldoutTestSection();                
+                FoldoutTestSection();
             }
-            // test functions ends 
+            // test functions ends
 
             GUILayout.EndScrollView();
 
@@ -457,7 +457,7 @@ namespace Reallusion.Import
 
         float DROPDOWN_BTN_WIDTH = 140f;
         float SCROLLABLE_HEIGHT = 212f;
-        Rect prev = new Rect();        
+        Rect prev = new Rect();
         bool initInfo = false;
         public RLSettingsObject settings;
         [SerializeField]
@@ -550,8 +550,8 @@ namespace Reallusion.Import
             }
             EditorGUI.EndDisabledGroup();
 
-            GUILayout.FlexibleSpace();            
-            
+            GUILayout.FlexibleSpace();
+
             GUILayout.Space(HORIZ_INDENT);
 
             if (Event.current.type == EventType.Repaint)
@@ -735,7 +735,7 @@ namespace Reallusion.Import
             GUILayout.Space(HORIZ_INDENT);
 
             GUILayout.EndHorizontal();
-            
+
             if (shaderGraphFoldout)
             {
                 GUILayout.BeginHorizontal();
@@ -796,7 +796,7 @@ namespace Reallusion.Import
             //GUILayout.FlexibleSpace();
 
             GUILayout.Space(VERT_INDENT);
-            
+
             //EditorGUI.BeginDisabledGroup(UpdateManager.IsShaderVariantLimitTooLow());
             if (GUILayout.Button(new GUIContent("Recompile Shaders", "After correcting the variant limit, use this button to force all the shaders to recompile - any characters built using a broken shader will need to be rebuilt."), GUILayout.Width(120f)))
             {
@@ -833,7 +833,7 @@ namespace Reallusion.Import
             {
                 SettingsService.OpenUserPreferences("Preferences/Shader Graph");
             }
-                        
+
             //GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
@@ -978,7 +978,7 @@ namespace Reallusion.Import
             {
                 instShaderFoldout = true;
             }
-            
+
             string foldoutLabel = "Current Shader Package: " + GetShaderLabel();
             instShaderFoldout = EditorGUILayout.Foldout(instShaderFoldout, new GUIContent(foldoutLabel, "Toggle foldout to see details of the available shader packages."), true, error ? guiStyles.FoldoutTitleErrorLabel : guiStyles.FoldoutTitleLabel);
 
@@ -1251,7 +1251,7 @@ namespace Reallusion.Import
             GUILayout.Space(HORIZ_INDENT);
 
             GUILayout.Label("Currently Installed Runtime Package:  ");
-            GUIStyle shaderLabelStyle = GUI.skin.label;            
+            GUIStyle shaderLabelStyle = GUI.skin.label;
             string version = string.Empty;
 
             switch (UpdateManager.installedRuntimeStatus)
@@ -1525,7 +1525,7 @@ namespace Reallusion.Import
             float actionwidth = (Instance.position.width - (HORIZ_INDENT * 10)) / 2;
 
             GUILayout.BeginVertical(GUI.skin.box);
-            
+
             GUILayout.Space(VERT_INDENT);
 
             GUILayout.BeginHorizontal();
@@ -1594,7 +1594,7 @@ namespace Reallusion.Import
                         }
                 }
                 GUILayout.BeginHorizontal();
-                
+
                 if (UpdateManager.determinedShaderAction.DeterminedShaderAction == ShaderPackageUtil.DeterminedAction.Incompatible) incompatible = true;
                 if (GUILayout.Button(picture, GUILayout.Width(50f), GUILayout.Height(50f)))
                 {
@@ -1716,7 +1716,7 @@ namespace Reallusion.Import
             if (currentSettings != null)  // avoids a null ref after assembly reload while waiting for frames
             {
                 GUILayout.BeginHorizontal();
-                EditorGUI.BeginChangeCheck();                
+                EditorGUI.BeginChangeCheck();
                 GUILayout.Label("Show this window on startup ");
                 currentSettings.showOnStartup = EditorGUILayout.Toggle(currentSettings.showOnStartup);
                 if (EditorGUI.EndChangeCheck())
@@ -1799,7 +1799,7 @@ namespace Reallusion.Import
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_P4_AddedRemote").image, "Install " + Path.GetFileNameWithoutExtension(manifest.SourcePackageName)), GUILayout.Width(24f)))
                     {
-                        Debug.Log("Installing Package: " + manifest.SourcePackageName);
+                        Util.LogInfo("Installing Package: " + manifest.SourcePackageName);
                         ShaderPackageUtil.InstallShaderPackage(manifest);
                         UpdateGUI();
                     }

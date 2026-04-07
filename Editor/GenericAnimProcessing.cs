@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2026 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -95,7 +95,7 @@ namespace Reallusion.Import
                 AnimationClip humanoidClip = null;
                 foreach (var clip in humanoidClips)
                 {
-                    Debug.Log($"Available Clip: {clip.name}");
+                    Util.LogInfo($"Available Clip: {clip.name}");
                 }
 
                 foreach (Object subObject in genericData)
@@ -107,7 +107,7 @@ namespace Reallusion.Import
                         humanoidClip = humanoidClips.FirstOrDefault(x => x.name == subObject.name);
                         if (humanoidClip == null)
                         {
-                            Debug.Log($"Cannot find humanoid clip corresponding to {subObject.name}");
+                            Util.LogWarn($"Cannot find humanoid clip corresponding to {subObject.name}");
                         }
                         else
                         {
@@ -123,7 +123,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.LogWarning(e.Message);
+                Util.LogError(e.Message);
             }
             EditorUtility.ClearProgressBar();
 
@@ -159,7 +159,7 @@ namespace Reallusion.Import
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
 
-                Debug.Log($"generic path: {genericAssetPath}  humanoid path: {humanoidAssetPath}");
+                Util.LogInfo($"generic path: {genericAssetPath}  humanoid path: {humanoidAssetPath}");
 
                 humanoidAvatar = FetchHumanAvatar(humanoidAssetPath);
                 GameObject humanoidModel = AssetDatabase.LoadAssetAtPath<GameObject>(humanoidAssetPath);
@@ -174,7 +174,7 @@ namespace Reallusion.Import
                         AnimationClip humanoidClip = humanoidClips.FirstOrDefault(x => x.name == subObject.name);
                         if (humanoidClip == null)
                         {
-                            Debug.Log($"Cannot find humanoid clip corresponding to {subObject.name}");
+                            Util.LogWarn($"Cannot find humanoid clip corresponding to {subObject.name}");
                         }
                         else
                         {
@@ -194,7 +194,7 @@ namespace Reallusion.Import
             }
             catch (Exception e)
             {
-                Debug.LogWarning(e.Message);
+                Util.LogError(e.Message);
             }
             EditorUtility.ClearProgressBar();
         }
@@ -212,14 +212,14 @@ namespace Reallusion.Import
             string tmpHumanoidName = "_RL_humanoid_extract_tmp_";
             string tmpHumanoidAssetPath = Path.GetDirectoryName(assetPath) + "/" + tmpHumanoidName + assetExt;
 
-            Debug.Log("Processing: " + assetName);
-            Debug.Log($"Please ignore animation import warnings about files {tmpGenericName} or {tmpHumanoidName}");
+            Util.LogInfo("Processing: " + assetName);
+            Util.LogInfo($"Please ignore animation import warnings about files {tmpGenericName} or {tmpHumanoidName}");
 
             if (animType == ModelImporterAnimationType.Human)
             {
                 if (!AssetDatabase.CopyAsset(assetPath, tmpGenericAssetPath))
                 {
-                    Debug.LogWarning("Temporary Asset could not be created: Generic animation extraction failed.");
+                    Util.LogWarn("Temporary Asset could not be created: Generic animation extraction failed.");
                     return string.Empty;
                 }
                 else
@@ -231,7 +231,7 @@ namespace Reallusion.Import
             {
                 if (!AssetDatabase.CopyAsset(assetPath, tmpHumanoidAssetPath))
                 {
-                    Debug.LogWarning("Temporary Asset could not be created: Generic animation extraction failed.");
+                    Util.LogWarn("Temporary Asset could not be created: Generic animation extraction failed.");
                     return string.Empty;
                 }
                 else

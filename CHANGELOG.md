@@ -1,6 +1,17 @@
 Changelog
 =========
 
+### 2.2.6
+- Fixes to:
+    - Basic materials locking importer UI.
+    - Facial Expression preview.
+    - Alpha detection from blender exports.
+    - Exports with embedded textures.
+    - Transparencies in Pbr eyes.
+- Updated URP preview scene lighting presets.
+- Log spam clean-up.
+- Invalid Json data (from corrupted or incorrect application target) throws error.
+
 ### 2.2.5
 - Bone driver update:
     - Toggle bone groups to enable / disable driving certain bones.

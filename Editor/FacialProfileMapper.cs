@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -30,7 +30,7 @@ namespace Reallusion.Import
         public ExpressionProfile expressionProfile;
         public VisemeProfile visemeProfile;
         public bool corrections;
-        
+
         public FacialProfile(ExpressionProfile exp, VisemeProfile vis)
         {
             expressionProfile = exp;
@@ -45,13 +45,13 @@ namespace Reallusion.Import
 
         public bool IsSameProfileFrom(FacialProfile from)
         {
-            return ((from.expressionProfile == expressionProfile || from.expressionProfile == ExpressionProfile.None) && 
+            return ((from.expressionProfile == expressionProfile || from.expressionProfile == ExpressionProfile.None) &&
                     (from.visemeProfile == visemeProfile || from.visemeProfile == VisemeProfile.None));
-        }        
+        }
 
-        public bool HasFacialShapes 
-        { 
-            get { return expressionProfile != ExpressionProfile.None || visemeProfile != VisemeProfile.None; } 
+        public bool HasFacialShapes
+        {
+            get { return expressionProfile != ExpressionProfile.None || visemeProfile != VisemeProfile.None; }
         }
 
         public string GetMappingFrom(string blendShapeName, FacialProfile from)
@@ -78,13 +78,13 @@ namespace Reallusion.Import
                 }
                 return mapping;
             }
-            
+
             return blendShapeName;
-        }        
+        }
     }
 
     public struct ExpressionMapping
-    {        
+    {
         public string Standard;
         public string ExPlus;
         public string Extended;
@@ -103,9 +103,9 @@ namespace Reallusion.Import
             if (string.IsNullOrEmpty(blendShapeName))
                 return false;
 
-            if (Standard == blendShapeName || 
-                ExPlus == blendShapeName || 
-                Extended == blendShapeName || 
+            if (Standard == blendShapeName ||
+                ExPlus == blendShapeName ||
+                Extended == blendShapeName ||
                 HD == blendShapeName)
                 return true;
 
@@ -147,7 +147,7 @@ namespace Reallusion.Import
             CC4 = cc4;
             Direct = direct;
         }
-        
+
         public bool HasMapping(string blendShapeName, VisemeProfile from)
         {
             if (string.IsNullOrEmpty(blendShapeName))
@@ -178,31 +178,40 @@ namespace Reallusion.Import
         {
             correct = c;
             incorrect = i;
-        }        
+        }
     }
 
     public static class FacialProfileMapper
     {
-        public static List<ExpressionMapping> facialProfileMaps = new List<ExpressionMapping>() {            
+        public static List<ExpressionMapping> facialProfileMaps = new List<ExpressionMapping>() {
             // Brow Raise
             new ExpressionMapping("Brow_Raise_Inner_L|Brow_Raise_Inner_R", "A01_Brow_Inner_Up", "Brow_Raise_Inner_L|Brow_Raise_Inner_R", "Brow_Raise_In_L|Brow_Raise_In_R"),
             new ExpressionMapping("Brow_Raise_Inner_L|Brow_Raise_L", "A01_Brow_Inner_Up", "Brow_Raise_Inner_L", "Brow_Raise_In_L"),
             new ExpressionMapping("Brow_Raise_Inner_R|Brow_Raise_R", "A01_Brow_Inner_Up", "Brow_Raise_Inner_R", "Brow_Raise_In_R"),
             new ExpressionMapping("Brow_Raise_Inner_L", "A01_Brow_Inner_Up", "Brow_Raise_Inner_L", "Brow_Raise_In_L"),
             new ExpressionMapping("Brow_Raise_Inner_R", "A01_Brow_Inner_Up", "Brow_Raise_Inner_R", "Brow_Raise_In_R"),
-            new ExpressionMapping("Brow_Raise_Outer_L|Brow_Raise_L", "A04_Brow_Outer_Up_Left", "Brow_Raise_Outer_L", "Brow_Raise_Outer_L"),            
+            new ExpressionMapping("Brow_Raise_Outer_L|Brow_Raise_L", "A04_Brow_Outer_Up_Left", "Brow_Raise_Outer_L", "Brow_Raise_Outer_L"),
             new ExpressionMapping("Brow_Raise_Outer_R|Brow_Raise_R", "A05_Brow_Outer_Up_Right", "Brow_Raise_Outer_R", "Brow_Raise_Outer_R"),
             new ExpressionMapping("Brow_Raise_Outer_L", "A04_Brow_Outer_Up_Left", "Brow_Raise_Outer_L", "Brow_Raise_Outer_L"),
-            new ExpressionMapping("Brow_Raise_Outer_R", "A05_Brow_Outer_Up_Right", "Brow_Raise_Outer_R", "Brow_Raise_Outer_R"),            
-            new ExpressionMapping("Brow_Raise_L", "A04_Brow_Outer_Up_Left|A01_Brow_Inner_Up", "Brow_Raise_Inner_L|Brow_Raise_Outer_L", "Brow_Raise_Inner_L|Brow_Raise_Outer_L"),            
+            new ExpressionMapping("Brow_Raise_Outer_R", "A05_Brow_Outer_Up_Right", "Brow_Raise_Outer_R", "Brow_Raise_Outer_R"),
+            new ExpressionMapping("Brow_Raise_L", "A04_Brow_Outer_Up_Left|A01_Brow_Inner_Up", "Brow_Raise_Inner_L|Brow_Raise_Outer_L", "Brow_Raise_Inner_L|Brow_Raise_Outer_L"),
             new ExpressionMapping("Brow_Raise_R", "A05_Brow_Outer_Up_Right|A01_Brow_Inner_Up", "Brow_Raise_Inner_R|Brow_Raise_Outer_R", "Brow_Raise_Inner_R|Brow_Raise_Outer_R"),
             // Brow Drop
             new ExpressionMapping("Brow_Drop_L", "A02_Brow_Down_Left", "Brow_Drop_L", "Brow_Down_L"),
-            new ExpressionMapping("Brow_Drop_R", "A03_Brow_Down_Right", "Brow_Drop_R", "Brow_Down_R"),            
+            new ExpressionMapping("Brow_Drop_R", "A03_Brow_Down_Right", "Brow_Drop_R", "Brow_Down_R"),
             // Brow Compress
-            new ExpressionMapping("", "", "Brow_Compress_L", "Brow_Lateral_L"),            
+            new ExpressionMapping("", "", "Brow_Compress_L", "Brow_Lateral_L"),
             new ExpressionMapping("", "", "Brow_Compress_R", "Brow_Lateral_R"),
             // Eye Look
+            new ExpressionMapping("", "A06_Eye_Look_Up_Left|Left_Eyeball_Look_Up", "Eye_L_Look_Up", "Eye_Look_Up_L"),
+            new ExpressionMapping("", "A07_Eye_Look_Up_Right|Right_Eyeball_Look_Up", "Eye_R_Look_Up", "Eye_Look_Up_R"),
+            new ExpressionMapping("", "A08_Eye_Look_Down_Left|Left_Eyeball_Look_Down", "Eye_L_Look_Down", "Eye_Look_Down_L"),
+            new ExpressionMapping("", "A09_Eye_Look_Down_Right|Right_Eyeball_Look_Down", "Eye_R_Look_Down", "Eye_Look_Down_R"),
+            new ExpressionMapping("", "A10_Eye_Look_Out_Left|Left_Eyeball_Look_L", "Eye_L_Look_L", "Eye_Look_Left_L"),
+            new ExpressionMapping("", "A11_Eye_Look_In_Left|Left_Eyeball_Look_R", "Eye_L_Look_R", "Eye_Look_Right_L"),
+            new ExpressionMapping("", "A12_Eye_Look_In_Right|Right_Eyeball_Look_L", "Eye_R_Look_L", "Eye_Look_Left_R"),
+            new ExpressionMapping("", "A13_Eye_Look_Out_Right|Right_Eyeball_Look_R", "Eye_R_Look_R", "Eye_Look_Right_R"),
+
             new ExpressionMapping("", "A06_Eye_Look_Up_Left", "Eye_L_Look_Up", "Eye_Look_Up_L"),
             new ExpressionMapping("", "A07_Eye_Look_Up_Right", "Eye_R_Look_Up", "Eye_Look_Up_R"),
             new ExpressionMapping("", "A08_Eye_Look_Down_Left", "Eye_L_Look_Down", "Eye_Look_Down_L"),
@@ -211,16 +220,26 @@ namespace Reallusion.Import
             new ExpressionMapping("", "A11_Eye_Look_In_Left", "Eye_L_Look_R", "Eye_Look_Right_L"),
             new ExpressionMapping("", "A12_Eye_Look_In_Right", "Eye_R_Look_L", "Eye_Look_Left_R"),
             new ExpressionMapping("", "A13_Eye_Look_Out_Right", "Eye_R_Look_R", "Eye_Look_Right_R"),
+
+            new ExpressionMapping("", "Left_Eyeball_Look_Up", "Eye_L_Look_Up", "Eye_Look_Up_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_Up", "Eye_R_Look_Up", "Eye_Look_Up_R"),
+            new ExpressionMapping("", "Left_Eyeball_Look_Down", "Eye_L_Look_Down", "Eye_Look_Down_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_Down", "Eye_R_Look_Down", "Eye_Look_Down_R"),
+            new ExpressionMapping("", "Left_Eyeball_Look_L", "Eye_L_Look_L", "Eye_Look_Left_L"),
+            new ExpressionMapping("", "Left_Eyeball_Look_R", "Eye_L_Look_R", "Eye_Look_Right_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_L", "Eye_R_Look_L", "Eye_Look_Left_R"),
+            new ExpressionMapping("", "Right_Eyeball_Look_R", "Eye_R_Look_R", "Eye_Look_Right_R"),
             // Eye Blink
-            new ExpressionMapping("Eye_Blink", "Eye_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),            
-            new ExpressionMapping("Eye_Blink_L", "A14_Eye_Blink_Left", "Eye_Blink_L", "Eye_Blink_L"),            
+            new ExpressionMapping("Eyes_Blink", "Eyes_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),
+            new ExpressionMapping("Eye_Blink", "Eyes_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),
+            new ExpressionMapping("Eye_Blink_L", "A14_Eye_Blink_Left", "Eye_Blink_L", "Eye_Blink_L"),
             new ExpressionMapping("Eye_Blink_R", "A15_Eye_Blink_Right", "Eye_Blink_R", "Eye_Blink_R"),
             // Eye Squint
-            new ExpressionMapping("Eye_Squint_L", "A16_Eye_Squint_Left", "Eye_Squint_L", "Eye_Squint_Inner_L"),            
+            new ExpressionMapping("Eye_Squint_L", "A16_Eye_Squint_Left", "Eye_Squint_L", "Eye_Squint_Inner_L"),
             new ExpressionMapping("Eye_Squint_R", "A17_Eye_Squint_Right", "Eye_Squint_R", "Eye_Squint_Inner_R"),
             // Eye Wide
-            new ExpressionMapping("Eye_Wide_L", "A18_Eye_Wide_Left", "Eye_Wide_L", "Eye_Widen_L"),            
-            new ExpressionMapping("Eye_Wide_R", "A19_Eye_Wide_Right", "Eye_Wide_R", "Eye_Widen_R"),            
+            new ExpressionMapping("Eye_Wide_L", "A18_Eye_Wide_Left", "Eye_Wide_L", "Eye_Widen_L"),
+            new ExpressionMapping("Eye_Wide_R", "A19_Eye_Wide_Right", "Eye_Wide_R", "Eye_Widen_R"),
             // Eyelashes
             new ExpressionMapping("", "", "Eyelashes_Upper_Up_L", "Eyelashes_Up_IN_L|Eyelashes_Up_OUT_L"),
             new ExpressionMapping("", "", "Eyelashes_Upper_Down_L", "Eyelashes_Down_IN_L|Eyelashes_Down_OUT_L"),
@@ -239,32 +258,32 @@ namespace Reallusion.Import
             new ExpressionMapping("Cheek_Puff_L", "A20_Cheek_Puff", "Cheek_Puff_L", "Mouth_Cheek_Blow_L|Mouth_Lips_Blow_L"),
             new ExpressionMapping("Cheek_Puff_R", "A20_Cheek_Puff", "Cheek_Puff_R", "Mouth_Cheek_Blow_R|Mouth_Lips_Blow_R"),
             new ExpressionMapping("Cheek_Puff_L", "A20_Cheek_Puff", "Cheek_Puff_L", "Mouth_Cheek_Blow_L"),
-            new ExpressionMapping("Cheek_Puff_L", "A20_Cheek_Puff", "Cheek_Puff_L", "Mouth_Lips_Blow_L"),                        
+            new ExpressionMapping("Cheek_Puff_L", "A20_Cheek_Puff", "Cheek_Puff_L", "Mouth_Lips_Blow_L"),
             new ExpressionMapping("Cheek_Puff_R", "A20_Cheek_Puff", "Cheek_Puff_R", "Mouth_Cheek_Blow_R"),
-            new ExpressionMapping("Cheek_Puff_R", "A20_Cheek_Puff", "Cheek_Puff_R", "Mouth_Lips_Blow_R"),            
+            new ExpressionMapping("Cheek_Puff_R", "A20_Cheek_Puff", "Cheek_Puff_R", "Mouth_Lips_Blow_R"),
             // Cheek Raise
-            new ExpressionMapping("Cheek_Raise_L", "A21_Cheek_Squint_Left", "Cheek_Raise_L", "Eye_Cheek_Raise_L"),            
+            new ExpressionMapping("Cheek_Raise_L", "A21_Cheek_Squint_Left", "Cheek_Raise_L", "Eye_Cheek_Raise_L"),
             new ExpressionMapping("Cheek_Raise_R", "A22_Cheek_Squint_Right", "Cheek_Raise_R", "Eye_Cheek_Raise_R"),
             // Cheek Suck
-            new ExpressionMapping("Cheeks_Suck", "Cheeks_Suck", "Cheek_Suck_L", "Mouth_Cheek_Suck_L"),            
-            new ExpressionMapping("Cheeks_Suck", "Cheeks_Suck", "Cheek_Suck_R", "Mouth_Cheek_Suck_L"),            
+            new ExpressionMapping("Cheeks_Suck", "Cheeks_Suck", "Cheek_Suck_L", "Mouth_Cheek_Suck_L"),
+            new ExpressionMapping("Cheeks_Suck", "Cheeks_Suck", "Cheek_Suck_R", "Mouth_Cheek_Suck_L"),
             // Nose Sneer
-            new ExpressionMapping("Nose_Flank_Raise_L", "A23_Nose_Sneer_Left", "Nose_Sneer_L", "Nose_Wrinkle_Upper_L"),            
+            new ExpressionMapping("Nose_Flank_Raise_L", "A23_Nose_Sneer_Left", "Nose_Sneer_L", "Nose_Wrinkle_Upper_L"),
             new ExpressionMapping("Nose_Flank_Raise_R", "A24_Nose_Sneer_Right", "Nose_Sneer_R", "Nose_Wrinkle_Upper_R"),
             // Nostril
             new ExpressionMapping("", "", "Nose_Nostril_Raise_L", "Nose_Wrinkle_L"),
-            new ExpressionMapping("", "", "Nose_Nostril_Raise_R", "Nose_Wrinkle_R"),            
+            new ExpressionMapping("", "", "Nose_Nostril_Raise_R", "Nose_Wrinkle_R"),
             new ExpressionMapping("", "", "Nose_Crease_L", "Nose_Nasolabial_Deepen_L"),
             new ExpressionMapping("", "", "Nose_Crease_R", "Nose_Nasolabial_Deepen_R"),
             new ExpressionMapping("", "", "Nose_Nostril_Down_L", "Nose_Nostril_Depress_L"),
             new ExpressionMapping("", "", "Nose_Nostril_Down_R", "Nose_Nostril_Depress_R"),
             new ExpressionMapping("", "", "Nose_Nostril_In_L", "Nose_Nostril_Compress_L"),
-            new ExpressionMapping("", "", "Nose_Nostril_In_R", "Nose_Nostril_Compress_R"),            
+            new ExpressionMapping("", "", "Nose_Nostril_In_R", "Nose_Nostril_Compress_R"),
             // Jaw
-            new ExpressionMapping("", "A25_Jaw_Open", "Jaw_Open", "Jaw_Open"),
+            new ExpressionMapping("Move_Jaw_Down", "A25_Jaw_Open", "Jaw_Open", "Jaw_Open"),
             new ExpressionMapping("", "A26_Jaw_Forward", "Jaw_Forward", "Jaw_Fwd"),
-            new ExpressionMapping("", "A27_Jaw_Left", "Jaw_L", "Jaw_Left"),
-            new ExpressionMapping("", "A28_Jaw_Right", "Jaw_R", "Jaw_Right"),
+            new ExpressionMapping("Move_Jaw_Left", "A27_Jaw_Left", "Jaw_L", "Jaw_Left"),
+            new ExpressionMapping("Move_Jaw_Right", "A28_Jaw_Right", "Jaw_R", "Jaw_Right"),
             // Mouth Funnel
             new ExpressionMapping("Mouth_Pucker_Open", "A29_Mouth_Funnel", "Mouth_Funnel_Up_L|Mouth_Funnel_Up_R|Mouth_Funnel_Down_L|Mouth_Funnel_Down_R", "Mouth_Funnel_UL|Mouth_Funnel_UR|Mouth_Funnel_DL|Mouth_Funnel_DR"),
             new ExpressionMapping("Mouth_Pucker_Open", "A29_Mouth_Funnel", "Mouth_Funnel_Up_L", "Mouth_Funnel_UL"),
@@ -278,7 +297,7 @@ namespace Reallusion.Import
             new ExpressionMapping("Mouth_Pucker", "A30_Mouth_Pucker", "Mouth_Pucker_Down_L", "Mouth_Lips_Purse_DL"),
             new ExpressionMapping("Mouth_Pucker", "A30_Mouth_Pucker", "Mouth_Pucker_Down_R", "Mouth_Lips_Purse_DR"),
             // Mouth
-            new ExpressionMapping("Mouth_L", "A31_Mouth_Left", "Mouth_L", "Mouth_Left"),            
+            new ExpressionMapping("Mouth_L", "A31_Mouth_Left", "Mouth_L", "Mouth_Left"),
             new ExpressionMapping("Mouth_R", "A32_Mouth_Right", "Mouth_R", "Mouth_Right"),
             // Mouth Roll Up
             new ExpressionMapping("Mouth_Top_Lip_Under", "A33_Mouth_Roll_Upper", "Mouth_Roll_Out_Upper_L|Mouth_Roll_Out_Upper_R", "Mouth_UpperLip_Bite_L|Mouth_UpperLip_Bite_R"),
@@ -302,15 +321,15 @@ namespace Reallusion.Import
             new ExpressionMapping("", "A37_Mouth_Close", "Mouth_Close", "Mouth_Lips_Together_DL"),
             new ExpressionMapping("", "A37_Mouth_Close", "Mouth_Close", "Mouth_Lips_Together_DR"),
             // Mouth Smile
-            new ExpressionMapping("Mouth_Smile_L", "A38_Mouth_Smile_Left", "Mouth_Smile_L", "Mouth_Corner_Pull_L"),            
-            new ExpressionMapping("Mouth_Smile_R", "A39_Mouth_Smile_Right", "Mouth_Smile_R", "Mouth_Corner_Pull_R"),            
-            new ExpressionMapping("", "", "Mouth_Smile_Sharp_L", "Mouth_SharpCorner_Pull_L"),            
+            new ExpressionMapping("Mouth_Smile_L", "A38_Mouth_Smile_Left", "Mouth_Smile_L", "Mouth_Corner_Pull_L"),
+            new ExpressionMapping("Mouth_Smile_R", "A39_Mouth_Smile_Right", "Mouth_Smile_R", "Mouth_Corner_Pull_R"),
+            new ExpressionMapping("", "", "Mouth_Smile_Sharp_L", "Mouth_SharpCorner_Pull_L"),
             new ExpressionMapping("", "", "Mouth_Smile_Sharp_R", "Mouth_SharpCorner_Pull_R"),
             // Mouth Frown
-            new ExpressionMapping("Mouth_Frown_L", "A40_Mouth_Frown_Left", "Mouth_Frown_L", "Mouth_Corner_Depress_L"),            
+            new ExpressionMapping("Mouth_Frown_L", "A40_Mouth_Frown_Left", "Mouth_Frown_L", "Mouth_Corner_Depress_L"),
             new ExpressionMapping("Mouth_Frown_R", "A41_Mouth_Frown_Right", "Mouth_Frown_R", "Mouth_Corner_Depress_R"),
             // Mouth Dimple
-            new ExpressionMapping("Mouth_Dimple_L", "A42_Mouth_Dimple_Left", "Mouth_Dimple_L", "Mouth_Dimple_L"),            
+            new ExpressionMapping("Mouth_Dimple_L", "A42_Mouth_Dimple_Left", "Mouth_Dimple_L", "Mouth_Dimple_L"),
             new ExpressionMapping("Mouth_Dimple_R", "A43_Mouth_Dimple_Right", "Mouth_Dimple_R", "Mouth_Dimple_R"),
             // Mouth Lips
             new ExpressionMapping("", "A44_Mouth_Upper_Up_Left", "Mouth_Up_Upper_L", "Mouth_UpperLip_Raise_L"), //Mouth_Up
@@ -374,7 +393,7 @@ namespace Reallusion.Import
         };
 
         public static List<VisemeMapping> visemeProfileMaps = new List<VisemeMapping>() {
-            //new VisemeProfileMapping("", "", ""),                        
+            //new VisemeProfileMapping("", "", ""),
             new VisemeMapping("Open", "V_Open", ""),
             new VisemeMapping("Explosive", "V_Explosive", ""),
             new VisemeMapping("Dental_Lip", "V_Dental_Lip", ""),
@@ -512,7 +531,7 @@ namespace Reallusion.Import
                             if (visemeProfile == VisemeProfile.None)
                                 visemeProfile = VisemeProfile.Direct;
                             break;
-                        case "Brow_Raise_Inner_Left":                        
+                        case "Brow_Raise_Inner_Left":
                         case "Brow_Raise_Outer_Left":
                         case "Brow_Drop_Left":
                         case "Brow_Raise_Right":
@@ -527,7 +546,7 @@ namespace Reallusion.Import
             return new FacialProfile(expressionProfile, visemeProfile)
             {
                 corrections = corrections
-            };            
+            };
         }
 
         public static FacialProfile GetMeshFacialProfile(GameObject prefab)
@@ -554,14 +573,18 @@ namespace Reallusion.Import
                             mesh.HasShape("Jaw_Clench_R"))
                             expressionProfile = ExpressionProfile.MH;
 
-                        if (mesh.HasShape("Move_Jaw_Down") ||
-                            mesh.HasShape("Turn_Jaw_Down") ||
-                            mesh.HasShape("A01_Brow_Inner_Up") ||
+                        if (mesh.HasShape("A01_Brow_Inner_Up") ||
                             mesh.HasShape("A06_Eye_Look_Up_Left") ||
                             mesh.HasShape("A15_Eye_Blink_Right") ||
                             mesh.HasShape("A25_Jaw_Open") ||
                             mesh.HasShape("A37_Mouth_Close"))
                             expressionProfile = ExpressionProfile.ExPlus;
+
+                        if (mesh.HasShape("Move_Jaw_Down") ||
+                            mesh.HasShape("Turn_Jaw_Down") ||
+                            mesh.HasShape("Turn_Jaw_L") ||
+                            mesh.HasShape("Turn_Jaw_R"))
+                            expressionProfile = ExpressionProfile.Std;
 
                         if (mesh.HasShape("Ear_Up_L") ||
                             mesh.HasShape("Ear_Up_R") ||
@@ -670,16 +693,16 @@ namespace Reallusion.Import
             return false;
         }
 
-        private static List<string> multiShapeNames = new List<string>(4);        
+        private static List<string> multiShapeNames = new List<string>(4);
 
         public static List<string> GetMultiShapeNames(string profileShapeName)
         {
-            multiShapeNames.Clear();            
+            multiShapeNames.Clear();
             if (profileShapeName.Contains("|"))
             {
                 string[] splitNames = profileShapeName.Split('|');
-                multiShapeNames.AddRange(splitNames);                
-            }            
+                multiShapeNames.AddRange(splitNames);
+            }
 
             if (multiShapeNames.Count == 0)
                 multiShapeNames.Add(profileShapeName);
@@ -687,86 +710,98 @@ namespace Reallusion.Import
             return multiShapeNames;
         }
 
-        public static bool SetCharacterBlendShape(GameObject root, string shapeName,
+        public static bool SetCharacterBlendShape(GameObject root, string[] shapeNames,
             FacialProfile from, FacialProfile to, float weight)
         {
-            bool res = false;
-
-            if (root)
+            foreach (string shapeName in shapeNames)
             {
-                string profileShapeName = to.GetMappingFrom(shapeName, from);
+                bool res = false;
 
-                if (!string.IsNullOrEmpty(profileShapeName))
+                if (root)
                 {
-                    GetMultiShapeNames(profileShapeName);
+                    string profileShapeName = to.GetMappingFrom(shapeName, from);
 
-                    for (int i = 0; i < root.transform.childCount; i++)
+                    if (!string.IsNullOrEmpty(profileShapeName))
                     {
-                        GameObject child = root.transform.GetChild(i).gameObject;
-                        SkinnedMeshRenderer renderer = child.GetComponent<SkinnedMeshRenderer>();
-                        if (renderer)
+                        GetMultiShapeNames(profileShapeName);
+
+                        for (int i = 0; i < root.transform.childCount; i++)
                         {
-                            Mesh mesh = renderer.sharedMesh;
-                            if (mesh.blendShapeCount > 0)
+                            GameObject child = root.transform.GetChild(i).gameObject;
+                            SkinnedMeshRenderer renderer = child.GetComponent<SkinnedMeshRenderer>();
+                            if (renderer)
                             {
-                                foreach (string name in multiShapeNames)
+                                Mesh mesh = renderer.sharedMesh;
+                                if (mesh.blendShapeCount > 0)
                                 {
-                                    int index = mesh.GetBlendShapeIndex(name);
-                                    if (index >= 0)
+                                    foreach (string name in multiShapeNames)
                                     {
-                                        renderer.SetBlendShapeWeight(index, weight);
-                                        res = true;
+                                        int index = mesh.GetBlendShapeIndex(name);
+                                        if (index >= 0)
+                                        {
+                                            renderer.SetBlendShapeWeight(index, weight);
+                                            res = true;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+
+                if (res) return true;
             }
 
-            return res;
+            return false;
         }
 
-        public static bool GetCharacterBlendShapeWeight(GameObject root, string shapeName,
+        public static bool GetCharacterBlendShapeWeight(GameObject root, string[] shapeNames,
             FacialProfile from, FacialProfile to, out float weight)
         {
             weight = 0f;
             int numWeights = 0;
 
-            if (root)
+            foreach (string shapeName in shapeNames)
             {
-                string profileShapeName = to.GetMappingFrom(shapeName, from);
-                if (!string.IsNullOrEmpty(profileShapeName))
+                if (root)
                 {
-                    for (int i = 0; i < root.transform.childCount; i++)
+                    string profileShapeName = to.GetMappingFrom(shapeName, from);
+                    if (!string.IsNullOrEmpty(profileShapeName))
                     {
-                        GameObject child = root.transform.GetChild(i).gameObject;
-                        SkinnedMeshRenderer renderer = child.GetComponent<SkinnedMeshRenderer>();
-                        if (renderer)
+                        for (int i = 0; i < root.transform.childCount; i++)
                         {
-                            Mesh mesh = renderer.sharedMesh;
-                            if (mesh.blendShapeCount > 0)
+                            GameObject child = root.transform.GetChild(i).gameObject;
+                            SkinnedMeshRenderer renderer = child.GetComponent<SkinnedMeshRenderer>();
+                            if (renderer)
                             {
-                                int shapeIndexS = mesh.GetBlendShapeIndex(profileShapeName);
-
-                                if (shapeIndexS > 0)
+                                Mesh mesh = renderer.sharedMesh;
+                                if (mesh.blendShapeCount > 0)
                                 {
-                                    weight = renderer.GetBlendShapeWeight(shapeIndexS);
-                                    numWeights++;
+                                    int shapeIndexS = mesh.GetBlendShapeIndex(profileShapeName);
+
+                                    if (shapeIndexS > 0)
+                                    {
+                                        weight = renderer.GetBlendShapeWeight(shapeIndexS);
+                                        numWeights++;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
+                if (numWeights > 0)
+                {
+                    weight /= ((float)numWeights);
+                    return true;
+                }
             }
 
-            if (numWeights > 0) weight /= ((float)numWeights);
-
-            return numWeights > 0;
+            return false;
         }
 
         public static bool GetCorrection(string blendShapeName, out string correction)
-        {            
+        {
             foreach (MappingCorrection mc in corrections)
             {
                 if (mc.incorrect == blendShapeName)

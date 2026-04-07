@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -38,7 +38,7 @@ namespace Reallusion.Import
 
             if (File.Exists(jsonPath))
                 jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
-            else { Debug.Log($"Provided jsonPath: {jsonPath} is incorrect"); return; }
+            else { Util.LogWarn($"Provided jsonPath: {jsonPath} is incorrect"); return; }
 
             ExpressionGlossary glossary = BuildExpressionGlossary(sourceObject, smr, jsonAsset.text);
             string glossarySetupString = JsonConvert.SerializeObject(glossary);
@@ -130,7 +130,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupBoneDriver cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return boneDriver;
                 }
             }
@@ -156,13 +156,13 @@ namespace Reallusion.Import
 
                 if (SetupBoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriver MethodInfo cannot be determined");
+                    Util.LogWarn("SetupBoneDriver MethodInfo cannot be determined");
                     return;
                 }
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("SetupBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;
             }
 
@@ -172,7 +172,7 @@ namespace Reallusion.Import
             }
             catch
             {
-                Debug.LogWarning("SetupBoneDriver cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+                Util.LogWarn("SetupBoneDriver cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
             }
         }
 
@@ -186,7 +186,7 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupBoneDriverFlags cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return;
                 }
             }
@@ -205,13 +205,13 @@ namespace Reallusion.Import
 
                 if (SetupBoneDriver == null)
                 {
-                    Debug.LogWarning("SetupBoneDriverFlags MethodInfo cannot be determined");
+                    Util.LogWarn("SetupBoneDriverFlags MethodInfo cannot be determined");
                     return;
                 }
             }
             else
             {
-                Debug.LogWarning("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("SetupBoneDriverFlags cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                 return;
             }
 
@@ -221,7 +221,7 @@ namespace Reallusion.Import
             }
             catch
             {
-                Debug.LogWarning("SetupBoneDriverFlags cannot invoke the setup method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+                Util.LogWarn("SetupBoneDriverFlags cannot invoke the setup method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
             }
         }
 
@@ -235,12 +235,12 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("SetupLight cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("SetupLight cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return strings;
                 }
                 else
                 {
-                    Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    Util.LogWarn("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -259,13 +259,13 @@ namespace Reallusion.Import
 
                     if (QueryBoneDriver == null)
                     {
-                        Debug.LogWarning("QueryBoneDriver MethodInfo cannot be determined");
+                        Util.LogWarn("QueryBoneDriver MethodInfo cannot be determined");
                         return strings;
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return strings;
                 }
 
@@ -280,12 +280,12 @@ namespace Reallusion.Import
                 }
                 catch
                 {
-                    Debug.LogWarning("RetrieveBoneArray cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+                    Util.LogWarn("RetrieveBoneArray cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
                 }
             }
             else
             {
-                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
             }
             return strings;
         }
@@ -300,12 +300,12 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("RetrieveBoneDictionary cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("RetrieveBoneDictionary cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return dict;
                 }
                 else
                 {
-                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    //Util.LogWarn("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -324,13 +324,13 @@ namespace Reallusion.Import
 
                     if (QueryBoneDriver == null)
                     {
-                        Debug.LogWarning("QueryBoneDriver MethodInfo cannot be determined");
+                        Util.LogWarn("QueryBoneDriver MethodInfo cannot be determined");
                         return dict;
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("QueryBoneDriver cannot find the <BoneDriver> component. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return dict;
                 }
 
@@ -345,12 +345,12 @@ namespace Reallusion.Import
                 }
                 catch
                 {
-                    Debug.LogWarning("RetrieveBoneDictionary cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
+                    Util.LogWarn("RetrieveBoneDictionary cannot invoke the method on the BoneDriver. Go to menu 'Reallusion -> Check for updates' and ensure the latest runtime package is installed.");
                 }
             }
             else
             {
-                Debug.LogWarning("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                Util.LogWarn("Cannot find the <BoneDriver> component on CC_Base_Body. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
             }
             return dict;
         }
@@ -363,12 +363,12 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return null;
                 }
                 else
                 {
-                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    //Util.LogWarn("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -388,12 +388,12 @@ namespace Reallusion.Import
                 BoneDriver = Physics.GetTypeInAssemblies("Reallusion.Runtime.BoneDriver");
                 if (BoneDriver == null)
                 {
-                    Debug.LogWarning("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
+                    Util.LogWarn("GetBoneDriverGameObjectReflection cannot find the <BoneDriver> class. Go to menu 'Reallusion -> Check for updates' and install the latest runtime package.");
                     return null;
                 }
                 else
                 {
-                    //Debug.LogWarning("Found " + BoneDriver.GetType().ToString());
+                    //Util.LogWarn("Found " + BoneDriver.GetType().ToString());
                 }
             }
 
@@ -511,11 +511,11 @@ namespace Reallusion.Import
             foreach (var constraint in constraints)
             {
                 Debug.Log($"Name: {constraint.ConstraintName} Source: {constraint.SourceChannels[0]} Target: {constraint.TargetChannel} Curve: {constraint.Curve[1][0]} {constraint.Curve[1][1]} curvemode: {constraint.CurveMode}");
-                
+
                 foreach (float[] fl in constraint.Curve)
                 {
                     Debug.Log($"Curve: {fl[0]},{fl[1]}");
-                }                
+                }
             }
             */
             return constraints;
@@ -560,7 +560,7 @@ namespace Reallusion.Import
                         bones += " ";
                     }
                     bones += "]";
-                    Debug.Log($"BlendShape {exp.Key} has bone deformation data {bones} but is absent in the model.");
+                    Util.LogWarn($"BlendShape {exp.Key} has bone deformation data {bones} but is absent in the model.");
                 }
             }
 
@@ -596,7 +596,7 @@ namespace Reallusion.Import
                         if (matches.Count() == 0)
                             glossary.ExpressionsByBone.Add(new ExpressionByBone(bone.Key, skeletonPosition, skeletonRotation));
                     }
-                    catch { Debug.Log("Error building ExpressionGlossary"); }
+                    catch { Util.LogError("Error building ExpressionGlossary"); }
                 }
             }
 
@@ -662,11 +662,11 @@ namespace Reallusion.Import
             try
             {
                 int num = glossary.ExpressionsByBone.RemoveAll(x => x.Expressions.Count == 0 || x.Expressions == null);
-                Debug.Log($"{num} bones with empty expressions removed from the expression glossary.");
+                Util.LogWarn($"{num} bones with empty expressions removed from the expression glossary.");
             }
             catch (Exception e)
             {
-                Debug.Log($"Failed to remove bones with empty valid expression lists. {e.Message}");
+                Util.LogError($"Failed to remove bones with empty valid expression lists. {e.Message}");
             }
 
             return glossary;
@@ -701,7 +701,7 @@ namespace Reallusion.Import
 
         public static Dictionary<string, List<string>> FindExcessBlendShapes(GameObject obj)
         {
-            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>(); // dict is a map of the non driven blendshapes that are not common to the body or tongue and so must be kept            
+            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>(); // dict is a map of the non driven blendshapes that are not common to the body or tongue and so must be kept
 
             SkinnedMeshRenderer[] renderers = obj.transform.parent.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
@@ -748,7 +748,7 @@ namespace Reallusion.Import
         {
             JToken parsedJson = JToken.Parse(jsonString);
             string beautifiedJson = parsedJson.ToString(Formatting.Indented);
-            Debug.Log(beautifiedJson);
+            Util.LogAlways(beautifiedJson);
         }
         #endregion Utils
 

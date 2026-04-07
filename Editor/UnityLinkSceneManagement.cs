@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2025 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -100,7 +100,7 @@ namespace Reallusion.Import
 
         public static bool TryGetSceneTimeLine(out PlayableDirector director)
         {
-            //Debug.LogWarning("TryGetSceneTimeLine");
+            //Util.LogWarn("TryGetSceneTimeLine");
             director = null;
             PlayableDirector[] directors = Util.FindObjectsByType<PlayableDirector>(true) as PlayableDirector[];
             /*
@@ -108,7 +108,7 @@ namespace Reallusion.Import
             PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include);
 #elif UNITY_2023_OR_NEWER
             PlayableDirector[] directors = GameObject.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-#else       
+#else
             PlayableDirector[] directors = GameObject.FindObjectsOfType<PlayableDirector>();
 #endif
 */
@@ -152,7 +152,7 @@ namespace Reallusion.Import
 
         public static bool TryCreateTimeLine(out PlayableDirector director)
         {
-            //Debug.LogWarning("TryCreateTimeLine");
+            //Util.LogWarn("TryCreateTimeLine");
 
             DateTime now = DateTime.Now;
             string stamp = TimeStampString();
@@ -215,7 +215,7 @@ namespace Reallusion.Import
             }
             else
             {
-                Debug.LogWarning("NOT A PREFAB");
+                Util.LogWarn("NOT A PREFAB");
                 sceneObject = GameObject.Instantiate(sourceGameObject);
             }
 
@@ -227,12 +227,12 @@ namespace Reallusion.Import
 
         public static void AddToTimeline(TrackType trackType, GameObject sceneObject, List<AnimationClip> animClipList, AnimatedStatus animatedStatus, string linkId)
         {
-            // unlock the timeline window 
+            // unlock the timeline window
             LockStateTimeLineWindow(false);
 
             if (UnityLinkManager.SCENE_TIMELINE_ASSET == null)
             {
-                Debug.LogWarning("Cannot add to timeline.");
+                Util.LogWarn("Cannot add to timeline.");
                 return;
             }
             PlayableDirector director = UnityLinkManager.SCENE_TIMELINE_ASSET;
@@ -324,7 +324,7 @@ namespace Reallusion.Import
                     {
                         if (linkedObject.GetComponent<Animator>() != null && linkedObject.linkId == linkId)
                         {
-                            Debug.Log($"Found a character with LinkId: {linkId} in the scene. ({linkedObject.name} - {linkedObject.linkId})");
+                            Util.LogInfo($"Found a character with LinkId: {linkId} in the scene. ({linkedObject.name} - {linkedObject.linkId})");
                             sceneObject = linkedObject.gameObject;
                             hasTrack = false;
                             return true;
@@ -538,15 +538,15 @@ namespace Reallusion.Import
 
         public static void ShowTimeLineWindow(PlayableDirector director)
         {
-            //Debug.LogWarning("ShowTimeLineWindow");
+            //Util.LogWarn("ShowTimeLineWindow");
 #if UNITY_2021_1_OR_NEWER
             if (EditorWindow.HasOpenInstances<TimelineEditorWindow>())
             {
-                //Debug.LogWarning("TimelineEditorWindow is open");
+                //Util.LogWarn("TimelineEditorWindow is open");
             }
             else
             {
-                //Debug.LogWarning("TimelineEditorWindow is not open");
+                //Util.LogWarn("TimelineEditorWindow is not open");
                 EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
             }
             var timelineWindow = EditorWindow.GetWindow<TimelineEditorWindow>();
@@ -619,7 +619,7 @@ namespace Reallusion.Import
         }
         #endregion Add To Scene and Timeline
 
-        #region Scene Dependencies 
+        #region Scene Dependencies
         public static void CreateStagingSceneDependencies(bool dofEnabled)
         {
 #if HDRP_10_5_0_OR_NEWER
@@ -665,7 +665,7 @@ namespace Reallusion.Import
                 global.isGlobal = true;
             }
 
-            if (global == null) { Debug.LogWarning("CreateHDRPVolumeAsset no global volume could be found or made."); return; }
+            if (global == null) { Util.LogWarn("CreateHDRPVolumeAsset no global volume could be found or made."); return; }
 
             if (global.sharedProfile == null)
             {
@@ -675,7 +675,7 @@ namespace Reallusion.Import
                 // really only relevant to saved scenes - profles for unsaved scene have timestamps
                 if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    Util.LogWarn("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
                     sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(sharedProfilePath);
                 }
 
@@ -701,7 +701,7 @@ namespace Reallusion.Import
                 {
                     if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                     {
-                        Debug.LogWarning("Creating new volume profile");
+                        Util.LogWarn("Creating new volume profile");
                         UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                         sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
                     }
@@ -710,12 +710,12 @@ namespace Reallusion.Import
                 // total failure case
                 if (sharedProfile == null)
                 {
-                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
+                    Util.LogWarn("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
                 }
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    Util.LogWarn("Creating HDRP VolumeAsset: " + sharedProfilePath);
                     UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                     // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
                     AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);
@@ -735,9 +735,9 @@ namespace Reallusion.Import
 
             // From Volume.cs
             // Modifying sharedProfile changes every Volumes that uses this Profile and also changes
-            // the Profile settings stored in the Project.            
+            // the Profile settings stored in the Project.
             // You should not modify Profiles that sharedProfile returns. If you want
-            // to modify the Profile of a Volume, use profile instead.  
+            // to modify the Profile of a Volume, use profile instead.
 
 
             // NB changes to profile in edit mode will be lost in play mode
@@ -837,7 +837,7 @@ namespace Reallusion.Import
 
             frames = 10;
             EditorApplication.update -= WaitForFrames;
-            Debug.LogWarning("Registering Volume");
+            Util.LogWarn("Registering Volume");
 
 #if UNITY_6000_0_OR_NEWER
             VolumeManager.instance.Unregister(v);
@@ -880,7 +880,7 @@ namespace Reallusion.Import
                 global.isGlobal = true;
             }
 
-            if (global == null) { Debug.LogWarning("CreateURPVolumeAsset no global volume could be found or made."); return; }
+            if (global == null) { Util.LogWarn("CreateURPVolumeAsset no global volume could be found or made."); return; }
 
             if (global.sharedProfile == null)
             {
@@ -890,7 +890,7 @@ namespace Reallusion.Import
                 // really only relevant to saved scenes - profles for unsaved scene have timestamps
                 if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    Util.LogWarn("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
                     sharedProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(sharedProfilePath);
                 }
 
@@ -916,7 +916,7 @@ namespace Reallusion.Import
                 {
                     if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                     {
-                        Debug.LogWarning("Creating new volume profile at " + UnityLinkManager.SCENE_FOLDER);
+                        Util.LogWarn("Creating new volume profile at " + UnityLinkManager.SCENE_FOLDER);
                         UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                         sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
                     }
@@ -925,7 +925,7 @@ namespace Reallusion.Import
                 // total failure case
                 if (sharedProfile == null)
                 {
-                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
+                    Util.LogWarn("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
                 }
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
@@ -948,7 +948,7 @@ namespace Reallusion.Import
                 sharedProfile = global.sharedProfile;
                 global.runInEditMode = true;
             }
-            
+
             if (dofEnabled)
             {
                 // depth of field override
@@ -978,7 +978,7 @@ namespace Reallusion.Import
 
             frames = 10;
             EditorApplication.update -= WaitForFrames;
-            //Debug.LogWarning("Registering Volume");
+            //Util.LogWarn("Registering Volume");
 
 #if UNITY_6000_0_OR_NEWER
             VolumeManager.instance.Unregister(v);
@@ -1024,35 +1024,35 @@ namespace Reallusion.Import
 #endif
                 if (go == null)
                 {
-                    Debug.LogWarning("No volume object");
+                    Util.LogWarn("No volume object");
                     go = new GameObject("RL_Global_Volume_Object");
                 }
                 else
                 {
-                    Debug.LogWarning("FOUND volume object");
+                    Util.LogWarn("FOUND volume object");
                 }
                 global = go.GetComponent<PostProcessVolume>();
                 if (global == null)
                 {
-                    Debug.LogWarning("No postprocess volume on the volume object");
+                    Util.LogWarn("No postprocess volume on the volume object");
                     global = go.AddComponent<PostProcessVolume>();
                     if (global == null)
                     {
-                        Debug.LogWarning("Failed to create postprocess volume on the volume object");
+                        Util.LogWarn("Failed to create postprocess volume on the volume object");
                     }
                     else
                     {
-                        Debug.LogWarning("Created postprocess volume on the volume object");
+                        Util.LogWarn("Created postprocess volume on the volume object");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("FOUND postprocess volume on the volume object");
+                    Util.LogWarn("FOUND postprocess volume on the volume object");
                 }
                 global.isGlobal = true;
             }
 
-            if (global == null) { Debug.LogWarning("CreatePostProcessVolumeAsset no global volume could be found or made."); return; }
+            if (global == null) { Util.LogWarn("CreatePostProcessVolumeAsset no global volume could be found or made."); return; }
 
             if (global.sharedProfile == null)
             {
@@ -1062,7 +1062,7 @@ namespace Reallusion.Import
                 // really only relevant to saved scenes - profles for unsaved scene have timestamps
                 if (File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
+                    Util.LogWarn("Attempting to use existing Volume Profile for scene at: " + sharedProfilePath);
                     sharedProfile = AssetDatabase.LoadAssetAtPath<PostProcessProfile>(sharedProfilePath);
                 }
 
@@ -1088,7 +1088,7 @@ namespace Reallusion.Import
                 {
                     if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                     {
-                        Debug.LogWarning("Creating new volume profile");
+                        Util.LogWarn("Creating new volume profile");
                         UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                         //sharedProfile = VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath);
                         sharedProfile = ScriptableObject.CreateInstance<PostProcessProfile>();
@@ -1098,12 +1098,12 @@ namespace Reallusion.Import
                 // total failure case
                 if (sharedProfile == null)
                 {
-                    Debug.LogWarning("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
+                    Util.LogWarn("Cannot find, clone or create a default volume profile - please attempt manual creation and add to the <Volume> GameObject in the scene"); return;
                 }
 
                 if (!File.Exists(sharedProfilePath.UnityAssetPathToFullPath()))
                 {
-                    Debug.LogWarning("Creating HDRP VolumeAsset: " + sharedProfilePath);
+                    Util.LogWarn("Creating HDRP VolumeAsset: " + sharedProfilePath);
                     UnityLinkImporter.CheckUnityPath(UnityLinkManager.SCENE_FOLDER);  // make sure parent folder exists
                     // VolumeProfileFactory.CreateVolumeProfileAtPath(sharedProfilePath, sharedProfile); //Core RP 17.1+ Unity 6000.1+
                     AssetDatabase.CreateAsset(sharedProfile, sharedProfilePath);

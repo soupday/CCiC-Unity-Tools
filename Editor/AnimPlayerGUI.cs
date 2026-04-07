@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -29,9 +29,9 @@ namespace Reallusion.Import
 {
     public static class AnimPlayerGUI
     {
-        #region AnimPlayer  
+        #region AnimPlayer
 
-        //private static bool play = false;        
+        //private static bool play = false;
         //private static float time, prev, current = 0f;
         public static bool AnimFoldOut { get; private set; } = true;
         public static FacialProfile MeshFacialProfile { get; private set; }
@@ -45,13 +45,14 @@ namespace Reallusion.Import
         //private static double frameTime = 1f;
 
         private static bool forceUpdate = false;
-        private static FacialProfile defaultProfile = new FacialProfile(ExpressionProfile.ExPlus, VisemeProfile.PairsCC3);
+        private static FacialProfile defaultExtProfile = new FacialProfile(ExpressionProfile.Ext, VisemeProfile.PairsCC3);
+        private static FacialProfile defaultExPlusProfile = new FacialProfile(ExpressionProfile.ExPlus, VisemeProfile.PairsCC3);
 
         public static void OpenPlayer(GameObject scenePrefab)
         {
             if (scenePrefab)
             {
-                //scenePrefab = Util.TryResetScenePrefab(scenePrefab);                
+                //scenePrefab = Util.TryResetScenePrefab(scenePrefab);
                 SetCharacter(scenePrefab);
             }
 
@@ -62,11 +63,11 @@ namespace Reallusion.Import
                 //so we switch to overlays starting from an earlier version
                 AnimPlayerOverlay.ShowAll();
 #else
-                //2020 LTS            
+                //2020 LTS
                 AnimPlayerWindow.ShowPlayer();
 #endif
 
-                //Common            
+                //Common
                 SceneView.RepaintAll();
 
                 EditorApplication.update -= UpdateCallback;
@@ -88,17 +89,17 @@ namespace Reallusion.Import
                 EditorApplication.update -= UpdateCallback;
                 EditorApplication.playModeStateChanged -= PlayStateChangeCallback;
 
-                //if (CharacterAnimator)       
+                //if (CharacterAnimator)
                 ///{
                 //GameObject scenePrefab = Util.GetScenePrefabInstanceRoot(CharacterAnimator.gameObject);
                 //Util.TryResetScenePrefab(scenePrefab);
                 //}
 
 #if SCENEVIEW_OVERLAY_COMPATIBLE
-                //2021.2.0a17+          
+                //2021.2.0a17+
                 AnimPlayerOverlay.HideAll();
 #else
-                //2020 LTS            
+                //2020 LTS
                 AnimPlayerWindow.HidePlayer();
 #endif
                 //Common
@@ -117,7 +118,7 @@ namespace Reallusion.Import
             //2021.2.0a17+
             return AnimPlayerOverlay.Visibility;
 #else
-            //2020 LTS            
+            //2020 LTS
             return AnimPlayerWindow.isShown;
 #endif
         }
@@ -187,10 +188,7 @@ namespace Reallusion.Import
             if (!doneInitFace) InitFace();
 
             // finally, apply the face
-            if (HDChar)
-                ResetFace();
-            else
-                ApplyFace();
+            ApplyFace();
         }
 
         #region Animator Setup
@@ -284,7 +282,7 @@ namespace Reallusion.Import
             ApplyDefaultSettings();
 
             // select the original clip using the override controller
-            // this method is normally used to switch animations during play mode            
+            // this method is normally used to switch animations during play mode
             SelectOverrideAnimation(OriginalClip, animatorOverrideController);
 
             // reset the animation player
@@ -504,7 +502,7 @@ namespace Reallusion.Import
             {
                 if (tempControllerAsset.GetType() == typeof(AnimatorController))
                 {
-                    //if (showMessages) 
+                    //if (showMessages)
 
                     Util.LogDetail("Override controller: " + controllerPath + " exists -- removing");
                     AssetDatabase.DeleteAsset(controllerPath);
@@ -1006,7 +1004,7 @@ namespace Reallusion.Import
             // button to enter play mode and retain scene view
             //
             // if the application is not playing and will enter play mode:
-            //                              set the flag to true 
+            //                              set the flag to true
             //                              callback will focus the view back to the scene window
             // if the application is playing:
             //                              set the flag to false
@@ -1067,7 +1065,7 @@ namespace Reallusion.Import
 
             foreach (string humanBoneName in HumanTrait.BoneName)
             {
-                // find the characaterBones array indices corresponding to the mechanim bones (listed in HumanTrait.BoneName    
+                // find the characaterBones array indices corresponding to the mechanim bones (listed in HumanTrait.BoneName
                 boneIndex = FindSkeletonBoneIndex(FindSkeletonBoneName(humanBoneName, characterAvatar), characterBones);
 
                 // iterate through all the transforms in the prefab and when a mechanim bone is matched - set it's transform to that in the correspoding skeletonbone struct (obtained from the avatar)
@@ -1463,11 +1461,12 @@ namespace Reallusion.Import
         private static Color selectedColor = Color.gray;
         private static Color mouseOverColor = Color.gray;
         private static Rect last;
-        private static Vector2 eyeVal;
-        private static Vector2 eyeRef;
-        private static float jawVal;
-        private static float jawRef;
-        private static float blinkVal;
+        private static Vector2 eyeShapeVal;
+        private static Vector2 eyeRotRefL;
+        private static Vector2 eyeRotRefR;
+        private static float jawShapeVal;
+        private static float jawRotRef;
+        private static float blinkShapeVal;
         private static float blinkRef;
         private static double resetClickTimer;
 
@@ -1518,7 +1517,7 @@ namespace Reallusion.Import
             }
             catch
             {
-                Debug.Log("Unable to deserialize expression data, example facial expressions will be unavailable.");
+                Util.LogWarn("Unable to deserialize expression data, example facial expressions will be unavailable.");
             }
         }
 
@@ -1586,6 +1585,8 @@ namespace Reallusion.Import
             public Dictionary<string, float> FACE_SURPRISE_EXT;
         }
 
+        private static FacialProfile STD_PROFILE = new FacialProfile(ExpressionProfile.Std, VisemeProfile.None);
+
         public static void InitFace()
         {
             if (CharacterAnimator == null) return;
@@ -1602,51 +1603,23 @@ namespace Reallusion.Import
                 GameObject rightEye = MeshUtil.FindCharacterBone(root, "CC_Base_R_Eye", "R_Eye");
                 GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
 
+                eyeShapeVal = new Vector2(0f, 0f);
                 if (leftEye && rightEye)
                 {
                     Vector3 euler = leftEye.transform.localRotation.eulerAngles;
-                    eyeRef = new Vector2(euler.z, euler.x);
-                    eyeVal = eyeRef;
+                    eyeRotRefL = new Vector2(euler.z, euler.x);
+                    euler = rightEye.transform.localRotation.eulerAngles;
+                    eyeRotRefR = new Vector2(euler.z, euler.x);
+                }
+
+                blinkShapeVal = 0f;
+                jawShapeVal = 0f;
+                if (jawBone)
+                {
+                    jawRotRef = jawBone.transform.localRotation.eulerAngles.z;
                 }
 
                 doOnceCatchMouse = true;
-                if (HDChar) // && bonedriver?
-                {
-                    var smrs = root.GetComponentsInChildren<SkinnedMeshRenderer>();
-                    foreach (var smr in smrs)
-                    {
-                        if (smr.gameObject.name.ToLower().Contains("body"))
-                        {
-                            int index = smr.sharedMesh.GetBlendShapeIndex("Jaw_Open");
-                            if (index != -1)
-                                jawRef = smr.GetBlendShapeWeight(index);
-                            break;
-                        }
-                    }
-                    jawVal = jawRef;
-                }
-                else
-                {
-                    if (jawBone)
-                    {
-                        Transform jaw = jawBone.transform;
-                        Quaternion rotation = jaw.localRotation;
-                        Vector3 euler = rotation.eulerAngles;
-
-                        jawRef = euler.z;
-                        jawVal = jawRef;
-                    }
-                }
-
-                if (!FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink",
-                        new FacialProfile(ExpressionProfile.Std, VisemeProfile.None),
-                        MeshFacialProfile, out blinkRef))
-                {
-                    FacialProfileMapper.GetCharacterBlendShapeWeight(root, "Eye_Blink_L",
-                        new FacialProfile(ExpressionProfile.Std, VisemeProfile.None),
-                        MeshFacialProfile, out blinkRef);
-                }
-                blinkVal = blinkRef;
             }
 
             doneInitFace = true;
@@ -1657,30 +1630,27 @@ namespace Reallusion.Import
             if (HDChar)
             {
                 SetFacialExpressionHD(ExpressionData.HD_NEUTRAL);
-                jawVal = jawRef;
-                Xpos = RestXpos;
-                Ypos = RestYpos;
-                eyeVal = eyeRef;
-                eyeChanged = true;
-                blinkVal = blinkRef;
             }
             else
             {
                 SetNeutralExpression();
-                if (full)
-                {
-                    EXPRESSIVENESS = 0f;
-                    EXPRESSION = null;
-                }
-                Xpos = RestXpos;
-                Ypos = RestYpos;
-                eyeVal = eyeRef;
-                eyeChanged = true;
-                jawVal = jawRef;
-                AdjustMouth(jawVal);
-                blinkVal = blinkRef;
-                AdjustBlink(blinkVal);
             }
+
+            if (full)
+            {
+                EXPRESSIVENESS = 0f;
+                EXPRESSION = null;
+            }
+
+            AdjustMouth(0f);
+            AdjustBlink(0f);
+
+            jawShapeVal = 0f;
+            Xpos = RestXpos;
+            Ypos = RestYpos;
+            eyeShapeVal = Vector2.zero;
+            eyeChanged = true;
+            blinkShapeVal = 0f;
 
             forceUpdate = update;
         }
@@ -1691,8 +1661,8 @@ namespace Reallusion.Import
             if (EXPRESSION != null)
                 SetFacialExpression(EXPRESSION, true);
 
-            AdjustMouth(jawVal);
-            AdjustBlink(blinkVal);
+            AdjustMouth(jawShapeVal);
+            AdjustBlink(blinkShapeVal);
         }
 
         public static void ResetFaceViewCamera(Object obj = null)
@@ -1782,33 +1752,24 @@ namespace Reallusion.Import
                 Rect rightRefreshButton = new Rect(rightTopRowSlider.x + rightTopRowSlider.width + xPadding * 3,
                                                 rightTopRowSlider.y + rightTopRowSlider.height - yPadding * 6, 32f, 32f);
 
-                eyeVal = CatchMouse(eyeControlRect, eyeRef, invertX: true, invertY: true);
+                eyeShapeVal = CatchMouse(eyeControlRect, Vector2.zero, false, false);
 
                 GUI.DrawTexture(rightTopRowIcon, jawIconImage);
                 EditorGUI.BeginChangeCheck();
-                if (HDChar)
-                {
-                    if (jawVal < 0f) jawVal = 0f;
-                    if (jawVal > 100f) jawVal = 100f;
-                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, 100f, 0f);
-                }
-                else
-                {
-                    jawVal = GUI.HorizontalSlider(rightTopRowSlider, jawVal, jawRef - 25f, jawRef + 0f);
-                }
+                jawShapeVal = Mathf.Min(100f, Mathf.Max(0f, jawShapeVal));
+                jawShapeVal = GUI.HorizontalSlider(rightTopRowSlider, jawShapeVal, 0f, 100f);
 
                 if (EditorGUI.EndChangeCheck())
                 {
-                    SetIndividualBlendShape("A25_Jaw_Open", Mathf.InverseLerp(jawRef + 0f, jawRef - 25f, jawVal) * 70f);
-                    AdjustMouth(jawVal);
+                    AdjustMouth(jawShapeVal);
                 }
 
                 GUI.DrawTexture(rightSecRowIcon, blinkIconImage);
                 EditorGUI.BeginChangeCheck();
-                blinkVal = GUI.HorizontalSlider(rightSecRowSlider, blinkVal, -30f, 100f);
+                blinkShapeVal = GUI.HorizontalSlider(rightSecRowSlider, blinkShapeVal, -30f, 100f);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    AdjustBlink(blinkVal);
+                    AdjustBlink(blinkShapeVal);
                 }
 
                 if (GUI.Button(rightRefreshButton, new GUIContent(EditorGUIUtility.IconContent("Refresh").image, "Reset Face and View")))
@@ -1843,6 +1804,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_ANGRY", ExpressionData.HD_ANGRY_IDX);
                     }
                     else
@@ -1860,6 +1822,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_DISGUST", ExpressionData.HD_DISGUST_IDX);
                     }
                     else
@@ -1877,6 +1840,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_FEAR", ExpressionData.HD_FEAR_IDX);
                     }
                     else
@@ -1894,6 +1858,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_HAPPY", ExpressionData.HD_HAPPY_IDX);
                     }
                     else
@@ -1911,6 +1876,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_SAD", ExpressionData.HD_SAD_IDX);
                     }
                     else
@@ -1928,6 +1894,7 @@ namespace Reallusion.Import
                 {
                     if (HDChar)
                     {
+                        ResetFace(false);
                         SetFacialExpressionHD("HD_SURPRISE", ExpressionData.HD_SURPRISE_IDX);
                     }
                     else
@@ -1951,10 +1918,10 @@ namespace Reallusion.Import
         {
             if (doOnceCatchMouse && Event.current.type == EventType.Repaint)
             {
-                Xpos = controlAreaRect.x + controlAreaRect.width / 2;
-                RestXpos = Xpos;
-                Ypos = controlAreaRect.y + controlAreaRect.height / 2;
-                RestYpos = Ypos;
+                RestXpos = controlAreaRect.x + controlAreaRect.width / 2;
+                Xpos = RestXpos;
+                RestYpos = controlAreaRect.y + controlAreaRect.height / 2;
+                Ypos = RestYpos;
                 doOnceCatchMouse = !doOnceCatchMouse;
             }
 
@@ -2036,8 +2003,10 @@ namespace Reallusion.Import
                         break;
                 }
             }
-            float relX = (Xpos - controlAreaRect.width / 2 - controlAreaRect.x) * (invertX ? -1 : 1);
-            float relY = (Ypos - controlAreaRect.height / 2 - controlAreaRect.y) * (invertY ? -1 : 1);
+            float wh = controlAreaRect.width / 2;
+            float hh = controlAreaRect.height / 2;
+            float relX = 100f * (Xpos - wh - controlAreaRect.x) * (invertX ? -1 : 1) / wh;
+            float relY = 100f * (Ypos - hh - controlAreaRect.y) * (invertY ? -1 : 1) / hh;
 
             Vector2 output = new Vector2(referenceVector2.x + relX, referenceVector2.y + relY);
             return output;
@@ -2047,13 +2016,13 @@ namespace Reallusion.Import
         {
             if (!eyeChanged) return;
 
-            Vector2 input = eyeVal;
+            Vector2 input = eyeShapeVal;
 
             //wrap around values
-            if (input.x > 360f) input.x -= 360f;
-            if (input.x < -360f) input.x += 360f;
-            if (input.y > 360f) input.y -= 360f;
-            if (input.y < -360f) input.y += 360f;
+            if (input.x > 100f) input.x = 100f;
+            if (input.x < -100f) input.x = -100f;
+            if (input.y > 100f) input.y = 100f;
+            if (input.y < -100f) input.y = -100f;
 
             if (AnimPlayerGUI.CharacterAnimator == null) return;
             Object obj = AnimPlayerGUI.CharacterAnimator.gameObject;
@@ -2067,46 +2036,47 @@ namespace Reallusion.Import
 
                 if (leftEye && rightEye)
                 {
-                    Vector3 euler = leftEye.transform.localRotation.eulerAngles;
-                    float leftRight = Mathf.DeltaAngle(eyeVal.x, eyeRef.x) / 45f;
-                    float upDown = Mathf.DeltaAngle(eyeVal.y, eyeRef.y) / 24f;
-                    float lookUpValue = upDown < 0f ? -upDown * 100f : 0;
-                    float lookDownValue = upDown >= 0f ? upDown * 100f : 0;
-                    float lookLeftValue = leftRight >= 0f ? leftRight * 100f : 0;
-                    float lookRightValue = leftRight < 0f ? -leftRight * 100f : 0;
-                    SetIndividualBlendShape("A06_Eye_Look_Up_Left", lookUpValue);
-                    SetIndividualBlendShape("A07_Eye_Look_Up_Right", lookUpValue);
-                    SetIndividualBlendShape("A08_Eye_Look_Down_Left", lookDownValue);
-                    SetIndividualBlendShape("A09_Eye_Look_Down_Right", lookDownValue);
-                    SetIndividualBlendShape("A10_Eye_Look_Out_Left", lookLeftValue);
-                    SetIndividualBlendShape("A11_Eye_Look_In_Left", lookRightValue);
-                    SetIndividualBlendShape("A12_Eye_Look_In_Right", lookLeftValue);
-                    SetIndividualBlendShape("A13_Eye_Look_Out_Right", lookRightValue);
-                    //HD Char
-                    SetIndividualBlendShape("Eye_Look_Up_L", lookUpValue);
-                    SetIndividualBlendShape("Eye_Look_Up_R", lookUpValue);
-                    SetIndividualBlendShape("Eye_Look_Down_L", lookDownValue);
-                    SetIndividualBlendShape("Eye_Look_Down_R", lookDownValue);
-                    SetIndividualBlendShape("Eye_Look_Left_L", lookLeftValue);
-                    SetIndividualBlendShape("Eye_Look_Left_R", lookLeftValue);
-                    SetIndividualBlendShape("Eye_Look_Right_L", lookRightValue);
-                    SetIndividualBlendShape("Eye_Look_Right_R", lookRightValue);
+                    float lookUpValue = -Mathf.Min(0f, eyeShapeVal.y);
+                    float lookDownValue = Mathf.Max(0f, eyeShapeVal.y);
+                    float lookRightValue = -Mathf.Min(0f, eyeShapeVal.x);
+                    float lookLeftValue = Mathf.Max(0f, eyeShapeVal.x);
 
+                    SetExtProfileBlendShape("Eye_L_Look_Up", lookUpValue);
+                    SetExtProfileBlendShape("Eye_R_Look_Up", lookUpValue);
+                    SetExtProfileBlendShape("Eye_L_Look_Down", lookDownValue);
+                    SetExtProfileBlendShape("Eye_R_Look_Down", lookDownValue);
+                    SetExtProfileBlendShape("Eye_L_Look_L", lookLeftValue);
+                    SetExtProfileBlendShape("Eye_R_Look_L", lookLeftValue);
+                    SetExtProfileBlendShape("Eye_L_Look_R", lookRightValue);
+                    SetExtProfileBlendShape("Eye_R_Look_R", lookRightValue);
 
-                    euler.z = input.x;
-                    euler.x = input.y;
+                    Vector3 eulerR = rightEye.transform.localRotation.eulerAngles;
+                    Vector3 eulerL = leftEye.transform.localRotation.eulerAngles;
+                    float leftRightR = eyeRotRefR.x - Mathf.Max(0f, eyeShapeVal.x) * 0.25f
+                                                    - Mathf.Min(0f, eyeShapeVal.x) * 0.35f;
+                    float leftRightL = eyeRotRefL.x - Mathf.Min(0f, eyeShapeVal.x) * 0.25f
+                                                    - Mathf.Max(0f, eyeShapeVal.x) * 0.35f;
+                    float upDownR = eyeRotRefR.y - Mathf.Max(0f, eyeShapeVal.y) * 0.25f
+                                                 - Mathf.Min(0f, eyeShapeVal.y) * 0.20f;
+                    float upDownL = eyeRotRefL.y - Mathf.Max(0f, eyeShapeVal.y) * 0.25f
+                                                 - Mathf.Min(0f, eyeShapeVal.y) * 0.20f;
+                    eulerR.z = leftRightR;
+                    eulerR.x = upDownR;
+                    eulerL.z = leftRightL;
+                    eulerL.x = upDownL;
 
                     Quaternion rotation = Quaternion.identity;
-                    rotation.eulerAngles = euler;
-                    leftEye.transform.localRotation = rotation;
+                    rotation.eulerAngles = eulerR;
                     rightEye.transform.localRotation = rotation;
+                    rotation.eulerAngles = eulerL;
+                    leftEye.transform.localRotation = rotation;
                 }
             }
 
             eyeChanged = false;
         }
 
-        static void AdjustMouth(float input)
+        static void AdjustMouth(float weight)
         {
             if (AnimPlayerGUI.CharacterAnimator == null) return;
             Object obj = AnimPlayerGUI.CharacterAnimator.gameObject;
@@ -2115,21 +2085,16 @@ namespace Reallusion.Import
 
             if (root)
             {
-                if (HDChar)
+                SetExtProfileBlendShape("Jaw_Open", weight);
+                SetExtProfileBlendShape("Mouth_Close", 0f);
+                GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
+                if (jawBone)
                 {
-                    SetCharacterBlendShape(root, "Jaw_Open", input);
-                }
-                else
-                {
-                    GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
-                    if (jawBone)
-                    {
-                        Transform jaw = jawBone.transform;
-                        Quaternion rotation = jaw.localRotation;
-                        Vector3 euler = rotation.eulerAngles;
-                        euler.z = input;
-                        jaw.localEulerAngles = euler;
-                    }
+                    Transform jaw = jawBone.transform;
+                    Quaternion rotation = jaw.localRotation;
+                    Vector3 euler = rotation.eulerAngles;
+                    euler.z = jawRotRef - jawShapeVal * 0.25f;
+                    jaw.localEulerAngles = euler;
                 }
             }
         }
@@ -2141,22 +2106,24 @@ namespace Reallusion.Import
 
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
 
-            if (HDChar)
-            {
-                SetCharacterBlendShape(root, "Eye_Blink_L", input);
-                SetCharacterBlendShape(root, "Eye_Blink_R", input);
-            }
-            else
-            {
-                SetCharacterBlendShape(root, "A14_Eye_Blink_Left", input);
-                SetCharacterBlendShape(root, "A15_Eye_Blink_Right", input);
-            }
+            SetExtProfileBlendShape("Eye_Blink_L", input);
+            SetExtProfileBlendShape("Eye_Blink_R", input);
+            SetExtProfileBlendShape("Eye_Wide_L", 0f);
+            SetExtProfileBlendShape("Eye_Wide_R", 0f);
+            SetExtProfileBlendShape("Eye_Squint_L", 0f);
+            SetExtProfileBlendShape("Eye_Squint_R", 0f);
         }
 
-        private static bool SetCharacterBlendShape(GameObject characterRoot, string blendShapeName, float weight)
+        private static bool SetCharacterBlendShapeByExtProfile(GameObject characterRoot, string[] blendShapeNames, float weight)
         {
-            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeName,
-                defaultProfile, MeshFacialProfile, weight);
+            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeNames,
+                defaultExtProfile, MeshFacialProfile, weight);
+        }
+
+        private static bool SetCharacterBlendShapeByExPlusProfile(GameObject characterRoot, string[] blendShapeNames, float weight)
+        {
+            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeNames,
+                defaultExPlusProfile, MeshFacialProfile, weight);
         }
 
         static void SetFacialExpression(Dictionary<string, float> dict, bool restore = false)
@@ -2197,12 +2164,12 @@ namespace Reallusion.Import
                         {
                             float mod = 1f;
                             if (shapeName.iEquals("A25_Jaw_Open")) mod = 0.25f;
-                            jawVal = jawRef - (entry.Value * mod * EXPRESSIVENESS);
-                            AdjustMouth(jawVal);
+                            jawShapeVal = entry.Value * mod * EXPRESSIVENESS;
+                            AdjustMouth(jawShapeVal);
                         }
                     }
 
-                    SetCharacterBlendShape(root, shapeName, entry.Value * EXPRESSIVENESS);
+                    SetCharacterBlendShapeByExPlusProfile(root, new string[] {shapeName}, entry.Value * EXPRESSIVENESS);
                 }
             }
         }
@@ -2295,12 +2262,12 @@ namespace Reallusion.Import
             }
         }
 
-        static void SetIndividualBlendShape(string individualShapeName, float value)
+        static void SetExtProfileBlendShape(string individualShapeName, float value)
         {
             if (CharacterAnimator == null) return;
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
-            SetCharacterBlendShape(root, individualShapeName, value);
+            SetCharacterBlendShapeByExtProfile(root, new string[] {individualShapeName}, value);
         }
 
         static void SnapViewToHead()
@@ -2345,6 +2312,6 @@ namespace Reallusion.Import
             rot.eulerAngles = euler;
             return rot;
         }
-        #endregion FaceMorph        
+        #endregion FaceMorph
     }
 }

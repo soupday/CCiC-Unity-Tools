@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright (C) 2021 Victor Soupday
  * This file is part of CC_Unity_Tools <https://github.com/soupday/CC_Unity_Tools>
- * 
+ *
  * CC_Unity_Tools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CC_Unity_Tools is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -184,9 +184,18 @@ namespace Reallusion.Import
         {
             if (File.Exists(jsonPath))
             {
-                TextAsset jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
-                QuickJSON jsonData = new QuickJSON(jsonAsset.text);
-                return jsonData;
+                try
+                {
+                    TextAsset jsonAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(jsonPath);
+                    QuickJSON jsonData = new QuickJSON(jsonAsset);
+                    Util.LogDetail($"JsonData Fetched: {jsonPath}");
+                    return jsonData;
+                }
+                catch
+                {
+                    throw new Exception($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
+                    //Util.LogError($"Unable to parse Json data: {jsonPath}\nJson file is corrupt! This character or prop will not setup correctly!");
+                }
             }
 
             return null;
@@ -518,19 +527,6 @@ namespace Reallusion.Import
             return null;
         }
 
-        public static string CombineJsonTexPath(string fbxPath, string jsonTexPath)
-        {
-            // remove any ./ .\ prefix from the start of the json texture path
-            if (jsonTexPath.iStartsWith("./") || jsonTexPath.iStartsWith(".\\"))
-                jsonTexPath = jsonTexPath.Substring(2);
-
-            // convert slashes/backslashes to OS dependant separator
-            if (Path.DirectorySeparatorChar != '\\') jsonTexPath = jsonTexPath.Replace('\\', Path.DirectorySeparatorChar);
-            if (Path.DirectorySeparatorChar != '/') jsonTexPath = jsonTexPath.Replace('/', Path.DirectorySeparatorChar);
-
-            return Path.Combine(fbxPath, jsonTexPath);
-        }
-
         public static GameObject FindPreviewScenePrefab()
         {
             string[] texGuids;
@@ -546,12 +542,12 @@ namespace Reallusion.Import
                 string name = Path.GetFileNameWithoutExtension(assetPath);
                 if (!previewScene && name.iEquals("RL_PreviewScenePrefab"))
                 {
-                    Debug.Log("RL " + assetPath);
+                    LogInfo("RL " + assetPath);
                     previewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 }
                 else if (!localPreviewScene && name.iEquals("RL_PreviewScenePrefab_Local"))
                 {
-                    Debug.Log("Local " + assetPath);
+                    LogInfo("Local " + assetPath);
                     localPreviewScene = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 }
             }
@@ -774,7 +770,7 @@ namespace Reallusion.Import
                     }
                 }
 
-                // if that didn't work, then the prefab is a non-variant derivative (probably LODGroup)                
+                // if that didn't work, then the prefab is a non-variant derivative (probably LODGroup)
                 string name = sourceFbx.name;
                 string path = AssetDatabase.GetAssetPath(sourceFbx);
                 string prefabFolder = Path.GetDirectoryName(path);
@@ -1082,7 +1078,7 @@ namespace Reallusion.Import
         {
             if (names == null) names = new List<string>();
 
-            // if we can trace parents back to the root transform without 
+            // if we can trace parents back to the root transform without
             // encountering any duplicates this should be a real original bone.
             if (names.Contains(bone.name)) return false;
             if (bone == root) return true;
@@ -1464,7 +1460,7 @@ namespace Reallusion.Import
 
             // All Unity application windows are objects of type ContainerWindow (as above)
             // Each window has a "position" 'property' and a "m_ShowMode" 'field'
-            // Get a field object for "m_ShowMode" and a property object for "position"        
+            // Get a field object for "m_ShowMode" and a property object for "position"
             // Iterate through the windows obtained with Resources.FindObjectsOfTypeAll
             // The main window has the field m_ShowMode == 4 (field object .GetValue(window))
             // The main window is obtained with property object .GetValue(window)
