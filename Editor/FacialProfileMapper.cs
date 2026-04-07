@@ -203,6 +203,15 @@ namespace Reallusion.Import
             new ExpressionMapping("", "", "Brow_Compress_L", "Brow_Lateral_L"),
             new ExpressionMapping("", "", "Brow_Compress_R", "Brow_Lateral_R"),
             // Eye Look
+            new ExpressionMapping("", "A06_Eye_Look_Up_Left|Left_Eyeball_Look_Up", "Eye_L_Look_Up", "Eye_Look_Up_L"),
+            new ExpressionMapping("", "A07_Eye_Look_Up_Right|Right_Eyeball_Look_Up", "Eye_R_Look_Up", "Eye_Look_Up_R"),
+            new ExpressionMapping("", "A08_Eye_Look_Down_Left|Left_Eyeball_Look_Down", "Eye_L_Look_Down", "Eye_Look_Down_L"),
+            new ExpressionMapping("", "A09_Eye_Look_Down_Right|Right_Eyeball_Look_Down", "Eye_R_Look_Down", "Eye_Look_Down_R"),
+            new ExpressionMapping("", "A10_Eye_Look_Out_Left|Left_Eyeball_Look_L", "Eye_L_Look_L", "Eye_Look_Left_L"),
+            new ExpressionMapping("", "A11_Eye_Look_In_Left|Left_Eyeball_Look_R", "Eye_L_Look_R", "Eye_Look_Right_L"),
+            new ExpressionMapping("", "A12_Eye_Look_In_Right|Right_Eyeball_Look_L", "Eye_R_Look_L", "Eye_Look_Left_R"),
+            new ExpressionMapping("", "A13_Eye_Look_Out_Right|Right_Eyeball_Look_R", "Eye_R_Look_R", "Eye_Look_Right_R"),
+
             new ExpressionMapping("", "A06_Eye_Look_Up_Left", "Eye_L_Look_Up", "Eye_Look_Up_L"),
             new ExpressionMapping("", "A07_Eye_Look_Up_Right", "Eye_R_Look_Up", "Eye_Look_Up_R"),
             new ExpressionMapping("", "A08_Eye_Look_Down_Left", "Eye_L_Look_Down", "Eye_Look_Down_L"),
@@ -211,8 +220,18 @@ namespace Reallusion.Import
             new ExpressionMapping("", "A11_Eye_Look_In_Left", "Eye_L_Look_R", "Eye_Look_Right_L"),
             new ExpressionMapping("", "A12_Eye_Look_In_Right", "Eye_R_Look_L", "Eye_Look_Left_R"),
             new ExpressionMapping("", "A13_Eye_Look_Out_Right", "Eye_R_Look_R", "Eye_Look_Right_R"),
+
+            new ExpressionMapping("", "Left_Eyeball_Look_Up", "Eye_L_Look_Up", "Eye_Look_Up_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_Up", "Eye_R_Look_Up", "Eye_Look_Up_R"),
+            new ExpressionMapping("", "Left_Eyeball_Look_Down", "Eye_L_Look_Down", "Eye_Look_Down_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_Down", "Eye_R_Look_Down", "Eye_Look_Down_R"),
+            new ExpressionMapping("", "Left_Eyeball_Look_L", "Eye_L_Look_L", "Eye_Look_Left_L"),
+            new ExpressionMapping("", "Left_Eyeball_Look_R", "Eye_L_Look_R", "Eye_Look_Right_L"),
+            new ExpressionMapping("", "Right_Eyeball_Look_L", "Eye_R_Look_L", "Eye_Look_Left_R"),
+            new ExpressionMapping("", "Right_Eyeball_Look_R", "Eye_R_Look_R", "Eye_Look_Right_R"),
             // Eye Blink
-            new ExpressionMapping("Eye_Blink", "Eye_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),
+            new ExpressionMapping("Eyes_Blink", "Eyes_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),
+            new ExpressionMapping("Eye_Blink", "Eyes_Blink", "Eye_Blink_L|Eye_Blink_R", "Eye_Blink_L|Eye_Blink_R"),
             new ExpressionMapping("Eye_Blink_L", "A14_Eye_Blink_Left", "Eye_Blink_L", "Eye_Blink_L"),
             new ExpressionMapping("Eye_Blink_R", "A15_Eye_Blink_Right", "Eye_Blink_R", "Eye_Blink_R"),
             // Eye Squint
@@ -554,14 +573,18 @@ namespace Reallusion.Import
                             mesh.HasShape("Jaw_Clench_R"))
                             expressionProfile = ExpressionProfile.MH;
 
-                        if (mesh.HasShape("Move_Jaw_Down") ||
-                            mesh.HasShape("Turn_Jaw_Down") ||
-                            mesh.HasShape("A01_Brow_Inner_Up") ||
+                        if (mesh.HasShape("A01_Brow_Inner_Up") ||
                             mesh.HasShape("A06_Eye_Look_Up_Left") ||
                             mesh.HasShape("A15_Eye_Blink_Right") ||
                             mesh.HasShape("A25_Jaw_Open") ||
                             mesh.HasShape("A37_Mouth_Close"))
                             expressionProfile = ExpressionProfile.ExPlus;
+
+                        if (mesh.HasShape("Move_Jaw_Down") ||
+                            mesh.HasShape("Turn_Jaw_Down") ||
+                            mesh.HasShape("Turn_Jaw_L") ||
+                            mesh.HasShape("Turn_Jaw_R"))
+                            expressionProfile = ExpressionProfile.Std;
 
                         if (mesh.HasShape("Ear_Up_L") ||
                             mesh.HasShape("Ear_Up_R") ||
