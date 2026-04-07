@@ -9,7 +9,7 @@ Changelog
     - Exports with embedded textures.
     - Transparencies in Pbr eyes.
 - Updated URP preview scene lighting presets.
-- Log spam cleanup.
+- Log spam clean-up.
 - Invalid Json data (from corrupted or incorrect application target) throws error.
 
 ### 2.2.5
