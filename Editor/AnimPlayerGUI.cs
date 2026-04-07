@@ -45,7 +45,8 @@ namespace Reallusion.Import
         //private static double frameTime = 1f;
 
         private static bool forceUpdate = false;
-        private static FacialProfile defaultProfile = new FacialProfile(ExpressionProfile.ExPlus, VisemeProfile.PairsCC3);
+        private static FacialProfile defaultExtProfile = new FacialProfile(ExpressionProfile.Ext, VisemeProfile.PairsCC3);
+        private static FacialProfile defaultExPlusProfile = new FacialProfile(ExpressionProfile.ExPlus, VisemeProfile.PairsCC3);
 
         public static void OpenPlayer(GameObject scenePrefab)
         {
@@ -2040,32 +2041,14 @@ namespace Reallusion.Import
                     float lookRightValue = -Mathf.Min(0f, eyeShapeVal.x);
                     float lookLeftValue = Mathf.Max(0f, eyeShapeVal.x);
 
-                    SetIndividualBlendShape("A06_Eye_Look_Up_Left", lookUpValue);
-                    SetIndividualBlendShape("A07_Eye_Look_Up_Right", lookUpValue);
-                    SetIndividualBlendShape("A08_Eye_Look_Down_Left", lookDownValue);
-                    SetIndividualBlendShape("A09_Eye_Look_Down_Right", lookDownValue);
-                    SetIndividualBlendShape("A10_Eye_Look_Out_Left", lookLeftValue);
-                    SetIndividualBlendShape("A11_Eye_Look_In_Left", lookRightValue);
-                    SetIndividualBlendShape("A12_Eye_Look_In_Right", lookLeftValue);
-                    SetIndividualBlendShape("A13_Eye_Look_Out_Right", lookRightValue);
-                    // HD Char
-                    SetIndividualBlendShape("Eye_Look_Up_L", lookUpValue);
-                    SetIndividualBlendShape("Eye_Look_Up_R", lookUpValue);
-                    SetIndividualBlendShape("Eye_Look_Down_L", lookDownValue);
-                    SetIndividualBlendShape("Eye_Look_Down_R", lookDownValue);
-                    SetIndividualBlendShape("Eye_Look_Left_L", lookLeftValue);
-                    SetIndividualBlendShape("Eye_Look_Left_R", lookLeftValue);
-                    SetIndividualBlendShape("Eye_Look_Right_L", lookRightValue);
-                    SetIndividualBlendShape("Eye_Look_Right_R", lookRightValue);
-                    // Traditional profile (Std)
-                    SetIndividualBlendShape("Left_Eyeball_Look_Up", lookUpValue);
-                    SetIndividualBlendShape("Right_Eyeball_Look_Up", lookUpValue);
-                    SetIndividualBlendShape("Left_Eyeball_Look_Down", lookDownValue);
-                    SetIndividualBlendShape("Right_Eyeball_Look_Down", lookDownValue);
-                    SetIndividualBlendShape("Left_Eyeball_Look_L", lookLeftValue);
-                    SetIndividualBlendShape("Right_Eyeball_Look_L", lookLeftValue);
-                    SetIndividualBlendShape("Left_Eyeball_Look_R", lookRightValue);
-                    SetIndividualBlendShape("Right_Eyeball_Look_R", lookRightValue);
+                    SetExtProfileBlendShape("Eye_L_Look_Up", lookUpValue);
+                    SetExtProfileBlendShape("Eye_R_Look_Up", lookUpValue);
+                    SetExtProfileBlendShape("Eye_L_Look_Down", lookDownValue);
+                    SetExtProfileBlendShape("Eye_R_Look_Down", lookDownValue);
+                    SetExtProfileBlendShape("Eye_L_Look_L", lookLeftValue);
+                    SetExtProfileBlendShape("Eye_R_Look_L", lookLeftValue);
+                    SetExtProfileBlendShape("Eye_L_Look_R", lookRightValue);
+                    SetExtProfileBlendShape("Eye_R_Look_R", lookRightValue);
 
                     Vector3 eulerR = rightEye.transform.localRotation.eulerAngles;
                     Vector3 eulerL = leftEye.transform.localRotation.eulerAngles;
@@ -2102,7 +2085,8 @@ namespace Reallusion.Import
 
             if (root)
             {
-                SetCharacterBlendShape(root, new string[] {"Jaw_Open", "Turn_Jaw_Down"}, weight);
+                SetExtProfileBlendShape("Jaw_Open", weight);
+                SetExtProfileBlendShape("Mouth_Close", 0f);
                 GameObject jawBone = MeshUtil.FindCharacterBone(root, "CC_Base_JawRoot", "JawRoot");
                 if (jawBone)
                 {
@@ -2122,20 +2106,24 @@ namespace Reallusion.Import
 
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
 
-            SetCharacterBlendShape(root, new string[] {"A14_Eye_Blink_Left", "Eye_Blink_L"}, input);
-            SetCharacterBlendShape(root, new string[] {"A15_Eye_Blink_Right", "Eye_Blink_R"}, input);
-            SetIndividualBlendShape("Eye_Wide_L", 0f);
-            SetIndividualBlendShape("Eye_Wide_R", 0f);
-            SetIndividualBlendShape("Eye_Widen_L", 0f);
-            SetIndividualBlendShape("Eye_Widen_R", 0f);
-            SetIndividualBlendShape("A18_Eye_Wide_Left", 0f);
-            SetIndividualBlendShape("A19_Eye_Wide_Right", 0f);
+            SetExtProfileBlendShape("Eye_Blink_L", input);
+            SetExtProfileBlendShape("Eye_Blink_R", input);
+            SetExtProfileBlendShape("Eye_Wide_L", 0f);
+            SetExtProfileBlendShape("Eye_Wide_R", 0f);
+            SetExtProfileBlendShape("Eye_Squint_L", 0f);
+            SetExtProfileBlendShape("Eye_Squint_R", 0f);
         }
 
-        private static bool SetCharacterBlendShape(GameObject characterRoot, string[] blendShapeNames, float weight)
+        private static bool SetCharacterBlendShapeByExtProfile(GameObject characterRoot, string[] blendShapeNames, float weight)
         {
             return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeNames,
-                defaultProfile, MeshFacialProfile, weight);
+                defaultExtProfile, MeshFacialProfile, weight);
+        }
+
+        private static bool SetCharacterBlendShapeByExPlusProfile(GameObject characterRoot, string[] blendShapeNames, float weight)
+        {
+            return FacialProfileMapper.SetCharacterBlendShape(characterRoot, blendShapeNames,
+                defaultExPlusProfile, MeshFacialProfile, weight);
         }
 
         static void SetFacialExpression(Dictionary<string, float> dict, bool restore = false)
@@ -2181,7 +2169,7 @@ namespace Reallusion.Import
                         }
                     }
 
-                    SetCharacterBlendShape(root, new string[] {shapeName}, entry.Value * EXPRESSIVENESS);
+                    SetCharacterBlendShapeByExPlusProfile(root, new string[] {shapeName}, entry.Value * EXPRESSIVENESS);
                 }
             }
         }
@@ -2274,12 +2262,12 @@ namespace Reallusion.Import
             }
         }
 
-        static void SetIndividualBlendShape(string individualShapeName, float value)
+        static void SetExtProfileBlendShape(string individualShapeName, float value)
         {
             if (CharacterAnimator == null) return;
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
-            SetCharacterBlendShape(root, new string[] {individualShapeName}, value);
+            SetCharacterBlendShapeByExtProfile(root, new string[] {individualShapeName}, value);
         }
 
         static void SnapViewToHead()
