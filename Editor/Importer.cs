@@ -915,7 +915,7 @@ namespace Reallusion.Import
         public enum AlphaType { Opaque, Cutout, Gradient, Translucent };
         Dictionary<string, (AlphaType, float, float, float, float, float)> AlphaTypeCache = new Dictionary<string, (AlphaType, float, float, float, float, float)>();
 
-        public (AlphaType, float) GetAlphaType(string texAssetPath, bool inAlphaChannel = true)
+        public (AlphaType, float) GetAlphaType(string texAssetPath, bool useAlphaChannel = true)
         {
             AlphaType alphaType = AlphaType.Opaque;
             float alphaScore = 1f;
@@ -932,7 +932,7 @@ namespace Reallusion.Import
             {
                 uint[] histogram;
 
-                if (textureImporter.DoesSourceTextureHaveAlpha() || !inAlphaChannel)
+                if (textureImporter.DoesSourceTextureHaveAlpha() && useAlphaChannel)
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
                     histogram = ComputeBake.ComputeHistogramAlpha(tex, 64);
@@ -943,7 +943,7 @@ namespace Reallusion.Import
                                  $"Scores: Opaque={Mathf.Round(res.Item3 * 1000f) / 10f}% Cutout={Mathf.Round(res.Item4 * 1000f) / 10f}% Gradient={Mathf.Round(res.Item5 * 1000f) / 10f}% Translucent={Mathf.Round(res.Item6 * 1000f) / 10f}%");
                     AlphaTypeCache.Add(texAssetPath, res);
                 }
-                else if (!inAlphaChannel)
+                else if (!useAlphaChannel)
                 {
                     Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
                     histogram = ComputeBake.ComputeHistogramRed(tex, 64);
