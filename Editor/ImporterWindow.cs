@@ -807,8 +807,8 @@ namespace Reallusion.Import
             GUILayout.FlexibleSpace();
 
             GUILayout.BeginVertical();
-
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+
             if (contextCharacter.Generation == BaseGeneration.Unknown)
             {
                 if (EditorGUILayout.DropdownButton(
@@ -825,7 +825,6 @@ namespace Reallusion.Import
                 GUILayout.Space(1f);
             }
 
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.BasicMaterials ? "Basic Materials" : "High Quality Materials"),
                 focusType: FocusType.Passive))
@@ -841,7 +840,6 @@ namespace Reallusion.Import
 
             GUILayout.BeginVertical();
 
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexSize.ToString())),
                 focusType: FocusType.Passive))
@@ -859,11 +857,10 @@ namespace Reallusion.Import
                 }
                 menu.ShowAsContext();
             }
-            EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
 
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
+            EditorGUI.BeginDisabledGroup(contextCharacter.BasicMaterials);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.QualEyes.ToString() + " Eyes"),
                 focusType: FocusType.Passive))
@@ -880,7 +877,6 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
 
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(Util.CamelCaseToSpaces(contextCharacter.QualTexCompress.ToString())),
                 focusType: FocusType.Passive))
@@ -898,11 +894,10 @@ namespace Reallusion.Import
                 }
                 menu.ShowAsContext();
             }
-            EditorGUI.EndDisabledGroup();
 
             GUILayout.Space(1f);
 
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BasicMaterials);
+            EditorGUI.BeginDisabledGroup(contextCharacter.BasicMaterials);
             string hairType;
             switch (contextCharacter.QualHair)
             {
@@ -954,9 +949,6 @@ namespace Reallusion.Import
                     }
                 }
             }
-            // */
-            EditorGUI.EndDisabledGroup();
-            //GUI.enabled = true;
 
             //////////////
 
@@ -975,7 +967,7 @@ namespace Reallusion.Import
             GUILayout.Space(8f);
 
             //if (contextCharacter.BuiltBasicMaterials) GUI.enabled = false;
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying || contextCharacter.BuiltBasicMaterials);
+            EditorGUI.BeginDisabledGroup(contextCharacter.BuiltBasicMaterials);
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.BakeCustomShaders ? "Bake Custom Shaders" : "Bake Default Shaders"),
                 focusType: FocusType.Passive))
@@ -1022,15 +1014,15 @@ namespace Reallusion.Import
                 buildAfterGUI = true;
             }
             EditorGUI.EndDisabledGroup();
+
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-
+            EditorGUI.EndDisabledGroup();
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-            EditorGUI.EndDisabledGroup();
             GUILayout.EndArea();
         }
 
@@ -1583,10 +1575,11 @@ namespace Reallusion.Import
 
             GUILayout.EndVertical();
 
+            EditorGUI.EndDisabledGroup();
+
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            EditorGUI.EndDisabledGroup();
             GUILayout.EndArea();
         }
 
