@@ -1284,9 +1284,7 @@ namespace Reallusion.Import
             }
             GUILayout.EndHorizontal();
 
-            GUILayout.FlexibleSpace();
-
-            GUILayout.BeginVertical();
+            GUILayout.Space(treeviewBlock.height - 18f);
 
             GUILayout.BeginHorizontal();
 
@@ -1335,8 +1333,6 @@ namespace Reallusion.Import
             SELECT_LINKED = GUILayout.Toggle(SELECT_LINKED, "Linked");
 
             GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
 
             GUILayout.EndVertical();
 
