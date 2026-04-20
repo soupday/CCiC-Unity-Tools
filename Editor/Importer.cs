@@ -53,6 +53,7 @@ namespace Reallusion.Import
         private readonly bool blenderProject;
         private float characterBoneScale;
         private Dictionary<Material, MaterialType> materialTypes;
+        private Dictionary<string, (Texture2D tex, Vector2 scale, Vector2 offset)> stashedTextures = new Dictionary<string, (Texture2D, Vector2, Vector2)>();
 
         public bool recordMotionListForTimeLine;
         public List<AnimationClip> clipListForTimeLine = new List<AnimationClip>();
@@ -1164,9 +1165,30 @@ namespace Reallusion.Import
             return Path.Combine(characterInfo.texFolder, obj.name, sourceName);
         }
 
+        private void StashTextures(Material mat, string matName)
+        {
+            if (!mat) return;
+            Shader shader = mat.shader;
+            int propCount = ShaderUtil.GetPropertyCount(shader);
+            for (int i = 0; i < propCount; i++)
+            {
+                if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                {
+                    string propName = ShaderUtil.GetPropertyName(shader, i);
+                    Texture tex = mat.GetTexture(propName);
+                    if (tex is Texture2D tex2d)
+                    {
+                        string key = matName + "_" + propName;
+                        stashedTextures[key] = (tex2d, mat.GetTextureScale(propName), mat.GetTextureOffset(propName));
+                    }
+                }
+            }
+        }
+
         private Material CreateRemapMaterial(MaterialType materialType, Material sharedMaterial,
                                              string sourceName, QuickJSON matJson)
         {
+            StashTextures(sharedMaterial, sourceName);
             bool useAmplify = characterInfo.FeatureUseAmplifyShaders;
             bool useTessellation = characterInfo.UseTessellation(materialType, matJson);
             bool doubleSided = matJson.GetBoolValue("Two Side");
@@ -3883,6 +3905,18 @@ namespace Reallusion.Import
                 if (!isArray)
                 {
                     Texture2D tex = GetTextureFrom(jsonTexturePath, materialName, suffix, out string name, true);
+
+                    if (!tex)
+                    {
+                        string key = materialName + "_" + shaderRef;
+                        if (stashedTextures.TryGetValue(key, out var stash))
+                        {
+                            tex = stash.tex;
+                            tiling = stash.scale;
+                            offset = stash.offset;
+                            Util.LogInfo("        Restoring stashed texture: " + AssetDatabase.GetAssetPath(tex) + " to property: " + shaderRef + " on material: " + materialName);
+                        }
+                    }
 
                     if (tex)
                     {
