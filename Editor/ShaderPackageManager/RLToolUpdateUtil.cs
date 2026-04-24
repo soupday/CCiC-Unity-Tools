@@ -19,11 +19,15 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using UnityEditor.VersionControl;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
+using FileMode = System.IO.FileMode;
 
 namespace Reallusion.Import
 {
@@ -44,10 +48,7 @@ namespace Reallusion.Import
         public const string pluginTargetParentFolder = "OpenPlugin";
         public const string pluginProjectParentFolder = "Plugin";
         public const string pluginFileName = "tmpFile.zip";
-        public const string regValueName = "Install Path";
-        public const string ic8RegKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Reallusion\iClone\8.0";
-        public const string cc4RegKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Reallusion\Character Creator\4.0";
-        public const string cc5RegKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Reallusion\Character Creator\5.0";
+        public const string pluginInstaller = "Install.bat";
         public const string gitHubPluginTagName = "tag_name";
         public const string gitHubPluginHtmlUrl = "html_url";
         public const string gitHubPluginPublishedAt = "published_at";
@@ -338,9 +339,115 @@ namespace Reallusion.Import
                 }
         */
 
-        public static void InstallPlugin()
+        public static async void InstallPlugin()
         {
             Debug.Log("Installing Plugin");
+
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
+
+            RLSettingsObject currentSettings = ImporterWindow.GeneralSettings;
+            List<JsonFragment> fragmentList = GetFragmentList<JsonFragment>(currentSettings.fullJsonPluginFragment);
+            string zipUrl = $"{gitHubPluginDlBaseUrl}/{fragmentList[0].TagName.Replace('_', '.')}.zip";
+            Debug.Log($"{zipUrl} will be downloaded.");
+            string dataPath = Application.dataPath;
+            string root = Path.GetDirectoryName(dataPath);
+            string dirPath = Path.Combine(root, "Plugin");
+
+            if (Directory.Exists(dirPath))
+                Directory.Delete(dirPath, true);
+
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+
+            string tmpFilePath = Path.Combine(dirPath, "tmpFile.zip");
+            try
+            {
+                byte[] fileBytes = await httpClient.GetByteArrayAsync(zipUrl);
+                if (fileBytes != null && fileBytes.Length > 0)
+                {
+                    Debug.Log($"{fileBytes.Length} bytes recieved");
+                    FileStream fs = new FileStream(tmpFilePath, FileMode.OpenOrCreate);
+                    fs.Write(fileBytes);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Error accessing Github to retrieve zip file. Error: " + ex);
+            }
+
+            string installerPath = string.Empty;
+
+            try
+            {
+                ZipFile.ExtractToDirectory(tmpFilePath, dirPath);
+                Debug.Log($"Extracted {zipUrl} to {dirPath}");
+                string[] files = Directory.GetFiles(dirPath, pluginInstaller, SearchOption.AllDirectories);
+
+                if (files.Length == 0 || files.Length > 1)
+                {
+                    Debug.LogWarning($"Error finding installer.  Aborting please try downloading manually, extract the zip at {zipUrl} to a temporary location and run Install.bat");
+                }
+                else
+                {
+                    installerPath = files[0];
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error extracting remote zip to directory:\n" +
+                                tmpFilePath + "\n" +
+                                dirPath + "\n" +
+                                e.Message);
+            }
+
+            if (!string.IsNullOrEmpty(installerPath))
+            {
+                File.Delete(tmpFilePath);
+                Debug.Log($"Attempting to run {installerPath}");
+
+                if (Application.platform == RuntimePlatform.WindowsEditor)
+                {
+                    string args = "";
+                    bool runShell = false;
+                    ProcessStartInfo ps = new ProcessStartInfo(installerPath);
+                    using (Process p = new Process())
+                    {
+                        ps.UseShellExecute = runShell;
+                        if (!runShell)
+                        {
+                            ps.RedirectStandardOutput = true;
+                            ps.RedirectStandardError = true;
+                            ps.StandardOutputEncoding = System.Text.Encoding.ASCII;
+                        }
+                        if (args != null && args != "")
+                        {
+                            ps.Arguments = args;
+                        }
+                        p.StartInfo = ps;
+                        p.Start();
+                        p.WaitForExit();
+                        if (!runShell)
+                        {
+                            string output = p.StandardOutput.ReadToEnd().Trim();
+                            if (!string.IsNullOrEmpty(output))
+                            {
+                                Debug.Log($"{DateTime.Now} Output: {output}");
+                            }
+
+                            string errors = p.StandardError.ReadToEnd().Trim();
+                            if (!string.IsNullOrEmpty(errors))
+                            {
+                                Debug.Log($"{DateTime.Now} Output: {errors}");
+                            }
+                        }
+                    }
+                    currentSettings.lastInstalledJsonPluginTagName = currentSettings.jsonPluginTagName;
+                    ImporterWindow.SetGeneralSettings(currentSettings, true);
+                }
+                else
+                    Debug.Log("Non Windows.");
+            }
         }
 
         public static void WriteDummyReleaseInfo(RLSettingsObject settingsObject)
