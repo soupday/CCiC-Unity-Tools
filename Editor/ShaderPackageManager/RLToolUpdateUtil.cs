@@ -369,6 +369,7 @@ namespace Reallusion.Import
                     Debug.Log($"{fileBytes.Length} bytes recieved");
                     FileStream fs = new FileStream(tmpFilePath, FileMode.OpenOrCreate);
                     fs.Write(fileBytes);
+                    fs.Close();
                 }
             }
             catch (Exception ex)
