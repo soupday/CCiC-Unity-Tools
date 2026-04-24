@@ -92,6 +92,15 @@ namespace Reallusion.Import
         }
         public int installedRuntimeRevision;
 
+        public bool pluginUpdateAvailable;
+        public long lastPluginUpdateCheck;
+        public string lastInstalledJsonPluginTagName;
+        public string jsonPluginTagName;
+        public string jsonPluginHtmlUrl;
+        public string jsonPluginPublishedAt;
+        public string[] jsonPluginBodyLines;
+        public string fullJsonPluginFragment;
+
         public bool showProps = true;
 
         // live link relevant settings

@@ -2073,6 +2073,14 @@ namespace Reallusion.Import
             }
         }
     }
+
+    public static class StringUnityCompatibleSeparators
+    {
+        public static string ToUnitySeparators(this string str)
+        {
+            return str.Replace(@"\\", "/").Replace(@"\", "/");
+        }
+    }
     #endregion STRING EXTENSION
 }
 
