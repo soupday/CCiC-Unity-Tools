@@ -338,6 +338,10 @@ namespace Reallusion.Import
 
         public GameObject Import(bool batchMode = false)
         {
+            Util.LogInfo("Starting Pre-Import Texture Stash to preserve manual edits...");
+            ProcessObjectTreeStashPass(fbx);
+            Util.LogInfo($"Pre-Import Stash Complete. Stashed {stashedTextures.Count} texture properties.");
+
             // make sure custom diffusion profiles are installed
             Pipeline.AddDiffusionProfilesHDRP();
 
@@ -1165,21 +1169,54 @@ namespace Reallusion.Import
             return Path.Combine(characterInfo.texFolder, obj.name, sourceName);
         }
 
+        private void ProcessObjectTreeStashPass(GameObject obj)
+        {
+            if (!obj) return;
+            Renderer renderer = obj.GetComponent<Renderer>();
+            if (renderer) ProcessObjectStashPass(renderer);
+
+            foreach (Transform child in obj.transform)
+            {
+                ProcessObjectTreeStashPass(child.gameObject);
+            }
+        }
+
+        private void ProcessObjectStashPass(Renderer renderer)
+        {
+            foreach (Material mat in renderer.sharedMaterials)
+            {
+                if (mat) 
+                {
+                    StashTextures(mat, mat.name);
+                }
+            }
+        }
+
         private void StashTextures(Material mat, string matName)
         {
             if (!mat) return;
-            Shader shader = mat.shader;
-            int propCount = ShaderUtil.GetPropertyCount(shader);
-            for (int i = 0; i < propCount; i++)
+
+            SerializedObject so = new SerializedObject(mat);
+            SerializedProperty texEnvs = so.FindProperty("m_SavedProperties.m_TexEnvs");
+
+            if (texEnvs != null && texEnvs.isArray)
             {
-                if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                for (int i = 0; i < texEnvs.arraySize; i++)
                 {
-                    string propName = ShaderUtil.GetPropertyName(shader, i);
-                    Texture tex = mat.GetTexture(propName);
+                    SerializedProperty entry = texEnvs.GetArrayElementAtIndex(i);
+                    string propName = entry.FindPropertyRelative("first").stringValue;
+                    Texture tex = entry.FindPropertyRelative("second.m_Texture").objectReferenceValue as Texture;
+
                     if (tex is Texture2D tex2d)
                     {
                         string key = matName + "_" + propName;
-                        stashedTextures[key] = (tex2d, mat.GetTextureScale(propName), mat.GetTextureOffset(propName));
+                        if (stashedTextures.ContainsKey(key)) continue;
+
+                        Vector2 scale = entry.FindPropertyRelative("second.m_Scale").vector2Value;
+                        Vector2 offset = entry.FindPropertyRelative("second.m_Offset").vector2Value;
+
+                        stashedTextures[key] = (tex2d, scale, offset);
+                        // Util.LogInfo($"        [Stash] Stored {propName} for {matName} (Key: {key})");
                     }
                 }
             }
@@ -3915,6 +3952,10 @@ namespace Reallusion.Import
                             tiling = stash.scale;
                             offset = stash.offset;
                             Util.LogInfo("        Restoring stashed texture: " + AssetDatabase.GetAssetPath(tex) + " to property: " + shaderRef + " on material: " + materialName);
+                        }
+                        else
+                        {
+                            // Util.LogWarn($"        [Stash] Miss: No stashed texture for material {materialName}, property {shaderRef} (Key: {key})");
                         }
                     }
 
