@@ -293,6 +293,9 @@ namespace Reallusion.Import
             iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");
             iconInstallLegacyW = Util.FindTexture(folders, "RLIcon_Install_Shader_W");
 
+            InitInfo();
+            InitPluginInfo();
+
             initGUI = false;
         }
 
@@ -335,14 +338,10 @@ namespace Reallusion.Import
 
             GUILayout.Space(SECTION_SPACER);
 
-            bool canHaveLocalPlugin = true; // = Application.platform == RuntimePlatform.WindowsEditor
+            PipelinePluginsFoldoutGUI();
 
-            if (canHaveLocalPlugin)
-            {
-                PipelinePluginsFoldoutGUI();
+            GUILayout.Space(SECTION_SPACER);
 
-                GUILayout.Space(SECTION_SPACER);
-            }
 
             AllInstalledPipelinesFoldoutGUI();
 
@@ -490,17 +489,7 @@ namespace Reallusion.Import
 
         private void InitInfo()
         {
-            if (ImporterWindow.Current != null)
-            {
-                if (ImporterWindow.GeneralSettings != null)
-                    settings = ImporterWindow.GeneralSettings;
-                else
-                    settings = RLSettings.FindRLSettingsObject();
-            }
-            else
-            {
-                settings = RLSettings.FindRLSettingsObject();
-            }
+            GetSettings();
             if (Version.TryParse(Pipeline.VERSION, out Version ver)) { installedVersion = ver; } else { installedVersion = new Version(); }
             gitHubLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonTagName);
             newVersionAvailable = installedVersion < gitHubLatestVersion;
@@ -600,7 +589,9 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
 
             GUILayout.Space(HORIZ_INDENT);
-            string labelText = $"External Pipeline Plugins: {FetchLastInstalledPluginVerion()}";
+            string versionString = FetchInstalledOrConnectedVersion(out bool upgradeAvailable);
+            string updateString = upgradeAvailable ? "Update Available." : "";
+            string labelText = $"External Pipeline Plugins: {versionString} {updateString}";
             pipelinePluginFoldout = EditorGUILayout.Foldout(pipelinePluginFoldout, new GUIContent(labelText, "Download and install the live link plugins for iClone and Character Creator"), true, guiStyles.FoldoutTitleLabel);
 
             GUILayout.FlexibleSpace();
@@ -627,11 +618,17 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
+        [SerializeField]
+        bool canHaveLocalPlugin;
         bool initPluginInfo = false;
         [SerializeField]
         Version gitHubPluginLatestVersion;
         [SerializeField]
         Version lastInstalledPluginVersion;
+        [SerializeField]
+        Version lastConnectedPluginVersion;
+        [SerializeField]
+        UnityLinkManager.LastConnection lastConnectionType;
         [SerializeField]
         bool newPluginVersionAvailable = false;
         [SerializeField]
@@ -640,27 +637,23 @@ namespace Reallusion.Import
 
         private void InitPluginInfo()
         {
-            if (ImporterWindow.Current != null)
-            {
-                if (ImporterWindow.GeneralSettings != null)
-                    settings = ImporterWindow.GeneralSettings;
-                else
-                    settings = RLSettings.FindRLSettingsObject();
-            }
-            else
-            {
-                settings = RLSettings.FindRLSettingsObject();
-            }
-            if (Version.TryParse(settings.lastInstalledJsonPluginTagName, out Version ver)) { lastInstalledPluginVersion = ver; } else { lastInstalledPluginVersion = new Version(); }
+            GetSettings();
+            if (Version.TryParse(settings.lastInstalledJsonPluginTagName, out Version instVer)) { lastInstalledPluginVersion = instVer; } else { lastInstalledPluginVersion = new Version(); }
+            if (Version.TryParse(settings.lastConnectedJsonHelloPlugin, out Version conVer)) { lastConnectedPluginVersion = conVer; } else { lastConnectedPluginVersion = new Version(); }
+            lastConnectionType = (UnityLinkManager.LastConnection)settings.lastConnectionType;
             gitHubPluginLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonPluginTagName);
             newPluginVersionAvailable = lastInstalledPluginVersion < gitHubLatestVersion;
             RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPluginPublishedAt, out gitHubPluginPublishedDateTime);
+
             if (fullJsonFragment == null)
                 fullJsonFragment = RLToolUpdateUtil.GetFragmentList<RLToolUpdateUtil.JsonFragment>(settings.fullJsonFragment);
+
+            canHaveLocalPlugin = Application.platform == RuntimePlatform.WindowsEditor;
+
             initPluginInfo = true;
         }
 
-        private string FetchLastInstalledPluginVerion()
+        private void GetSettings()
         {
             if (ImporterWindow.Current != null)
             {
@@ -673,14 +666,97 @@ namespace Reallusion.Import
             {
                 settings = RLSettings.FindRLSettingsObject();
             }
+        }
 
-            if (string.IsNullOrEmpty(settings.lastInstalledJsonPluginTagName))
+        private string FetchInstalledOrConnectedVersion(out bool upgradeAvailable)
+        {
+            upgradeAvailable = false;
+            GetSettings();
+
+            bool hasBeenInstalled = Version.TryParse(settings.lastInstalledJsonPluginTagName, out Version instVer);
+            bool hasBeenConnected = Version.TryParse(settings.lastConnectedJsonHelloPlugin, out Version conVer);
+
+            if (hasBeenInstalled && hasBeenConnected)
             {
-                return "Unknown Installation Status";
+                if (instVer >= conVer)
+                {
+                    upgradeAvailable = gitHubPluginLatestVersion > instVer;
+                    return $"{instVer.ToString()} (Locally installed)";
+                }
+                else
+                {
+                    upgradeAvailable = gitHubPluginLatestVersion > conVer;
+                    return $"{conVer.ToString()} ({FetchConnectionTypeString()})";
+                }
+            }
+
+            if (hasBeenConnected)
+            {
+                upgradeAvailable = gitHubPluginLatestVersion > conVer;
+                return $"{conVer.ToString()} ({FetchConnectionTypeString()})";
+            }
+
+            if (hasBeenInstalled)
+            {
+                upgradeAvailable = gitHubPluginLatestVersion > instVer;
+                return $"{instVer.ToString()} (Locally installed)";
+            }
+
+            return "Unknown";
+        }
+
+        private string FetchLastInstalledPluginVerion()
+        {
+            GetSettings();
+
+            if (canHaveLocalPlugin)
+            {
+                if (string.IsNullOrEmpty(settings.lastInstalledJsonPluginTagName))
+                {
+                    return "Unknown Installation Status";
+                }
+                else
+                {
+                    return settings.lastInstalledJsonPluginTagName;
+                }
             }
             else
             {
-                return settings.lastInstalledJsonPluginTagName;
+                return "Non Windows OS - Cannot install locally";
+            }
+        }
+
+        private string FetchLastConnectedPluginVerion()
+        {
+            GetSettings();
+
+            if (string.IsNullOrEmpty(settings.lastConnectedJsonHelloPlugin))
+            {
+                return "No connection info recorded.";
+            }
+            else
+            {
+                return settings.lastConnectedJsonHelloPlugin;
+            }
+        }
+
+        private string FetchConnectionTypeString()
+        {
+            GetSettings();
+
+            if (string.IsNullOrEmpty(settings.lastConnectedJsonHelloPlugin))
+            {
+                return "Unknown Connection Type";
+            }
+            else
+            {
+                switch (settings.lastConnectionType)
+                {
+                    case 0: { return "Not yet connected"; }
+                    case 1: { return "Local Host"; }
+                    case 2: { return "Remote Host"; }
+                    default: { return "Not yet connected"; }
+                }
             }
         }
 
@@ -712,7 +788,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
 
             GUILayout.Space(4f);
-
+            EditorGUI.BeginDisabledGroup(!canHaveLocalPlugin);
             GUILayout.BeginHorizontal();
             GUILayout.Space(HORIZ_INDENT * 2.5f);
             GUILayout.Label("Last Installed Version: ", guiStyles.WrappedInfoLabel);
@@ -723,6 +799,17 @@ namespace Reallusion.Import
             {
                 RLToolUpdateUtil.InstallPlugin();
             }
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT * 2.5f);
+            GUILayout.Label("Last Connected Version: ", guiStyles.WrappedInfoLabel);
+            GUILayout.Label(FetchLastConnectedPluginVerion(), guiStyles.WrappedInfoLabel);
+            GUILayout.Label(FetchConnectionTypeString(), guiStyles.WrappedInfoLabel);
+            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             GUILayout.Space(4f);

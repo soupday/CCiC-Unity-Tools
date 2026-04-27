@@ -989,6 +989,7 @@ namespace Reallusion.Import
                     }
                 case OpCodes.HELLO:
                     {
+                        RecordPluginInfo(next);
                         SendMessage(OpCodes.HELLO, ClientHelloMessage());
                         if (ClientConnected != null)
                             ClientConnected.Invoke(null, null); //non threaded
@@ -1078,6 +1079,29 @@ namespace Reallusion.Import
             }
             next.Processed = true;
             if (UnityLinkManagerWindow.Instance != null) UnityLinkManagerWindow.Instance.Focus();
+        }
+
+        static void RecordPluginInfo(QueueItem item)
+        {
+            RLSettingsObject settings = null;
+
+            if (ImporterWindow.Current != null)
+            {
+                if (ImporterWindow.GeneralSettings != null)
+                    settings = ImporterWindow.GeneralSettings;
+                else
+                    settings = RLSettings.FindRLSettingsObject();
+            }
+            else
+            {
+                settings = RLSettings.FindRLSettingsObject();
+            }
+
+            if (settings == null) return;
+
+            settings.lastConnectedJsonHelloPlugin = item.Hello.Plugin;
+            settings.lastConnectionType = (int)(UnityLinkManager.IS_CLIENT_LOCAL ? LastConnection.LocalHost : LastConnection.RemoteHost);
+            ImporterWindow.SetGeneralSettings(settings, true);
         }
 
         static void CameraSync(QueueItem item)
@@ -2494,6 +2518,13 @@ namespace Reallusion.Import
                 FrameSync = null;
                 Relink = null;
             }
+        }
+
+        public enum LastConnection
+        {
+            NoConnectionInfo = 0,
+            LocalHost = 1,
+            RemoteHost = 2,
         }
 
         #endregion Class data

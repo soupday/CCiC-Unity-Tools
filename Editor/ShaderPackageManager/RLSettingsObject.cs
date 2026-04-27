@@ -95,6 +95,8 @@ namespace Reallusion.Import
         public bool pluginUpdateAvailable;
         public long lastPluginUpdateCheck;
         public string lastInstalledJsonPluginTagName;
+        public string lastConnectedJsonHelloPlugin;
+        public int lastConnectionType;
         public string jsonPluginTagName;
         public string jsonPluginHtmlUrl;
         public string jsonPluginPublishedAt;
