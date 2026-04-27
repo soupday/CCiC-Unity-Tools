@@ -589,8 +589,8 @@ namespace Reallusion.Import
             GUILayout.BeginHorizontal();
 
             GUILayout.Space(HORIZ_INDENT);
-            string versionString = FetchInstalledOrConnectedVersion(out bool upgradeAvailable);
-            string updateString = upgradeAvailable ? "Update Available." : "";
+            string versionString = FetchInstalledOrConnectedVersion(out newPluginVersionAvailable);
+            string updateString = newPluginVersionAvailable ? "Update Available." : "";
             string labelText = $"External Pipeline Plugins: {versionString} {updateString}";
             pipelinePluginFoldout = EditorGUILayout.Foldout(pipelinePluginFoldout, new GUIContent(labelText, "Download and install the live link plugins for iClone and Character Creator"), true, guiStyles.FoldoutTitleLabel);
 
@@ -642,7 +642,7 @@ namespace Reallusion.Import
             if (Version.TryParse(settings.lastConnectedJsonHelloPlugin, out Version conVer)) { lastConnectedPluginVersion = conVer; } else { lastConnectedPluginVersion = new Version(); }
             lastConnectionType = (UnityLinkManager.LastConnection)settings.lastConnectionType;
             gitHubPluginLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonPluginTagName);
-            newPluginVersionAvailable = lastInstalledPluginVersion < gitHubLatestVersion;
+            //newPluginVersionAvailable = lastInstalledPluginVersion < gitHubLatestVersion;
             RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPluginPublishedAt, out gitHubPluginPublishedDateTime);
 
             if (fullJsonFragment == null)
