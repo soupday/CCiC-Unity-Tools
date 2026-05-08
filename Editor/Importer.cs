@@ -338,9 +338,15 @@ namespace Reallusion.Import
 
         public GameObject Import(bool batchMode = false)
         {
-            Util.LogInfo("Starting Pre-Import Texture Stash to preserve manual edits...");
-            ProcessObjectTreeStashPass(fbx);
-            Util.LogInfo($"Pre-Import Stash Complete. Stashed {stashedTextures.Count} texture properties.");
+            // Stash from the existing prefab if available, as that's where manual edits live.
+            // On the first import (no prefab yet), we can skip stashing.
+            GameObject stashSource = characterInfo.PrefabAsset;
+            if (stashSource != null)
+            {
+                Util.LogInfo($"Starting Pre-Import Texture Stash from source: {stashSource.name}");
+                ProcessObjectTreeStashPass(stashSource);
+                Util.LogInfo($"Pre-Import Stash Complete. Stashed {stashedTextures.Count} texture properties.");
+            }
 
             // make sure custom diffusion profiles are installed
             Pipeline.AddDiffusionProfilesHDRP();
@@ -1187,7 +1193,8 @@ namespace Reallusion.Import
             {
                 if (mat) 
                 {
-                    StashTextures(mat, mat.name);
+                    string sourceName = Util.GetSourceMaterialName(fbxPath, mat);
+                    StashTextures(mat, sourceName);
                 }
             }
         }
@@ -3955,7 +3962,10 @@ namespace Reallusion.Import
                         }
                         else
                         {
-                            // Util.LogWarn($"        [Stash] Miss: No stashed texture for material {materialName}, property {shaderRef} (Key: {key})");
+                            if (!string.IsNullOrEmpty(jsonTexturePath))
+                            {
+                                Util.LogWarn($"        [Stash] Miss: No stashed texture for material {materialName}, property {shaderRef} (Key: {key})");
+                            }
                         }
                     }
 
