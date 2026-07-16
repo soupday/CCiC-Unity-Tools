@@ -433,7 +433,7 @@ namespace Reallusion.Import
                 PurgeAllPhysicsComponents(prefabRoot);
 
                 if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) ||
-                    characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics))
+                    characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBonePhysics))
                 {
                     AddCollidersToPrefabRoot(prefabRoot);
                 }
@@ -453,7 +453,7 @@ namespace Reallusion.Import
             GameObject prefabRoot = PrefabUtility.LoadPrefabContents(currentPrefabAssetPath);
             PurgeAllPhysicsComponents(prefabRoot);
 
-            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics))
+            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBonePhysics))
             {
                 AddCollidersToPrefabRoot(prefabRoot);
             }
@@ -786,7 +786,7 @@ namespace Reallusion.Import
 
                 mCollidersClear.Invoke(colliders, null);
 
-                IList dynamicBoneColliders = FetchDynamicBoneColliders(prefabInstance, GetVaildSpringBoneColliders());
+                IList dynamicBoneColliders = FetchDynamicBoneColliders(prefabInstance.gameObject, GetVaildSpringBoneColliders());
                 foreach (var dynamicBoneCollider in dynamicBoneColliders)
                 {
                     mCollidersAdd.Invoke(colliders, new object[] { dynamicBoneCollider });
@@ -2106,7 +2106,7 @@ namespace Reallusion.Import
 
         public IList FetchDynamicBoneColliders(GameObject prefabObject, List<string> matchingBoneList = null)
         {
-            if (!MagicaCloth2IsAvailable()) return null;
+            if (!DynamicBoneIsAvailable()) return null;
 
             var dynamicBoneColliderType = GetTypeInAssemblies("DynamicBoneColliderBase");
             IList genericColliders = (IList)CreateGeneric(typeof(List<>), dynamicBoneColliderType);
