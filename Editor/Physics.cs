@@ -1544,10 +1544,15 @@ namespace Reallusion.Import
 
                 if (prefabAsset && prefabInstance && characterInfo.PhysicsJsonData != null)
                 {
-                    //characterInfo.ShaderFlags |= CharacterInfo.ShaderFeatureFlags.ClothPhysics;
-                    Physics physics = new Physics(characterInfo, prefabInstance);
-                    physics.AddPhysics(true);
-                    characterInfo.Write();
+                    bool clothPhysics = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.ClothPhysics) > 0;
+                    bool hairPhysics = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.HairPhysics) > 0;
+                    bool springBoneHair = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.SpringBonePhysics) > 0;
+                    if ((clothPhysics || hairPhysics || springBoneHair) && characterInfo.PhysicsJsonData != null)
+                    {
+                        Physics physics = new Physics(characterInfo, prefabInstance);
+                        physics.AddPhysics(true);
+                        characterInfo.Write();
+                    }
                 }
 
                 if (prefabInstance) GameObject.DestroyImmediate(prefabInstance);
