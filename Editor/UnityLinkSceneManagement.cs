@@ -219,8 +219,8 @@ namespace Reallusion.Import
                 sceneObject = GameObject.Instantiate(sourceGameObject);
             }
 
-            sceneObject.transform.position = Vector3.zero;
-            sceneObject.transform.rotation = Quaternion.identity;
+            //sceneObject.transform.position = Vector3.zero;
+            //sceneObject.transform.rotation = Quaternion.identity;
 
             return sceneObject;
         }
@@ -395,22 +395,6 @@ namespace Reallusion.Import
                     clipToUse = animClip;
                 }
             }
-            bool reWrappedPrefab = false;
-            if (sceneObject.GetComponent<Animator>() == null)
-            {
-                reWrappedPrefab = true;
-
-            }
-
-            GameObject animatorObject = sceneObject;
-            if (reWrappedPrefab)
-            {
-                Animator[] animators = sceneObject.GetComponentsInChildren<Animator>();
-                if (animators.Length == 1)
-                {
-                    animatorObject = animators[0].gameObject;
-                }
-            }
 
             if (clipToUse != null)
             {
@@ -418,14 +402,12 @@ namespace Reallusion.Import
                 clip.start = 0f;
                 clip.timeScale = 1f;
                 clip.duration = clip.duration / clip.timeScale;
-                if (reWrappedPrefab)
-                {
-                    workingtrack.position = animatorObject.transform.localPosition;
-                    workingtrack.rotation = animatorObject.transform.localRotation;
-                }
+
+                workingtrack.position = sceneObject.transform.localPosition;
+                workingtrack.rotation = sceneObject.transform.localRotation;
             }
 
-            director.SetGenericBinding(workingtrack, animatorObject);
+            director.SetGenericBinding(workingtrack, sceneObject);
             RefreshCurrentTimeline(director);
         }
 

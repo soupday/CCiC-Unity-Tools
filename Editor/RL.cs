@@ -805,29 +805,15 @@ namespace Reallusion.Import
 
         public static GameObject InstantiateModelFromSource(CharacterInfo info, GameObject fbx, string assetPath)
         {
-            GameObject prefabInstance = null;
-            GameObject modelSource;
-            if (fbx.transform.rotation != Quaternion.identity)
-            {
-                var originalSource = GameObject.Instantiate(fbx);
-                originalSource.name = fbx.name;
-                modelSource = new GameObject(fbx.name);
-                modelSource.transform.position = Vector3.zero;
-                modelSource.transform.rotation = Quaternion.identity;
-                originalSource.transform.SetParent(modelSource.transform);
-            }
-            else
-            {
-                modelSource = fbx;
-            }
+            GameObject prefabInstance;
 
-            if (info.path.iContains("_lod") && CountLODs(modelSource) > 1)
+            if (info.path.iContains("_lod") && CountLODs(fbx) > 1)
             {
-                prefabInstance = CreateLODInstanceFromModel(info, modelSource);
+                prefabInstance = CreateLODInstanceFromModel(info, fbx);
             }
             else
             {
-                prefabInstance = CreateInstanceFromModel(info, modelSource);
+                prefabInstance = CreateInstanceFromModel(info, fbx);
             }
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(prefabInstance, assetPath, InteractionMode.AutomatedAction);
@@ -839,9 +825,7 @@ namespace Reallusion.Import
         /// </summary>
         public static GameObject CreateInstanceFromModel(CharacterInfo info, GameObject modelSource)
         {
-            var instance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
-            return instance == null ? modelSource : instance;
-            //return PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
+            return PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
         }
 
         public static GameObject CreateLODInstanceFromModel(CharacterInfo info, GameObject modelSource)
