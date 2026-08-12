@@ -806,14 +806,28 @@ namespace Reallusion.Import
         public static GameObject InstantiateModelFromSource(CharacterInfo info, GameObject fbx, string assetPath)
         {
             GameObject prefabInstance = null;
-
-            if (info.path.iContains("_lod") && CountLODs(fbx) > 1)
+            GameObject modelSource;
+            if (fbx.transform.rotation != Quaternion.identity)
             {
-                prefabInstance = CreateLODInstanceFromModel(info, fbx);
+                var originalSource = GameObject.Instantiate(fbx);
+                originalSource.name = fbx.name;
+                modelSource = new GameObject(fbx.name);
+                modelSource.transform.position = Vector3.zero;
+                modelSource.transform.rotation = Quaternion.identity;
+                originalSource.transform.SetParent(modelSource.transform);
             }
             else
             {
-                prefabInstance = CreateInstanceFromModel(info, fbx);
+                modelSource = fbx;
+            }
+
+            if (info.path.iContains("_lod") && CountLODs(modelSource) > 1)
+            {
+                prefabInstance = CreateLODInstanceFromModel(info, modelSource);
+            }
+            else
+            {
+                prefabInstance = CreateInstanceFromModel(info, modelSource);
             }
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(prefabInstance, assetPath, InteractionMode.AutomatedAction);
@@ -825,7 +839,9 @@ namespace Reallusion.Import
         /// </summary>
         public static GameObject CreateInstanceFromModel(CharacterInfo info, GameObject modelSource)
         {
-            return PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
+            var instance = PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
+            return instance == null ? modelSource : instance;
+            //return PrefabUtility.InstantiatePrefab(modelSource) as GameObject;
         }
 
         public static GameObject CreateLODInstanceFromModel(CharacterInfo info, GameObject modelSource)

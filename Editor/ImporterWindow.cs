@@ -2487,9 +2487,8 @@ namespace Reallusion.Import
             magicaCloth2Available = Physics.MagicaCloth2IsAvailable();
         }
 
-
-        public TabStyles tabStyles;
-        public TabContents tabCont;
+        [NonSerialized] public TabStyles tabStyles;
+        [NonSerialized] public TabContents tabCont;
 
         public class TabStyles
         {

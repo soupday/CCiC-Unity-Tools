@@ -395,15 +395,37 @@ namespace Reallusion.Import
                     clipToUse = animClip;
                 }
             }
+            bool reWrappedPrefab = false;
+            if (sceneObject.GetComponent<Animator>() == null)
+            {
+                reWrappedPrefab = true;
+
+            }
+
+            GameObject animatorObject = sceneObject;
+            if (reWrappedPrefab)
+            {
+                Animator[] animators = sceneObject.GetComponentsInChildren<Animator>();
+                if (animators.Length == 1)
+                {
+                    animatorObject = animators[0].gameObject;
+                }
+            }
+
             if (clipToUse != null)
             {
                 TimelineClip clip = workingtrack.CreateClip(clipToUse);
                 clip.start = 0f;
                 clip.timeScale = 1f;
                 clip.duration = clip.duration / clip.timeScale;
+                if (reWrappedPrefab)
+                {
+                    workingtrack.position = animatorObject.transform.localPosition;
+                    workingtrack.rotation = animatorObject.transform.localRotation;
+                }
             }
-            director.SetGenericBinding(workingtrack, sceneObject);
 
+            director.SetGenericBinding(workingtrack, animatorObject);
             RefreshCurrentTimeline(director);
         }
 

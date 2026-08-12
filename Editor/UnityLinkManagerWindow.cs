@@ -406,7 +406,7 @@ namespace Reallusion.Import
 
         bool createSceneAfterGUI = false;
 
-        public Styles styles;
+        [NonSerialized] public Styles styles;
 
         public class Styles
         {
@@ -1359,7 +1359,7 @@ namespace Reallusion.Import
             GUIUtility.ExitGUI();
         }
 
-        public Styles styles;
+        [NonSerialized] public Styles styles;
 
         public class Styles
         {

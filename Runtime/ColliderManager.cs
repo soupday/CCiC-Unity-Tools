@@ -41,14 +41,14 @@ namespace Reallusion.Import
         [HideInInspector] public bool frameSymmetryPair = false;
         [HideInInspector] public enum MirrorPlane { x, z }
         [HideInInspector] public MirrorPlane selectedMirrorPlane;
-        [HideInInspector] public IList genericColliderList;
+        [HideInInspector][NonSerialized] public IList genericColliderList;
         [HideInInspector] public bool magicaCloth2Available;
         [HideInInspector] public bool dynamicBoneAvailable;
-        [HideInInspector] public Type magicaColliderType;
-        [HideInInspector] public Type dynamicBoneColliderType;
-        [HideInInspector] public MethodInfo magicaUpdate;
-        [HideInInspector] public MethodInfo magicaSetSize;
-        [HideInInspector] public MethodInfo magicaGetSize;
+        [HideInInspector][NonSerialized] public Type magicaColliderType;
+        [HideInInspector][NonSerialized] public Type dynamicBoneColliderType;
+        [HideInInspector][NonSerialized] public MethodInfo magicaUpdate;
+        [HideInInspector][NonSerialized] public MethodInfo magicaSetSize;
+        [HideInInspector][NonSerialized] public MethodInfo magicaGetSize;
         [HideInInspector] public bool hasGizmoUtility = false;
         [HideInInspector] public List<AbstractCapsuleCollider> abstractedCapsuleColliders;
         [HideInInspector] public AbstractCapsuleCollider cachedSelectedCollider;
@@ -61,7 +61,7 @@ namespace Reallusion.Import
         {
             public Transform transform;
             public bool isEnabled;
-            public Vector3 localPosition;          
+            public Vector3 localPosition;
             public Quaternion localRotation;
             public float height;
             public float radius;
@@ -79,7 +79,7 @@ namespace Reallusion.Import
 
             public AbstractCapsuleCollider(Transform _transform, Vector3 _position, Quaternion _rotation, float _height, float _radius, string _name, ColliderAxis _axis, bool _enabled = true, ColliderType _colliderTypes = ColliderType.Unknown, UnityEngine.Object _native = null, UnityEngine.Object _magica = null, UnityEngine.Object _dynamic = null)
             {
-                transform = _transform;                
+                transform = _transform;
                 localPosition = _position;
                 localRotation = _rotation;
                 height = _height;
@@ -144,7 +144,7 @@ namespace Reallusion.Import
                 iconsEnabled = false;
             }
         }
-        
+
         [HideInInspector]
         public string[] gizmoNames = new string[]
         {
@@ -155,7 +155,7 @@ namespace Reallusion.Import
             "MagicaCapsuleCollider",
             "MagicaCloth",
             "MagicaSphereCollider",
-            "MagicaPlaneCollider"            
+            "MagicaPlaneCollider"
         };
 
         public void UpdateColliderFromAbstract(Vector3 mirrorPosDiff, Quaternion localRotation)
@@ -234,8 +234,8 @@ namespace Reallusion.Import
             if (collider.magicaRef != null)
             {
                 var c = collider.magicaRef;
-                if (magicaColliderType == null)                
-                    magicaColliderType = GetTypeInAssemblies("MagicaCloth2.MagicaCapsuleCollider");                
+                if (magicaColliderType == null)
+                    magicaColliderType = GetTypeInAssemblies("MagicaCloth2.MagicaCapsuleCollider");
 
                 if (magicaSetSize == null || magicaUpdate == null)
                 {
@@ -269,9 +269,9 @@ namespace Reallusion.Import
         }
 
         public void CacheCollider(AbstractCapsuleCollider collider, AbstractCapsuleCollider mirrorCollider = null)
-        {  
+        {
             cachedSelectedCollider = new AbstractCapsuleCollider(null, collider.transform.localPosition, collider.transform.localRotation, collider.height, collider.radius, collider.name, collider.axis);
-            
+
             if (mirrorCollider != null)
             {
                 cachedMirrorImageCollider = new AbstractCapsuleCollider(null, mirrorCollider.transform.localPosition, mirrorCollider.transform.localRotation, mirrorCollider.height, mirrorCollider.radius, mirrorCollider.name, mirrorCollider.axis);
@@ -286,8 +286,8 @@ namespace Reallusion.Import
         {
             if (!transformSymmetrically) { return null; }
 
-            if (DetermineMirrorImageColliderName(collider.name, out string mirrorName, out selectedMirrorPlane))                   
-                return colliderList.Find(x => x.name == mirrorName);            
+            if (DetermineMirrorImageColliderName(collider.name, out string mirrorName, out selectedMirrorPlane))
+                return colliderList.Find(x => x.name == mirrorName);
             else
                 return null;
         }
@@ -338,13 +338,13 @@ namespace Reallusion.Import
             {
                 //int index = abstractedCapsuleColliders.IndexOf(selectedAbstractCapsuleCollider);
                 //if (index != -1)
-                    UpdateColliderSettings(cachedSelectedCollider, selectedAbstractCapsuleCollider);//, index);                
+                UpdateColliderSettings(cachedSelectedCollider, selectedAbstractCapsuleCollider);//, index);                
             }
             if (!AbstractCapsuleCollider.IsNullOrEmpty(mirrorImageAbstractCapsuleCollider) && !AbstractCapsuleCollider.IsNullOrEmpty(cachedMirrorImageCollider))
             {
                 //int mirrorIndex = abstractedCapsuleColliders.IndexOf(mirrorImageAbstractCapsuleCollider);
                 //if (mirrorIndex != -1)
-                    UpdateColliderSettings(cachedMirrorImageCollider, mirrorImageAbstractCapsuleCollider);//, mirrorIndex);
+                UpdateColliderSettings(cachedMirrorImageCollider, mirrorImageAbstractCapsuleCollider);//, mirrorIndex);
             }
         }
 
@@ -427,8 +427,8 @@ namespace Reallusion.Import
         {
             // reset the specified collider name in abstractedCapsuleColliders with data from referenceList
             if (abstractedCapsuleColliders != null && referenceList != null && !string.IsNullOrEmpty(colliderName))
-            {                
-                AbstractCapsuleCollider target = abstractedCapsuleColliders.Find(x => x.name == colliderName);  
+            {
+                AbstractCapsuleCollider target = abstractedCapsuleColliders.Find(x => x.name == colliderName);
                 AbstractCapsuleCollider source = referenceList.Find(y => y.name == colliderName);
 
                 int targetIndex = abstractedCapsuleColliders.FindIndex(x => x.name == colliderName);
@@ -539,7 +539,7 @@ namespace Reallusion.Import
         [Serializable]
         public class ColliderSettings
         {
-            public string name;            
+            public string name;
             [Space(8)]
             public Collider collider;
             [Range(-0.5f, 0.5f)]
@@ -567,7 +567,7 @@ namespace Reallusion.Import
             public Quaternion rotation;
 
             public ColliderSettings(Collider collider)
-            {                
+            {
                 this.collider = collider;
                 FetchSettings();
             }
@@ -633,7 +633,7 @@ namespace Reallusion.Import
             }
 
             public void MirrorX(ColliderSettings cs)
-            { 
+            {
                 radiusAdjust = cs.radiusAdjust;
                 heightAdjust = cs.heightAdjust;
                 xAdjust = -cs.xAdjust;
@@ -673,9 +673,9 @@ namespace Reallusion.Import
             {
                 if (collider.GetType() == typeof(CapsuleCollider))
                 {
-                    CapsuleCollider capsule = (CapsuleCollider)collider;                    
+                    CapsuleCollider capsule = (CapsuleCollider)collider;
                     capsule.radius = radius + radiusAdjust;
-                    capsule.height = height + heightAdjust;                    
+                    capsule.height = height + heightAdjust;
                     capsule.transform.localPosition = position + new Vector3(xAdjust, yAdjust, zAdjust);
                     capsule.transform.localRotation = rotation * Quaternion.Euler(new Vector3(xRotate, yRotate, zRotate));
                 }
@@ -696,15 +696,15 @@ namespace Reallusion.Import
         [HideInInspector] public EnableStatusGameObject[] magicaClothMeshes;
         [HideInInspector] public ColliderSettings[] settings;
         [HideInInspector] public string characterGUID;
-        
+
 
         public void AddColliders(List<Collider> colliders)
         {
             List<ColliderSettings> settings = new List<ColliderSettings>();
             foreach (Collider col in colliders)
-            {                
+            {
                 ColliderSettings cs = new ColliderSettings(col);
-                settings.Add(cs);                
+                settings.Add(cs);
             }
             this.settings = settings.ToArray();
             this.colliders = colliders.ToArray();
@@ -785,12 +785,12 @@ namespace Reallusion.Import
         // Start or Update message needed to show an enable/disable checkbox in the inspector
         private void Start()
         {
-            
+
         }
-        
+
         private void Update()
         {
-            
+
         }
 #endif        
     }
