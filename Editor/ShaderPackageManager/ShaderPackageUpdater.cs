@@ -149,6 +149,7 @@ namespace Reallusion.Import
             public GUIStyle FoldoutTitleStopLabel;
             public GUIStyle WrappedInfoLabel;
             public GUIStyle WrappedInfoLabelColor;
+            public GUIStyle InfoItalFoldoutLabel;
 
             public GUIStyle infoText;
             public GUIStyle infoTextGrn;
@@ -229,6 +230,10 @@ namespace Reallusion.Import
                 WrappedInfoLabelColor.normal.textColor = colYellow;
                 WrappedInfoLabelColor.hover.textColor = colYellow;
 
+                InfoItalFoldoutLabel = new GUIStyle(EditorStyles.foldout);
+                InfoItalFoldoutLabel.fontStyle = FontStyle.Italic;
+                InfoItalFoldoutLabel.normal.textColor = Color.white;
+
                 infoText = new GUIStyle(GUI.skin.label);
                 infoText.fontSize = 14;
                 infoText.normal.textColor = Color.white;
@@ -288,6 +293,9 @@ namespace Reallusion.Import
             iconUpgradePipelineY = Util.FindTexture(folders, "RLIcon_Upgrade_Pipeline_Y");
             iconInstallLegacyW = Util.FindTexture(folders, "RLIcon_Install_Shader_W");
 
+            InitInfo();
+            InitPluginInfo();
+
             initGUI = false;
         }
 
@@ -299,6 +307,7 @@ namespace Reallusion.Import
 
         public bool softwareActionRequired = false;
         bool currentSoftwareVersionFoldout = false;
+        bool pipelinePluginFoldout = false;
         public bool pipeLineActionRequired = false;
         public bool shaderGraphActionRequired = false;
         bool allInstPipeFoldout = false;
@@ -328,6 +337,11 @@ namespace Reallusion.Import
             CurrentSoftwareVersionFoldoutGUI();
 
             GUILayout.Space(SECTION_SPACER);
+
+            PipelinePluginsFoldoutGUI();
+
+            GUILayout.Space(SECTION_SPACER);
+
 
             AllInstalledPipelinesFoldoutGUI();
 
@@ -475,22 +489,13 @@ namespace Reallusion.Import
 
         private void InitInfo()
         {
-            if (ImporterWindow.Current != null)
-            {
-                if (ImporterWindow.GeneralSettings != null)
-                    settings = ImporterWindow.GeneralSettings;
-                else
-                    settings = RLSettings.FindRLSettingsObject();
-            }
-            else
-            {
-                settings = RLSettings.FindRLSettingsObject();
-            }
+            GetSettings();
             if (Version.TryParse(Pipeline.VERSION, out Version ver)) { installedVersion = ver; } else { installedVersion = new Version(); }
             gitHubLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonTagName);
             newVersionAvailable = installedVersion < gitHubLatestVersion;
             RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPublishedAt, out gitHubPublishedDateTime);
-            fullJsonFragment = RLToolUpdateUtil.GetFragmentList<RLToolUpdateUtil.JsonFragment>(settings.fullJsonFragment);
+            if (fullJsonFragment == null)
+                fullJsonFragment = RLToolUpdateUtil.GetFragmentList<RLToolUpdateUtil.JsonFragment>(settings.fullJsonFragment);
             initInfo = true;
         }
 
@@ -544,7 +549,7 @@ namespace Reallusion.Import
             TimeSpan fiveMins = new TimeSpan(0, 0, 5, 0, 0);
             bool interval = RLToolUpdateUtil.TimeCheck(settings.lastUpdateCheck, fiveMins);
             EditorGUI.BeginDisabledGroup(!interval);
-            if(GUILayout.Button(new GUIContent("Check For Updates", interval ? "Check GitHub for updates" : "Last update check was too recent.  GitHub restricts the rate of checks.")))
+            if (GUILayout.Button(new GUIContent("Check For Updates", interval ? "Check GitHub for updates" : "Last update check was too recent.  GitHub restricts the rate of checks.")))
             {
                 RLToolUpdateUtil.UpdaterWindowCheckForUpdates();
             }
@@ -573,6 +578,340 @@ namespace Reallusion.Import
 
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
+        }
+
+        private void PipelinePluginsFoldoutGUI()
+        {
+            GUILayout.BeginVertical(GUI.skin.box); // all installed pipelines
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT);
+            string versionString = FetchInstalledOrConnectedVersion(out newPluginVersionAvailable);
+            string updateString = newPluginVersionAvailable ? "Update Available." : "";
+            string labelText = $"External Pipeline Plugins: {versionString} {updateString}";
+            pipelinePluginFoldout = EditorGUILayout.Foldout(pipelinePluginFoldout, new GUIContent(labelText, "Download and install the live link plugins for iClone and Character Creator"), true, guiStyles.FoldoutTitleLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            if (pipelinePluginFoldout)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                PipelinePluginsGUI();
+
+                GUILayout.Space(HORIZ_INDENT);
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(VERT_INDENT);
+
+            GUILayout.EndVertical();
+        }
+
+        [SerializeField]
+        bool canHaveLocalPlugin;
+        bool initPluginInfo = false;
+        [SerializeField]
+        Version gitHubPluginLatestVersion;
+        [SerializeField]
+        Version lastInstalledPluginVersion;
+        [SerializeField]
+        Version lastConnectedPluginVersion;
+        [SerializeField]
+        UnityLinkManager.LastConnection lastConnectionType;
+        [SerializeField]
+        bool newPluginVersionAvailable = false;
+        [SerializeField]
+        DateTime gitHubPluginPublishedDateTime;
+        Vector2 plVerPos;
+
+        private void InitPluginInfo()
+        {
+            GetSettings();
+            if (Version.TryParse(settings.lastInstalledJsonPluginTagName, out Version instVer)) { lastInstalledPluginVersion = instVer; } else { lastInstalledPluginVersion = new Version(); }
+            if (Version.TryParse(settings.lastConnectedJsonHelloPlugin, out Version conVer)) { lastConnectedPluginVersion = conVer; } else { lastConnectedPluginVersion = new Version(); }
+            lastConnectionType = (UnityLinkManager.LastConnection)settings.lastConnectionType;
+            gitHubPluginLatestVersion = RLToolUpdateUtil.TagToVersion(settings.jsonPluginTagName);
+            //newPluginVersionAvailable = lastInstalledPluginVersion < gitHubLatestVersion;
+            RLToolUpdateUtil.TryParseISO8601toDateTime(settings.jsonPluginPublishedAt, out gitHubPluginPublishedDateTime);
+
+            if (fullJsonFragment == null)
+                fullJsonFragment = RLToolUpdateUtil.GetFragmentList<RLToolUpdateUtil.JsonFragment>(settings.fullJsonFragment);
+
+            canHaveLocalPlugin = Application.platform == RuntimePlatform.WindowsEditor;
+
+            initPluginInfo = true;
+        }
+
+        private void GetSettings()
+        {
+            if (ImporterWindow.Current != null)
+            {
+                if (ImporterWindow.GeneralSettings != null)
+                    settings = ImporterWindow.GeneralSettings;
+                else
+                    settings = RLSettings.FindRLSettingsObject();
+            }
+            else
+            {
+                settings = RLSettings.FindRLSettingsObject();
+            }
+        }
+
+        private string FetchInstalledOrConnectedVersion(out bool upgradeAvailable)
+        {
+            upgradeAvailable = false;
+            GetSettings();
+
+            bool hasBeenInstalled = Version.TryParse(settings.lastInstalledJsonPluginTagName, out Version instVer);
+            bool hasBeenConnected = Version.TryParse(settings.lastConnectedJsonHelloPlugin, out Version conVer);
+
+            if (hasBeenInstalled && hasBeenConnected)
+            {
+                if (instVer >= conVer)
+                {
+                    upgradeAvailable = gitHubPluginLatestVersion > instVer;
+                    return $"{instVer.ToString()} (Locally installed)";
+                }
+                else
+                {
+                    upgradeAvailable = gitHubPluginLatestVersion > conVer;
+                    return $"{conVer.ToString()} ({FetchConnectionTypeString()})";
+                }
+            }
+
+            if (hasBeenConnected)
+            {
+                upgradeAvailable = gitHubPluginLatestVersion > conVer;
+                return $"{conVer.ToString()} ({FetchConnectionTypeString()})";
+            }
+
+            if (hasBeenInstalled)
+            {
+                upgradeAvailable = gitHubPluginLatestVersion > instVer;
+                return $"{instVer.ToString()} (Locally installed)";
+            }
+
+            return "Unknown";
+        }
+
+        private string FetchLastInstalledPluginVerion()
+        {
+            GetSettings();
+
+            if (canHaveLocalPlugin)
+            {
+                if (string.IsNullOrEmpty(settings.lastInstalledJsonPluginTagName))
+                {
+                    return "Unknown Installation Status";
+                }
+                else
+                {
+                    return settings.lastInstalledJsonPluginTagName;
+                }
+            }
+            else
+            {
+                return "Non Windows OS - Cannot install locally";
+            }
+        }
+
+        private string FetchLastConnectedPluginVerion()
+        {
+            GetSettings();
+
+            if (string.IsNullOrEmpty(settings.lastConnectedJsonHelloPlugin))
+            {
+                return "No connection info recorded.";
+            }
+            else
+            {
+                return settings.lastConnectedJsonHelloPlugin;
+            }
+        }
+
+        private string FetchConnectionTypeString()
+        {
+            GetSettings();
+
+            if (string.IsNullOrEmpty(settings.lastConnectedJsonHelloPlugin))
+            {
+                return "Unknown Connection Type";
+            }
+            else
+            {
+                switch (settings.lastConnectionType)
+                {
+                    case 0: { return "Not yet connected"; }
+                    case 1: { return "Local Host"; }
+                    case 2: { return "Remote Host"; }
+                    default: { return "Not yet connected"; }
+                }
+            }
+        }
+
+        bool pluginsDetailFoldut = false;
+
+        private void PipelinePluginsGUI()
+        {
+            if (!initPluginInfo)
+                InitPluginInfo();
+
+            GUILayout.BeginVertical();
+
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT * 2.5f);
+            GUILayout.Label("Latest Version: ", guiStyles.WrappedInfoLabel);
+            GUILayout.Label(gitHubPluginLatestVersion.ToString(), guiStyles.WrappedInfoLabel);
+
+            GUILayout.FlexibleSpace();
+            TimeSpan fiveMins = new TimeSpan(0, 0, 5, 0, 0);
+            bool interval = RLToolUpdateUtil.TimeCheck(settings.lastPluginUpdateCheck, fiveMins);
+            EditorGUI.BeginDisabledGroup(!interval);
+            if (GUILayout.Button(new GUIContent("Check For Updates", interval ? "Check GitHub for updates" : "Last update check was too recent.  GitHub restricts the rate of checks."), GUILayout.Width(130f)))
+            {
+                RLToolUpdateUtil.UpdaterWindowCheckForUpdates();
+            }
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+            EditorGUI.BeginDisabledGroup(!canHaveLocalPlugin);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT * 2.5f);
+            GUILayout.Label("Last Installed Version: ", guiStyles.WrappedInfoLabel);
+            GUILayout.Label(FetchLastInstalledPluginVerion(), guiStyles.WrappedInfoLabel);
+
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("Install Latest Plugin", "Install the current version of the plugin - PLEASE ENSURE all manually installed versions are removed prior to doing this."), GUILayout.Width(130f)))
+            {
+                RLToolUpdateUtil.InstallPlugin();
+            }
+            EditorGUI.EndDisabledGroup();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT * 2.5f);
+            GUILayout.Label("Last Connected Version: ", guiStyles.WrappedInfoLabel);
+            GUILayout.Label(FetchLastConnectedPluginVerion(), guiStyles.WrappedInfoLabel);
+            GUILayout.Label(FetchConnectionTypeString(), guiStyles.WrappedInfoLabel);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Space(HORIZ_INDENT * 2);
+
+            pluginsDetailFoldut = EditorGUILayout.Foldout(pluginsDetailFoldut, new GUIContent("Show Details on GitHub", ""), true, guiStyles.InfoItalFoldoutLabel);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+
+            if (pluginsDetailFoldut)
+            {
+                GUILayout.BeginHorizontal(GUILayout.Width(436f));
+
+                GUILayout.Space(HORIZ_INDENT * 4);
+
+                plVerPos = GUILayout.BeginScrollView(plVerPos, GUILayout.Height(SCROLLABLE_HEIGHT));
+
+                GUIStyle versionStyling = newPluginVersionAvailable ? guiStyles.infoTextYel : guiStyles.infoTextGrn;
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Current Version: ", guiStyles.infoTextItal);
+                GUILayout.Label(gitHubPluginLatestVersion.ToString(), versionStyling);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Release Date/Time: ", guiStyles.infoTextItal);
+                GUILayout.Label(gitHubPluginPublishedDateTime.ToString(), versionStyling);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Web Link: ", guiStyles.infoTextItal);
+                //if (GUILayout.Button(settings.jsonHtmlUrl.ToString(), linkClicked ? guiStyles.httpTextClicked : guiStyles.httpText))
+                if (GUILayout.Button(new GUIContent("Visit release webpage", "Download from the 'Source code (zip) link in the 'Assets' section, and extract the zip file to a suitable permenant location.  Use the package manager to 'Remove' the current version of the CCiC Unity Tools package, then 'Add package from disk' and navigate to the newly extracted one.")))
+                {
+                    Application.OpenURL(settings.jsonPluginHtmlUrl);
+                    //linkClicked = true;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(22f);
+                GUILayout.Label("Release Notes: ", guiStyles.infoTextItal);
+                if (settings.jsonPluginBodyLines != null && settings.jsonPluginBodyLines.Length > 0)
+                {
+                    foreach (string line in settings.jsonPluginBodyLines)
+                    {
+                        GUILayout.Label(line, guiStyles.infoText);
+                    }
+                }
+
+                GUILayout.EndScrollView();
+
+                GUILayout.EndHorizontal();
+            }
+            /*
+            GUILayout.Space(6f);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HORIZ_INDENT * 3);
+            TimeSpan fiveMins = new TimeSpan(0, 0, 5, 0, 0);
+            bool interval = RLToolUpdateUtil.TimeCheck(settings.lastPluginUpdateCheck, fiveMins);
+            EditorGUI.BeginDisabledGroup(!interval);
+            if (GUILayout.Button(new GUIContent("Check For Updates", interval ? "Check GitHub for updates" : "Last update check was too recent.  GitHub restricts the rate of checks.")))
+            {
+                RLToolUpdateUtil.UpdaterWindowCheckForUpdates();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Space(HORIZ_INDENT);
+
+            if (Event.current.type == EventType.Repaint)
+                prev = GUILayoutUtility.GetLastRect();
+            */
+            //EditorGUI.BeginDisabledGroup(RLToolUpdateUtil.fullJsonFragment == null);
+            /*
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent("Previous Releases", "Show all previous releases on github."),
+                focusType: FocusType.Passive,
+                options: GUILayout.Width(DROPDOWN_BTN_WIDTH)))
+            {
+                RLToolUpdateWindow.ShowAtPosition(new Rect(prev.x - RLToolUpdateWindow.DROPDOWN_WIDTH + DROPDOWN_BTN_WIDTH + 3 * HORIZ_INDENT, prev.y + 20f, prev.width, prev.height));
+            }
+            */
+            //EditorGUI.EndDisabledGroup();
+
+            //GUILayout.Space(HORIZ_INDENT);
+
+            //GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+
         }
 
         private void AllInstalledPipelinesFoldoutGUI()
@@ -1819,7 +2158,7 @@ namespace Reallusion.Import
             GUILayout.EndVertical();
         }
 
-#endregion GUI
+        #endregion GUI
 
         #region UTIL
         public string emptyVersion = "0.0.0";
