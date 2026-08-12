@@ -86,9 +86,10 @@ namespace Reallusion.Import
 
         Rect prev = new Rect();
 
-        private bool initDone = false;                
+        private bool initDone = false;
+        [NonSerialized]
         public List<CharacterInfo> workingList;
-        List<CharacterListDisplay> displayList;        
+        List<CharacterListDisplay> displayList;
         CharacterInfo characterSettings;
         private bool isMassSelected = false;
         private string searchString = string.Empty;
@@ -98,7 +99,7 @@ namespace Reallusion.Import
         public static void ATInitAssetProcessing()
         {
             massProcessingWindow = OpenProcessingWindow();
-        }        
+        }
 
         public static MassProcessingWindow OpenProcessingWindow()
         {
@@ -123,7 +124,7 @@ namespace Reallusion.Import
 
         private void InitData()
         {
-            SetWindowSize();            
+            SetWindowSize();
 
             string[] folders = new string[] { "Assets", "Packages" };
             iconUnprocessed = Util.FindTexture(folders, "RLIcon_UnprocessedChar");
@@ -188,7 +189,7 @@ namespace Reallusion.Import
         }
 
         public void BatchBuildNextQueueCharacter()
-        {            
+        {
             if (buildQueue == null || buildQueue.Count == 0) return;
 
             CharacterInfo batchCharacter = buildQueue[0];
@@ -197,7 +198,7 @@ namespace Reallusion.Import
             if (character != null)
             {
                 Util.LogInfo("Batch Queue Processing: " + character.name);
-                
+
                 character.CopySettings(batchCharacter);
 
                 // default to high quality if never set before
@@ -205,7 +206,7 @@ namespace Reallusion.Import
                     character.BuildQuality = MaterialQuality.High;
 
                 // refresh the character info for any Json changes
-                character.Refresh();                
+                character.Refresh();
 
                 // import and build the materials from the Json data
                 Importer import = new Importer(character);
@@ -256,7 +257,7 @@ namespace Reallusion.Import
 
             // add a delayed call to refresh the char list in the importer window and the batch window
             EditorApplication.delayCall += ProcessingRefresh;
-            buildQueue = new List<CharacterInfo>();            
+            buildQueue = new List<CharacterInfo>();
 
             foreach (CharacterInfo character in workingList)
             {
@@ -293,7 +294,7 @@ namespace Reallusion.Import
             }
             this.position = pos;
             Repaint();
-        }        
+        }
 
         public class CharacterListDisplay
         {
@@ -405,7 +406,7 @@ namespace Reallusion.Import
                     {
                         case FilterType.all:
                             {
-                                if (searchMatch) 
+                                if (searchMatch)
                                     output.Add(newInfo);
                                 break;
                             }
@@ -451,17 +452,17 @@ namespace Reallusion.Import
 
                 switch (sortType)
                 {
-                    case SortType.ascending:                        
+                    case SortType.ascending:
                         query = from character in processingList
                                 orderby character.name.Substring(0, 1) ascending
                                 select character;
-                        break;                        
+                        break;
                     case SortType.descending:
-                    default:                        
+                    default:
                         query = from character in processingList
                                 orderby character.name.Substring(0, 1) descending
                                 select character;
-                        break;                        
+                        break;
                 }
 
                 foreach (Reallusion.Import.CharacterInfo c in query)
@@ -474,8 +475,8 @@ namespace Reallusion.Import
                     }
 
                     switch (filterType)
-                    {                        
-                        case FilterType.processed:                            
+                    {
+                        case FilterType.processed:
                             if (newInfo.BuiltBasicMaterials || newInfo.BuiltHQMaterials) output.Add(newInfo);
                             break;
                         case FilterType.unprocessed:
@@ -492,7 +493,7 @@ namespace Reallusion.Import
         }
 
         private void OnGUI()
-        {            
+        {
             if (!initDone) InitData();
             if (windowStyles == null) windowStyles = new Styles();
             if (workingList == null) workingList = BuildCharacterInfoList();
@@ -573,7 +574,7 @@ namespace Reallusion.Import
                 windowFilterType = FilterType.all;
                 FilterDisplayedList();
             }
-            
+
             if (GUILayout.Button(new GUIContent(iconRefreshList, "Reset list and all settings."),
                                      GUILayout.Width(ICON_SIZE_MID),
                                      GUILayout.Height(ICON_SIZE_MID)))
@@ -604,7 +605,7 @@ namespace Reallusion.Import
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
-        
+
         private void OnGUINameFlterArea(Rect areaRect)
         {
             Rect selectAllBoxRect = new Rect(areaRect.x, areaRect.y, 20f, areaRect.height);
@@ -616,9 +617,9 @@ namespace Reallusion.Import
             GUILayout.BeginVertical();
             GUILayout.FlexibleSpace();
 
-            GUILayout.BeginHorizontal(); 
+            GUILayout.BeginHorizontal();
             GUILayout.Space(LIST_MEMBER_LEFT_MARGIN);
-            GUILayout.BeginVertical(); 
+            GUILayout.BeginVertical();
             GUILayout.FlexibleSpace();
             GUILayout.Box(massSelectedIcon, new GUIStyle(),
                             GUILayout.Width(16f),
@@ -661,7 +662,7 @@ namespace Reallusion.Import
                 searchString = string.Empty;
                 GUI.FocusControl("");
                 FilterDisplayedList();
-            } 
+            }
 
             GUILayout.EndHorizontal();
 
@@ -684,7 +685,7 @@ namespace Reallusion.Import
             listScrollPosition = GUI.BeginScrollView(posRect, listScrollPosition, viewRect, false, false);
             for (int idx = 0; idx < displayList.Count; idx++)
             {
-                CharacterListDisplay info = displayList[idx];                
+                CharacterListDisplay info = displayList[idx];
                 CharacterInfo importerWindowInfo = WindowManager.ValidImports.Where(t => t.guid == info.guid).FirstOrDefault();
                 Texture2D iconTexture = iconUnprocessed;
                 string name = "";
@@ -1009,15 +1010,15 @@ namespace Reallusion.Import
                 characterSettings.FixCharSettings();
 
                 foreach (CharacterInfo character in workingList)
-                {                    
+                {
                     if (character != characterSettings && character.selectedInList)
-                    {                        
+                    {
                         character.CopySettings(characterSettings);
                         if (ValidateSettings(character))
                             dirty = true;
                     }
                 }
-            }            
+            }
 
             if (dirty)
             {
@@ -1356,7 +1357,7 @@ namespace Reallusion.Import
         private void OnDisable()
         {
             ResetWindow();
-            buildQueue = null;            
+            buildQueue = null;
         }
 
         private void OnEnable()

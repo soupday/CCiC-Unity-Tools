@@ -805,7 +805,7 @@ namespace Reallusion.Import
 
         public static GameObject InstantiateModelFromSource(CharacterInfo info, GameObject fbx, string assetPath)
         {
-            GameObject prefabInstance = null;
+            GameObject prefabInstance;
 
             if (info.path.iContains("_lod") && CountLODs(fbx) > 1)
             {

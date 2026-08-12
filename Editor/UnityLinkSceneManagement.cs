@@ -219,8 +219,8 @@ namespace Reallusion.Import
                 sceneObject = GameObject.Instantiate(sourceGameObject);
             }
 
-            sceneObject.transform.position = Vector3.zero;
-            sceneObject.transform.rotation = Quaternion.identity;
+            //sceneObject.transform.position = Vector3.zero;
+            //sceneObject.transform.rotation = Quaternion.identity;
 
             return sceneObject;
         }
@@ -395,15 +395,19 @@ namespace Reallusion.Import
                     clipToUse = animClip;
                 }
             }
+
             if (clipToUse != null)
             {
                 TimelineClip clip = workingtrack.CreateClip(clipToUse);
                 clip.start = 0f;
                 clip.timeScale = 1f;
                 clip.duration = clip.duration / clip.timeScale;
-            }
-            director.SetGenericBinding(workingtrack, sceneObject);
 
+                workingtrack.position = sceneObject.transform.localPosition;
+                workingtrack.rotation = sceneObject.transform.localRotation;
+            }
+
+            director.SetGenericBinding(workingtrack, sceneObject);
             RefreshCurrentTimeline(director);
         }
 

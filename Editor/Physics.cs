@@ -433,7 +433,7 @@ namespace Reallusion.Import
                 PurgeAllPhysicsComponents(prefabRoot);
 
                 if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) ||
-                    characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics))
+                    characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBonePhysics))
                 {
                     AddCollidersToPrefabRoot(prefabRoot);
                 }
@@ -453,7 +453,7 @@ namespace Reallusion.Import
             GameObject prefabRoot = PrefabUtility.LoadPrefabContents(currentPrefabAssetPath);
             PurgeAllPhysicsComponents(prefabRoot);
 
-            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics))
+            if (characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.ClothPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.HairPhysics) || characterInfo.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SpringBonePhysics))
             {
                 AddCollidersToPrefabRoot(prefabRoot);
             }
@@ -786,7 +786,7 @@ namespace Reallusion.Import
 
                 mCollidersClear.Invoke(colliders, null);
 
-                IList dynamicBoneColliders = FetchDynamicBoneColliders(prefabInstance, GetVaildSpringBoneColliders());
+                IList dynamicBoneColliders = FetchDynamicBoneColliders(prefabInstance.gameObject, GetVaildSpringBoneColliders());
                 foreach (var dynamicBoneCollider in dynamicBoneColliders)
                 {
                     mCollidersAdd.Invoke(colliders, new object[] { dynamicBoneCollider });
@@ -1544,10 +1544,15 @@ namespace Reallusion.Import
 
                 if (prefabAsset && prefabInstance && characterInfo.PhysicsJsonData != null)
                 {
-                    //characterInfo.ShaderFlags |= CharacterInfo.ShaderFeatureFlags.ClothPhysics;
-                    Physics physics = new Physics(characterInfo, prefabInstance);
-                    physics.AddPhysics(true);
-                    characterInfo.Write();
+                    bool clothPhysics = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.ClothPhysics) > 0;
+                    bool hairPhysics = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.HairPhysics) > 0;
+                    bool springBoneHair = (characterInfo.ShaderFlags & CharacterInfo.ShaderFeatureFlags.SpringBonePhysics) > 0;
+                    if ((clothPhysics || hairPhysics || springBoneHair) && characterInfo.PhysicsJsonData != null)
+                    {
+                        Physics physics = new Physics(characterInfo, prefabInstance);
+                        physics.AddPhysics(true);
+                        characterInfo.Write();
+                    }
                 }
 
                 if (prefabInstance) GameObject.DestroyImmediate(prefabInstance);
@@ -2106,7 +2111,7 @@ namespace Reallusion.Import
 
         public IList FetchDynamicBoneColliders(GameObject prefabObject, List<string> matchingBoneList = null)
         {
-            if (!MagicaCloth2IsAvailable()) return null;
+            if (!DynamicBoneIsAvailable()) return null;
 
             var dynamicBoneColliderType = GetTypeInAssemblies("DynamicBoneColliderBase");
             IList genericColliders = (IList)CreateGeneric(typeof(List<>), dynamicBoneColliderType);

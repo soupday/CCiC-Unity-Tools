@@ -1294,6 +1294,15 @@ namespace Reallusion.Import
                 return;
             }
 
+            try
+            {
+                current.exportType = (CharacterInfo.ExportType)System.Enum.Parse(typeof(CharacterInfo.ExportType), item.Relink.Type);
+            }
+            catch (Exception e)
+            {
+                Util.LogError($"Unable to parse DataLink export type when performing relink. {e.Message}");
+            }
+
             bool inUse = false;
             foreach (var c in characters)
             {
