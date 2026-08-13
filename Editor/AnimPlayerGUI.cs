@@ -40,6 +40,9 @@ namespace Reallusion.Import
         public static AnimationClip WorkingClip { get; set; }
         public static Animator CharacterAnimator { get; set; }
 
+        public static Quaternion baseRotation = Quaternion.identity;
+        public static bool isHuman = false;
+
         //private static double updateTime = 0f;
         //private static double deltaTime = 0f;
         //private static double frameTime = 1f;
@@ -140,11 +143,18 @@ namespace Reallusion.Import
                     if (PrefabUtility.IsPartOfPrefabInstance(scenePrefab))
                     {
                         GameObject sceneFbx = Util.FindRootPrefabAssetFromSceneObject(scenePrefab);
-                        // in edit mode - find the first animation clip
-                        AnimationClip clip = Util.GetFirstAnimationClipFromCharacter(sceneFbx);
-                        if (sceneFbx && clip)
-                            clip = AnimRetargetGUI.TryGetRetargetedAnimationClip(sceneFbx, clip);
-                        UpdateAnimatorClip(animator, clip);
+                        if (sceneFbx != null)
+                        {
+                            baseRotation = sceneFbx.transform.localRotation;
+                            Avatar baseAvatar = AssetDatabase.LoadAssetAtPath<Avatar>(AssetDatabase.GetAssetPath(sceneFbx));
+                            isHuman = true;
+                            if (baseAvatar != null) isHuman = baseAvatar.isHuman;
+                            // in edit mode - find the first animation clip
+                            AnimationClip clip = Util.GetFirstAnimationClipFromCharacter(sceneFbx);
+                            if (sceneFbx && clip)
+                                clip = AnimRetargetGUI.TryGetRetargetedAnimationClip(sceneFbx, clip);
+                            UpdateAnimatorClip(animator, clip);
+                        }
                     }
                     else
                     {
@@ -326,7 +336,7 @@ namespace Reallusion.Import
             CharacterAnimator.SetFloat(paramDirection, 0f);
             if (CharacterAnimator != null)
             {
-                CharacterAnimator.applyRootMotion = true;
+                CharacterAnimator.applyRootMotion = isHuman;
             }
         }
 
@@ -421,19 +431,21 @@ namespace Reallusion.Import
             {
                 CharacterAnimator.Update(time);
             }
+
             CharacterAnimator.gameObject.transform.localPosition = Vector3.zero;
-            CharacterAnimator.gameObject.transform.rotation = Quaternion.identity;
+            CharacterAnimator.gameObject.transform.rotation = baseRotation;
         }
 
         private static void SetClipSettings(AnimationClip clip)
         {
+            bool animateOnTheSpot = flagSettings.HasFlag(AnimatorFlags.AnimateOnTheSpot);
             AnimationClipSettings clipSettings = AnimationUtility.GetAnimationClipSettings(clip);
             clipSettings.mirror = flagSettings.HasFlag(AnimatorFlags.ShowMirrorImage);
-            clipSettings.loopBlendPositionXZ = !flagSettings.HasFlag(AnimatorFlags.AnimateOnTheSpot);
-            clipSettings.loopBlendPositionY = !flagSettings.HasFlag(AnimatorFlags.AnimateOnTheSpot);
-            clipSettings.loopBlendOrientation = !flagSettings.HasFlag(AnimatorFlags.AnimateOnTheSpot);
+            clipSettings.loopBlendPositionXZ = !animateOnTheSpot;
+            clipSettings.loopBlendPositionY = !animateOnTheSpot;
+            clipSettings.loopBlendOrientation = !animateOnTheSpot;
             AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
-            CharacterAnimator.applyRootMotion = !flagSettings.HasFlag(AnimatorFlags.AnimateOnTheSpot);
+            CharacterAnimator.applyRootMotion = isHuman && !animateOnTheSpot;
         }
 
         public static void ResetToBaseAnimatorController()
@@ -2169,7 +2181,7 @@ namespace Reallusion.Import
                         }
                     }
 
-                    SetCharacterBlendShapeByExPlusProfile(root, new string[] {shapeName}, entry.Value * EXPRESSIVENESS);
+                    SetCharacterBlendShapeByExPlusProfile(root, new string[] { shapeName }, entry.Value * EXPRESSIVENESS);
                 }
             }
         }
@@ -2267,7 +2279,7 @@ namespace Reallusion.Import
             if (CharacterAnimator == null) return;
             Object obj = CharacterAnimator.gameObject;
             GameObject root = Util.GetScenePrefabInstanceRoot(obj);
-            SetCharacterBlendShapeByExtProfile(root, new string[] {individualShapeName}, value);
+            SetCharacterBlendShapeByExtProfile(root, new string[] { individualShapeName }, value);
         }
 
         static void SnapViewToHead()
