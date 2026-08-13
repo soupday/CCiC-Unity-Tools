@@ -16,8 +16,10 @@
  * along with CC_Unity_Tools.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Diagnostics;
@@ -738,9 +740,30 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (missingBlendShapes.Count == 0) return false;
+                // flatten blendshape normal deltas on troublesome expressions
+                var badExpressions = new Dictionary<string, float> {
+                    { "Mouth_Close", 0.2f},
+                    { "Jaw_Open", 0.8f},
+                    { "Mouth_Pucker_Up_L", 0.4f},
+                    { "Mouth_Pucker_Up_R", 0.4f},
+                    { "Mouth_Funnel_Up_L", 0.4f},
+                    { "Mouth_Funnel_Up_R", 0.4f},
+                    { "Mouth_Drop_Upper", 0.4f},
+                };
 
-                Util.LogWarn($"Body Mesh: {srcMesh.name} has missing BlendShapes. \nAdding placeholders ({debugList})");
+                bool hasBadExpressions = false;
+                foreach (string badName in badExpressions.Keys)
+                {
+                    if (srcMesh.GetBlendShapeIndex(badName) > -1)
+                    {
+                        hasBadExpressions = true;
+                    }
+                }
+
+                if (missingBlendShapes.Count == 0 && !hasBadExpressions)
+                {
+                    return false;
+                }
 
                 Mesh dstMesh = CopyMesh(srcMesh);
 
@@ -748,9 +771,43 @@ namespace Reallusion.Import
                 Vector3[] bufNormals = new Vector3[dstMesh.vertexCount];
                 Vector3[] bufTangents = new Vector3[dstMesh.vertexCount];
 
-                foreach (var name in missingBlendShapes)
+                if (hasBadExpressions)
                 {
-                    dstMesh.AddBlendShapeFrame(name, 100.0f, bufVerts, bufNormals, bufTangents);
+                    Util.LogWarn($"Body Mesh: {srcMesh.name} has expressions that require blend shape normal modification ...");
+
+                    dstMesh.ClearBlendShapes();
+
+                    for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
+                    {
+                        string name = srcMesh.GetBlendShapeName(shapeIndex);
+                        for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                        {
+                            float w = srcMesh.GetBlendShapeFrameWeight(shapeIndex, frameIndex);
+                            srcMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, bufVerts, bufNormals, bufTangents);
+                            if (badExpressions.ContainsKey(name))
+                            {
+                                float m = badExpressions[name];
+                                for (int i = 0; i < dstMesh.vertexCount; i++)
+                                {
+                                    bufNormals[i] = bufNormals[i] * m;
+                                    bufTangents[i] = bufTangents[i] * m;
+                                    //bufNormals[i] = Vector3.zero;
+                                    //bufTangents[i] = Vector3.zero;
+                                }
+                            }
+                            dstMesh.AddBlendShapeFrame(name, w, bufVerts, bufNormals, bufTangents);
+                        }
+                    }
+                }
+
+                if (missingBlendShapes.Count > 0)
+                {
+                    Util.LogWarn($"Body Mesh: {srcMesh.name} has missing BlendShapes. \nAdding placeholders ({debugList})");
+
+                    foreach (var name in missingBlendShapes)
+                    {
+                        dstMesh.AddBlendShapeFrame(name, 100.0f, bufVerts, bufNormals, bufTangents);
+                    }
                 }
 
                 // Save the mesh asset.

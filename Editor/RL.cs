@@ -175,56 +175,50 @@ namespace Reallusion.Import
             ModelImporterAnimationType oldType = importer.animationType;
             // import normals to avoid mesh smoothing issues            
             // importing blend shape normals gives disasterously bad results, they need to be recalculated,
-            // ideally using the legacy blend shape normals option, but this has not been exposed to scripts so...
-            int importSet = 0;
-            if (info.IsBlenderProject) importSet = 1;
-            switch (importSet)
+            // ideally using the legacy blend shape normals option, but this has not been exposed to scripts so...            
+            bool isBlenderProject = info.IsBlenderProject;
+
+            if (Importer.BUILD_NORMALS_MODE == 0) // Calculate All
             {
-                case 0: // From CC3/4
-                    if (Importer.BUILD_NORMALS_MODE == 1) // Import
-                    {
-                        importer.importNormals = ModelImporterNormals.Import;
-                        importer.importBlendShapes = true;
-                        importer.importBlendShapeNormals = ModelImporterNormals.None;
-                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
-                        importer.normalSmoothingAngle = 120f;
-                        ForceLegacyBlendshapeNormals(importer, true);
-                    }
-                    else // Calculate
-                    {
-                        importer.importNormals = ModelImporterNormals.Calculate;
-                        importer.importBlendShapes = true;
-                        importer.importBlendShapeNormals = ModelImporterNormals.None;
-                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
-                        importer.normalSmoothingAngle = 120f;
-                        ForceLegacyBlendshapeNormals(importer, false);
-                    }
-                    break;
-                case 1: // From Blender
-                    if (Importer.BUILD_NORMALS_MODE == 1) // Import
-                    {
-                        importer.importNormals = ModelImporterNormals.Import;
-                        importer.importBlendShapes = true;
-                        importer.importBlendShapeNormals = ModelImporterNormals.None;
-                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
-                        importer.normalSmoothingAngle = 120f;
-                        ForceLegacyBlendshapeNormals(importer, true);
-                    }
-                    else // Calculate
-                    {
-                        importer.importNormals = ModelImporterNormals.Calculate;
-                        importer.importBlendShapes = true;
-                        importer.importBlendShapeNormals = ModelImporterNormals.None;
-                        importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-                        importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
-                        importer.normalSmoothingAngle = 120f;
-                        ForceLegacyBlendshapeNormals(importer, false);
-                    }
-                    break;
+                importer.importNormals = ModelImporterNormals.Calculate;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
             }
+            else if (Importer.BUILD_NORMALS_MODE == 1) // Import All
+            {
+                importer.importNormals = ModelImporterNormals.Import;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.Import;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
+            }
+            else if (Importer.BUILD_NORMALS_MODE == 2) // Calculate Base Only
+            {
+                importer.importNormals = ModelImporterNormals.Calculate;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.None;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
+            }
+            else if (Importer.BUILD_NORMALS_MODE == 3) // Import Base only
+            {
+                importer.importNormals = ModelImporterNormals.Import;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.None;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
+            }
+
             importer.importTangents = ModelImporterTangents.CalculateMikk;
             importer.generateAnimations = ModelImporterGenerateAnimations.GenerateAnimations;
             importer.animationType = ModelImporterAnimationType.Human;
