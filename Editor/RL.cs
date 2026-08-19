@@ -188,11 +188,11 @@ namespace Reallusion.Import
                 importer.normalSmoothingAngle = 120f;
                 //ForceLegacyBlendshapeNormals(importer, false);
             }
-            else if (Importer.BUILD_NORMALS_MODE == 1) // Import All
+            else if (Importer.BUILD_NORMALS_MODE == 1) // Import Base, Calculate blendshape
             {
                 importer.importNormals = ModelImporterNormals.Import;
                 importer.importBlendShapes = true;
-                importer.importBlendShapeNormals = ModelImporterNormals.Import;
+                importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
                 importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
                 importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
                 importer.normalSmoothingAngle = 120f;
@@ -213,6 +213,16 @@ namespace Reallusion.Import
                 importer.importNormals = ModelImporterNormals.Import;
                 importer.importBlendShapes = true;
                 importer.importBlendShapeNormals = ModelImporterNormals.None;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
+            }
+            else if (Importer.BUILD_NORMALS_MODE == 4) // Import All
+            {
+                importer.importNormals = ModelImporterNormals.Import;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.Import;
                 importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
                 importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
                 importer.normalSmoothingAngle = 120f;

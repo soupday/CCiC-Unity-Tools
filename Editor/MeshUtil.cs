@@ -740,16 +740,85 @@ namespace Reallusion.Import
                     }
                 }
 
+                Vector3[] bufVerts = new Vector3[srcMesh.vertexCount];
+                Vector3[] bufNormals = new Vector3[srcMesh.vertexCount];
+                Vector3[] bufTangents = new Vector3[srcMesh.vertexCount];
+
+                bool checkBadExpressions = false;
+                if (checkBadExpressions)
+                {
+                    string report = "";
+                    for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
+                    {
+                        string name = srcMesh.GetBlendShapeName(shapeIndex);
+                        for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                        {
+                            srcMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, bufVerts, bufNormals, bufTangents);
+                            float minD = 0f;
+                            for (int i = 0; i < srcMesh.vertexCount; i++)
+                            {
+                                Vector3 normal = srcMesh.normals[i];
+                                Vector3 bsn = normal + bufNormals[i];
+                                float d = Vector3.Dot(normal, bsn);
+                                if (d < 0 && d < minD) minD = d;
+                            }
+                            if (minD < 0f)
+                            {
+                                float a = 0.9f;
+                                float r = 1f / (1f - a);
+                                float m = Mathf.Pow(1f - Mathf.Clamp01((-minD - a) * r), 0.5f);
+                                if (m < 1f)
+                                {
+                                    report += $"{{ \"{name}\", {m:0.00}f }},\n";
+                                }
+                            }
+                        }
+                    }
+                    Debug.Log(report);
+                }
+
                 // flatten blendshape normal deltas on troublesome expressions
-                var badExpressions = new Dictionary<string, float> {
-                    { "Mouth_Close", 0.2f},
-                    { "Jaw_Open", 0.8f},
-                    { "Mouth_Pucker_Up_L", 0.4f},
-                    { "Mouth_Pucker_Up_R", 0.4f},
-                    { "Mouth_Funnel_Up_L", 0.4f},
-                    { "Mouth_Funnel_Up_R", 0.4f},
-                    { "Mouth_Drop_Upper", 0.4f},
-                };
+                var badExpressions = new Dictionary<string, float>
+                {
+                    //{ "Mouth_Close", 0.1f},
+                    //{ "Jaw_Open", 0.8f},
+                    //{ "Mouth_Pucker_Up_L", 0.4f},
+                    //{ "Mouth_Pucker_Up_R", 0.4f},
+                    //{ "Mouth_Funnel_Up_L", 0.4f},
+                    //{ "Mouth_Funnel_Up_R", 0.4f},
+                    //{ "Mouth_Drop_Upper", 0.4f},
+
+                    //{ "Mouth_Roll_In_Lower_R", 0.5f},
+                    //{ "Mouth_Roll_In_Lower_L", 0.5f},
+                    //{ "Mouth_Roll_Out_Lower_R", 0.5f},
+                    //{ "Mouth_Roll_Out_Lower_L", 0.5f},                    
+                    { "Eye_Blink_L", 0.8f },
+                    { "Eye_Blink_R", 0.8f },
+                    { "Mouth_Pucker_Up_L", 0.4f },
+                    { "Mouth_Pucker_Up_R", 0.4f },
+                    { "Mouth_Funnel_Up_L", 0.4f },
+                    { "Mouth_Funnel_Up_R", 0.4f },
+                    { "Mouth_Roll_In_Upper_L", 0.6f },
+                    { "Mouth_Roll_In_Upper_R", 0.6f },
+                    { "Mouth_Roll_In_Lower_L", 0.6f },
+                    { "Mouth_Roll_In_Lower_R", 0.6f },
+                    //{ "Mouth_Roll_Out_Upper_L", 0.8f },
+                    //{ "Mouth_Roll_Out_Upper_R", 0.8f },
+                    //{ "Mouth_Push_Upper_L", 0.8f },
+                    //{ "Mouth_Push_Upper_R", 0.8f },
+                    //{ "Mouth_Pull_Lower_L", 0.4f },
+                    //{ "Mouth_Pull_Lower_R", 0.4f },
+                    //{ "Mouth_Up", 0.8f },
+                    { "Mouth_Drop_Upper", 0.4f },
+                    { "Mouth_Drop_Lower", 0.4f },
+                    { "Mouth_Lower_L", 0.5f },
+                    { "Mouth_Lower_R", 0.5f },
+                    { "Mouth_Close", 0.1f },
+                    { "Jaw_Open", 0.6f },
+                    //{ "Jaw_L", 0.7f },
+                    //{ "Jaw_R", 0.7f }
+                }
+            ;
 
                 bool hasBadExpressions = false;
                 foreach (string badName in badExpressions.Keys)
@@ -760,16 +829,12 @@ namespace Reallusion.Import
                     }
                 }
 
-                if (missingBlendShapes.Count == 0 && !hasBadExpressions)
+                if (missingBlendShapes.Count == 0 && (checkBadExpressions || !hasBadExpressions))
                 {
                     return false;
                 }
 
                 Mesh dstMesh = CopyMesh(srcMesh);
-
-                Vector3[] bufVerts = new Vector3[dstMesh.vertexCount];
-                Vector3[] bufNormals = new Vector3[dstMesh.vertexCount];
-                Vector3[] bufTangents = new Vector3[dstMesh.vertexCount];
 
                 if (hasBadExpressions)
                 {
@@ -790,9 +855,6 @@ namespace Reallusion.Import
                                 for (int i = 0; i < dstMesh.vertexCount; i++)
                                 {
                                     bufNormals[i] = bufNormals[i] * m;
-                                    bufTangents[i] = bufTangents[i] * m;
-                                    //bufNormals[i] = Vector3.zero;
-                                    //bufTangents[i] = Vector3.zero;
                                 }
                             }
                             dstMesh.AddBlendShapeFrame(name, w, bufVerts, bufNormals, bufTangents);

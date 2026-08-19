@@ -1384,7 +1384,7 @@ namespace Reallusion.Import
                 GUILayout.Space(ROW_SPACE);
             }*/
 
-            string[] options = new string[] { "Calculate Base and BlendShape Normals", "Import Base and BlendShape Normals", "Calculate Base Normals, no BlendShape Normals", "Import Base Normals, no BlendShape Normals" };
+            string[] options = new string[] { "Calculate Base and BlendShape Normals", "Import Base, Calculate BlendShape Normals", "Calculate Base Normals, no BlendShape Normals", "Import Base Normals, no BlendShape Normals", "Import Base and BlendShape Normals (Broken)" };
             void UpdateBuildNormalsMode(object value)
             {
                 Importer.BUILD_NORMALS_MODE = (int)value;
