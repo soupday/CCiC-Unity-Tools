@@ -187,18 +187,8 @@ namespace Reallusion.Import
                 importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
                 importer.normalSmoothingAngle = 120f;
                 //ForceLegacyBlendshapeNormals(importer, false);
-            }
-            else if (Importer.BUILD_NORMALS_MODE == 1) // Import Base, Calculate blendshape
-            {
-                importer.importNormals = ModelImporterNormals.Import;
-                importer.importBlendShapes = true;
-                importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
-                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
-                importer.normalSmoothingAngle = 120f;
-                //ForceLegacyBlendshapeNormals(importer, false);
-            }
-            else if (Importer.BUILD_NORMALS_MODE == 2) // Calculate Base Only
+            }            
+            else if (Importer.BUILD_NORMALS_MODE == 1) // Calculate Base Only
             {
                 importer.importNormals = ModelImporterNormals.Calculate;
                 importer.importBlendShapes = true;
@@ -208,7 +198,7 @@ namespace Reallusion.Import
                 importer.normalSmoothingAngle = 120f;
                 //ForceLegacyBlendshapeNormals(importer, false);
             }
-            else if (Importer.BUILD_NORMALS_MODE == 3) // Import Base only
+            else if (Importer.BUILD_NORMALS_MODE == 2) // Import Base only
             {
                 importer.importNormals = ModelImporterNormals.Import;
                 importer.importBlendShapes = true;
@@ -218,7 +208,17 @@ namespace Reallusion.Import
                 importer.normalSmoothingAngle = 120f;
                 //ForceLegacyBlendshapeNormals(importer, false);
             }
-            else if (Importer.BUILD_NORMALS_MODE == 4) // Import All
+            else if (Importer.BUILD_NORMALS_MODE == 3) // Import Base, Calculate blendshape (Bad results)
+            {
+                importer.importNormals = ModelImporterNormals.Import;
+                importer.importBlendShapes = true;
+                importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
+                importer.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+                importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
+                importer.normalSmoothingAngle = 120f;
+                //ForceLegacyBlendshapeNormals(importer, false);
+            }
+            else if (Importer.BUILD_NORMALS_MODE == 4) // Import All (Broken)
             {
                 importer.importNormals = ModelImporterNormals.Import;
                 importer.importBlendShapes = true;
