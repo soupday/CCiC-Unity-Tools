@@ -241,6 +241,36 @@ namespace Reallusion.Import
             return null;
         }
 
+        public static int GetHeadSubMeshIndex(Object obj)
+        {
+            if (obj.GetType() == typeof(GameObject))
+            {
+                GameObject go = (GameObject)obj;
+                if (go)
+                {
+                    SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
+                    if (smr)
+                    {
+                        Material[] materials = smr.sharedMaterials;
+
+                        if (materials.Length == 1) return 0;
+
+                        for (int i = 0; i < materials.Length; i++)
+                        {
+                            if (materials[i].name.iContains("Std_Skin_Head")) return i;
+                        }
+
+                        for (int i = 0; i < materials.Length; i++)
+                        {
+                            if (materials[i].name.iContains("Head")) return i;
+                        }
+                    }
+                }
+            }
+
+            return 0;
+        }
+
         public static bool ReplaceMesh(Object obj, Mesh mesh)
         {
             bool replaced = false;
@@ -740,43 +770,183 @@ namespace Reallusion.Import
                     }
                 }
 
-                Vector3[] bufVerts = new Vector3[srcMesh.vertexCount];
-                Vector3[] bufNormals = new Vector3[srcMesh.vertexCount];
-                Vector3[] bufTangents = new Vector3[srcMesh.vertexCount];
+                int VC = srcMesh.vertexCount;
+                int headSubMesh = GetHeadSubMeshIndex(bodyObject);
+                List<Vector3> listNormals = new List<Vector3>(VC);
+                List<Vector3> listVerts = new List<Vector3>(VC);
+                srcMesh.GetVertices(listVerts);
+                srcMesh.GetNormals(listNormals);
+                int[] triangles = srcMesh.GetTriangles(headSubMesh);
+                int numTriangles = triangles.Length / 3;
+                Vector3[] verts = listVerts.ToArray();
+                Vector3[] normals = listNormals.ToArray();
+                Vector3[] blendVerts = new Vector3[VC];
+                Vector3[] blendNormals = new Vector3[VC];
+                Vector3[] bufVerts = new Vector3[VC];
+                Vector3[] bufNormals = new Vector3[VC];
+                Vector3[] bufTangents = new Vector3[VC];
+                Vector3[] bufTestVerts = new Vector3[VC];
+                Vector3[] bufTestNormals = new Vector3[VC];
+                Vector3[] bufTestTangents = new Vector3[VC];
 
-                bool checkBadExpressions = false;
+                var testShapes = new (string, string)[] {
+                    ("V_Open","Mouth|Jaw"),
+                    ("Jaw_Open", "*"),
+                    ("Eye_Blink_L", "Eye"),
+                    ("Eye_Blink_R", "Eye"),
+                    ("Eye_Widen_L", "Eye"),
+                    ("Eye_Widen_R", "Eye"),
+                    ("Eye_Wide_L", "Eye"),
+                    ("Eye_Wide_R", "Eye"),
+                    ("Mouth_Smile_L", "Mouth|Jaw"),
+                    ("Mouth_Smile_R", "Mouth|Jaw"),                    
+                    //("Mouth_Frown_L", "Mouth|Jaw"),
+                    //("Mouth_Frown_R", "Mouth|Jaw"),
+                    ("Mouth_Corner_Pull_L", "Mouth|Jaw"),
+                    ("Mouth_Corner_Pull_R", "Mouth|Jaw"),
+                    //("Eye_Look_Down_L", "Eye"),
+                    //("Eye_Look_Down_R", "Eye"),
+                    //("Eye_Look_Up_L", "Eye"),
+                    //("Eye_Look_Up_R", "Eye"),
+                };
+                //Func<string, Transform, Collider> FindColliderObj = (colliderName, bone) =>
+
+                Func<string, string[], bool> IsMatch = (name, split) =>
+                {
+                    foreach (string s in split)
+                    {
+                        if (string.IsNullOrEmpty(s)) return true;
+                        if (s == "*") return true;
+                        if (name.Contains(s)) return true;
+                    }
+                    return false;
+                };
+
+                Func<string, bool> IsTest = (name) =>
+                {
+                    foreach (var tst in testShapes)
+                    {
+                        if (tst.Item1 == name) return true;
+                    }
+                    return false;
+                };
+
+                var badExpressions = new Dictionary<string, float>();
+                bool checkBadExpressions = true;
                 if (checkBadExpressions)
                 {
-                    string report = "";
-                    for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
+                    //for (int testShapeIndex = 0; testShapeIndex < srcMesh.blendShapeCount; testShapeIndex++)
+                    //for (int testShapeIndex = 0; testShapeIndex < 1; testShapeIndex++)
+                    foreach (var testShapeNameMatch in testShapes)
                     {
-                        string name = srcMesh.GetBlendShapeName(shapeIndex);
-                        for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                        string testShapeName = testShapeNameMatch.Item1;
+                        string match = testShapeNameMatch.Item2;
+                        string[] split = match.Split("|");
+                        //string testShapeName = srcMesh.GetBlendShapeName(testShapeIndex);
+                        //string report = $"{testShapeName} report:\n";
+                        int testShapeIndex = srcMesh.GetBlendShapeIndex(testShapeName);
+                        if (testShapeIndex != -1)
                         {
-                            srcMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, bufVerts, bufNormals, bufTangents);
-                            float minD = 0f;
-                            for (int i = 0; i < srcMesh.vertexCount; i++)
+                            srcMesh.GetBlendShapeFrameVertices(testShapeIndex, 0, bufTestVerts, bufTestNormals, bufTestTangents);
+
+                            for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
                             {
-                                Vector3 normal = srcMesh.normals[i];
-                                Vector3 bsn = normal + bufNormals[i];
-                                float d = Vector3.Dot(normal, bsn);
-                                if (d < 0 && d < minD) minD = d;
-                            }
-                            if (minD < 0f)
-                            {
-                                float a = 0.9f;
-                                float r = 1f / (1f - a);
-                                float m = Mathf.Pow(1f - Mathf.Clamp01((-minD - a) * r), 0.5f);
-                                if (m < 1f)
+                                if (shapeIndex == testShapeIndex) continue;
+                                string name = srcMesh.GetBlendShapeName(shapeIndex);
+
+                                if (!IsMatch(name, split)) continue;
+                                if (IsTest(name)) continue;
+
+                                srcMesh.GetBlendShapeFrameVertices(shapeIndex, 0, bufVerts, bufNormals, bufTangents);
+                                float minD = 1f;
+                                bool isConstraint = false; // name.StartsWith("C_");
+
+                                if (isConstraint)
                                 {
-                                    report += $"{{ \"{name}\", {m:0.00}f }},\n";
+                                    //badExpressions[name] = 0.4f;
+                                }
+                                else
+                                {
+                                    for (int bvi = 0; bvi < VC; bvi++)
+                                    {
+                                        //blendVerts[bvi] = verts[bvi] + bufVerts[bvi];
+                                        //blendNormals[bvi] = normals[bvi] + bufNormals[bvi];
+                                        blendVerts[bvi] = verts[bvi] + bufTestVerts[bvi] + bufVerts[bvi];
+                                        //blendNormals[bvi] = Vector3.Normalize(normals[bvi] + bufTestNormals[bvi] + bufNormals[bvi]);
+                                        blendNormals[bvi] = normals[bvi] + bufTestNormals[bvi] + bufNormals[bvi];
+                                    }
+
+                                    for (int ti = 0; ti < triangles.Length; ti += 3)
+                                    {
+                                        int i0 = triangles[ti];
+                                        int i1 = triangles[ti + 1];
+                                        int i2 = triangles[ti + 2];
+                                        Vector3 p0 = blendVerts[i0];
+                                        Vector3 p1 = blendVerts[i1];
+                                        Vector3 p2 = blendVerts[i2];
+                                        Vector3 n0 = blendNormals[i0];
+                                        Vector3 n1 = blendNormals[i1];
+                                        Vector3 n2 = blendNormals[i2];
+
+                                        Vector3 cross = Vector3.Cross(100f * (p1 - p0), 100f * (p2 - p0));
+                                        Vector3 triNormal = Vector3.Normalize(cross);
+                                        if (triNormal != Vector3.zero)
+                                        {
+                                            float d = Mathf.Min(Vector3.Dot(triNormal, n0),
+                                                                Vector3.Dot(triNormal, n1),
+                                                                Vector3.Dot(triNormal, n2));
+                                            if (d < minD)
+                                            {
+                                                minD = d;
+                                            }
+                                        }
+                                    }
+
+
+                                    /*float minD = 0f;
+                                    for (int i = 0; i < VC; i++)
+                                    {
+                                        Vector3 normal = normals[i];
+                                        Vector3 bsn = normal + bufNormals[i];
+                                        float d = Vector3.Dot(normal, bsn);
+                                        if (d < 0 && d < minD) minD = d;
+                                    }*/
+                                    if (minD < 0f)
+                                    {
+                                        float a = Mathf.Sin(60f * Mathf.PI / 180f);
+                                        float r = 1f / (1f - a);
+                                        float m = 1f - Mathf.Clamp01((-minD - a) * r);
+                                        m = Mathf.Sin(m * Mathf.PI * 0.5f);
+                                        m = Mathf.Lerp(0.4f, 1f, m);
+                                        //report += $" {name}: {m:0.000} ({minD:0.000})\n";
+                                        if (m < 1f)
+                                        {
+                                            if (badExpressions.TryGetValue(name, out float me) && m < me)
+                                            {
+                                                badExpressions[name] = m;
+                                            }
+                                            else
+                                            {
+                                                badExpressions[name] = m;
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                            //Debug.Log(report);
                         }
                     }
-                    Debug.Log(report);
                 }
 
+                string dictReport = "Expression Blendshape Normal Smoothing Report\n";
+                dictReport += $"{badExpressions.Count} Blendshape normals modified:\n";
+                foreach (var kvp in badExpressions)
+                {
+                    dictReport += $"{kvp.Key}: x{kvp.Value:0.00}\n";
+                }
+                Debug.Log(dictReport);
+
+                /*
                 // flatten blendshape normal deltas on troublesome expressions
                 var badExpressions = new Dictionary<string, float>
                 {
@@ -817,8 +987,11 @@ namespace Reallusion.Import
                     { "Jaw_Open", 0.6f },
                     //{ "Jaw_L", 0.7f },
                     //{ "Jaw_R", 0.7f }
-                }
-            ;
+
+
+
+
+                };*/
 
                 bool hasBadExpressions = false;
                 foreach (string badName in badExpressions.Keys)
@@ -852,7 +1025,7 @@ namespace Reallusion.Import
                             if (badExpressions.ContainsKey(name))
                             {
                                 float m = badExpressions[name];
-                                for (int i = 0; i < dstMesh.vertexCount; i++)
+                                for (int i = 0; i < VC; i++)
                                 {
                                     bufNormals[i] = bufNormals[i] * m;
                                 }
