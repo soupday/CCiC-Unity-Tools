@@ -793,14 +793,14 @@ namespace Reallusion.Import
             Color[] srcColors = srcMesh.colors;
             BoneWeight[] srcBoneWeights = srcMesh.boneWeights;
             Vector4[] srcTangents = srcMesh.tangents;
-            int[] srcTriangles = srcMesh.triangles;
+            int[] srcTriangles = srcMesh.GetTriangles(index);
 
             // first determine which vertices are used in the faces of the indexed submesh and remap their indices to the new mesh.
             int maxVerts = srcMesh.vertexCount;
             int[] remapping = new int[maxVerts];
             for (int i = 0; i < maxVerts; i++) remapping[i] = -1;
             int pointer = 0;
-            for (int tIndex = extractMeshDesc.indexStart; tIndex < extractMeshDesc.indexStart + extractMeshDesc.indexCount; tIndex++)
+            for (int tIndex = 0; tIndex < srcTriangles.Length; tIndex++)
             {
                 int vertIndex = srcTriangles[tIndex];
                 if (remapping[vertIndex] == -1) remapping[vertIndex] = pointer++;
@@ -874,9 +874,9 @@ namespace Reallusion.Import
             newMesh.bounds = srcMesh.bounds;
             newMesh.subMeshCount = 1;
             // finally copy and remap the triangle data last
-            int[] triangles = new int[extractMeshDesc.indexCount];
+            int[] triangles = new int[srcTriangles.Length];
             pointer = 0;
-            for (int tIndex = extractMeshDesc.indexStart; tIndex < extractMeshDesc.indexStart + extractMeshDesc.indexCount; tIndex++)
+            for (int tIndex = 0; tIndex < srcTriangles.Length; tIndex++)
             {
                 int vertIndex = srcTriangles[tIndex];
                 int remappedIndex = remapping[vertIndex];
@@ -930,7 +930,7 @@ namespace Reallusion.Import
             SubMeshDescriptor newMeshDesc = extractMeshDesc;
             newMeshDesc.firstVertex = 0;
             newMeshDesc.indexStart = 0;
-            newMeshDesc.indexCount = extractMeshDesc.indexCount;
+            newMeshDesc.indexCount = triangles.Length;
             newMeshDesc.vertexCount = numNewVerts;
             newMesh.SetSubMesh(0, newMeshDesc);
 
@@ -955,9 +955,10 @@ namespace Reallusion.Import
             Color[] srcColors = srcMesh.colors;
             BoneWeight[] srcBoneWeights = srcMesh.boneWeights;
             Vector4[] srcTangents = srcMesh.tangents;
-            int[] srcTriangles = srcMesh.triangles;
+            int[][] subMeshTriangles = new int[srcMesh.subMeshCount][];
+            for (int s = 0; s < srcMesh.subMeshCount; s++) subMeshTriangles[s] = srcMesh.GetTriangles(s);
 
-            // first determine which vertices are used in the faces of *ALL SUBMESHES EXCEPT* the indexed submesh
+            // first determine which vertices are used in the faces of *ALL SUBMESHES EXCEPT* the indexed submesh 
             // and remap their indices to the new mesh.
             int maxVerts = srcMesh.vertexCount;
             int[] remapping = new int[maxVerts];
@@ -968,11 +969,11 @@ namespace Reallusion.Import
             {
                 if (!indices.Contains(s))
                 {
-                    SubMeshDescriptor meshDesc = srcMesh.GetSubMesh(s);
-                    numNewTriangles += meshDesc.indexCount;
-                    for (int tIndex = meshDesc.indexStart; tIndex < meshDesc.indexStart + meshDesc.indexCount; tIndex++)
+                    int[] smTriangles = subMeshTriangles[s];
+                    numNewTriangles += smTriangles.Length;
+                    for (int tIndex = 0; tIndex < smTriangles.Length; tIndex++)
                     {
-                        int vertIndex = srcTriangles[tIndex];
+                        int vertIndex = smTriangles[tIndex];
                         if (remapping[vertIndex] == -1) remapping[vertIndex] = pointer++;
                     }
                 }
@@ -1046,10 +1047,10 @@ namespace Reallusion.Import
             {
                 if (!indices.Contains(s))
                 {
-                    SubMeshDescriptor meshDesc = srcMesh.GetSubMesh(s);
-                    for (int tIndex = meshDesc.indexStart; tIndex < meshDesc.indexStart + meshDesc.indexCount; tIndex++)
-                    {
-                        int vertIndex = srcTriangles[tIndex];
+                    int[] smTriangles = subMeshTriangles[s];
+                    for (int tIndex = 0; tIndex < smTriangles.Length; tIndex++)
+                    {                    
+                        int vertIndex = smTriangles[tIndex];
                         int remappedIndex = remapping[vertIndex];
                         if (remappedIndex >= 0)
                             triangles[pointer++] = remappedIndex;
@@ -1108,10 +1109,10 @@ namespace Reallusion.Import
                     SubMeshDescriptor newMeshDesc = meshDesc;
                     newMeshDesc.firstVertex = remapping[meshDesc.firstVertex];
                     newMeshDesc.indexStart = indexStart;
-                    newMeshDesc.indexCount = meshDesc.indexCount;
-                    newMeshDesc.vertexCount = meshDesc.vertexCount;
+                    newMeshDesc.indexCount = subMeshTriangles[s].Length;
+                    newMeshDesc.vertexCount = meshDesc.vertexCount;                    
                     newMesh.SetSubMesh(pointer++, newMeshDesc);
-                    indexStart += meshDesc.indexCount;
+                    indexStart += subMeshTriangles[s].Length;
                 }
             }
 
