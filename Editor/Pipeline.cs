@@ -642,7 +642,7 @@ namespace Reallusion.Import
             foreach (string profile in profiles)
             {
                 Object asset = Util.FindAsset(profile);
-                if (asset.GetType() == typeof(DiffusionProfileSettings))
+                if (asset && asset.GetType() == typeof(DiffusionProfileSettings))
                 {
                     DiffusionProfileSettings dpAsset = (DiffusionProfileSettings)asset;
                     if (asset)

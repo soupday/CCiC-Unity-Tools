@@ -251,12 +251,12 @@ namespace Reallusion.Import
         {
             get
             {
-                return EditorPrefs.GetInt("RL_Build_Normals_Mode_V2", 0);
+                return EditorPrefs.GetInt("RL_Build_Normals_Mode_V3", 0);
             }
 
             set
             {
-                EditorPrefs.SetInt("RL_Build_Normals_Mode_V2", value);
+                EditorPrefs.SetInt("RL_Build_Normals_Mode_V3", value);
             }
         }
 
