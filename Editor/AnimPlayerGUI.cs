@@ -380,6 +380,7 @@ namespace Reallusion.Import
         private static void SelectOverrideAnimation(AnimationClip clip, AnimatorOverrideController aoc)
         {
             ResetAnimationPlayer();
+            if (!clip) return;
             var clone = GameObject.Instantiate(clip);
             clone.name = clip.name;
             SetClipSettings(clone);  // update the bake flags in AnimationClipSettings
