@@ -746,8 +746,11 @@ namespace Reallusion.Import
             }
         }
 
-        public static bool AddBodyMeshBlendShapes(GameObject bodyObject, List<string> blendShapes)
+        public static bool ProcessBodyMeshBlendShapes(GameObject bodyObject, List<string> blendShapes, bool addMissing, bool smoothNormalDeltas)
         {
+            bool smoothEntireExpression = false;
+            bool smoothIndividualNormals = true;
+
             if (GetSourcePrefab(bodyObject, MESH_FOLDER_NAME, out string characterName, out string meshFolder, out Object srcObj))
             {
                 Mesh srcMesh = GetMeshFrom(srcObj);
@@ -782,35 +785,56 @@ namespace Reallusion.Import
                 Vector3[] normals = listNormals.ToArray();
                 Vector3[] blendVerts = new Vector3[VC];
                 Vector3[] blendNormals = new Vector3[VC];
+                Vector3[] testVerts = new Vector3[VC];
+                Vector3[] testNormals = new Vector3[VC];
                 Vector3[] bufVerts = new Vector3[VC];
                 Vector3[] bufNormals = new Vector3[VC];
                 Vector3[] bufTangents = new Vector3[VC];
                 Vector3[] bufTestVerts = new Vector3[VC];
                 Vector3[] bufTestNormals = new Vector3[VC];
                 Vector3[] bufTestTangents = new Vector3[VC];
+                float[] bnMult = new float[VC];
+
+                // cache re-normalized blend shape data
+                Dictionary<int, Vector3[]> vertCache = new Dictionary<int, Vector3[]>();
+                Dictionary<int, Vector3[]> normCache = new Dictionary<int, Vector3[]>();
+                Dictionary<int, Vector3[]> tangCache = new Dictionary<int, Vector3[]>();
+                for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
+                {
+                    for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                    {
+                        float w = srcMesh.GetBlendShapeFrameWeight(shapeIndex, frameIndex);
+                        srcMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, bufVerts, bufNormals, bufTangents);
+
+                        Vector3[] bsVerts = new Vector3[VC];
+                        Vector3[] bsNorms = new Vector3[VC];
+                        Vector3[] bsTangs = new Vector3[VC];
+                        vertCache[shapeIndex] = bsVerts;
+                        normCache[shapeIndex] = bsNorms;
+                        tangCache[shapeIndex] = bsTangs;
+
+                        for (int i = 0; i < VC; i++)
+                        {
+                            Vector3 N = normals[i] + bufNormals[i];
+                            bsVerts[i] = bufVerts[i];
+                            bsNorms[i] = N.normalized - normals[i];
+                            //bsNorms[i] = bufNormals[i];
+                            bsTangs[i] = bufTangents[i];
+                        }
+                    }
+                }
 
                 var testShapes = new (string, string)[] {
-                    ("V_Open","Mouth|Jaw"),
-                    ("Jaw_Open", "*"),
-                    ("Eye_Blink_L", "Eye"),
-                    ("Eye_Blink_R", "Eye"),
-                    ("Eye_Widen_L", "Eye"),
-                    ("Eye_Widen_R", "Eye"),
-                    ("Eye_Wide_L", "Eye"),
-                    ("Eye_Wide_R", "Eye"),
-                    ("Mouth_Smile_L", "Mouth|Jaw"),
-                    ("Mouth_Smile_R", "Mouth|Jaw"),                    
-                    //("Mouth_Frown_L", "Mouth|Jaw"),
-                    //("Mouth_Frown_R", "Mouth|Jaw"),
-                    ("Mouth_Corner_Pull_L", "Mouth|Jaw"),
-                    ("Mouth_Corner_Pull_R", "Mouth|Jaw"),
-                    //("Eye_Look_Down_L", "Eye"),
-                    //("Eye_Look_Down_R", "Eye"),
-                    //("Eye_Look_Up_L", "Eye"),
-                    //("Eye_Look_Up_R", "Eye"),
+                    ("", "*"),
+                    ("Jaw_Open", "Mouth|Jaw|Lips"),
+                    ("Eye_Blink_L+Eye_Blink_R", "Eye"),
+                    ("Eye_Widen_L+Eye_Widen_R+Eye_Wide_L+Eye_Wide_R", "Eye"),
+                    ("Mouth_Smile_L+Mouth_Smile_R+Mouth_Corner_Pull_L+Mouth_Corner_Pull_R", "Mouth|Jaw|Lips"),
+                    ("Mouth_Frown_L+Mouth_Frown_R", "Mouth|Jaw|Lips"),
+                    ("Eye_Look_Down_L+Eye_Look_Down_R+Eye_Look_Up_L+Eye_Look_Up_R", "Eye"),
                 };
-                //Func<string, Transform, Collider> FindColliderObj = (colliderName, bone) =>
 
+                //Func<string, Transform, Collider> FindColliderObj = (colliderName, bone) =>                
                 Func<string, string[], bool> IsMatch = (name, split) =>
                 {
                     foreach (string s in split)
@@ -826,41 +850,66 @@ namespace Reallusion.Import
                 {
                     foreach (var tst in testShapes)
                     {
-                        if (tst.Item1 == name) return true;
+                        string[] splitNames = tst.Item1.Split("+");
+                        if (splitNames.Contains(name)) return true;
                     }
                     return false;
                 };
 
                 var badExpressions = new Dictionary<string, float>();
-                bool checkBadExpressions = true;
-                if (checkBadExpressions)
+                List<string> testedShapes = new List<string>();
+
+                if (smoothNormalDeltas)
                 {
+                    List<int> testIndices = new List<int>();
                     //for (int testShapeIndex = 0; testShapeIndex < srcMesh.blendShapeCount; testShapeIndex++)
-                    //for (int testShapeIndex = 0; testShapeIndex < 1; testShapeIndex++)
+                    //for (int testShapeIndex = 0; testShapeIndex < 1; testShapeIndex++)                    
+
                     foreach (var testShapeNameMatch in testShapes)
                     {
-                        string testShapeName = testShapeNameMatch.Item1;
+                        string testShapeNames = testShapeNameMatch.Item1;
                         string match = testShapeNameMatch.Item2;
-                        string[] split = match.Split("|");
-                        //string testShapeName = srcMesh.GetBlendShapeName(testShapeIndex);
-                        //string report = $"{testShapeName} report:\n";
-                        int testShapeIndex = srcMesh.GetBlendShapeIndex(testShapeName);
-                        if (testShapeIndex != -1)
-                        {
-                            srcMesh.GetBlendShapeFrameVertices(testShapeIndex, 0, bufTestVerts, bufTestNormals, bufTestTangents);
+                        string[] splitNames = testShapeNames.Split("+");
+                        string[] splitMatch = match.Split("|");
+                        string report = $"{testShapeNames} report:\n";
 
+                        // build test shape
+                        for (int j = 0; j < VC; j++)
+                        {
+                            testVerts[j] = verts[j];
+                            testNormals[j] = normals[j];
+                        }
+                        int testCount = 0;
+                        testIndices.Clear();
+                        foreach (string testShapeName in splitNames)
+                        {
+                            int testShapeIndex = srcMesh.GetBlendShapeIndex(testShapeName);
+                            if (testShapeIndex != -1)
+                            {
+                                for (int j = 0; j < VC; j++)
+                                {
+                                    testVerts[j] += vertCache[testShapeIndex][j];
+                                    testNormals[j] += normCache[testShapeIndex][j];
+                                }
+                                testCount++;
+                                testIndices.Add(testShapeIndex);
+                            }
+                        }
+
+                        // test the testshape agains the designated blend shapes
+                        if (testCount > 0 || testShapeNames == "")
+                        {
                             for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
                             {
-                                if (shapeIndex == testShapeIndex) continue;
+                                if (testIndices.Contains(shapeIndex)) continue;
                                 string name = srcMesh.GetBlendShapeName(shapeIndex);
 
-                                if (!IsMatch(name, split)) continue;
-                                if (IsTest(name)) continue;
+                                if (!IsMatch(name, splitMatch)) continue;
+                                if (testedShapes.Contains(name)) continue;
 
-                                srcMesh.GetBlendShapeFrameVertices(shapeIndex, 0, bufVerts, bufNormals, bufTangents);
-                                float minD = 1f;
+                                for (int tvi = 0; tvi < VC; tvi++) bnMult[tvi] = 1f;
+
                                 bool isConstraint = false; // name.StartsWith("C_");
-
                                 if (isConstraint)
                                 {
                                     //badExpressions[name] = 0.4f;
@@ -869,11 +918,8 @@ namespace Reallusion.Import
                                 {
                                     for (int bvi = 0; bvi < VC; bvi++)
                                     {
-                                        //blendVerts[bvi] = verts[bvi] + bufVerts[bvi];
-                                        //blendNormals[bvi] = normals[bvi] + bufNormals[bvi];
-                                        blendVerts[bvi] = verts[bvi] + bufTestVerts[bvi] + bufVerts[bvi];
-                                        //blendNormals[bvi] = Vector3.Normalize(normals[bvi] + bufTestNormals[bvi] + bufNormals[bvi]);
-                                        blendNormals[bvi] = normals[bvi] + bufTestNormals[bvi] + bufNormals[bvi];
+                                        blendVerts[bvi] = testVerts[bvi] + vertCache[shapeIndex][bvi];
+                                        blendNormals[bvi] = testNormals[bvi] + normCache[shapeIndex][bvi];
                                     }
 
                                     for (int ti = 0; ti < triangles.Length; ti += 3)
@@ -881,178 +927,138 @@ namespace Reallusion.Import
                                         int i0 = triangles[ti];
                                         int i1 = triangles[ti + 1];
                                         int i2 = triangles[ti + 2];
-                                        Vector3 p0 = blendVerts[i0];
-                                        Vector3 p1 = blendVerts[i1];
-                                        Vector3 p2 = blendVerts[i2];
-                                        Vector3 n0 = blendNormals[i0];
-                                        Vector3 n1 = blendNormals[i1];
-                                        Vector3 n2 = blendNormals[i2];
+                                        Vector3 bn0 = blendNormals[i0];
+                                        Vector3 bn1 = blendNormals[i1];
+                                        Vector3 bn2 = blendNormals[i2];
+                                        Vector3 tn0 = testNormals[i0];
+                                        Vector3 tn1 = testNormals[i1];
+                                        Vector3 tn2 = testNormals[i2];
 
-                                        Vector3 cross = Vector3.Cross(100f * (p1 - p0), 100f * (p2 - p0));
-                                        Vector3 triNormal = Vector3.Normalize(cross);
-                                        if (triNormal != Vector3.zero)
+                                        float bd0 = Vector3.Dot(tn0, bn0);
+                                        float bd1 = Vector3.Dot(tn1, bn1);
+                                        float bd2 = Vector3.Dot(tn2, bn2);
+                                        float m0 = Mathf.InverseLerp(-1f, 0.1f, bd0);
+                                        float m1 = Mathf.InverseLerp(-1f, 0.1f, bd1);
+                                        float m2 = Mathf.InverseLerp(-1f, 0.1f, bd2);
+                                        bnMult[i0] = Mathf.Min(m0, bnMult[i0]);
+                                        bnMult[i1] = Mathf.Min(m0, bnMult[i1]);
+                                        bnMult[i2] = Mathf.Min(m0, bnMult[i2]);
+                                    }
+
+                                    float minMult = 1f;
+                                    int count = 0;
+                                    for (int bvi = 0; bvi < VC; bvi++)
+                                    {
+                                        float tm = Mathf.Clamp01(bnMult[bvi]);
+                                        if (tm < 1f)
                                         {
-                                            float d = Mathf.Min(Vector3.Dot(triNormal, n0),
-                                                                Vector3.Dot(triNormal, n1),
-                                                                Vector3.Dot(triNormal, n2));
-                                            if (d < minD)
+                                            if (tm < minMult)
                                             {
-                                                minD = d;
+                                                minMult = tm;
+                                            }
+                                            if (smoothIndividualNormals)
+                                            {
+                                                normCache[shapeIndex][bvi] *= tm;
+                                                count++;
                                             }
                                         }
                                     }
 
-
-                                    /*float minD = 0f;
-                                    for (int i = 0; i < VC; i++)
+                                    if (minMult < 1f)
                                     {
-                                        Vector3 normal = normals[i];
-                                        Vector3 bsn = normal + bufNormals[i];
-                                        float d = Vector3.Dot(normal, bsn);
-                                        if (d < 0 && d < minD) minD = d;
-                                    }*/
-                                    if (minD < 0f)
-                                    {
-                                        float a = Mathf.Sin(60f * Mathf.PI / 180f);
-                                        float r = 1f / (1f - a);
-                                        float m = 1f - Mathf.Clamp01((-minD - a) * r);
-                                        m = Mathf.Sin(m * Mathf.PI * 0.5f);
-                                        m = Mathf.Lerp(0.4f, 1f, m);
-                                        //report += $" {name}: {m:0.000} ({minD:0.000})\n";
-                                        if (m < 1f)
-                                        {
-                                            if (badExpressions.TryGetValue(name, out float me) && m < me)
-                                            {
-                                                badExpressions[name] = m;
-                                            }
-                                            else
-                                            {
-                                                badExpressions[name] = m;
-                                            }
-                                        }
+                                        badExpressions.TryGetValue(name, out float md);
+                                        badExpressions[name] = Mathf.Min(minMult, md);
+                                        report += $" {name}: {count} normals smoothed (~{minMult:0.000})\n";
                                     }
                                 }
                             }
-                            //Debug.Log(report);
+                            Debug.Log(report);
+                        }
+
+                        foreach (string testShapeName in splitNames)
+                        {
+                            testedShapes.Add(testShapeName);
                         }
                     }
                 }
 
+                /*
                 string dictReport = "Expression Blendshape Normal Smoothing Report\n";
                 dictReport += $"{badExpressions.Count} Blendshape normals modified:\n";
                 foreach (var kvp in badExpressions)
                 {
-                    dictReport += $"{kvp.Key}: x{kvp.Value:0.00}\n";
+                    dictReport += $"{kvp.Key}: {kvp.Value:0.00}\n";
                 }
                 Debug.Log(dictReport);
+                */
 
-                /*
-                // flatten blendshape normal deltas on troublesome expressions
-                var badExpressions = new Dictionary<string, float>
+                bool hasBadExpressions = badExpressions.Count > 0;
+
+                if (missingBlendShapes.Count > 0 || (smoothNormalDeltas && hasBadExpressions))
                 {
-                    //{ "Mouth_Close", 0.1f},
-                    //{ "Jaw_Open", 0.8f},
-                    //{ "Mouth_Pucker_Up_L", 0.4f},
-                    //{ "Mouth_Pucker_Up_R", 0.4f},
-                    //{ "Mouth_Funnel_Up_L", 0.4f},
-                    //{ "Mouth_Funnel_Up_R", 0.4f},
-                    //{ "Mouth_Drop_Upper", 0.4f},
+                    Mesh dstMesh = CopyMesh(srcMesh);
 
-                    //{ "Mouth_Roll_In_Lower_R", 0.5f},
-                    //{ "Mouth_Roll_In_Lower_L", 0.5f},
-                    //{ "Mouth_Roll_Out_Lower_R", 0.5f},
-                    //{ "Mouth_Roll_Out_Lower_L", 0.5f},                    
-                    { "Eye_Blink_L", 0.8f },
-                    { "Eye_Blink_R", 0.8f },
-                    { "Mouth_Pucker_Up_L", 0.4f },
-                    { "Mouth_Pucker_Up_R", 0.4f },
-                    { "Mouth_Funnel_Up_L", 0.4f },
-                    { "Mouth_Funnel_Up_R", 0.4f },
-                    { "Mouth_Roll_In_Upper_L", 0.6f },
-                    { "Mouth_Roll_In_Upper_R", 0.6f },
-                    { "Mouth_Roll_In_Lower_L", 0.6f },
-                    { "Mouth_Roll_In_Lower_R", 0.6f },
-                    //{ "Mouth_Roll_Out_Upper_L", 0.8f },
-                    //{ "Mouth_Roll_Out_Upper_R", 0.8f },
-                    //{ "Mouth_Push_Upper_L", 0.8f },
-                    //{ "Mouth_Push_Upper_R", 0.8f },
-                    //{ "Mouth_Pull_Lower_L", 0.4f },
-                    //{ "Mouth_Pull_Lower_R", 0.4f },
-                    //{ "Mouth_Up", 0.8f },
-                    { "Mouth_Drop_Upper", 0.4f },
-                    { "Mouth_Drop_Lower", 0.4f },
-                    { "Mouth_Lower_L", 0.5f },
-                    { "Mouth_Lower_R", 0.5f },
-                    { "Mouth_Close", 0.1f },
-                    { "Jaw_Open", 0.6f },
-                    //{ "Jaw_L", 0.7f },
-                    //{ "Jaw_R", 0.7f }
-
-
-
-
-                };*/
-
-                bool hasBadExpressions = false;
-                foreach (string badName in badExpressions.Keys)
-                {
-                    if (srcMesh.GetBlendShapeIndex(badName) > -1)
+                    if (smoothNormalDeltas && hasBadExpressions)
                     {
-                        hasBadExpressions = true;
-                    }
-                }
+                        Util.LogWarn($"Body Mesh: {srcMesh.name} has expressions that require blend shape normal modification ...");
+                        string report = $"Expression Blendshape Normals Modified:\n";
 
-                if (missingBlendShapes.Count == 0 && (checkBadExpressions || !hasBadExpressions))
-                {
-                    return false;
-                }
+                        dstMesh.ClearBlendShapes();
+                        int badCount = 0;
 
-                Mesh dstMesh = CopyMesh(srcMesh);
-
-                if (hasBadExpressions)
-                {
-                    Util.LogWarn($"Body Mesh: {srcMesh.name} has expressions that require blend shape normal modification ...");
-
-                    dstMesh.ClearBlendShapes();
-
-                    for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
-                    {
-                        string name = srcMesh.GetBlendShapeName(shapeIndex);
-                        for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                        for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
                         {
-                            float w = srcMesh.GetBlendShapeFrameWeight(shapeIndex, frameIndex);
-                            srcMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, bufVerts, bufNormals, bufTangents);
-                            if (badExpressions.ContainsKey(name))
+                            var NC = normCache[shapeIndex];
+                            string name = srcMesh.GetBlendShapeName(shapeIndex);
+                            for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
                             {
-                                float m = badExpressions[name];
-                                for (int i = 0; i < VC; i++)
+                                float w = srcMesh.GetBlendShapeFrameWeight(shapeIndex, frameIndex);
+                                if (smoothEntireExpression)
                                 {
-                                    bufNormals[i] = bufNormals[i] * m;
+                                    if (badExpressions.ContainsKey(name))
+                                    {
+                                        float m = badExpressions[name];
+                                        for (int i = 0; i < VC; i++)
+                                        {
+                                            NC[i] = NC[i] * m;
+                                        }
+                                        report += $"{name}: {m}\n";
+                                    }
                                 }
+
+                                dstMesh.AddBlendShapeFrame(name, w, vertCache[shapeIndex], normCache[shapeIndex], tangCache[shapeIndex]);
                             }
-                            dstMesh.AddBlendShapeFrame(name, w, bufVerts, bufNormals, bufTangents);
+                        }
+                        Debug.Log($"Modified: {badCount} shapekey blendshape normals");
+                        Debug.Log(report);
+                    }
+
+                    if (missingBlendShapes.Count > 0)
+                    {
+                        Util.LogWarn($"Body Mesh: {srcMesh.name} has missing BlendShapes. \nAdding placeholders ({debugList})");
+
+                        for (int i = 0; i < VC; i++)
+                        {
+                            bufVerts[i] = Vector3.zero;
+                            bufNormals[i] = Vector3.zero;
+                            bufTangents[i] = Vector3.zero;
+                        }
+
+                        foreach (var name in missingBlendShapes)
+                        {
+                            dstMesh.AddBlendShapeFrame(name, 100.0f, bufVerts, bufNormals, bufTangents);
                         }
                     }
-                }
 
-                if (missingBlendShapes.Count > 0)
-                {
-                    Util.LogWarn($"Body Mesh: {srcMesh.name} has missing BlendShapes. \nAdding placeholders ({debugList})");
-
-                    foreach (var name in missingBlendShapes)
+                    // Save the mesh asset.
+                    if (Util.EnsureAssetsFolderExists(meshFolder))
                     {
-                        dstMesh.AddBlendShapeFrame(name, 100.0f, bufVerts, bufNormals, bufTangents);
+                        string meshPath = Path.Combine(meshFolder, srcObj.name + ".mesh");
+                        AssetDatabase.CreateAsset(dstMesh, meshPath);
+                        Mesh createdMesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+                        ReplaceMesh(bodyObject, createdMesh);
+                        return true;
                     }
-                }
-
-                // Save the mesh asset.
-                if (Util.EnsureAssetsFolderExists(meshFolder))
-                {
-                    string meshPath = Path.Combine(meshFolder, srcObj.name + ".mesh");
-                    AssetDatabase.CreateAsset(dstMesh, meshPath);
-                    Mesh createdMesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
-                    ReplaceMesh(bodyObject, createdMesh);
-                    return true;
                 }
             }
 

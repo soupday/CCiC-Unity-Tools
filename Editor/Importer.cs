@@ -172,6 +172,21 @@ namespace Reallusion.Import
             }
         }
 
+        public static bool SMOOTH_BLENDSHAPE_NORMALS
+        {
+            get
+            {
+                if (EditorPrefs.HasKey("RL_Smooth_BlendShape_Normals"))
+                    return EditorPrefs.GetBool("RL_Smooth_BlendShape_Normals");
+                return false;
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("RL_Smooth_BlendShape_Normals", value);
+            }
+        }
+
         public static bool ANIMPLAYER_ON_BY_DEFAULT
         {
             get
@@ -773,10 +788,10 @@ namespace Reallusion.Import
                 GameObject go = RL.FindExpressionSourceMesh(obj);
                 if (go != null)
                 {
-                    if (ADD_MISSING_BLENDSHAPES)
+                    if (ADD_MISSING_BLENDSHAPES || SMOOTH_BLENDSHAPE_NORMALS)
                     {
                         List<string> blendShapeNames = BoneEditor.GetExpressionBlendShapes(characterInfo.jsonFilepath);
-                        MeshUtil.AddBodyMeshBlendShapes(go, blendShapeNames);
+                        MeshUtil.ProcessBodyMeshBlendShapes(go, blendShapeNames, ADD_MISSING_BLENDSHAPES, SMOOTH_BLENDSHAPE_NORMALS);
                     }
 
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
@@ -1191,7 +1206,7 @@ namespace Reallusion.Import
         {
             foreach (Material mat in renderer.sharedMaterials)
             {
-                if (mat) 
+                if (mat)
                 {
                     string sourceName = Util.GetSourceMaterialName(fbxPath, mat);
                     StashTextures(mat, sourceName);

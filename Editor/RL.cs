@@ -187,7 +187,7 @@ namespace Reallusion.Import
                 importer.normalSmoothingSource = ModelImporterNormalSmoothingSource.FromAngle;
                 importer.normalSmoothingAngle = 120f;
                 //ForceLegacyBlendshapeNormals(importer, false);
-            }            
+            }
             else if (Importer.BUILD_NORMALS_MODE == 1) // Calculate Base Only
             {
                 importer.importNormals = ModelImporterNormals.Calculate;
@@ -238,23 +238,18 @@ namespace Reallusion.Import
 
             importer.autoGenerateAvatarMappingIfUnspecified = true;
 
-
-            if (info.Generation == BaseGeneration.Unknown)
+            switch (info.RigType)
             {
-                switch (info.UnknownRigType)
-                {
-                    case CharacterInfo.RigOverride.None:
-                        importer.animationType = ModelImporterAnimationType.None;
-                        break;
-                    case CharacterInfo.RigOverride.Humanoid:
-                        importer.animationType = ModelImporterAnimationType.Human;
-                        break;
-                    case CharacterInfo.RigOverride.Generic:
-                    default:
-                        importer.animationType = ModelImporterAnimationType.Generic;
-                        break;
-                }
-                return;
+                case CharacterInfo.RigOverride.None:
+                    importer.animationType = ModelImporterAnimationType.None;
+                    break;
+                case CharacterInfo.RigOverride.Humanoid:
+                    importer.animationType = ModelImporterAnimationType.Human;
+                    break;
+                case CharacterInfo.RigOverride.Generic:
+                default:
+                    importer.animationType = ModelImporterAnimationType.Generic;
+                    break;
             }
 
             switch (info.SubD)
@@ -277,13 +272,13 @@ namespace Reallusion.Import
                     break;
             }
 
-            if (avatar)
+            if (avatar && info.RigType != CharacterInfo.RigOverride.None)
             {
                 importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
 
                 importer.sourceAvatar = avatar;
             }
-            else if (oldType != ModelImporterAnimationType.Human) // don't replace existing avatar ...
+            else if (info.RigType == CharacterInfo.RigOverride.Humanoid && oldType != ModelImporterAnimationType.Human) // don't replace existing avatar ...
             {
                 importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
 

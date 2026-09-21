@@ -622,11 +622,11 @@ namespace Reallusion.Import
             float innerHeight = height - TOP_PADDING;
             float optionHeight = OPTION_HEIGHT;
             //if (Pipeline.isHDRP12) optionHeight += 14f;
-            if (contextCharacter != null)
-            {
-                if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
-            }
-            optionHeight += 14f;
+            //if (contextCharacter != null)
+            //{
+            //    if (contextCharacter.Generation == BaseGeneration.Unknown) optionHeight += 14f;
+            //}            
+            optionHeight += 32f;
 
             if (width - ICON_AREA_WIDTH - ACTION_WIDTH < MIN_SETTING_WIDTH)
             {
@@ -809,21 +809,18 @@ namespace Reallusion.Import
             GUILayout.BeginVertical();
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
 
-            if (contextCharacter.Generation == BaseGeneration.Unknown)
+            if (EditorGUILayout.DropdownButton(
+                content: new GUIContent("Rig Type: " + contextCharacter.RigType.ToString()),
+                focusType: FocusType.Passive))
             {
-                if (EditorGUILayout.DropdownButton(
-                    content: new GUIContent("Rig Type: " + contextCharacter.UnknownRigType.ToString()),
-                    focusType: FocusType.Passive))
-                {
-                    GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent("Rig Type: None"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.None, RigOptionSelected, CharacterInfo.RigOverride.None);
-                    menu.AddItem(new GUIContent("Rig Type: Humanoid"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.Humanoid, RigOptionSelected, CharacterInfo.RigOverride.Humanoid);
-                    menu.AddItem(new GUIContent("Rig Type: Generic"), contextCharacter.UnknownRigType == CharacterInfo.RigOverride.Generic, RigOptionSelected, CharacterInfo.RigOverride.Generic);
-                    menu.ShowAsContext();
-                }
-
-                GUILayout.Space(1f);
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Rig Type: None"), contextCharacter.RigType == CharacterInfo.RigOverride.None, RigOptionSelected, CharacterInfo.RigOverride.None);
+                menu.AddItem(new GUIContent("Rig Type: Humanoid"), contextCharacter.RigType == CharacterInfo.RigOverride.Humanoid, RigOptionSelected, CharacterInfo.RigOverride.Humanoid);
+                menu.AddItem(new GUIContent("Rig Type: Generic"), contextCharacter.RigType == CharacterInfo.RigOverride.Generic, RigOptionSelected, CharacterInfo.RigOverride.Generic);
+                menu.ShowAsContext();
             }
+
+            GUILayout.Space(1f);
 
             if (EditorGUILayout.DropdownButton(
                 content: new GUIContent(contextCharacter.BasicMaterials ? "Basic Materials" : "High Quality Materials"),
@@ -1435,6 +1432,10 @@ namespace Reallusion.Import
                     new GUIContent("Add Missing Driver BlendShapes", "If driver Blend Shapes are missing, the bone driver will prevent full motion. Enable this to add the missing blendshapes back to the main body mesh.\nDefault: On"));
             GUILayout.Space(ROW_SPACE);
 
+            Importer.SMOOTH_BLENDSHAPE_NORMALS = GUILayout.Toggle(Importer.SMOOTH_BLENDSHAPE_NORMALS,
+                    new GUIContent("Smooth Blendshape Normal Deltas", "When calculating blend shapes, smooth problem blendshape delta's to reduce shading artifacts.\nDefault: Off"));
+            GUILayout.Space(ROW_SPACE);
+
             /*
             Importer.DRIVE_BONE_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.DRIVE_BONE_MISSING_BLENDSHAPES,
                     new GUIContent("Drive Bones with Missing Blendshapes", "If driver blendshapes are missing, the bone driver will prevent full motion. Disable this to allow direct control of the bones with missing blendshapes."));
@@ -1594,7 +1595,7 @@ namespace Reallusion.Import
 
         private void RigOptionSelected(object sel)
         {
-            contextCharacter.UnknownRigType = (CharacterInfo.RigOverride)sel;
+            contextCharacter.RigType = (CharacterInfo.RigOverride)sel;
         }
 
         private void HairOptionSelected(object sel)
