@@ -788,10 +788,10 @@ namespace Reallusion.Import
                 GameObject go = RL.FindExpressionSourceMesh(obj);
                 if (go != null)
                 {
-                    if (ADD_MISSING_BLENDSHAPES || SMOOTH_BLENDSHAPE_NORMALS)
+                    if (ADD_MISSING_BLENDSHAPES || characterInfo.FeatureUseSmoothBlendshapeNormals)
                     {
                         List<string> blendShapeNames = BoneEditor.GetExpressionBlendShapes(characterInfo.jsonFilepath);
-                        MeshUtil.ProcessBodyMeshBlendShapes(go, blendShapeNames, ADD_MISSING_BLENDSHAPES, SMOOTH_BLENDSHAPE_NORMALS);
+                        MeshUtil.ProcessBodyMeshBlendShapes(go, blendShapeNames, ADD_MISSING_BLENDSHAPES, characterInfo.FeatureUseSmoothBlendshapeNormals);
                     }
 
                     SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();

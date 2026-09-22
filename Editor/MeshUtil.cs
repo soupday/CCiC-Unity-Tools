@@ -857,6 +857,7 @@ namespace Reallusion.Import
                 };
 
                 var badExpressions = new Dictionary<string, float>();
+                var countBadExpressions = new Dictionary<string, int>();
                 List<string> testedShapes = new List<string>();
 
                 if (smoothNormalDeltas)
@@ -871,7 +872,7 @@ namespace Reallusion.Import
                         string match = testShapeNameMatch.Item2;
                         string[] splitNames = testShapeNames.Split("+");
                         string[] splitMatch = match.Split("|");
-                        string report = $"{testShapeNames} report:\n";
+                        //string report = $"{testShapeNames} report:\n";
 
                         // build test shape
                         for (int j = 0; j < VC; j++)
@@ -940,9 +941,11 @@ namespace Reallusion.Import
                                         float m0 = Mathf.InverseLerp(-1f, 0.1f, bd0);
                                         float m1 = Mathf.InverseLerp(-1f, 0.1f, bd1);
                                         float m2 = Mathf.InverseLerp(-1f, 0.1f, bd2);
-                                        bnMult[i0] = Mathf.Min(m0, bnMult[i0]);
-                                        bnMult[i1] = Mathf.Min(m0, bnMult[i1]);
-                                        bnMult[i2] = Mathf.Min(m0, bnMult[i2]);
+                                        // scale all 3 tri-normal deltas by the worst offender
+                                        float m = Mathf.Min(m0, m1, m2);
+                                        bnMult[i0] = Mathf.Min(m, bnMult[i0]);
+                                        bnMult[i1] = Mathf.Min(m, bnMult[i1]);
+                                        bnMult[i2] = Mathf.Min(m, bnMult[i2]);
                                     }
 
                                     float minMult = 1f;
@@ -966,13 +969,15 @@ namespace Reallusion.Import
 
                                     if (minMult < 1f)
                                     {
-                                        badExpressions.TryGetValue(name, out float md);
-                                        badExpressions[name] = Mathf.Min(minMult, md);
-                                        report += $" {name}: {count} normals smoothed (~{minMult:0.000})\n";
+                                        badExpressions.TryAdd(name, 1f);
+                                        badExpressions[name] = Mathf.Min(minMult, badExpressions[name]);
+                                        countBadExpressions.TryAdd(name, 0);
+                                        countBadExpressions[name] += count;
+                                        //report += $" {name}: {count} normals smoothed (~{minMult:0.000})\n";
                                     }
                                 }
                             }
-                            Debug.Log(report);
+                            //Debug.Log(report);
                         }
 
                         foreach (string testShapeName in splitNames)
@@ -982,15 +987,19 @@ namespace Reallusion.Import
                     }
                 }
 
-                /*
-                string dictReport = "Expression Blendshape Normal Smoothing Report\n";
-                dictReport += $"{badExpressions.Count} Blendshape normals modified:\n";
-                foreach (var kvp in badExpressions)
+                if (badExpressions.Count > 0)
                 {
-                    dictReport += $"{kvp.Key}: {kvp.Value:0.00}\n";
+                    string dictReport = "Expression Blendshape Normal Smoothing Report\n";
+                    int sumModified = 0;
+                    foreach (var kvp in countBadExpressions) sumModified += kvp.Value;
+                    float percModified = 100f * (sumModified) / (badExpressions.Count * VC);
+                    dictReport += $"{badExpressions.Count} Blendshapes modified, {sumModified} Blendshape vertex normals: ({percModified:0.0}%)\n";
+                    foreach (var kvp in badExpressions)
+                    {
+                        dictReport += $"{kvp.Key}: {countBadExpressions[kvp.Key]} vertex normals ({kvp.Value:0.00} - 1.00) \n";
+                    }
+                    Debug.Log(dictReport);
                 }
-                Debug.Log(dictReport);
-                */
 
                 bool hasBadExpressions = badExpressions.Count > 0;
 
@@ -1001,11 +1010,8 @@ namespace Reallusion.Import
                     if (smoothNormalDeltas && hasBadExpressions)
                     {
                         Util.LogWarn($"Body Mesh: {srcMesh.name} has expressions that require blend shape normal modification ...");
-                        string report = $"Expression Blendshape Normals Modified:\n";
 
                         dstMesh.ClearBlendShapes();
-                        int badCount = 0;
-
                         for (int shapeIndex = 0; shapeIndex < srcMesh.blendShapeCount; shapeIndex++)
                         {
                             var NC = normCache[shapeIndex];
@@ -1022,15 +1028,12 @@ namespace Reallusion.Import
                                         {
                                             NC[i] = NC[i] * m;
                                         }
-                                        report += $"{name}: {m}\n";
                                     }
                                 }
 
                                 dstMesh.AddBlendShapeFrame(name, w, vertCache[shapeIndex], normCache[shapeIndex], tangCache[shapeIndex]);
                             }
                         }
-                        Debug.Log($"Modified: {badCount} shapekey blendshape normals");
-                        Debug.Log(report);
                     }
 
                     if (missingBlendShapes.Count > 0)

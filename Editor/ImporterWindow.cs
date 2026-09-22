@@ -1433,7 +1433,7 @@ namespace Reallusion.Import
             GUILayout.Space(ROW_SPACE);
 
             Importer.SMOOTH_BLENDSHAPE_NORMALS = GUILayout.Toggle(Importer.SMOOTH_BLENDSHAPE_NORMALS,
-                    new GUIContent("Smooth Blendshape Normal Deltas", "When calculating blend shapes, smooth problem blendshape delta's to reduce shading artifacts.\nDefault: Off"));
+                    new GUIContent("Use Smooth Blendshape Normal Deltas", "When calculating blend shapes, smooth problem blendshape delta's to reduce shading artifacts.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
 
             /*

@@ -57,6 +57,7 @@ namespace Reallusion.Import
             ConstraintData = 131072,
             ExtractGeneric = 262144,
             WrinkleDisplacement = 524288,
+            SmoothBlendshapeNormals = 1048576,
         }
 
         public enum ExportType
@@ -267,6 +268,7 @@ namespace Reallusion.Import
         public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         public bool FeatureUseExtractGeneric => (ShaderFlags & ShaderFeatureFlags.ExtractGeneric) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;
+        public bool FeatureUseSmoothBlendshapeNormals => (ShaderFlags & ShaderFeatureFlags.SmoothBlendshapeNormals) > 0;
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
         public EyeQuality QualEyes { get { return qualEyes; } set { qualEyes = value; } }
@@ -1010,6 +1012,11 @@ namespace Reallusion.Import
             if (HasConstraintData())
             {
                 ShaderFlags |= ShaderFeatureFlags.ConstraintData;
+            }
+
+            if (Importer.SMOOTH_BLENDSHAPE_NORMALS)
+            {
+                ShaderFlags |= ShaderFeatureFlags.SmoothBlendshapeNormals;
             }
 
             version = Pipeline.VERSION;
