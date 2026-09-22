@@ -57,6 +57,7 @@ namespace Reallusion.Import
             ConstraintData = 131072,
             ExtractGeneric = 262144,
             WrinkleDisplacement = 524288,
+            SmoothBlendshapeNormals = 1048576,
         }
 
         public enum ExportType
@@ -125,7 +126,7 @@ namespace Reallusion.Import
         private HairQuality qualHair = HairQuality.TwoPass;
         private TexSizeQuality qualTexSize = TexSizeQuality.HighTextureSize;
         private TexCompressionQuality qualTexCompress = TexCompressionQuality.HighTextureQuality;
-        public RigOverride UnknownRigType { get; set; }
+        public RigOverride RigType { get; set; }
         private bool bakeCustomShaders = true;
         private bool bakeSeparatePrefab = true;
         private string version = null;
@@ -221,6 +222,7 @@ namespace Reallusion.Import
                                                  (ShaderFlags & ShaderFeatureFlags.ExpressionTranspose) |
                                                  (ShaderFlags & ShaderFeatureFlags.ExtractGeneric);
             if (builtBoneDriverFlags != boneDriverFlags) return true;
+            if (builtRigType != RigType) return true;
             AnimationTargetLevel neededTargetLevel = DualMaterialHair ? AnimationTargetLevel.Modified : AnimationTargetLevel.Unmodified;
             return animationRetargeted != neededTargetLevel;
         }
@@ -266,6 +268,7 @@ namespace Reallusion.Import
         public bool FeatureUseConstraintData => (ShaderFlags & ShaderFeatureFlags.ConstraintData) > 0;
         public bool FeatureUseExtractGeneric => (ShaderFlags & ShaderFeatureFlags.ExtractGeneric) > 0;
         //public bool FeatureUseSpringBones => (ShaderFlags & ShaderFeatureFlags.SpringBones) > 0;
+        public bool FeatureUseSmoothBlendshapeNormals => (ShaderFlags & ShaderFeatureFlags.SmoothBlendshapeNormals) > 0;
         public bool BasicMaterials => logType == ProcessingType.Basic;
         public bool HQMaterials => logType == ProcessingType.HighQuality;
         public EyeQuality QualEyes { get { return qualEyes; } set { qualEyes = value; } }
@@ -282,6 +285,7 @@ namespace Reallusion.Import
         public TexCompressionQuality QualTexCompress { get { return qualTexCompress; } set { qualTexCompress = value; } }
 
         // these are the settings the character has been built to.
+        private RigOverride builtRigType = RigOverride.None;
         private ProcessingType builtLogType = ProcessingType.None;
         private EyeQuality builtQualEyes = EyeQuality.Parallax;
         private HairQuality builtQualHair = HairQuality.TwoPass;
@@ -297,6 +301,7 @@ namespace Reallusion.Import
         public bool BuiltDualMaterialHair => builtQualHair == HairQuality.TwoPass;
         public bool BuiltCoverageHair => builtQualHair == HairQuality.Coverage;
         public bool BuiltDefaultHair => builtQualHair == HairQuality.Default;
+        public RigOverride BuiltRigType => builtRigType;
         public EyeQuality BuiltQualEyes => builtQualEyes;
         public HairQuality BuiltQualHair => builtQualHair;
         public bool BuiltRefractiveEyes => BuiltQualEyes == EyeQuality.Refractive;
@@ -391,7 +396,7 @@ namespace Reallusion.Import
 
         public void CopySettings(CharacterInfo from)
         {
-            UnknownRigType = from.UnknownRigType;
+            RigType = from.RigType;
             logType = from.logType;
             qualEyes = from.qualEyes;
             qualHair = from.qualHair;
@@ -406,6 +411,7 @@ namespace Reallusion.Import
             FixCharSettings();
             CleanGUIDRemaps();
 
+            builtRigType = RigType;
             builtLogType = logType;
             builtQualEyes = qualEyes;
             builtQualHair = qualHair;
@@ -975,10 +981,10 @@ namespace Reallusion.Import
 
         public void CheckOverride()
         {
-            if (UnknownRigType == RigOverride.None)
+            if (RigType == RigOverride.None)
             {
-                if (generation == BaseGeneration.Unknown) UnknownRigType = RigOverride.Generic;
-                else UnknownRigType = RigOverride.Humanoid;
+                if (generation == BaseGeneration.Unknown) RigType = RigOverride.Generic;
+                else RigType = RigOverride.Humanoid;
             }
         }
 
@@ -1006,6 +1012,11 @@ namespace Reallusion.Import
             if (HasConstraintData())
             {
                 ShaderFlags |= ShaderFeatureFlags.ConstraintData;
+            }
+
+            if (Importer.SMOOTH_BLENDSHAPE_NORMALS)
+            {
+                ShaderFlags |= ShaderFeatureFlags.SmoothBlendshapeNormals;
             }
 
             version = Pipeline.VERSION;
@@ -1437,7 +1448,7 @@ namespace Reallusion.Import
                         animationRetargeted = (AnimationTargetLevel)int.Parse(value);
                         break;
                     case "rigOverride":
-                        UnknownRigType = (RigOverride)System.Enum.Parse(typeof(RigOverride), value);
+                        RigType = (RigOverride)System.Enum.Parse(typeof(RigOverride), value);
                         break;
                     case "GUIDRemap":
                         string[] guids = value.Split(guidSplit, System.StringSplitOptions.None);
@@ -1508,7 +1519,7 @@ namespace Reallusion.Import
             writer.WriteLine("shaderFlags=" + (int)BuiltShaderFlags);
             writer.WriteLine("animationSetup=" + (animationSetup ? "true" : "false"));
             writer.WriteLine("animationRetargeted=" + ((int)animationRetargeted).ToString());
-            writer.WriteLine("rigOverride=" + UnknownRigType.ToString());
+            writer.WriteLine("rigOverride=" + builtRigType.ToString());
             writer.WriteLine("linkId=" + linkId);
             writer.WriteLine("motionPrefix=" + motionPrefix);
             writer.WriteLine("exportType=" + exportType.ToString());

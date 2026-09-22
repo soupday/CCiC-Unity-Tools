@@ -1,6 +1,17 @@
 Changelog
 =========
 
+### 2.2.7
+ - Rig Override option enabled for all standard characters.
+ - Blendshape normals smoothing build feature added.
+ - Unity 6.5 fixes.
+ - Prop import fixes.
+ - Prop animation player fixes.
+ - Character relink fix.
+ - Fix to dynamic bone physics setup.
+ - CC/iC Plugin update / installer UI added (Windows only)
+ - Preserves edited texture references on rebuild.
+
 ### 2.2.6
 - Fixes to:
     - Basic materials locking importer UI.

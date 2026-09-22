@@ -198,6 +198,15 @@ namespace Reallusion.Import
                 }
             }
 
+            if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.SmoothBlendshapeNormals, "Smooth Blendshape Normals", SECTION_INDENT))
+            {
+                if (!contextCharacter.ShaderFlags.HasFlag(CharacterInfo.ShaderFeatureFlags.SmoothBlendshapeNormals))
+                {
+                    SetFeatureFlag(CharacterInfo.ShaderFeatureFlags.WrinkleDisplacement, false);
+                }
+                flagChanged = true;
+            }
+
             /*
             if (DrawFlagSelectionLine(line++, CharacterInfo.ShaderFeatureFlags.TexturePacking, "Texture Packing", SECTION_INDENT))
                 flagChanged = true;
