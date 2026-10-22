@@ -1466,7 +1466,8 @@ namespace Reallusion.Import
             // The main window is obtained with property object .GetValue(window)
 
 #if UNITY_2020_3_OR_NEWER
-            System.Reflection.Assembly coreModuleAssembly = AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains("UnityEditor.CoreModule")).FirstOrDefault();
+            //System.Reflection.Assembly coreModuleAssembly = AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains("UnityEditor.CoreModule")).FirstOrDefault();
+            System.Reflection.Assembly coreModuleAssembly = GetLoadedAssemblyByName("UnityEditor.CoreModule");
             if (coreModuleAssembly != null)
             {
                 System.Reflection.TypeInfo containerWindowTypeInfo = coreModuleAssembly.DefinedTypes.Where(t => t.FullName.Contains("ContainerWindow")).FirstOrDefault();
@@ -1517,6 +1518,25 @@ namespace Reallusion.Import
             }
 #endif
             return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
+        }
+
+        public static System.Reflection.Assembly GetLoadedAssemblyByName(string name)
+        {
+#if UNITY_6000_6_OR_NEWER
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#endif
+        }
+
+
+        public static System.Reflection.Assembly[] GetLoadedAssemblies()
+        {
+#if UNITY_6000_6_OR_NEWER
+            return (System.Reflection.Assembly[])UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies();
+#endif
         }
 
         public static string RandomString(int length, bool upper = false)

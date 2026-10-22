@@ -19,6 +19,7 @@
   },
   "type": "tool",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "3.0.0"
+    "com.unity.nuget.newtonsoft-json": "3.0.0",
+    "com.unity.timeline": "1.0.0"
   }
 }

@@ -221,8 +221,8 @@ namespace Reallusion.Import
                 GameObject go = (GameObject)obj;
                 if (go)
                 {
-                    Mesh m = go.GetComponent<Mesh>();
-                    if (m) return m;
+                    //Mesh m = go.GetComponent<Mesh>();
+                    //if (m) return m;
 
                     MeshFilter mf = go.GetComponent<MeshFilter>();
                     if (mf)
@@ -1782,7 +1782,7 @@ namespace Reallusion.Import
                             smoothedNormal += svdTest.normal;
                         else
                             if (Vector3.Dot(svdTest.normal, svdCompare.normal) > threshold)
-                            smoothedNormal += svdCompare.normal;
+                                smoothedNormal += svdCompare.normal;
                     }
 
                     normals[svdTest.index] = smoothedNormal.normalized;
