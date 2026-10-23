@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -1520,25 +1521,6 @@ namespace Reallusion.Import
             return new Rect(0f, 0f, 0f, 0f);  // something was null - return a new empty Rect
         }
 
-        public static System.Reflection.Assembly GetLoadedAssemblyByName(string name)
-        {
-#if UNITY_6000_6_OR_NEWER
-            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
-#else
-            return AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
-#endif
-        }
-
-
-        public static System.Reflection.Assembly[] GetLoadedAssemblies()
-        {
-#if UNITY_6000_6_OR_NEWER
-            return (System.Reflection.Assembly[])UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
-#else
-            return AppDomain.CurrentDomain.GetAssemblies();
-#endif
-        }
-
         public static string RandomString(int length, bool upper = false)
         {
             System.Random random = new System.Random();
@@ -1571,7 +1553,7 @@ namespace Reallusion.Import
                 }
             }
         }
-
+        #region VersionedMethods
         public static object FindObjectsByType<T>(bool includeInactive)
         {
 #if UNITY_6000_4_OR_NEWER
@@ -1583,5 +1565,33 @@ namespace Reallusion.Import
 #endif
             return objects;
         }
+
+        public static System.Reflection.Assembly GetLoadedAssemblyByName(string name)
+        {
+#if UNITY_6000_6_OR_NEWER
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#endif
+        }
+
+        public static System.Reflection.Assembly[] GetLoadedAssemblies()
+        {
+#if UNITY_6000_6_OR_NEWER
+            return (System.Reflection.Assembly[])UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies();
+#endif
+        }
+
+        public static void PackageImport(string packagePath, bool interactive)
+        {
+#if UNITY_6000_6_OR_NEWER
+            UnityEditor.AssetPackage.Package.Import(packagePath, interactive);
+#else
+            AssetDatabase.ImportPackage(packagePath, interactive);
+#endif
+        }
+        #endregion VersionedMethods
     }
 }

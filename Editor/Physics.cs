@@ -1597,7 +1597,8 @@ namespace Reallusion.Import
 
         public static System.Type GetTypeInAssemblies(string typeName)
         {
-            Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            //Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblies = Util.GetLoadedAssemblies();
             foreach (Assembly a in assemblies)
             {
                 System.Type[] types = a.GetTypes();

@@ -1316,7 +1316,8 @@ namespace Reallusion.Import
                     ImporterWindow.GeneralSettings.pendingShaderInstall = false;
                 }
 
-                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+                //AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+                Util.PackageImport(shaderPackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1343,7 +1344,8 @@ namespace Reallusion.Import
                     ImporterWindow.GeneralSettings.pendingRuntimeInstall = false;
                 }
 
-                AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
+                //AssetDatabase.ImportPackage(runtimePackageManifest.referenceShaderPackagePath, interactive);
+                Util.PackageImport(runtimePackageManifest.referenceShaderPackagePath, interactive);
             }
             else
             {
@@ -1356,7 +1358,8 @@ namespace Reallusion.Import
             if (UpdateManager.latestLegacyPackageManifest != null)
             {
                 Util.LogInfo($"Installing 'Legacy Shader Package' for {shaderPackageManifest.Pipeline} version {shaderPackageManifest.Version} from package: '{shaderPackageManifest.SourcePackageName}'");
-                AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+                //AssetDatabase.ImportPackage(shaderPackageManifest.referenceShaderPackagePath, interactive);
+                Util.PackageImport(shaderPackageManifest.referenceShaderPackagePath, interactive);
             }
         }
 
