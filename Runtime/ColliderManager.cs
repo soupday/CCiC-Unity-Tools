@@ -22,6 +22,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using UnityEditor;
+using System.Linq;
 
 namespace Reallusion.Import
 {
@@ -384,7 +385,7 @@ namespace Reallusion.Import
 
         public static System.Type GetTypeInAssemblies(string typeName)
         {
-            Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblies = GetLoadedAssemblies();
             foreach (Assembly a in assemblies)
             {
                 System.Type[] types = a.GetTypes();
@@ -791,6 +792,25 @@ namespace Reallusion.Import
         private void Update()
         {
 
+        }
+        #region Versioned Methods
+        public static System.Reflection.Assembly GetLoadedAssemblyByName(string name)
+        {
+#if UNITY_6000_6_OR_NEWER
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#endif
+        }
+
+        public static System.Reflection.Assembly[] GetLoadedAssemblies()
+        {
+#if UNITY_6000_6_OR_NEWER
+            return (System.Reflection.Assembly[])UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies();
+#endif
+        #endregion Versioned Methods
         }
 #endif        
     }
