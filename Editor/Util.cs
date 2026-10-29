@@ -1578,7 +1578,8 @@ namespace Reallusion.Import
         public static System.Reflection.Assembly[] GetLoadedAssemblies()
         {
 #if UNITY_6000_6_OR_NEWER
-            return (System.Reflection.Assembly[])UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
+
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().ToArray();
 #else
             return AppDomain.CurrentDomain.GetAssemblies();
 #endif
