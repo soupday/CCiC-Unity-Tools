@@ -2,7 +2,7 @@
   "FileName": "Runtime Package",
   "Pipeline": 0,
   "Version": "2.2.7",
-  "Revision": 0,
+  "Revision": 1,
   "SourcePackageName": "Runtime Package_2.2.7_RL_runtimepackage.unitypackage",
   "VersionEdit": false,
   "ManifestPath": "",
@@ -36,6 +36,12 @@
       "Validated": false
     },
     {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Editor/LICENSE",
+      "GUID": "ba24232d28516199aae060ce963966a5",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/CameraProxy.cs",
       "GUID": "9fc1aeddd4271294195bbcb4920be178",
       "InstalledGUID": "",
@@ -62,6 +68,12 @@
     {
       "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/com.soupday.cc3_unity_tools.runtime.asmdef",
       "GUID": "bfae2271ff854174bbbebc3e94236317",
+      "InstalledGUID": "",
+      "Validated": false
+    },
+    {
+      "ItemName": "Assets/Reallusion/CCiC Unity Tools/Runtime/LICENSE",
+      "GUID": "495a10a1359129335943b3fe04f08a18",
       "InstalledGUID": "",
       "Validated": false
     }
