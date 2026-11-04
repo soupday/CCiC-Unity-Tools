@@ -456,6 +456,25 @@ namespace Reallusion.Import
             return null;
         }
 
+        public static bool FindTextureExists(string[] folders, string search)
+        {
+            string[] texGuids;
+
+            texGuids = AssetDatabase.FindAssets(search + " t:texture2d", folders);
+
+            foreach (string guid in texGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string texName = Path.GetFileNameWithoutExtension(assetPath);
+                if (texName.iEquals(search))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static Texture2DArray FindTextureArray(string[] folders, string search)
         {
             string[] texGuids;

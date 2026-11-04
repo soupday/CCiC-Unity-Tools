@@ -58,6 +58,7 @@ namespace Reallusion.Import
         public string lastPath;
         public string toolVersion;
         public string shaderToolVersion;
+        public bool useMobileWebGL;
         public Version VersionShader
         {
             get

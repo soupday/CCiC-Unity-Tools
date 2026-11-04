@@ -982,24 +982,24 @@ namespace Reallusion.Import
 
             if (pipe == InstalledPipeline.URP)
             {
-                // Specific rule to limit WebGL to a maximum of URP12
+                /* Specific rule to limit WebGL to a maximum of URP12
+                // not needed anymore.
                 if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL && version.Major >= 12)
                 {
                     UpdateManager.platformRestriction = PlatformRestriction.URPWebGL;
                     return PipelineVersion.URP12;
-                }
+                }*/
 
                 List<VersionLimits> urpRules = new List<VersionLimits>
                 {
                     // Rule(min max, version)
-                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
-                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.URP10),
-                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.URP12),
+                    Rule(new Version(0, 0, 0), new Version(14, 0, 0), PipelineVersion.Incompatible),
                     Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.URP14),
                     Rule(new Version(17, 0, 0), new Version(17, 1, 0), PipelineVersion.URP17),
                     Rule(new Version(17, 1, 0), new Version(17, 2, 0), PipelineVersion.URP171),
                     Rule(new Version(17, 2, 0), new Version(17, 3, 0), PipelineVersion.URP172),
-                    Rule(new Version(17, 3, 0), new Version(100, 99, 99), PipelineVersion.URP173)
+                    Rule(new Version(17, 3, 0), new Version(17, 6, 0), PipelineVersion.URP173),
+                    Rule(new Version(17, 6, 0), new Version(100, 99, 99), PipelineVersion.URP176),
                 };
 
                 VersionLimits result = urpRules.Find(z => version >= z.Min && version < z.Max);
@@ -1010,7 +1010,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    return PipelineVersion.URP10;
+                    return PipelineVersion.URP14;
                 }
             }
 
@@ -1018,11 +1018,10 @@ namespace Reallusion.Import
             {
                 List<VersionLimits> hdrpRules = new List<VersionLimits>
                 {
-                    Rule(new Version(0, 0, 0), new Version(10, 0, 0), PipelineVersion.Incompatible),
-                    Rule(new Version(10, 0, 0), new Version(12, 0, 0), PipelineVersion.HDRP10),
-                    Rule(new Version(12, 0, 0), new Version(14, 0, 0), PipelineVersion.HDRP12),
+                    Rule(new Version(0, 0, 0), new Version(14, 0, 0), PipelineVersion.Incompatible),
                     Rule(new Version(14, 0, 0), new Version(17, 0, 0), PipelineVersion.HDRP14),
-                    Rule(new Version(17, 0, 0), new Version(100, 9, 99), PipelineVersion.HDRP17)
+                    Rule(new Version(17, 0, 0), new Version(17, 6, 0), PipelineVersion.HDRP17),
+                    Rule(new Version(17, 6, 0), new Version(100, 9, 99), PipelineVersion.HDRP176),
                 };
 
                 VersionLimits result = hdrpRules.Find(z => version >= z.Min && version < z.Max);
@@ -1033,7 +1032,7 @@ namespace Reallusion.Import
                 }
                 else
                 {
-                    return PipelineVersion.HDRP10;
+                    return PipelineVersion.HDRP14;
                 }
             }
             return PipelineVersion.None;

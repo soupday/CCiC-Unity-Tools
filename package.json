@@ -4,7 +4,7 @@
   "displayName": "CC/iC Unity Tools",
   "description": "Unity importer for Character Creator 3, 4 & 5 and iClone 7 and 8.",
   "unity": "2022.3",
-  "documentationUrl": "https://soupday.github.io/cc_unity_tools/index.html",
+  "documentationUrl": "https://manual.reallusion.com/CC_and_IC_Auto_Setup_Plugin/ENU/CC_and_iC_Auto_Setup/1.0/03_for_Unity/Unity.htm",
   "changelogUrl": "https://github.com/soupday/CCiC-Unity-Tools/blob/main/CHANGELOG.md",
   "licensesUrl": "https://github.com/soupday/CCiC-Unity-Tools/blob/main/LICENSE",
   "keywords": [

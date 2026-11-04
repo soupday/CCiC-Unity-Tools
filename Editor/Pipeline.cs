@@ -534,6 +534,34 @@ namespace Reallusion.Import
             { MaterialType.SSS, MATERIAL_BAKED_SSS },
         };
 
+        public static bool UseMobileShaders
+        {
+            get
+            {
+                bool settingsUseMobileShaders = false;
+                if (ImporterWindow.GeneralSettings)
+                {
+                    settingsUseMobileShaders = ImporterWindow.GeneralSettings.useMobileWebGL;
+                }
+                return settingsUseMobileShaders || IsWebGL || IsMobile;
+            }
+        }
+        public static bool IsWebGL
+        {
+            get
+            {
+                return EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+            }
+        }
+        public static bool IsMobile
+        {
+            get
+            {
+                return (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android ||
+                        EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS);
+            }
+        }
+
         public static RenderPipeline RP => GetRenderPipeline();
         public static bool is3D => RP == RenderPipeline.Builtin;
         public static bool isURP => RP == RenderPipeline.URP;
@@ -917,6 +945,18 @@ namespace Reallusion.Import
             Material customTemplate = null;
             Material foundTemplate = null;
 
+            if (UseMobileShaders)
+            {
+                useDigitalHuman = false;
+                customTemplateName = templateName + "_M";
+                foundTemplate = Util.FindMaterial(customTemplateName);
+                if (foundTemplate)
+                {
+                    templateName = customTemplateName;
+                    customTemplate = foundTemplate;
+                }
+            }
+
             if (useDigitalHuman)
             {
                 customTemplateName = templateName + "_DH";
@@ -941,12 +981,30 @@ namespace Reallusion.Import
             Shader shader = mat.shader;
             string shaderName = shader.name;
             bool tessellationUpgrade = false;
+            bool mobileDowngrade = false;
             bool amplifyUpgrade = false;
+            bool dblSidedUpgrade = false;
+
+            if (UseMobileShaders)
+            {
+                useTessellation = false;
+                useAmplify = false;
+
+                string customMobileShaderName = shaderName + "_M";
+                Shader customShader = Shader.Find(customMobileShaderName);
+                if (customShader)
+                {
+                    Util.LogInfo("Downgrading Shader: " + shaderName + " to Mobile Shader: " + customMobileShaderName);
+                    mat.shader = customShader;
+                    mobileDowngrade = true;
+                }
+            }
 
             if (shaderName == "Standard" && doubleSided)
             {
                 Shader dblSidedShader = Shader.Find("Reallusion/RL_Standard_DoubleSided");
                 mat.shader = dblSidedShader;
+                dblSidedUpgrade = true;
             }
 
             if (useAmplify)
@@ -1022,7 +1080,7 @@ namespace Reallusion.Import
                 }
             }
 
-            return tessellationUpgrade || amplifyUpgrade;
+            return tessellationUpgrade || amplifyUpgrade || dblSidedUpgrade || mobileDowngrade;
         }
 
         public static bool IsShaderFor(string shaderName, params MaterialType[] materialType)
