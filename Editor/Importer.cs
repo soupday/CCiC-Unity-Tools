@@ -681,10 +681,7 @@ namespace Reallusion.Import
 
                         if (matJson != null)
                         {
-                            if (blenderProject)
-                            {
-                                PrepBlenderTextures(sourceName, matJson);
-                            }
+                            PrepBlenderTextures(sourceName, matJson);
 
                             PrepPackedTextures(sourceName, matJson, materialType);
 
@@ -745,10 +742,7 @@ namespace Reallusion.Import
 
                         if (matJson != null)
                         {
-                            if (blenderProject)
-                            {
-                                BakeBlenderTextures(sourceName, matJson);
-                            }
+                            BakeBlenderTextures(sourceName, matJson);
 
                             BakePackedTextures(obj, sourceName, matJson, materialType);
 
@@ -1437,65 +1431,76 @@ namespace Reallusion.Import
 
         private bool BakeBlenderTextures(string sourceName, QuickJSON matJson)
         {
-            if (!blenderProject) return false;
+            bool hasHDRPMap = HasTexture(sourceName, "HDRP", matJson, "Textures/HDRP", true);
+            bool hasMetallicAlphaMap = HasTexture(sourceName, "MetallicAlpha", matJson, "Textures/MetallicAlpha", true);
 
-            bool baked = false;
-            bool search = true;
-
-            Texture2D diffuseAlpha = null;
-            Texture2D HDRPMask = null;
-            Texture2D metallicGloss = null;
-
-            if (!REBAKE_BLENDER_UNITY_MAPS)
+            if (blenderProject)
             {
-                diffuseAlpha = GetTexture(sourceName, "BDiffuseAlpha", matJson, "Textures/NOTEX", true);
-                HDRPMask = GetTexture(sourceName, "BHDRP", matJson, "Textures/NOTEX", true);
-                metallicGloss = GetTexture(sourceName, "BMetallicAlpha", matJson, "Textures/NOTEX", true);
+                hasHDRPMap = false;
+                hasMetallicAlphaMap = false;
             }
 
-            if (!HDRPMask || !metallicGloss)
+            bool baked = false;
+
+            if (!hasHDRPMap || !hasMetallicAlphaMap)
             {
-                ComputeBake baker = new ComputeBake(characterInfo.Fbx, characterInfo);
-                string folder;
+                bool search = true;
 
-                Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", search);
-                Texture2D opacity = GetTexture(sourceName, "Opacity", matJson, "Textures/Opacity", search);
-                Texture2D metallic = GetTexture(sourceName, "Metallic", matJson, "Textures/Metallic", search);
-                Texture2D roughness = GetTexture(sourceName, "Roughness", matJson, "Textures/Roughness", search);
-                Texture2D occlusion = GetTexture(sourceName, "ao", matJson, "Textures/AO", search);
-                Texture2D microNormalMask = GetTexture(sourceName, "MicroNMask", matJson, "Custom Shader/Image/MicroNormalMask", search);
-                Texture2D smoothnessLUT = (Texture2D)Util.FindAsset("RL_RoughnessToSmoothness");
+                Texture2D diffuseAlpha = null;
+                Texture2D HDRPMask = null;
+                Texture2D metallicGloss = null;
 
-                if (!diffuseAlpha)
+                if (!REBAKE_BLENDER_UNITY_MAPS)
                 {
-                    if ((diffuse || opacity) && diffuse != opacity)
-                    {
-                        Util.LogInfo("Baking DiffuseAlpha texture for " + sourceName);
-                        folder = Util.GetAssetFolder(diffuse, opacity);
-                        diffuseAlpha = baker.BakeBlenderDiffuseAlphaMap(diffuse, opacity, folder, sourceName + "_BDiffuseAlpha");
-                        baked = true;
-                    }
+                    diffuseAlpha = GetTexture(sourceName, "BDiffuseAlpha", matJson, "Textures/NOTEX", true);
+                    HDRPMask = GetTexture(sourceName, "BHDRP", matJson, "Textures/NOTEX", true);
+                    metallicGloss = GetTexture(sourceName, "BMetallicAlpha", matJson, "Textures/NOTEX", true);
                 }
 
-                if (!HDRPMask)
+                if (!HDRPMask || !metallicGloss)
                 {
-                    if (metallic || roughness || occlusion || microNormalMask)
-                    {
-                        Util.LogInfo("Baking HDRP Mask texture for " + sourceName);
-                        folder = Util.GetAssetFolder(metallic, roughness, occlusion, microNormalMask);
-                        HDRPMask = baker.BakeBlenderHDRPMaskMap(metallic, occlusion, microNormalMask, roughness, smoothnessLUT, folder, sourceName + "_BHDRP");
-                        baked = true;
-                    }
-                }
+                    ComputeBake baker = new ComputeBake(characterInfo.Fbx, characterInfo);
+                    string folder;
 
-                if (!metallicGloss)
-                {
-                    if (metallic || roughness)
+                    Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", search);
+                    Texture2D opacity = GetTexture(sourceName, "Opacity", matJson, "Textures/Opacity", search);
+                    Texture2D metallic = GetTexture(sourceName, "Metallic", matJson, "Textures/Metallic", search);
+                    Texture2D roughness = GetTexture(sourceName, "Roughness", matJson, "Textures/Roughness", search);
+                    Texture2D occlusion = GetTexture(sourceName, "ao", matJson, "Textures/AO", search);
+                    Texture2D microNormalMask = GetTexture(sourceName, "MicroNMask", matJson, "Custom Shader/Image/MicroNormalMask", search);
+                    Texture2D smoothnessLUT = (Texture2D)Util.FindAsset("RL_RoughnessToSmoothness");
+
+                    if (!diffuseAlpha)
                     {
-                        Util.LogInfo("Baking MetallicAlpha texture for " + sourceName);
-                        folder = Util.GetAssetFolder(metallic, roughness);
-                        metallicGloss = baker.BakeBlenderMetallicGlossMap(metallic, roughness, smoothnessLUT, folder, sourceName + "_BMetallicAlpha");
-                        baked = true;
+                        if ((diffuse || opacity) && diffuse != opacity)
+                        {
+                            Util.LogInfo("Baking DiffuseAlpha texture for " + sourceName);
+                            folder = Util.GetAssetFolder(diffuse, opacity);
+                            diffuseAlpha = baker.BakeBlenderDiffuseAlphaMap(diffuse, opacity, folder, sourceName + "_BDiffuseAlpha");
+                            baked = true;
+                        }
+                    }
+
+                    if (!HDRPMask)
+                    {
+                        if (metallic || roughness || occlusion || microNormalMask)
+                        {
+                            Util.LogInfo("Baking HDRP Mask texture for " + sourceName);
+                            folder = Util.GetAssetFolder(metallic, roughness, occlusion, microNormalMask);
+                            HDRPMask = baker.BakeBlenderHDRPMaskMap(metallic, occlusion, microNormalMask, roughness, smoothnessLUT, folder, sourceName + "_BHDRP");
+                            baked = true;
+                        }
+                    }
+
+                    if (!metallicGloss)
+                    {
+                        if (metallic || roughness)
+                        {
+                            Util.LogInfo("Baking MetallicAlpha texture for " + sourceName);
+                            folder = Util.GetAssetFolder(metallic, roughness);
+                            metallicGloss = baker.BakeBlenderMetallicGlossMap(metallic, roughness, smoothnessLUT, folder, sourceName + "_BMetallicAlpha");
+                            baked = true;
+                        }
                     }
                 }
             }
@@ -1506,7 +1511,8 @@ namespace Reallusion.Import
         private void ConnectBlenderTextures(string sourceName, Material mat, QuickJSON matJson,
             string diffuseRef, string HDRPRef, string metallicAlphaRef)
         {
-            if (!blenderProject) return;
+
+            //if (!blenderProject) return;
 
             // The blender export ensures that all materials have unique names, so searching for the textures
             // by material name should fetch the correct ones for the materials.
@@ -1520,21 +1526,31 @@ namespace Reallusion.Import
 
         private void PrepBlenderTextures(string sourceName, QuickJSON matJson)
         {
-            if (!blenderProject) return;
+            bool hasHDRPMap = HasTexture(sourceName, "HDRP", matJson, "Textures/HDRP", true);
+            bool hasMetallicAlphaMap = HasTexture(sourceName, "MetallicAlpha", matJson, "Textures/MetallicAlpha", true);
 
-            Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", true);
-            Texture2D opacity = GetTexture(sourceName, "Opacity", matJson, "Textures/Opacity", true);
-            Texture2D metallic = GetTexture(sourceName, "Metallic", matJson, "Textures/Metallic", true);
-            Texture2D roughness = GetTexture(sourceName, "Roughness", matJson, "Textures/Roughness", true);
-            Texture2D occlusion = GetTexture(sourceName, "ao", matJson, "Textures/AO", true);
-            Texture2D microNormalMask = GetTexture(sourceName, "MicroNMask", matJson, "Custom Shader/Image/MicroNormalMask", true);
-            if (!DoneTexture(diffuse)) SetTextureImport(diffuse, "", FLAG_FOR_BAKE + FLAG_SRGB, TexCategory.MediumDetail);
-            // sometimes the opacity texture is the alpha channel of the diffuse...
-            if (opacity != diffuse && !DoneTexture(opacity)) SetTextureImport(opacity, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
-            if (!DoneTexture(metallic)) SetTextureImport(metallic, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
-            if (!DoneTexture(roughness)) SetTextureImport(roughness, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
-            if (!DoneTexture(occlusion)) SetTextureImport(occlusion, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
-            if (!DoneTexture(microNormalMask)) SetTextureImport(microNormalMask, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
+            if (blenderProject)
+            {
+                hasHDRPMap = false;
+                hasMetallicAlphaMap = false;
+            }
+
+            if (!hasHDRPMap || !hasMetallicAlphaMap)
+            {
+                Texture2D diffuse = GetTexture(sourceName, "Diffuse", matJson, "Textures/Base Color", true);
+                Texture2D opacity = GetTexture(sourceName, "Opacity", matJson, "Textures/Opacity", true);
+                Texture2D metallic = GetTexture(sourceName, "Metallic", matJson, "Textures/Metallic", true);
+                Texture2D roughness = GetTexture(sourceName, "Roughness", matJson, "Textures/Roughness", true);
+                Texture2D occlusion = GetTexture(sourceName, "ao", matJson, "Textures/AO", true);
+                Texture2D microNormalMask = GetTexture(sourceName, "MicroNMask", matJson, "Custom Shader/Image/MicroNormalMask", true);
+                if (!DoneTexture(diffuse)) SetTextureImport(diffuse, "", FLAG_FOR_BAKE + FLAG_SRGB, TexCategory.MediumDetail);
+                // sometimes the opacity texture is the alpha channel of the diffuse...
+                if (opacity != diffuse && !DoneTexture(opacity)) SetTextureImport(opacity, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+                if (!DoneTexture(metallic)) SetTextureImport(metallic, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+                if (!DoneTexture(roughness)) SetTextureImport(roughness, "", FLAG_FOR_BAKE, TexCategory.MediumDetail);
+                if (!DoneTexture(occlusion)) SetTextureImport(occlusion, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
+                if (!DoneTexture(microNormalMask)) SetTextureImport(microNormalMask, "", FLAG_FOR_BAKE, TexCategory.LowDetail);
+            }
         }
 
         private string GetPackedTextureFolder(GameObject obj, string sourceName, string folder)
@@ -3672,6 +3688,29 @@ namespace Reallusion.Import
             }
         }
 
+        private bool TextureFromExists(string jsonTexturePath, string materialName, string suffix, bool search)
+        {
+            // try to find the texture from the supplied texture path (usually from the json data).
+            if (!string.IsNullOrEmpty(jsonTexturePath))
+            {
+                // try to load the texture asset directly from the json path.
+                string path = characterInfo.GetTexPath(jsonTexturePath);
+                if (File.Exists(path))
+                {
+                    return true;
+                }
+            }
+
+            // as a final fallback try to find the texture from the material name and suffix.
+            if (search)
+            {
+                string name = materialName + "_" + suffix;
+                return Util.FindTextureExists(characterInfo.textureFolders.ToArray(), name);
+            }
+
+            return false;
+        }
+
         private Texture2D GetTextureFrom(string jsonTexturePath, string materialName, string suffix, out string name, bool search)
         {
             Texture2D tex = null;
@@ -3686,13 +3725,6 @@ namespace Reallusion.Import
                 {
                     tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
                     name = Path.GetFileNameWithoutExtension(path);
-                }
-
-                // if that fails, try to find the texture by name in the texture folders.
-                if (!tex && search)
-                {
-                    tex = Util.FindTexture(characterInfo.textureFolders.ToArray(), name);
-                    if (tex) Util.LogWarn($"Unable to find texture specified in Json: {path}\nFound alternative by name: {name}");
                 }
             }
 
@@ -4047,6 +4079,19 @@ namespace Reallusion.Import
             tex = GetTextureFrom(jsonTexturePath, materialName, suffix, out string name, search);
 
             return tex;
+        }
+
+        private bool HasTexture(string materialName, string suffix, QuickJSON jsonData, string jsonPath, bool search)
+        {
+            string jsonTexturePath = null;
+
+            if (jsonData != null)
+            {
+                if (jsonData.PathExists(jsonPath + "/Texture Path"))
+                    jsonTexturePath = jsonData.GetStringValue(jsonPath + "/Texture Path");
+            }
+
+            return TextureFromExists(jsonTexturePath, materialName, suffix, search);
         }
 
         private bool HasTextureIf(Material mat, string shaderRef)

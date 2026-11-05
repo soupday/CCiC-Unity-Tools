@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -453,6 +454,25 @@ namespace Reallusion.Import
             }
 
             return null;
+        }
+
+        public static bool FindTextureExists(string[] folders, string search)
+        {
+            string[] texGuids;
+
+            texGuids = AssetDatabase.FindAssets(search + " t:texture2d", folders);
+
+            foreach (string guid in texGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                string texName = Path.GetFileNameWithoutExtension(assetPath);
+                if (texName.iEquals(search))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static Texture2DArray FindTextureArray(string[] folders, string search)
@@ -1466,7 +1486,8 @@ namespace Reallusion.Import
             // The main window is obtained with property object .GetValue(window)
 
 #if UNITY_2020_3_OR_NEWER
-            System.Reflection.Assembly coreModuleAssembly = AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains("UnityEditor.CoreModule")).FirstOrDefault();
+            //System.Reflection.Assembly coreModuleAssembly = AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains("UnityEditor.CoreModule")).FirstOrDefault();
+            System.Reflection.Assembly coreModuleAssembly = GetLoadedAssemblyByName("UnityEditor.CoreModule");
             if (coreModuleAssembly != null)
             {
                 System.Reflection.TypeInfo containerWindowTypeInfo = coreModuleAssembly.DefinedTypes.Where(t => t.FullName.Contains("ContainerWindow")).FirstOrDefault();
@@ -1551,7 +1572,7 @@ namespace Reallusion.Import
                 }
             }
         }
-
+        #region VersionedMethods
         public static object FindObjectsByType<T>(bool includeInactive)
         {
 #if UNITY_6000_4_OR_NEWER
@@ -1563,5 +1584,34 @@ namespace Reallusion.Import
 #endif
             return objects;
         }
+
+        public static System.Reflection.Assembly GetLoadedAssemblyByName(string name)
+        {
+#if UNITY_6000_6_OR_NEWER
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies().Where(t => t.FullName.Contains(name)).FirstOrDefault();
+#endif
+        }
+
+        public static System.Reflection.Assembly[] GetLoadedAssemblies()
+        {
+#if UNITY_6000_6_OR_NEWER
+
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().ToArray();
+#else
+            return AppDomain.CurrentDomain.GetAssemblies();
+#endif
+        }
+
+        public static void PackageImport(string packagePath, bool interactive)
+        {
+#if UNITY_6000_6_OR_NEWER
+            UnityEditor.AssetPackage.Package.Import(packagePath, interactive);
+#else
+            AssetDatabase.ImportPackage(packagePath, interactive);
+#endif
+        }
+        #endregion VersionedMethods
     }
 }

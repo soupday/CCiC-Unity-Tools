@@ -1427,28 +1427,28 @@ namespace Reallusion.Import
                         bakeSeparatePrefab = value == "true";
                         break;
                     case "generation":
-                        generation = (BaseGeneration)System.Enum.Parse(typeof(BaseGeneration), value);
+                        if (System.Enum.TryParse(value, out BaseGeneration g)) generation = g;
                         break;
                     case "subDLevel":
-                        SubD = (SubDLevel)System.Enum.Parse(typeof(SubDLevel), value);
+                        if (System.Enum.TryParse(value, out SubDLevel sdl)) SubD = sdl;
                         break;
                     case "isBlender":
-                        isBlenderProject = (BoolEnum)System.Enum.Parse(typeof(BoolEnum), value);
+                        if (System.Enum.TryParse(value, out BoolEnum ibp)) isBlenderProject = ibp;
                         break;
                     case "isLOD":
                         isLOD = value == "true";
                         break;
                     case "shaderFlags":
-                        ShaderFlags = (ShaderFeatureFlags)int.Parse(value);
+                        if (int.TryParse(value, out int sfi)) ShaderFlags = (ShaderFeatureFlags)sfi;
                         break;
                     case "animationSetup":
                         animationSetup = value == "true";
                         break;
                     case "animationRetargeted":
-                        animationRetargeted = (AnimationTargetLevel)int.Parse(value);
+                        if (int.TryParse(value, out int ar)) animationRetargeted = (AnimationTargetLevel)ar;
                         break;
                     case "rigOverride":
-                        RigType = (RigOverride)System.Enum.Parse(typeof(RigOverride), value);
+                        if (System.Enum.TryParse(value, out RigOverride ro)) RigType = ro;
                         break;
                     case "GUIDRemap":
                         string[] guids = value.Split(guidSplit, System.StringSplitOptions.None);
@@ -1464,8 +1464,8 @@ namespace Reallusion.Import
                             string guid = ids[0];
                             try
                             {
-                                MaterialType mt = (MaterialType)Enum.Parse(typeof(MaterialType), ids[1]);
-                                materialOverrides.Add(Tuple.Create(guid, mt));
+                                if (System.Enum.TryParse(ids[1], out MaterialType mt))
+                                    materialOverrides.Add(Tuple.Create(guid, mt));
                             }
                             catch { }
                         }
@@ -1482,17 +1482,17 @@ namespace Reallusion.Import
                         }
                     case "exportType":
                         {
-                            exportType = (ExportType)System.Enum.Parse(typeof(ExportType), value);
+                            if (System.Enum.TryParse(value, out ExportType expt)) exportType = expt;
                             break;
                         }
                     case "qualTexSize":
                         {
-                            qualTexSize = (TexSizeQuality)System.Enum.Parse(typeof(TexSizeQuality), value);
+                            if (System.Enum.TryParse(value, out TexSizeQuality tsq)) qualTexSize = tsq;
                             break;
                         }
                     case "qualTexCompress":
                         {
-                            qualTexCompress = (TexCompressionQuality)System.Enum.Parse(typeof(TexCompressionQuality), value);
+                            if (System.Enum.TryParse(value, out TexCompressionQuality tcq)) qualTexCompress = tcq;
                             break;
                         }
                 }

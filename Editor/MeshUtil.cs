@@ -221,8 +221,8 @@ namespace Reallusion.Import
                 GameObject go = (GameObject)obj;
                 if (go)
                 {
-                    Mesh m = go.GetComponent<Mesh>();
-                    if (m) return m;
+                    //Mesh m = go.GetComponent<Mesh>();
+                    //if (m) return m;
 
                     MeshFilter mf = go.GetComponent<MeshFilter>();
                     if (mf)
@@ -827,11 +827,16 @@ namespace Reallusion.Import
                 var testShapes = new (string, string)[] {
                     ("", "*"),
                     ("Jaw_Open", "Mouth|Jaw|Lips"),
-                    ("Eye_Blink_L+Eye_Blink_R", "Eye"),
-                    ("Eye_Widen_L+Eye_Widen_R+Eye_Wide_L+Eye_Wide_R", "Eye"),
+                    ("Eye_Blink_L+Eye_Blink_R", "Eye|C_Blink"),
+                    ("Eye_Widen_L+Eye_Widen_R+Eye_Wide_L+Eye_Wide_R", "Eye|C_Blink"),
                     ("Mouth_Smile_L+Mouth_Smile_R+Mouth_Corner_Pull_L+Mouth_Corner_Pull_R", "Mouth|Jaw|Lips"),
                     ("Mouth_Frown_L+Mouth_Frown_R", "Mouth|Jaw|Lips"),
                     ("Eye_Look_Down_L+Eye_Look_Down_R+Eye_Look_Up_L+Eye_Look_Up_R", "Eye"),
+                };
+
+                var flattenExpressions = new string[]
+                {
+                    "C_BlinkL", "C_BlinkR",
                 };
 
                 //Func<string, Transform, Collider> FindColliderObj = (colliderName, bone) =>                
@@ -1019,6 +1024,13 @@ namespace Reallusion.Import
                             for (int frameIndex = 0; frameIndex < srcMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
                             {
                                 float w = srcMesh.GetBlendShapeFrameWeight(shapeIndex, frameIndex);
+                                if (flattenExpressions.Contains(name))
+                                {
+                                    for (int i = 0; i < VC; i++)
+                                    {
+                                        NC[i] = Vector3.zero;
+                                    }
+                                }
                                 if (smoothEntireExpression)
                                 {
                                     if (badExpressions.ContainsKey(name))
@@ -1031,7 +1043,7 @@ namespace Reallusion.Import
                                     }
                                 }
 
-                                dstMesh.AddBlendShapeFrame(name, w, vertCache[shapeIndex], normCache[shapeIndex], tangCache[shapeIndex]);
+                                dstMesh.AddBlendShapeFrame(name, w, vertCache[shapeIndex], NC, tangCache[shapeIndex]);
                             }
                         }
                     }

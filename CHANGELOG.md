@@ -11,6 +11,8 @@ Changelog
  - Fix to dynamic bone physics setup.
  - CC/iC Plugin update / installer UI added (Windows only)
  - Preserves edited texture references on rebuild.
+ - Error checking added for character data.
+ - Added mobile specific version of skin shader.
 
 ### 2.2.6
 - Fixes to:

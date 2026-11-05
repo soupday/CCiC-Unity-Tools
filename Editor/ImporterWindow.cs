@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.Overlays;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -1435,6 +1436,18 @@ namespace Reallusion.Import
             Importer.SMOOTH_BLENDSHAPE_NORMALS = GUILayout.Toggle(Importer.SMOOTH_BLENDSHAPE_NORMALS,
                     new GUIContent("Use Smooth Blendshape Normal Deltas", "When calculating blend shapes, smooth problem blendshape delta's to reduce shading artifacts.\nDefault: Off"));
             GUILayout.Space(ROW_SPACE);
+
+            if (generalSettings)
+            {
+                EditorGUI.BeginChangeCheck();
+                generalSettings.useMobileWebGL = GUILayout.Toggle(generalSettings.useMobileWebGL,
+                        new GUIContent("Use Mobile / WebGL Shaders", "Use Mobile / WebGL limited materials and shaders.\nDefault: Off"));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    SaveSettings();
+                }
+                GUILayout.Space(ROW_SPACE);
+            }
 
             /*
             Importer.DRIVE_BONE_MISSING_BLENDSHAPES = GUILayout.Toggle(Importer.DRIVE_BONE_MISSING_BLENDSHAPES,

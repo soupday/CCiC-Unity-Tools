@@ -2213,7 +2213,7 @@ namespace Reallusion.Import
             {
                 metallic = CheckBlank(metallic);
                 ao = CheckMask(ao);
-                roughness = CheckGray(roughness);
+                roughness = CheckMask(roughness);
                 microNormalMask = CheckMask(microNormalMask);
                 smoothnessLUT = CheckGray(smoothnessLUT);
 
@@ -2243,7 +2243,7 @@ namespace Reallusion.Import
             if (bakeShader)
             {
                 metallic = CheckBlank(metallic);
-                roughness = CheckGray(roughness);
+                roughness = CheckMask(roughness);
                 smoothnessLUT = CheckGray(smoothnessLUT);
 
                 int kernel = bakeShader.FindKernel("RLURPMetallicGloss");
