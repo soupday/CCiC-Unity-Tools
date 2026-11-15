@@ -13,6 +13,9 @@ Changelog
  - Preserves edited texture references on rebuild.
  - Error checking added for character data.
  - Added mobile specific version of skin shader.
+ - Added signed shader and runtime packages for Unity 6.6.
+    - MIT Licence files added to runtime and shader packages.
+
 
 ### 2.2.6
 - Fixes to:
