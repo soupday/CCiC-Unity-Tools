@@ -1785,7 +1785,8 @@ namespace Reallusion.Import
                         uniqueblendshapes.Add(binding.propertyName);
                     }
                 }
-                Dictionary<string, bool> referencedDict = Util.GetExpressionJsonReferences(info, uniqueblendshapes);
+
+                Dictionary<string, bool> referencedDict = Util.GetExpressionJsonReferences(uniqueblendshapes, info);
 
                 foreach (var binding in workingClipBindings)
                 {

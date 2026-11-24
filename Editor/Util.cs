@@ -1591,9 +1591,10 @@ namespace Reallusion.Import
             return isReferenced;
         }
 
-        public static Dictionary<string, bool> GetExpressionJsonReferences(CharacterInfo info, List<string> bindingProperties)
+        public static Dictionary<string, bool> GetExpressionJsonReferences(List<string> bindingProperties, CharacterInfo info = null)
         {
             Dictionary<string, bool> referencedDict = new Dictionary<string, bool>();
+
             if (info == null || string.IsNullOrEmpty(info.jsonFilepath))
             {
                 // fallback to allow previously normal purging (which would eradicate non expression referenced bindings) 
@@ -1601,6 +1602,8 @@ namespace Reallusion.Import
                 {
                     referencedDict.Add(bindingProperty, true);
                 }
+
+                return referencedDict;
             }
 
             const string blendShapePrefix = "blendShape.";
