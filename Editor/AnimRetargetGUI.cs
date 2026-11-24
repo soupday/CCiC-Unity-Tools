@@ -1388,7 +1388,7 @@ namespace Reallusion.Import
 
                 if (useBlendTranspose)
                 {
-                    PruneBlendShapesToSourceMeshes(workingClip, targetCharacterModel, meshProfile, animProfile, useConstraintData);
+                    PruneBlendShapesToSourceMeshes(workingClip, targetCharacterModel, meshProfile, animProfile, useConstraintData, info);
                 }
             }
             logOnce = false;
@@ -1658,7 +1658,7 @@ namespace Reallusion.Import
         #endregion
 
         #region Blendshape Pruning
-        public static void PruneBlendShapesToSourceMeshes(AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool driveConstraints = false)
+        public static void PruneBlendShapesToSourceMeshes(AnimationClip workingClip, GameObject targetCharacterModel, FacialProfile meshProfile, FacialProfile animProfile, bool driveConstraints = false, CharacterInfo info = null)
         {
             const string blendShapePrefix = "blendShape.";
             // purge all blendshape curves from working anim
@@ -1721,8 +1721,8 @@ namespace Reallusion.Import
                     {
                         string targetPath = string.Empty;
                         string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
-
                         string targetBlendShapeName = meshProfile.GetMappingFrom(blendShapeName, animProfile);
+
                         List<string> targetBlendshapeNames = null;
                         if (!string.IsNullOrEmpty(targetBlendShapeName))
                         {
@@ -1774,12 +1774,31 @@ namespace Reallusion.Import
                 int n = 0;
                 List<EditorCurveBinding> purgeList = new List<EditorCurveBinding>();
                 // now remove everything not on the unique list
+
+                // check that the blendshape is referenced in the expression json and only purge if it is
+                List<string> uniqueblendshapes = new List<string>();
+                foreach (var binding in workingClipBindings)
+                {
+                    // only check the expression json for blendshapes
+                    if (binding.propertyName.StartsWith(blendShapePrefix) && !uniqueblendshapes.Contains(binding.propertyName))
+                    {
+                        uniqueblendshapes.Add(binding.propertyName);
+                    }
+                }
+                Dictionary<string, bool> referencedDict = Util.GetExpressionJsonReferences(info, uniqueblendshapes);
+
                 foreach (var binding in workingClipBindings)
                 {
                     n++;
                     float progress = (float)n / (float)workingClipBindings.Count;
                     EditorUtility.DisplayProgressBar($"Cleaning EditorCurveBindings...", $"Working on {binding.propertyName} ", progress);
-                    if (!uniqueBindings.ContainsValue(binding))
+
+                    //bool blendshapeIsInExpressionJson = Util.IsReferencedInExpressionJson(info, binding); // slow
+
+                    if (!referencedDict.TryGetValue(binding.propertyName, out bool blendshapeIsInExpressionJson))
+                        blendshapeIsInExpressionJson = true; // fallback to allow previously normal purging (which would eradicate non expression referenced bindings) 
+
+                    if (!uniqueBindings.ContainsValue(binding) && blendshapeIsInExpressionJson)
                     {
                         if (binding.propertyName.StartsWith(blendShapePrefix))
                         {

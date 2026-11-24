@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -1572,6 +1573,74 @@ namespace Reallusion.Import
                 }
             }
         }
+
+        #region JSON
+        public static bool IsReferencedInExpressionJson(CharacterInfo info, EditorCurveBinding binding)
+        {
+            if (info == null) return true; //Ensure previous normal behavior when characterinfo is absent (i.e. with gui retargetter which uses extant prcessed anims) 
+
+            bool isReferenced = false;
+            if (!string.IsNullOrEmpty(info.jsonFilepath))
+            {
+                string json = File.ReadAllText(info.jsonFilepath);
+                const string blendShapePrefix = "blendShape.";
+                string blendShapeName = binding.propertyName.Substring(blendShapePrefix.Length);
+
+                isReferenced = ContainsExpressionName(json, blendShapeName);
+            }
+            return isReferenced;
+        }
+
+        public static Dictionary<string, bool> GetExpressionJsonReferences(CharacterInfo info, List<string> bindingProperties)
+        {
+            Dictionary<string, bool> referencedDict = new Dictionary<string, bool>();
+            if (info == null || string.IsNullOrEmpty(info.jsonFilepath))
+            {
+                // fallback to allow previously normal purging (which would eradicate non expression referenced bindings) 
+                foreach (string bindingProperty in bindingProperties)
+                {
+                    referencedDict.Add(bindingProperty, true);
+                }
+            }
+
+            const string blendShapePrefix = "blendShape.";
+            if (!string.IsNullOrEmpty(info.jsonFilepath))
+            {
+                string json = File.ReadAllText(info.jsonFilepath);
+                foreach (string bindingProperty in bindingProperties)
+                {
+                    string blendShapeName = bindingProperty.Substring(blendShapePrefix.Length);
+                    bool isReferenced = ContainsExpressionName(json, blendShapeName);
+                    referencedDict.Add(bindingProperty, isReferenced);
+                }
+            }
+
+            return referencedDict;
+        }
+
+        public static bool ContainsExpressionName(string json, string targetExpressionName)
+        {
+            var root = JObject.Parse(json);
+
+            foreach (var firstProp in root.Properties())
+            {
+                var objectNode = firstProp.Value?["Object"] as JObject;
+                if (objectNode == null) continue;
+
+                foreach (var secondProp in objectNode.Properties())
+                {
+                    var expressionNode = secondProp.Value?["Expression"] as JObject;
+                    if (expressionNode == null) continue;
+
+                    // expressionName is the property name under Expression
+                    if (expressionNode.ContainsKey(targetExpressionName))
+                        return true;
+                }
+            }
+            return false;
+        }
+        #endregion
+
         #region VersionedMethods
         public static object FindObjectsByType<T>(bool includeInactive)
         {
